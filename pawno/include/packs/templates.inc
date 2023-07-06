@@ -3,6 +3,8 @@
 #endif
 #define _templates_pack_included
 
+#define SQL_CHARSET "utf8"
+
 #define USERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS users (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -20,6 +22,18 @@
 	`reg_ip` varchar(16) NOT NULL,\
 	`seen_at` int(11) unsigned NOT NULL default '0',\
 	`vip_till` int(11) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define BANLOG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS banlog (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`issued_id` int(11) unsigned NOT NULL,\
+	`issued_at` int(11) unsigned NOT NULL,\
+	`valid_till` int(11) unsigned NOT NULL,\
+	`permanent` int(1) unsigned NOT NULL,\
+	`reason` varchar(128) NOT NULL,\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -103,10 +117,10 @@
 );"
 
 #define LANGUAGES_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS translation (\
+	CREATE TABLE IF NOT EXISTS english (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
-	`en` varchar(255) NOT NULL default '',\
-	`ru` varchar(255) NOT NULL default '',\
+	`for` int(11) unsigned NOT NULL auto_increment,\
+	`text` varchar(255) NOT NULL default '',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -132,7 +146,9 @@
     	`xp` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`kills` DECIMAL(6,3) unsigned NOT NULL default '0.25',\
 	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '2.5',\
+	`name` varchar(255) NOT NULL default '',\
 	`discord` varchar(255) NOT NULL default '',\
+	`site` varchar(255) NOT NULL default '',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -149,5 +165,16 @@
 	`killed_zombie` int(11) unsigned NOT NULL default '0',\
 	`players_joined` int(11) unsigned NOT NULL default '0',\
 	`players_online` int(11) unsigned NOT NULL default '0',\
+   	PRIMARY KEY (`id`)\
+);"
+
+#define AUCTION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS auction (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`seller_id` int(11) unsigned NOT NULL,\
+	`type` int(4) unsigned NOT NULL,\	
+	`count` int(11) unsigned NOT NULL,\
+	`points` int(11) unsigned NOT NULL,\
+	`date` int(11) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"

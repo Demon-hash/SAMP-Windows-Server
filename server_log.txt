@@ -1,0 +1,86 @@
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[16:37:47] filterscripts = ""  (string)
+[16:37:47] 
+[16:37:47] Server Plugins
+[16:37:47] --------------
+[16:37:47]  Loading plugin: mysql
+[16:37:47]  >> plugin.mysql: R41-4 successfully loaded.
+[16:37:47]   Loaded.
+[16:37:47]  Loading plugin: dc_cmd
+[16:37:47]   Daniel's CMD plugin v2.8
+[16:37:47]     (c) 2014 Daniel_Cortez
+[16:37:47] 	www.pro-pawn.ru
+[16:37:47]   Loaded.
+[16:37:47]  Loading plugin: sscanf
+[16:37:47] 
+[16:37:47]  ===============================
+[16:37:47] 
+[16:37:47]       sscanf plugin loaded.     
+[16:37:47] 
+[16:37:47]          Version: 2.13.8
+[16:37:47] 
+[16:37:47]    (c) 2022 Alex "Y_Less" Cole  
+[16:37:47] 
+[16:37:47]  ===============================
+[16:37:47] 
+[16:37:47]   Loaded.
+[16:37:47]  Loaded 3 plugins.
+
+[16:37:47] 
+[16:37:47] Filterscripts
+[16:37:47] ---------------
+[16:37:47]   Loaded 0 filterscripts.
+
+[16:37:56] Status: 0
+[16:37:56] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[18:56:48] filterscripts = ""  (string)
+[18:56:48] 
+[18:56:48] Server Plugins
+[18:56:48] --------------
+[18:56:48]  Loading plugin: mysql
+[18:56:48]  >> plugin.mysql: R41-4 successfully loaded.
+[18:56:48]   Loaded.
+[18:56:48]  Loading plugin: dc_cmd
+[18:56:48]   Daniel's CMD plugin v2.8
+[18:56:48]     (c) 2014 Daniel_Cortez
+[18:56:48] 	www.pro-pawn.ru
+[18:56:48]   Loaded.
+[18:56:48]  Loading plugin: sscanf
+[18:56:48] 
+[18:56:48]  ===============================
+[18:56:48] 
+[18:56:48]       sscanf plugin loaded.     
+[18:56:48] 
+[18:56:48]          Version: 2.13.8
+[18:56:48] 
+[18:56:48]    (c) 2022 Alex "Y_Less" Cole  
+[18:56:48] 
+[18:56:48]  ===============================
+[18:56:48] 
+[18:56:48]   Loaded.
+[18:56:48]  Loaded 3 plugins.
+
+[18:56:48] 
+[18:56:48] Filterscripts
+[18:56:48] ---------------
+[18:56:48]   Loaded 0 filterscripts.
+
+[18:56:57] Status: 0
+[18:56:57] Number of vehicle models: 0

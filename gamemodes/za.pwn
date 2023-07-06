@@ -13,12 +13,15 @@
 
 #include <packs/developer>
 
+static MySQL:Database;
+static updateTimerId;
+
 static const sqlTemplates[][] = {
 	{ USERS_TEMPLATE }, { GANGS_TEMPLATE }, { GANGS_USERS_TEMPLATE },
 	{ GANGS_REQUESTS_TEMPLATE }, { GANGS_WARNS_TEMPLATE },
 	{ GANGS_BLACKLISTED_TEMPLATE }, { MAPS_TEMPLATE }, { WEAPONS_TEMPLATE },
 	{ LANGUAGES_TEMPLATE }, { CLASSES_TEMPLATE }, { CONFIG_TEMPLATE },
-	{ STATS_TEMPLATE }
+	{ STATS_TEMPLATE }, { BANLOG_TEMPLATE }, { AUCTION_TEMPLATE }
 };
 
 static Player[MAX_PLAYERS][PLAYER_DATA];
@@ -29,8 +32,8 @@ static Pickup[MAX_PICKUPS][PICKUP_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
 static Config[CONFIG_DATA];
 
-static MySQL:Database;
-static updateTimerId;
+
+// static Language[MAX_PLAYERS][LANGUAGE_DATA];
 
 /*
 	- The purchase of game values for real money between players is allowed, however, the administration and the founder of the project are not responsible for the transactions made
@@ -166,7 +169,7 @@ public OnGameModeInit() {
 	
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
 
-	mysql_set_charset("utf8");
+	mysql_set_charset(SQL_CHARSET);
 	for(new sqlTemplateId; sqlTemplateId < sizeof(sqlTemplates); sqlTemplateId++) {
 		mysql_tquery(Database, sqlTemplates[sqlTemplateId]);
 	}

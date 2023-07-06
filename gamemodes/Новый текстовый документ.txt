@@ -1,0 +1,247 @@
+Идет подготовка к патчю...
+Производится отключение систем...
+Сохранение игрового прогресса...
+Поиск и внесение новых изменений...
+Патчинг команд...
+Патчинг классов...
+Патчинг банд...
+Патчинг языковых пакетов...
+Патчинг достижений...
+Патчинг хаоса...
+Патчинг модулей оружия...
+Патчинг карт...
+Патчинг основной конфигурации...
+Производится включение систем...
+Патчинг завершен
+
+
+
+  		"{FFFFFF}SERVER: Unknown command, use /cmds to see all server commands.", // 1
+  		"{FFFFFF}Languages", // 2
+  		"English\nRussian\nSpanish", // 3
+  		"Ok", // 4
+  		"Cancel", // 5
+  		"{FFFFFF}>> Language set", // 6
+  		"Classes", // 7
+  		"Humans' Classes\nZombies' Classes", // 8
+  		"Lost connection", // 9
+  		"Leaving", // 10
+        "Kicked", // 11
+	 	"{FF0000}>> You %d exp to use this class!", // 14
+	 	"{FF0000}>> The player is already on the list", // 16
+	 	
+ 	 	
+        "{FFF000}>> You have changed your class in-time and been respawn instantly", // 23
+        "{FFF000}>> Class Set, will change next round!", // 24
+        "{FFF000}>> You have been spawned as a %s use /class to change this", // 25
+        "{E8ACBB}>> [PAGER]: %s was infected go and cure him by using /cure (playerid), if possible", // 26
+        "{009900}>> %s has been infected by %s!", //27
+        "{33AA33}>> %s has achieved %d killstreak!{FFFFFF} (+%d EXP)", // 28
+        "{66ffff}<A-CHAT> %s(%d): %s", // 29
+        "{6A8EE2}>> %s appointed a new trial moderator %s", // 30
+		"{6A8EE2}>> %s has given admin status (%s) to %s", // 31
+        "{6A8EE2}>> %s dismissed %s %s for the reason: %s", // 32
+        
+        
+        "{FFF000}>> You have been in AFK for too long and system automatically changed you team to zombie", // 35
+        
+        "{FF0000}>> %s killed the last survivor and got an additional 10exp!", // 41
+        "{59E4B5}>>> Kill the last human and receive extra exp!", // 42
+        "{33CCFF}>> %s has attempted to join the server whilst serving a ban.", // 43
+        "{33CCFF}>> %s has attempted to join the server whilst serving a temp ban.", // 44
+        "{FFF000}>> Login in", // 45
+        "{FF0000}>> %s has been kicked for 3 failed login attempts!", // 46
+        "{6A8EE2}>> %s has been unbanned by %s", // 47
+        "{FFFFFF}SERVER: This account does not exist in the Banlist, double-check the data.", // 48
+        "{8C7139}>> %s has been banned by %s for %d hours [Reason: %s]", // 49
+        "{6A8EE2}>> %s has been banned by %s [Reason: %s]", // 50
+        "{009900}>> Wrong banned? Appeal at "FORUM" in Ban Appeal section", // 51
+        "{FFF000}>> Create a screenshot of your ban by pressing F8 | (Documents/GTA San Andreas User Files/SAMP/screens)", // 52
+       
+        "{009900}>> {FF500A}%s{009900} earned %d exp for killing %s on %d kills killstreak!", // 59
+        "{A5CED9}>> %s has achieved a new personal highest killstreak (%d kills in a row - old: %d kills)", // 60
+        "{B2F558}>> %s has been cured by medic %s", // 61
+        "{B2F558}>> %s has been cured by medic %s (shot)", // 62
+        "{009900}>> %s has been infected by %s{FFFFFF} (by air)", // 63
+        "EXP", // 64
+        "Settings", // 65
+        "Block PMs\t\t[%s]\nDing\t\t[%s]\nAuto-Login\t\t[%s]", // 66
+        "\nUnhiden\t \t \t", // 67
+        "{E68687}>> %s gave you some ammo", // 68
+        "{009900}>> %s has been frighted by %s!", // 70
+        "{009900}>> %s has swapped %s health!", // 71
+        "{009900}>> %s the joker has stolen %d exp from %s!", // 72
+        "{009900}>> %s the remover has remove %s armour!", // 73
+        "{009900}>> %s has been infected by %s!{FFFFFF} (picking up*)", // 74
+        "{B2F558}>> %s paid to %s %d EXP. Total sent with taxes: %d", // 75
+        "{FFF000}>> Votekick has been aborted.", // 76
+        "{FFF000}>> Votekick has already begun.", // 77
+        "{FFF000}>> {A5CED9}%s started a votekick on %s with reason: {A5CED9}%s", // 78
+        "{FFF000}>> Vote with {00FF00}/yes{FFF000} or {FF0000}/no", // 79
+        "{FFF000}>> %s voted {FF0000}against{FFF000} a kick (%d/%d)", // 80
+        "{FFF000}>> %s voted {00FF00}for{FFF000} a kick (%d/%d)", // 81
+        "{FFF000}>> The player was kicked.", // 82
+        "{FFF000}>> You have already voted.", // 83
+        "{faf06d}>> %s has been burnt by wizard zombie %s!", // 84
+        "{009900}>> %s has been found by seeker %s!", // 85
+        "{009900}>> %s the stealer has steal %s's ammo!", // 86
+        "{009900}>> %s the boomer has blown up and infected{FFFFFF} %d people!", // 87
+        "{009900}>> %s the boomer has blown up and infected{FFFFFF} WHOPPING{FF0000} %d people!", // 88
+        "{009900}>> %s the demon has blown up and infected{FFFFFF} %d people!", // 89
+        "{009900}>> %s the demon has blown up and infected{FFFFFF} WHOPPING{FF0000} %d people!", // 90
+		"{009900}>> %s the kamikaze has blown up and infected{FFFFFF} %d people!", // 91
+        "{009900}>> %s the kamikaze has blown up and infected{FFFFFF} WHOPPING{FF0000} %d people!", // 92
+        "{3366ff}>> %s the freezer has frozen up{FFFFFF} %d people!", // 93
+        "{3366ff}>> %s the freezer has frozen up{FFFFFF} WHOPPING{FF0000} %d people!", // 94
+        "{B2F558}>> %s the senior medic has cured %d people", // 95
+        "{ffcc99}>> %s the demolisher destroyed some boxes", // 96
+        "{009900}>> %s has been infected by slow zombie %s!", // 97
+        "{009900}>> %s the leg breaker broke %s’s legs!", // 98
+        "{009900}>> {FF0000}%s{009900} has been infected by blindness zombie %s!", // 99
+        "{33CCFF}>> %s has been banned by Anti-Cheat [Reason: %s]", // 100
+        "{33CCFF}>> %s has been kicked [Reason: Ping too high]", // 101
+        "{33CCFF}>> SYSTEM: Fix your ping or you will be kicked", // 102
+        "{33CCFF}>> %s has been kicked by %s [Reason: %s]", // 106
+        "{FFF000}>> Chat has been cleared by the administrator", // 107
+        "{6A8EE2}>> %s has slapped %s [%.2f]", // 108
+        "{6A8EE2}>> %s has been exploded by %s [%.2f]", // 109
+        "{FFA500}>> Announcement{FFFFFF} %s", // 110
+        "{33CCFF}>> %s has been muted by %s for %d minutes [Reason: %s]", // 111
+        "{FF0000}>> You're muted", // 112
+        "{FF0000}>> You're unmuted", // 113
+        "{33CCFF}>> %s has been unmuted by %s", // 114
+        "{33CCFF}>> Player isn't muted", // 115
+        "{6A8EE2}>> Admin %s has started to spectating for %s(%d)", // 116
+        "{6A8EE2}>> Admin %s has stopped spectating for %s(%d)", // 117
+        "{6A8EE2}>> Admin %s is on {FFFFFF}ADMIN-DUTY{6A8EE2} now", // 118
+        "{6A8EE2}>> Admin %s off {FFFFFF}ADMIN-DUTY{6A8EE2}", // 119
+        "{F0E68C}>> You've unlocked %s class!", // 120
+        "{E68687}>> %s has created a new gang with the name %s {FFFFFF}(ID: %d)!", // 121
+        "{FFF000}>> You are already in the gang", // 122
+        "{FFF000}>> The leader cannot leave the gang", // 123
+        "{FFF000}>> You left the gang, tell them bye!", // 124
+        "{C659B6}>> Use /gang accept %d to accept", // 125
+        "{FFF000}>> Your request has been sent", // 126
+        "{FFF000}>> The player did not send a request", // 127
+        "{FFF000}>> The player is already in the gang", // 128
+        "{C659B6}>> %s was accepted into the gang by the player %s", // 129
+        "{FFF000}>> Sorry, but all the places were taken by other players", // 130
+        "{C659B6}>> There isn’t so much experience in the gang", // 131
+        "{C659B6}>> %s has paid %s %d EXP from gang exp pot. With taxes %d", // 132
+        "{C659B6}>> %s has been promoted by %s to rank %d", // 133
+        "{C659B6}>> The player is not in your gang", // 134
+        "{C659B6}>> Not enough rights", // 135
+        "{C659B6}>> %s has been demoted by %s to rank %d", // 136
+        "{C659B6}>> %s has been kicked from the gang by %s", // 137
+        "{C659B6}>> %s has renamed rank %s to %s", // 138
+        "{C659B6}>> %s has deposited %d EXP to gang exp pot. With taxes %d", // 139
+        "{C659B6}>> %s has set tag of gang to %s", // 140
+        "{C659B6}>> %s has set full name of gang to %s", // 141
+        "{6A8EE2}>> %s has banned IP %s", // 142
+        "{6A8EE2}>> %s has unbanned IP %s", // 143
+        "{6A8EE2}[REPORT] %s(%d) has reported %s(%d) [Reason: %s] (Total of %d reports)", // 144
+        "{33CCFF}>> %s has been warned by %s (%d/3)[Reason: %s]", // 145
+        "{33CCFF}>> %s has been kicked [Reason: Received 3 warnings]", // 146
+        "{33CCFF}>> Your report has been sent", // 147
+        "{8C7139}>> %s has been banned by %s [Reason: %s] (offilne)", // 148
+        "{8C7139}>> %s has been banned by %s for %d hours [Reason: %s] (offline)", // 149
+        "{8C7139}>> %s fired the administrator %s (offline)", // 150
+        "{FF0000}>> You need VIP level of %d to use this class!", // 151
+        "{C0C0C0}*** %s (ID: %d) has joined the server. [IP %s] [Location: %s]", // 152
+        "{FFF000}>> You disabled kickback", // 153
+        "{FFF000}>> You enabled kickback", // 154
+        "{FFF000}>> That name is already exists", // 155
+        "{33CCFF}[ADMIN] %s is now known as %s", // 156
+        "{FFF000}>> You have already changed your name, wait 24 hours to change it again", // 157
+        "{33CCFF}>> %s sets the music, use /off to turn it off", // 158
+        "{FFF000}>> You've got %s!", // 159
+        "{33CCFF}>> You've saved your stats!", // 160
+        "{FFFFFF}SERVER: This account does not exist, double-check the data.", // 161
+        "{FFFFFF}SERVER: Not enough permissions.", // 162
+        "{6A8EE2}>> %s has given admin status (%s) to %s (offline)", // 163
+        "{33CCFF}>> SYSTEM: You are well done! Thank you for your help in catching cheaters. Hold your {FFFFFF}10 EXP!", // 164
+        "{FF0000}>>> %s{FFFFFF} was chosen to be the {FF0000}Zombie Boss{FFFFFF}. Kill him and get additional{FFD700} 20 EXP!", // 165
+        "{FFFFFF}>> You are {FF0000}BOSS zombie. {A5CED9}You have increased health, go and kill all humans", // 166
+        "{009900}>> %s has killed the Zombie Boss %s and get 20 EXP!", // 167
+        "{FFF000}>> Due with the new clan policy, you need to create a request on the forum: %s", // 168
+        "{6A8EE2}>> Admin %s disbanded the gang #%d", // 169
+        "{ccffff}>> %s has evacuated %d times in a row!{FFFFFF} (+%d EXP)", // 170
+		"{62E300}>> %s has unlocked a New Achievement named{FFFFFF} (%s) (+%d EXP) (/achievements)", // 171
+		"{C659B6}| RANDOM WRITING FOR %d EXP:{FFFFFF} %s", // 172
+		"{C659B6}| RANDOM QUESTION FOR %d EXP:{FFFFFF} %s", // 173
+		"{C659B6}>> %s was the first one answer the question (Answer : %s) and earns %d EXP!", // 174
+		"{C659B6}| RANDOM QUESTION FOR %d EXP: What's the ID of{FFFFFF} %s?", // 175
+		"{C659B6}RANDOM QUESTION: No one answered!", // 176
+		"{E68687}>> Lottery: Number will be drawn in one minute. Use /lottery to get your own number", // 177
+		"Hardened body - Less damage from chainsaw\nSurvivability - +50 HP\nIron Skin - +10 percent of armour\nSponsor - M4 for all classes\nMeteorite gun - Shoots by meteorites\nSpikes - Pushes zombies back", // 178
+		"{B2F558}>> %s has been cursed by witch zombie %s!", // 179
+		"{009900}>> %s has been accelerated by an accelerating zombie %s!", //180
+		"{33CCFF}>> %s has been jailed by %s for %d minute(s) [Reason: %s]", // 181
+		"{009900}>> %s has been infected by spitter zombie %s!", // 182
+		"{009900}>> %s has been stung by bee zombie %s!", // 183
+		"{FFFFFF}>> You are {ffff80}BOSS human. {A5CED9}You have M4, Deagle and Armour", // 184
+		"{FF0000}>>> %s{FFFFFF} was chosen to be the {ffff80}Human Hero{FFFFFF}. Kill him and get additional{FFD700} 20 EXP!", // 185
+		"{009900}>> %s has killed the Human Hero %s and get 20 EXP!", // 186
+		"{009900}>> %s the advanced seeker zombie has teleported to somewhere!", // 187
+		"{FF0000}OOPS!", // 188
+		"{FFFFFF}You are not registered in the new payment system\nThis system is necessary to prevent accidental pays of EXP from your account in case of hacking\n{FFF000}To register, enter the secret word (if you forgot it: enter a new one and do not forget to save)\n{FFFFFF}* All necessary information about you will be collected by the server", // 189
+        "{A5CED9}>> Lottery: Number was drawn! Nobody took part!{C659B6} Jackpot: %d", // 190
+		"{A5CED9}>> Lottery: Nobody won!{FF0000} Number: %d Jackpot: %d", // 191
+		"{A5CED9}>> Lottery: %s has won the lottery!{C659B6} Number: %d Jackpot: %d", // 192
+		"{66ccff}|: Verification is completed, further suspicious payments will be deny (%s)", // 193
+		"{FFF000}>> Data inconsistency was found, apply at "FORUM" in Server's Technical Support for clarification, /verify", // 194
+		"{33CCFF}>> %s has been set to Zombie Team [Reason: AFK to avoid Death]", // 195
+		"{E48800}|: Entering The Map #%d (%s) %s{E48800} (Controlled by %s)", // 196
+		"{E68687}>> %s ranked up 1 levels. %s in now a %s", // 197
+		"{E68687}>> You ranked up. Your new rank is %s!", // 198
+		"{E74C3C}>>> %s has the Cure Kit and Can Cure People!", // 199
+
+
+******************************************************************************************
+
+
+/*
+#define PREDIFINED_TRANSLATION_TEMPLATE "\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"Registration\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (1, \"Welcome to the server, your account was not found\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (2, \"Enter your password below to complete registration\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (3, \"Welcome back, your account is already registered\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (4, \"Enter your password below to login\");\
+
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"%s (ID: %d) has joined the server\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"%s has left the server. [%s]\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"The player isn't connected\");\
+
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"Beginning new a round...\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"|: Entering The Map #%d (%s) %s\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"Creating objects...\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"[First Blood] %s(%d) has drawn {FF0000}first blood\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"1 minute remaining... Next map is %s. if you want to change your class use /class!\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"An evacuation has arrived for humans!\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"Humans get to the checkpoint within a minute!\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"%s has made to the evacuation point!\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"ALL SURVIVORS EVACUATED!\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, \"Zombies win!\");\
+
+	INSERT IGNORE INTO translation (id, text) VALUES (0, 0, \"PM from %s(%d): %s\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, 0, \"PM to %s(%d): %s\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, 0, \"Personal Messages are open, but the list of ignored players isn't cleared\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, 0, \"Personal Messages are blocked for now\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, 0, \"Player %s(%d) can no longer write to you, use /unignore to unlock\");\
+	INSERT IGNORE INTO translation (id, text) VALUES (0, 0, \"You cannot send a message to this player\");\
+
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (5, 5, \"Register\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (6, 6, \"Login\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (7, 7, \"Cancel\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (8, 8, \"Ok\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (9, 9, \"Next\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (10, 10, \"Back\", \"\");\
+
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (1, 1, \"SERVER: Unknown command, use /cmds to see all server commands\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (2, 2, \"Languages\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (3, 3, \"English\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (4, 4, \"Ok\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (5, 5, \"Cancel\", \"\");\
+	INSERT IGNORE INTO translation (id, for, en, ru) VALUES (6, 6, \"Language set!\", \"\");
+"
+*/

@@ -1,1 +1,164 @@
 [16:36:25] [WARNING] mysql_connect: no password specified
+[16:37:47] [WARNING] mysql_connect: no password specified
+[16:37:56] [INFO] changed log level from 'warning, error' to 'debug, info, warning, error'
+[16:37:56] [DEBUG] mysql_errno(1)
+[16:37:56] [DEBUG] CHandle::GetErrorId(this=0x7a0fe0)
+[16:37:56] [DEBUG] CConnection::GetError(this=0x7c9fe0, connection=0x7a12f8)
+[16:37:56] [DEBUG] CHandle::GetErrorId - return value: true, error id: '0', error msg: ''
+[16:37:56] [DEBUG] mysql_errno: return value: '0'
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS users (`id` int(11) unsigned NOT NULL auto_increment,`login` varchar(24) NOT NULL,`password` varchar(32) NOT NULL,`ip` varchar(16) NOT NULL,`level` int(3) unsigned NOT NULL default '0',`xp` DECIMAL(6,3) unsigned NOT NULL default '0',`kills` int(6) unsigned NOT NULL default '0',`deaths` int(6) unsigned NOT NULL default '0',`language` int(2) unsigned NOT NULL default '0',`vip` int(2) unsigned NOT NULL default '0',`admin` int(2) unsigned NOT NULL default '0',`reg_at` int(11) unsigned NOT NULL,`reg_ip` varchar(16) NOT NULL,`seen_at` int(11) unsigned NOT NULL default '0',`vip_till` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 1.181 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS users (`id` int(11) unsigned NOT NULL auto_increment,`login` varchar(24) NOT NULL,`password` varchar(32) NOT NULL,`ip` varchar(16) NOT NULL,`level` int(3) unsigned NOT NULL default '0',`xp` DECIMAL(6,3) unsigned NOT NULL default '0',`kills` int(6) unsigned NOT NULL default '0',`deaths` int(6) unsigned NOT NULL default '0',`language` int(2) unsigned NOT NULL default '0',`vip` int(2) unsigned NOT NULL default '0',`admin` int(2) unsigned NOT NULL default '0',`reg_at` int(11) unsigned NOT NULL,`reg_ip` varchar(16) NOT NULL,`seen_at` int(11) unsigned NOT NULL default '0',`vip_till` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d02b8'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5738, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5738, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS gangs (`id` int(11) unsigned NOT NULL auto_increment,`game_id` int(2) unsigned NOT NULL,`leader_id` int(11) unsigned NOT NULL,`quest_id` int(3) unsigned NOT NULL default '0',`level` int(3) unsigned NOT NULL default '0',`points` int(6) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 1.236 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS gangs (`id` int(11) unsigned NOT NULL auto_increment,`game_id` int(2) unsigned NOT NULL,`leader_id` int(11) unsigned NOT NULL,`quest_id` int(3) unsigned NOT NULL default '0',`level` int(3) unsigned NOT NULL default '0',`points` int(6) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d06e0'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5f88, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5f88, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_users (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`rank` int(2) unsigned NOT NULL,`warns` int(2) unsigned NOT NULL default '0',`joined_at` int(11) unsigned NOT NULL,`accepted_by` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 1.3 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS gangs_users (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`rank` int(2) unsigned NOT NULL,`warns` int(2) unsigned NOT NULL default '0',`joined_at` int(11) unsigned NOT NULL,`accepted_by` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0408'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c63b0, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c63b0, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_requests (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`request_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 1.216 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS gangs_requests (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`request_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0590'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5868, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5868, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_warns (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 0.591 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS gangs_warns (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0638'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c6020, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c6020, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_blacklisted (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`account_id` int(11) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 0.243 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS gangs_blacklisted (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`account_id` int(11) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d02b8'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5608, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5608, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS maps (`id` int(11) unsigned NOT NULL auto_increment,`name` varchar(128) NOT NULL,`filename` varchar(128) NOT NULL,`author` int(11) unsigned NOT NULL default '0',`interior` int(3) unsigned NOT NULL default '0',`weather` int(3) unsigned NOT NULL default '0',`time` int(2) unsigned NOT NULL default '12',`gang` int(3) unsigned NOT NULL default '0',`disabled` int(1) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 0.287 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS maps (`id` int(11) unsigned NOT NULL auto_increment,`name` varchar(128) NOT NULL,`filename` varchar(128) NOT NULL,`author` int(11) unsigned NOT NULL default '0',`interior` int(3) unsigned NOT NULL default '0',`weather` int(3) unsigned NOT NULL default '0',`time` int(2) unsigned NOT NULL default '12',`gang` int(3) unsigned NOT NULL default '0',`disabled` int(1) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0408'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5b60, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5b60, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS weapons (`id` int(11) unsigned NOT NULL auto_increment,`type` int(3) unsigned NOT NULL default '0',`min` int(4) unsigned NOT NULL default '0',`max` int(4) unsigned NOT NULL default '1',`pick` int(4) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 0.288 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS weapons (`id` int(11) unsigned NOT NULL auto_increment,`type` int(3) unsigned NOT NULL default '0',`min` int(4) unsigned NOT NULL default '0',`max` int(4) unsigned NOT NULL default '1',`pick` int(4) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0788'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c54d8, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c54d8, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS translation (`id` int(11) unsigned NOT NULL auto_increment,`en` varchar(255) NOT NULL default '',`ru` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));" successfully executed within 9.289 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS translation (`id` int(11) unsigned NOT NULL auto_increment,`en` varchar(255) NOT NULL default '',`ru` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0980'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5bf8, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5bf8, connection=0x7efc18)
+[16:37:56] [ERROR] error #1064 while executing query "CREATE TABLE IF NOT EXISTS classes (`id` int(11) unsigned NOT NULL auto_increment,`translate_id` int(3) unsigned NOT NULL`team` int(3) unsigned NOT NULL default '0',`health` int(3) unsigned NOT NULL default '100',`armour` int(3) unsigned NOT NULL default '0',`level` int(3) unsigned NOT NULL default '0',`ability` int(3) unsigned NOT NULL default '-1',`skins` varchar(64) NOT NULL default '181',`weapons` varchar(96) NOT NULL default '',`ammo` varchar(96) NOT NULL default '',`disabled` int(3) unsigned NOT NULL default '1',PRIMARY KEY (`id`));": You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '`team` int(3) unsigned NOT NULL default '0',`health` int(3) unsigned NOT NULL de' at line 1
+[16:37:56] [DEBUG] CConnection::GetError(this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c57d0, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c57d0, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS config (`id` int(11) unsigned NOT NULL auto_increment,`xp` DECIMAL(6,3) unsigned NOT NULL default '1',`kills` DECIMAL(6,3) unsigned NOT NULL default '0.25',`evacuation` DECIMAL(6,3) unsigned NOT NULL default '2.5',`discord` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));" successfully executed within 0.294 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS config (`id` int(11) unsigned NOT NULL auto_increment,`xp` DECIMAL(6,3) unsigned NOT NULL default '1',`kills` DECIMAL(6,3) unsigned NOT NULL default '0.25',`evacuation` DECIMAL(6,3) unsigned NOT NULL default '2.5',`discord` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d06e0'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CConnection::Execute(query=0x7c5e58, this=0x39ae020, connection=0x7efc18)
+[16:37:56] [DEBUG] CQuery::Execute(this=0x7c5e58, connection=0x7efc18)
+[16:37:56] [INFO] query "CREATE TABLE IF NOT EXISTS stats (`id` int(11) unsigned NOT NULL auto_increment,`month` int(11) unsigned NOT NULL,`year` int(11) unsigned NOT NULL,`evacuated_humans` int(11) unsigned NOT NULL default '0',`cured_humans` int(11) unsigned NOT NULL default '0',`win_as_zombie` int(11) unsigned NOT NULL default '0',`infected_humans` int(11) unsigned NOT NULL default '0',`killed_humans` int(11) unsigned NOT NULL default '0',`killed_zombie` int(11) unsigned NOT NULL default '0',`players_joined` int(11) unsigned NOT NULL default '0',`players_online` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 0.248 milliseconds
+[16:37:56] [DEBUG] CResultSet::Create(connection=0x7efc18, query_str='CREATE TABLE IF NOT EXISTS stats (`id` int(11) unsigned NOT NULL auto_increment,`month` int(11) unsigned NOT NULL,`year` int(11) unsigned NOT NULL,`evacuated_humans` int(11) unsigned NOT NULL default '0',`cured_humans` int(11) unsigned NOT NULL default '0',`win_as_zombie` int(11) unsigned NOT NULL default '0',`infected_humans` int(11) unsigned NOT NULL default '0',`killed_humans` int(11) unsigned NOT NULL default '0',`killed_zombie` int(11) unsigned NOT NULL default '0',`players_joined` int(11) unsigned NOT NULL default '0',`players_online` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[16:37:56] [DEBUG] created new resultset '0x7d0948'
+[16:37:56] [DEBUG] fetched MySQL result '0x0'
+[16:37:56] [DEBUG] CCallback::Create(amx=0x29fa740, name='OnQueryError', format='dsssd)
+[18:56:48] [WARNING] mysql_connect: no password specified
+[18:56:57] [INFO] changed log level from 'warning, error' to 'debug, info, warning, error'
+[18:56:57] [DEBUG] mysql_errno(1)
+[18:56:57] [DEBUG] CHandle::GetErrorId(this=0x7a6758)
+[18:56:57] [DEBUG] CConnection::GetError(this=0x7aa6d0, connection=0x780fe0)
+[18:56:57] [DEBUG] CHandle::GetErrorId - return value: true, error id: '0', error msg: ''
+[18:56:57] [DEBUG] mysql_errno: return value: '0'
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS users (`id` int(11) unsigned NOT NULL auto_increment,`login` varchar(24) NOT NULL,`password` varchar(32) NOT NULL,`ip` varchar(16) NOT NULL,`level` int(3) unsigned NOT NULL default '0',`xp` DECIMAL(6,3) unsigned NOT NULL default '0',`kills` int(6) unsigned NOT NULL default '0',`deaths` int(6) unsigned NOT NULL default '0',`language` int(2) unsigned NOT NULL default '0',`vip` int(2) unsigned NOT NULL default '0',`admin` int(2) unsigned NOT NULL default '0',`reg_at` int(11) unsigned NOT NULL,`reg_ip` varchar(16) NOT NULL,`seen_at` int(11) unsigned NOT NULL default '0',`vip_till` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 1.539 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS users (`id` int(11) unsigned NOT NULL auto_increment,`login` varchar(24) NOT NULL,`password` varchar(32) NOT NULL,`ip` varchar(16) NOT NULL,`level` int(3) unsigned NOT NULL default '0',`xp` DECIMAL(6,3) unsigned NOT NULL default '0',`kills` int(6) unsigned NOT NULL default '0',`deaths` int(6) unsigned NOT NULL default '0',`language` int(2) unsigned NOT NULL default '0',`vip` int(2) unsigned NOT NULL default '0',`admin` int(2) unsigned NOT NULL default '0',`reg_at` int(11) unsigned NOT NULL,`reg_ip` varchar(16) NOT NULL,`seen_at` int(11) unsigned NOT NULL default '0',`vip_till` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b0668'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79aa30, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79aa30, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS gangs (`id` int(11) unsigned NOT NULL auto_increment,`game_id` int(2) unsigned NOT NULL,`leader_id` int(11) unsigned NOT NULL,`quest_id` int(3) unsigned NOT NULL default '0',`level` int(3) unsigned NOT NULL default '0',`points` int(6) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 1.174 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS gangs (`id` int(11) unsigned NOT NULL auto_increment,`game_id` int(2) unsigned NOT NULL,`leader_id` int(11) unsigned NOT NULL,`quest_id` int(3) unsigned NOT NULL default '0',`level` int(3) unsigned NOT NULL default '0',`points` int(6) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b06a0'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79ac90, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79ac90, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_users (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`rank` int(2) unsigned NOT NULL,`warns` int(2) unsigned NOT NULL default '0',`joined_at` int(11) unsigned NOT NULL,`accepted_by` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 1.326 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS gangs_users (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`rank` int(2) unsigned NOT NULL,`warns` int(2) unsigned NOT NULL default '0',`joined_at` int(11) unsigned NOT NULL,`accepted_by` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b0048'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79b4e0, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79b4e0, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_requests (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`request_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 1.140 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS gangs_requests (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`gang_id` int(3) unsigned NOT NULL,`request_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b0668'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79b3b0, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79b3b0, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_warns (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 1.172 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS gangs_warns (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b06d8'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79a7d0, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79a7d0, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS gangs_blacklisted (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`account_id` int(11) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 1.143 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS gangs_blacklisted (`id` int(11) unsigned NOT NULL auto_increment,`gang_id` int(3) unsigned NOT NULL,`account_id` int(11) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`reason` varchar(255) NOT NULL,`given_at` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b0080'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79a868, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79a868, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS maps (`id` int(11) unsigned NOT NULL auto_increment,`name` varchar(128) NOT NULL,`filename` varchar(128) NOT NULL,`author` int(11) unsigned NOT NULL default '0',`interior` int(3) unsigned NOT NULL default '0',`weather` int(3) unsigned NOT NULL default '0',`time` int(2) unsigned NOT NULL default '12',`gang` int(3) unsigned NOT NULL default '0',`disabled` int(1) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 1.193 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS maps (`id` int(11) unsigned NOT NULL auto_increment,`name` varchar(128) NOT NULL,`filename` varchar(128) NOT NULL,`author` int(11) unsigned NOT NULL default '0',`interior` int(3) unsigned NOT NULL default '0',`weather` int(3) unsigned NOT NULL default '0',`time` int(2) unsigned NOT NULL default '12',`gang` int(3) unsigned NOT NULL default '0',`disabled` int(1) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x821b00'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79abf8, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79abf8, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS weapons (`id` int(11) unsigned NOT NULL auto_increment,`type` int(3) unsigned NOT NULL default '0',`min` int(4) unsigned NOT NULL default '0',`max` int(4) unsigned NOT NULL default '1',`pick` int(4) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 1.141 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS weapons (`id` int(11) unsigned NOT NULL auto_increment,`type` int(3) unsigned NOT NULL default '0',`min` int(4) unsigned NOT NULL default '0',`max` int(4) unsigned NOT NULL default '1',`pick` int(4) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x821a20'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79af88, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79af88, connection=0x7cd948)
+[18:56:57] [ERROR] error #1075 while executing query "CREATE TABLE IF NOT EXISTS english (`id` int(11) unsigned NOT NULL auto_increment,`for` int(11) unsigned NOT NULL auto_increment,`text` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));": Incorrect table definition; there can be only one auto column and it must be defined as a key
+[18:56:57] [DEBUG] CConnection::GetError(this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79b1e8, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79b1e8, connection=0x7cd948)
+[18:56:57] [ERROR] error #1064 while executing query "CREATE TABLE IF NOT EXISTS classes (`id` int(11) unsigned NOT NULL auto_increment,`translate_id` int(3) unsigned NOT NULL`team` int(3) unsigned NOT NULL default '0',`health` int(3) unsigned NOT NULL default '100',`armour` int(3) unsigned NOT NULL default '0',`level` int(3) unsigned NOT NULL default '0',`ability` int(3) unsigned NOT NULL default '-1',`skins` varchar(64) NOT NULL default '181',`weapons` varchar(96) NOT NULL default '',`ammo` varchar(96) NOT NULL default '',`disabled` int(3) unsigned NOT NULL default '1',PRIMARY KEY (`id`));": You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '`team` int(3) unsigned NOT NULL default '0',`health` int(3) unsigned NOT NULL de' at line 1
+[18:56:57] [DEBUG] CConnection::GetError(this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79b280, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79b280, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS config (`id` int(11) unsigned NOT NULL auto_increment,`xp` DECIMAL(6,3) unsigned NOT NULL default '1',`kills` DECIMAL(6,3) unsigned NOT NULL default '0.25',`evacuation` DECIMAL(6,3) unsigned NOT NULL default '2.5',`name` varchar(255) NOT NULL default '',`discord` varchar(255) NOT NULL default '',`site` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));" successfully executed within 0.321 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS config (`id` int(11) unsigned NOT NULL auto_increment,`xp` DECIMAL(6,3) unsigned NOT NULL default '1',`kills` DECIMAL(6,3) unsigned NOT NULL default '0.25',`evacuation` DECIMAL(6,3) unsigned NOT NULL default '2.5',`name` varchar(255) NOT NULL default '',`discord` varchar(255) NOT NULL default '',`site` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x821a58'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79a900, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79a900, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS stats (`id` int(11) unsigned NOT NULL auto_increment,`month` int(11) unsigned NOT NULL,`year` int(11) unsigned NOT NULL,`evacuated_humans` int(11) unsigned NOT NULL default '0',`cured_humans` int(11) unsigned NOT NULL default '0',`win_as_zombie` int(11) unsigned NOT NULL default '0',`infected_humans` int(11) unsigned NOT NULL default '0',`killed_humans` int(11) unsigned NOT NULL default '0',`killed_zombie` int(11) unsigned NOT NULL default '0',`players_joined` int(11) unsigned NOT NULL default '0',`players_online` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));" successfully executed within 0.276 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS stats (`id` int(11) unsigned NOT NULL auto_increment,`month` int(11) unsigned NOT NULL,`year` int(11) unsigned NOT NULL,`evacuated_humans` int(11) unsigned NOT NULL default '0',`cured_humans` int(11) unsigned NOT NULL default '0',`win_as_zombie` int(11) unsigned NOT NULL default '0',`infected_humans` int(11) unsigned NOT NULL default '0',`killed_humans` int(11) unsigned NOT NULL default '0',`killed_zombie` int(11) unsigned NOT NULL default '0',`players_joined` int(11) unsigned NOT NULL default '0',`players_online` int(11) unsigned NOT NULL default '0',PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x821a90'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79a998, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79a998, connection=0x7cd948)
+[18:56:57] [DEBUG] CCallback::Create(amx=0x2a6a788, name='OnQueryError', format='dsssd)
+[18:56:57] [DEBUG] CCallback::Create(amx=0x2a6a788, name='OnQueryError', format='dsssd)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS banlog (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`issued_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,`permanent` int(1) unsigned NOT NULL,`reason` varchar(128) NOT NULL,PRIMARY KEY (`id`));" successfully executed within 13.591 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS banlog (`id` int(11) unsigned NOT NULL auto_increment,`account_id` int(11) unsigned NOT NULL,`issued_id` int(11) unsigned NOT NULL,`issued_at` int(11) unsigned NOT NULL,`valid_till` int(11) unsigned NOT NULL,`permanent` int(1) unsigned NOT NULL,`reason` varchar(128) NOT NULL,PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b0710'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
+[18:56:57] [DEBUG] CConnection::Execute(query=0x79aac8, this=0x3995020, connection=0x7cd948)
+[18:56:57] [DEBUG] CQuery::Execute(this=0x79aac8, connection=0x7cd948)
+[18:56:57] [INFO] query "CREATE TABLE IF NOT EXISTS auction (`id` int(11) unsigned NOT NULL auto_increment,`seller_id` int(11) unsigned NOT NULL,`type` int(4) unsigned NOT NULL,`count` int(11) unsigned NOT NULL,`points` int(11) unsigned NOT NULL,`date` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));" successfully executed within 11.231 milliseconds
+[18:56:57] [DEBUG] CResultSet::Create(connection=0x7cd948, query_str='CREATE TABLE IF NOT EXISTS auction (`id` int(11) unsigned NOT NULL auto_increment,`seller_id` int(11) unsigned NOT NULL,`type` int(4) unsigned NOT NULL,`count` int(11) unsigned NOT NULL,`points` int(11) unsigned NOT NULL,`date` int(11) unsigned NOT NULL,PRIMARY KEY (`id`));')
+[18:56:57] [DEBUG] created new resultset '0x7b0710'
+[18:56:57] [DEBUG] fetched MySQL result '0x0'
