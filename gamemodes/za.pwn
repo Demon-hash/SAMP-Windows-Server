@@ -9,8 +9,17 @@
 #include <packs/misc>
 #include <packs/colors>
 #include <packs/classes>
+#include <packs/templates>
 
 #include <packs/developer>
+
+static const sqlTemplates[][] = {
+	{ USERS_TEMPLATE }, { GANGS_TEMPLATE }, { GANGS_USERS_TEMPLATE },
+	{ GANGS_REQUESTS_TEMPLATE }, { GANGS_WARNS_TEMPLATE },
+	{ GANGS_BLACKLISTED_TEMPLATE }, { MAPS_TEMPLATE }, { WEAPONS_TEMPLATE },
+	{ LANGUAGES_TEMPLATE }, { CLASSES_TEMPLATE }, { CONFIG_TEMPLATE },
+	{ STATS_TEMPLATE }
+};
 
 static Player[MAX_PLAYERS][PLAYER_DATA];
 static Round[MAX_PLAYERS][ROUND_DATA];
@@ -20,28 +29,8 @@ static Pickup[MAX_PICKUPS][PICKUP_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
 static Config[CONFIG_DATA];
 
+static MySQL:Database;
 static updateTimerId;
-
-stock ResetClassesData() {
-	new i, j;
-	for( i = 0; i < MAX_CLASSES; i++ ) {
-	    Classes[i][cldId] = -1;
-	    Classes[i][cldTranslateId] = -1;
-	    Classes[i][cldTeam] = TEAM_UNKNOWN;
-	    Classes[i][cldAbility] = -1;
-	    Classes[i][cldLevel] = 0;
-	    Classes[i][cldDisabled] = 0;
-	    
-		for( j = 0; j < MAX_CLASS_SKINS; j++ ) {
-			Classes[i][cldSkin][j] = -1;
-		}
-		
-		for( j = 0; j < MAX_CLASS_WEAPONS; j++ ) {
-			Classes[i][cldWeapons][j] = -1;
-			Classes[i][cldAmmo][j] = -1;
-		}
-	}
-}
 
 /*
 	- The purchase of game values for real money between players is allowed, however, the administration and the founder of the project are not responsible for the transactions made
@@ -161,135 +150,39 @@ enum {
 	ACH_LEGEND,
 };
 
-static const SQL_BASIC = "\
-CREATE DATABASE IF NOT EXISTS `zamp`;\
-USE `zamp`;\
-CREATE TABLE IF NOT EXISTS users (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`login` varchar(24) NOT NULL,\
-	`password` varchar(32) NOT NULL,\
-	`ip` varchar(16) NOT NULL,\
-	`level` int(3) unsigned NOT NULL default '0',\
-	`xp` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`kills` int(6) unsigned NOT NULL default '0',\
-	`deaths` int(6) unsigned NOT NULL default '0',\
-	`vip` int(2) unsigned NOT NULL default '0',\
-	`admin` int(2) unsigned NOT NULL default '0',\
-	`reg_at` int(11) unsigned NOT NULL,\
-	`reg_ip` varchar(16) NOT NULL,\
-	`seen_at` int(11) unsigned NOT NULL default '0',\
-	`vip_till` int(11) unsigned NOT NULL default '0',\
-	PRIMARY KEY (`id`)\
-);";
-
-static const SQL_GANGS = "\
-CREATE TABLE IF NOT EXISTS gangs (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`game_id` int(2) unsigned NOT NULL,\
-	`leader_id` int(11) unsigned NOT NULL,\
-	`quest_id` int(3) unsigned NOT NULL default '0',\
-	`level` int(3) unsigned NOT NULL default '0',\
-    `xp` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS gangs_users (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`account_id` int(11) unsigned NOT NULL,\
-	`gang_id` int(3) unsigned NOT NULL,\
-	`rank` int(2) unsigned NOT NULL,\
-	`warns` int(2) unsigned NOT NULL default '0',\
-	`joined_at` int(11) unsigned NOT NULL,\
-	`accepted_by` int(11) unsigned NOT NULL,\
-	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS gangs_requests (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`account_id` int(11) unsigned NOT NULL,\
-	`gang_id` int(3) unsigned NOT NULL,\
-	`request_at` int(11) unsigned NOT NULL,\
-	`valid_till` int(11) unsigned NOT NULL,\
-	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS gangs_warns (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`gang_id` int(3) unsigned NOT NULL,\
-	`issued_id` int(11) unsigned NOT NULL,\
-	`reason` varchar(255) NOT NULL,\
-	`given_at` int(11) unsigned NOT NULL,\
-	`valid_till` int(11) unsigned NOT NULL,\
-	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS gangs_blacklisted (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`gang_id` int(3) unsigned NOT NULL,\
-	`account_id` int(11) unsigned NOT NULL,\
-	`issued_id` int(11) unsigned NOT NULL,\
-	`reason` varchar(255) NOT NULL,\
-	`given_at` int(11) unsigned NOT NULL,\
-	PRIMARY KEY (`id`)\
-);";
-
-static const SQL_CONFIGS = "\
-CREATE TABLE IF NOT EXISTS languages_data (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`en` varchar(255) NOT NULL default '',\
-	`ru` varchar(255) NOT NULL default '',\
-   	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS maps (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-    `name` varchar(128) NOT NULL,\
-    `filename` varchar(128) NOT NULL,\
-    `author` int(11) unsigned NOT NULL default '0',\
-    `interior` int(3) unsigned NOT NULL default '0',\
-    `weather` int(3) unsigned NOT NULL default '0',\
-    `time` int(2) unsigned NOT NULL default '12',\
-    `gang` int(3) unsigned NOT NULL default '0',\
-    `disabled` int(1) unsigned NOT NULL default '0',\
-   	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS weapons (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`type` int(3) unsigned NOT NULL default '0',\
-	`min` int(4) unsigned NOT NULL default '0',\
-	`max` int(4) unsigned NOT NULL default '1',\
-	`pick` int(4) unsigned NOT NULL default '0',\
-   	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS config (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-    `xp` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`kills` DECIMAL(6,3) unsigned NOT NULL default '0.25',\
-	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '2.5',\
-	`discord` varchar(255) NOT NULL default '',\
-   	PRIMARY KEY (`id`)\
-);\
-CREATE TABLE IF NOT EXISTS stats (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`month` int(11) unsigned NOT NULL,\
-	`year` int(11) unsigned NOT NULL,\
-    `evacuated_humans` int(11) unsigned NOT NULL default '0',\
-	`cured_humans` int(11) unsigned NOT NULL default '0',\
-	`win_as_zombie` int(11) unsigned NOT NULL default '0',\
-	`infected_humans` int(11) unsigned NOT NULL default '0',\
-	`killed_humans` int(11) unsigned NOT NULL default '0',\
-	`killed_zombie` int(11) unsigned NOT NULL default '0',\
-	`players_joined` int(11) unsigned NOT NULL default '0',\
-	`players_online` int(11) unsigned NOT NULL default '0',\
-   	PRIMARY KEY (`id`)\
-);";
-
 main() {
 }
 
 public OnGameModeInit() {
 	ClearAllPickups();
+	ClearClassesData();
+	
+	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
+    ShowNameTags(1);
+	SetTeamCount(MAX_PLAYER_TEAMS);
+	DisableInteriorEnterExits();
+	EnableStuntBonusForAll(0);
+	AllowInteriorWeapons(1);
+	
+	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
+
+	mysql_set_charset("utf8");
+	for(new sqlTemplateId; sqlTemplateId < sizeof(sqlTemplates); sqlTemplateId++) {
+		mysql_tquery(Database, sqlTemplates[sqlTemplateId]);
+	}
+ 	mysql_log(SQL_LOG_LEVEL);
+	
+	printf("Status: %d", mysql_errno(Database));
+	
+	SetGameModeText("Zombie Server");
+	// SendRconCommand("weburl "SITE"");
 	
 	updateTimerId = SetTimer("Update", 1000, true);
 	return 1;
 }
 
 public OnGameModeExit() {
+    mysql_close(Database);
 	KillTimer(updateTimerId);
 	return 1;
 }
@@ -423,6 +316,30 @@ stock CreateDropOnDeath(const playerid) {
 }
 
 stock wipe() {
+}
+
+stock ClearClassesData() {
+	new i, j;
+	for( i = 0; i < MAX_CLASSES; i++ ) {
+	    Classes[i][cldId] = -1;
+	    Classes[i][cldTranslateId] = -1;
+	    Classes[i][cldTeam] = TEAM_UNKNOWN;
+	    Classes[i][cldAbility] = -1;
+	    Classes[i][cldLevel] = 0;
+	    Classes[i][cldHealth] = 0;
+	    Classes[i][cldArmour] = 0;
+
+	    Classes[i][cldDisabled] = 0;
+
+		for( j = 0; j < MAX_CLASS_SKINS; j++ ) {
+			Classes[i][cldSkin][j] = -1;
+		}
+
+		for( j = 0; j < MAX_CLASS_WEAPONS; j++ ) {
+			Classes[i][cldWeapons][j] = -1;
+			Classes[i][cldAmmo][j] = -1;
+		}
+	}
 }
 
 stock ClearAllPlayerData(const playerid) {

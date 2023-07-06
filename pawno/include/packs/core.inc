@@ -20,6 +20,7 @@
 #define SQL_USER "u9764_taxa"
 #define SQL_PASS "d@u87Ud!KA87Rj"
 #define SQL_DB "u9764_taxa"
+#define SQL_LOG_LEVEL NONE
 
 #if !defined IsValidVehicle
 	native IsValidVehicle(vehicleid);

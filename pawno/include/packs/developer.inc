@@ -21,7 +21,13 @@
 	#undef SQL_DB
 #endif
 
-#define SQL_HOST "127.0.0.1"
+
+#if defined SQL_LOG_LEVEL
+	#undef SQL_LOG_LEVEL
+#endif
+
+#define SQL_HOST "localhost"
 #define SQL_USER "root"
 #define SQL_PASS ""
-#define SQL_DB "server"
+#define SQL_DB "zamp"
+#define SQL_LOG_LEVEL ALL
