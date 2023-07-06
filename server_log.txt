@@ -1,0 +1,998 @@
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[14:14:28] filterscripts = ""  (string)
+[14:14:28] 
+[14:14:28] Server Plugins
+[14:14:28] --------------
+[14:14:28]  Loading plugin: mysql
+[14:14:28]  >> plugin.mysql: R41-4 successfully loaded.
+[14:14:28]   Loaded.
+[14:14:28]  Loading plugin: dc_cmd
+[14:14:28]   Daniel's CMD plugin v2.8
+[14:14:28]     (c) 2014 Daniel_Cortez
+[14:14:28] 	www.pro-pawn.ru
+[14:14:28]   Loaded.
+[14:14:28]  Loading plugin: sscanf
+[14:14:28] 
+[14:14:28]  ===============================
+[14:14:28] 
+[14:14:28]       sscanf plugin loaded.     
+[14:14:28] 
+[14:14:28]          Version: 2.13.8
+[14:14:28] 
+[14:14:28]    (c) 2022 Alex "Y_Less" Cole  
+[14:14:28] 
+[14:14:28]  ===============================
+[14:14:28] 
+[14:14:28]   Loaded.
+[14:14:28]  Loaded 3 plugins.
+
+[14:14:28] 
+[14:14:28] Filterscripts
+[14:14:28] ---------------
+[14:14:28]   Loaded 0 filterscripts.
+
+[14:14:28] 1
+[14:14:28] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:00:15] filterscripts = ""  (string)
+[11:00:15] 
+[11:00:15] Server Plugins
+[11:00:15] --------------
+[11:00:15]  Loading plugin: mysql
+[11:00:15]  >> plugin.mysql: R41-4 successfully loaded.
+[11:00:15]   Loaded.
+[11:00:15]  Loading plugin: dc_cmd
+[11:00:15]   Daniel's CMD plugin v2.8
+[11:00:15]     (c) 2014 Daniel_Cortez
+[11:00:15] 	www.pro-pawn.ru
+[11:00:15]   Loaded.
+[11:00:15]  Loading plugin: sscanf
+[11:00:15] 
+[11:00:15]  ===============================
+[11:00:15] 
+[11:00:15]       sscanf plugin loaded.     
+[11:00:15] 
+[11:00:15]          Version: 2.13.8
+[11:00:15] 
+[11:00:15]    (c) 2022 Alex "Y_Less" Cole  
+[11:00:15] 
+[11:00:15]  ===============================
+[11:00:15] 
+[11:00:15]   Loaded.
+[11:00:15]  Loaded 3 plugins.
+
+[11:00:15] 
+[11:00:15] Filterscripts
+[11:00:15] ---------------
+[11:00:15]   Loaded 0 filterscripts.
+
+[11:00:15] Number of vehicle models: 0
+[11:03:59] [connection] 127.0.0.1:64838 requests connection cookie.
+[11:04:00] [connection] incoming connection: 127.0.0.1:64838 id: 0
+[11:04:00] [join] Taxa has joined the server (0:127.0.0.1)
+[11:05:22] [part] Taxa has left the server (0:1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:14:23] filterscripts = ""  (string)
+[11:14:23] 
+[11:14:23] Server Plugins
+[11:14:23] --------------
+[11:14:23]  Loading plugin: mysql
+[11:14:23]  >> plugin.mysql: R41-4 successfully loaded.
+[11:14:23]   Loaded.
+[11:14:23]  Loading plugin: dc_cmd
+[11:14:23]   Daniel's CMD plugin v2.8
+[11:14:23]     (c) 2014 Daniel_Cortez
+[11:14:23] 	www.pro-pawn.ru
+[11:14:23]   Loaded.
+[11:14:23]  Loading plugin: sscanf
+[11:14:23] 
+[11:14:23]  ===============================
+[11:14:23] 
+[11:14:23]       sscanf plugin loaded.     
+[11:14:23] 
+[11:14:23]          Version: 2.13.8
+[11:14:23] 
+[11:14:23]    (c) 2022 Alex "Y_Less" Cole  
+[11:14:23] 
+[11:14:23]  ===============================
+[11:14:23] 
+[11:14:23]   Loaded.
+[11:14:23]  Loaded 3 plugins.
+
+[11:14:23] 
+[11:14:23] Filterscripts
+[11:14:23] ---------------
+[11:14:23]   Loaded 0 filterscripts.
+
+[11:14:23] Number of vehicle models: 0
+[11:14:40] [connection] 127.0.0.1:51008 requests connection cookie.
+[11:14:41] [connection] incoming connection: 127.0.0.1:51008 id: 0
+[11:14:42] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:20:07] filterscripts = ""  (string)
+[11:20:07] 
+[11:20:07] Server Plugins
+[11:20:07] --------------
+[11:20:07]  Loading plugin: mysql
+[11:20:07]  >> plugin.mysql: R41-4 successfully loaded.
+[11:20:07]   Loaded.
+[11:20:07]  Loading plugin: dc_cmd
+[11:20:07]   Daniel's CMD plugin v2.8
+[11:20:07]     (c) 2014 Daniel_Cortez
+[11:20:07] 	www.pro-pawn.ru
+[11:20:07]   Loaded.
+[11:20:07]  Loading plugin: sscanf
+[11:20:07] 
+[11:20:07]  ===============================
+[11:20:07] 
+[11:20:07]       sscanf plugin loaded.     
+[11:20:07] 
+[11:20:07]          Version: 2.13.8
+[11:20:07] 
+[11:20:07]    (c) 2022 Alex "Y_Less" Cole  
+[11:20:07] 
+[11:20:07]  ===============================
+[11:20:07] 
+[11:20:07]   Loaded.
+[11:20:07]  Loaded 3 plugins.
+
+[11:20:07] 
+[11:20:07] Filterscripts
+[11:20:07] ---------------
+[11:20:07]   Loaded 0 filterscripts.
+
+[11:20:07] Number of vehicle models: 0
+[11:20:09] [connection] 127.0.0.1:53883 requests connection cookie.
+[11:20:10] [connection] incoming connection: 127.0.0.1:53883 id: 0
+[11:20:10] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:33:57] filterscripts = ""  (string)
+[11:33:57] 
+[11:33:57] Server Plugins
+[11:33:57] --------------
+[11:33:57]  Loading plugin: mysql
+[11:33:57]  >> plugin.mysql: R41-4 successfully loaded.
+[11:33:57]   Loaded.
+[11:33:57]  Loading plugin: dc_cmd
+[11:33:57]   Daniel's CMD plugin v2.8
+[11:33:57]     (c) 2014 Daniel_Cortez
+[11:33:57] 	www.pro-pawn.ru
+[11:33:57]   Loaded.
+[11:33:57]  Loading plugin: sscanf
+[11:33:57] 
+[11:33:57]  ===============================
+[11:33:57] 
+[11:33:57]       sscanf plugin loaded.     
+[11:33:57] 
+[11:33:57]          Version: 2.13.8
+[11:33:57] 
+[11:33:57]    (c) 2022 Alex "Y_Less" Cole  
+[11:33:57] 
+[11:33:57]  ===============================
+[11:33:57] 
+[11:33:57]   Loaded.
+[11:33:57]  Loaded 3 plugins.
+
+[11:33:57] 
+[11:33:57] Filterscripts
+[11:33:57] ---------------
+[11:33:57]   Loaded 0 filterscripts.
+
+[11:33:57] Number of vehicle models: 0
+[11:33:59] [connection] 127.0.0.1:50326 requests connection cookie.
+[11:34:00] [connection] incoming connection: 127.0.0.1:50326 id: 0
+[11:34:00] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:36:30] filterscripts = ""  (string)
+[11:36:30] 
+[11:36:30] Server Plugins
+[11:36:30] --------------
+[11:36:30]  Loading plugin: mysql
+[11:36:30]  >> plugin.mysql: R41-4 successfully loaded.
+[11:36:30]   Loaded.
+[11:36:30]  Loading plugin: dc_cmd
+[11:36:30]   Daniel's CMD plugin v2.8
+[11:36:30]     (c) 2014 Daniel_Cortez
+[11:36:30] 	www.pro-pawn.ru
+[11:36:30]   Loaded.
+[11:36:30]  Loading plugin: sscanf
+[11:36:30] 
+[11:36:30]  ===============================
+[11:36:30] 
+[11:36:30]       sscanf plugin loaded.     
+[11:36:30] 
+[11:36:30]          Version: 2.13.8
+[11:36:30] 
+[11:36:30]    (c) 2022 Alex "Y_Less" Cole  
+[11:36:30] 
+[11:36:30]  ===============================
+[11:36:30] 
+[11:36:30]   Loaded.
+[11:36:30]  Loaded 3 plugins.
+
+[11:36:30] 
+[11:36:30] Filterscripts
+[11:36:30] ---------------
+[11:36:30]   Loaded 0 filterscripts.
+
+[11:36:30] Number of vehicle models: 0
+[11:36:33] [connection] 127.0.0.1:58560 requests connection cookie.
+[11:36:34] [connection] incoming connection: 127.0.0.1:58560 id: 0
+[11:36:35] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:37:21] filterscripts = ""  (string)
+[11:37:21] 
+[11:37:21] Server Plugins
+[11:37:21] --------------
+[11:37:21]  Loading plugin: mysql
+[11:37:21]  >> plugin.mysql: R41-4 successfully loaded.
+[11:37:21]   Loaded.
+[11:37:21]  Loading plugin: dc_cmd
+[11:37:21]   Daniel's CMD plugin v2.8
+[11:37:21]     (c) 2014 Daniel_Cortez
+[11:37:21] 	www.pro-pawn.ru
+[11:37:21]   Loaded.
+[11:37:21]  Loading plugin: sscanf
+[11:37:21] 
+[11:37:21]  ===============================
+[11:37:21] 
+[11:37:21]       sscanf plugin loaded.     
+[11:37:21] 
+[11:37:21]          Version: 2.13.8
+[11:37:21] 
+[11:37:21]    (c) 2022 Alex "Y_Less" Cole  
+[11:37:21] 
+[11:37:21]  ===============================
+[11:37:21] 
+[11:37:21]   Loaded.
+[11:37:21]  Loaded 3 plugins.
+
+[11:37:21] 
+[11:37:21] Filterscripts
+[11:37:21] ---------------
+[11:37:21]   Loaded 0 filterscripts.
+
+[11:37:21] Number of vehicle models: 0
+[11:38:05] [connection] 127.0.0.1:50339 requests connection cookie.
+[11:38:06] [connection] incoming connection: 127.0.0.1:50339 id: 0
+[11:38:06] [join] Taxa has joined the server (0:127.0.0.1)
+[11:38:17] id: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:39:11] filterscripts = ""  (string)
+[11:39:11] 
+[11:39:11] Server Plugins
+[11:39:11] --------------
+[11:39:11]  Loading plugin: mysql
+[11:39:11]  >> plugin.mysql: R41-4 successfully loaded.
+[11:39:11]   Loaded.
+[11:39:11]  Loading plugin: dc_cmd
+[11:39:11]   Daniel's CMD plugin v2.8
+[11:39:11]     (c) 2014 Daniel_Cortez
+[11:39:11] 	www.pro-pawn.ru
+[11:39:11]   Loaded.
+[11:39:11]  Loading plugin: sscanf
+[11:39:11] 
+[11:39:11]  ===============================
+[11:39:11] 
+[11:39:11]       sscanf plugin loaded.     
+[11:39:11] 
+[11:39:11]          Version: 2.13.8
+[11:39:11] 
+[11:39:11]    (c) 2022 Alex "Y_Less" Cole  
+[11:39:11] 
+[11:39:11]  ===============================
+[11:39:11] 
+[11:39:11]   Loaded.
+[11:39:11]  Loaded 3 plugins.
+
+[11:39:11] 
+[11:39:11] Filterscripts
+[11:39:11] ---------------
+[11:39:11]   Loaded 0 filterscripts.
+
+[11:39:11] Number of vehicle models: 0
+[11:39:32] [connection] 127.0.0.1:64963 requests connection cookie.
+[11:39:33] [connection] incoming connection: 127.0.0.1:64963 id: 0
+[11:39:33] [join] Taxa has joined the server (0:127.0.0.1)
+[11:39:49] 0
+[11:39:49] id: 0 | 4095
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:41:02] filterscripts = ""  (string)
+[11:41:02] 
+[11:41:02] Server Plugins
+[11:41:02] --------------
+[11:41:02]  Loading plugin: mysql
+[11:41:02]  >> plugin.mysql: R41-4 successfully loaded.
+[11:41:02]   Loaded.
+[11:41:02]  Loading plugin: dc_cmd
+[11:41:02]   Daniel's CMD plugin v2.8
+[11:41:02]     (c) 2014 Daniel_Cortez
+[11:41:02] 	www.pro-pawn.ru
+[11:41:02]   Loaded.
+[11:41:02]  Loading plugin: sscanf
+[11:41:02] 
+[11:41:02]  ===============================
+[11:41:02] 
+[11:41:02]       sscanf plugin loaded.     
+[11:41:02] 
+[11:41:02]          Version: 2.13.8
+[11:41:02] 
+[11:41:02]    (c) 2022 Alex "Y_Less" Cole  
+[11:41:02] 
+[11:41:02]  ===============================
+[11:41:02] 
+[11:41:02]   Loaded.
+[11:41:02]  Loaded 3 plugins.
+
+[11:41:02] 
+[11:41:02] Filterscripts
+[11:41:02] ---------------
+[11:41:02]   Loaded 0 filterscripts.
+
+[11:41:02] Number of vehicle models: 0
+[11:41:19] [connection] 127.0.0.1:63811 requests connection cookie.
+[11:41:20] [connection] incoming connection: 127.0.0.1:63811 id: 0
+[11:41:20] [join] Taxa has joined the server (0:127.0.0.1)
+[11:41:33] 0, 1688632893, 0
+[11:41:38] 0, 1688632898, 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:42:26] filterscripts = ""  (string)
+[11:42:26] 
+[11:42:26] Server Plugins
+[11:42:26] --------------
+[11:42:26]  Loading plugin: mysql
+[11:42:26]  >> plugin.mysql: R41-4 successfully loaded.
+[11:42:26]   Loaded.
+[11:42:26]  Loading plugin: dc_cmd
+[11:42:26]   Daniel's CMD plugin v2.8
+[11:42:26]     (c) 2014 Daniel_Cortez
+[11:42:26] 	www.pro-pawn.ru
+[11:42:26]   Loaded.
+[11:42:26]  Loading plugin: sscanf
+[11:42:26] 
+[11:42:26]  ===============================
+[11:42:26] 
+[11:42:26]       sscanf plugin loaded.     
+[11:42:26] 
+[11:42:26]          Version: 2.13.8
+[11:42:26] 
+[11:42:26]    (c) 2022 Alex "Y_Less" Cole  
+[11:42:26] 
+[11:42:26]  ===============================
+[11:42:26] 
+[11:42:26]   Loaded.
+[11:42:26]  Loaded 3 plugins.
+
+[11:42:26] 
+[11:42:26] Filterscripts
+[11:42:26] ---------------
+[11:42:26]   Loaded 0 filterscripts.
+
+[11:42:26] Number of vehicle models: 0
+[11:42:38] [connection] 127.0.0.1:53591 requests connection cookie.
+[11:42:39] [connection] incoming connection: 127.0.0.1:53591 id: 0
+[11:42:40] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:44:49] filterscripts = ""  (string)
+[11:44:49] 
+[11:44:49] Server Plugins
+[11:44:49] --------------
+[11:44:49]  Loading plugin: mysql
+[11:44:49]  >> plugin.mysql: R41-4 successfully loaded.
+[11:44:49]   Loaded.
+[11:44:49]  Loading plugin: dc_cmd
+[11:44:49]   Daniel's CMD plugin v2.8
+[11:44:49]     (c) 2014 Daniel_Cortez
+[11:44:49] 	www.pro-pawn.ru
+[11:44:49]   Loaded.
+[11:44:49]  Loading plugin: sscanf
+[11:44:49] 
+[11:44:49]  ===============================
+[11:44:49] 
+[11:44:49]       sscanf plugin loaded.     
+[11:44:49] 
+[11:44:49]          Version: 2.13.8
+[11:44:49] 
+[11:44:49]    (c) 2022 Alex "Y_Less" Cole  
+[11:44:49] 
+[11:44:49]  ===============================
+[11:44:49] 
+[11:44:49]   Loaded.
+[11:44:49]  Loaded 3 plugins.
+
+[11:44:49] 
+[11:44:49] Filterscripts
+[11:44:49] ---------------
+[11:44:49]   Loaded 0 filterscripts.
+
+[11:44:49] Number of vehicle models: 0
+[11:45:04] [connection] 127.0.0.1:58939 requests connection cookie.
+[11:45:05] [connection] incoming connection: 127.0.0.1:58939 id: 0
+[11:45:05] [join] Taxa has joined the server (0:127.0.0.1)
+[11:45:15] 0, 1688633115, 1688633128
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:49:20] filterscripts = ""  (string)
+[11:49:20] 
+[11:49:20] Server Plugins
+[11:49:20] --------------
+[11:49:20]  Loading plugin: mysql
+[11:49:20]  >> plugin.mysql: R41-4 successfully loaded.
+[11:49:20]   Loaded.
+[11:49:20]  Loading plugin: dc_cmd
+[11:49:20]   Daniel's CMD plugin v2.8
+[11:49:20]     (c) 2014 Daniel_Cortez
+[11:49:20] 	www.pro-pawn.ru
+[11:49:20]   Loaded.
+[11:49:20]  Loading plugin: sscanf
+[11:49:20] 
+[11:49:20]  ===============================
+[11:49:20] 
+[11:49:20]       sscanf plugin loaded.     
+[11:49:20] 
+[11:49:20]          Version: 2.13.8
+[11:49:20] 
+[11:49:20]    (c) 2022 Alex "Y_Less" Cole  
+[11:49:20] 
+[11:49:20]  ===============================
+[11:49:20] 
+[11:49:20]   Loaded.
+[11:49:20]  Loaded 3 plugins.
+
+[11:49:20] 
+[11:49:20] Filterscripts
+[11:49:20] ---------------
+[11:49:20]   Loaded 0 filterscripts.
+
+[11:49:20] Number of vehicle models: 0
+[11:49:30] [connection] 127.0.0.1:51450 requests connection cookie.
+[11:49:31] [connection] incoming connection: 127.0.0.1:51450 id: 0
+[11:49:31] [join] Taxa has joined the server (0:127.0.0.1)
+[11:49:51] 0, 1688633391, 1688633404
+[11:49:57] 0, 1688633397, 1688633410
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:51:09] filterscripts = ""  (string)
+[11:51:09] 
+[11:51:09] Server Plugins
+[11:51:09] --------------
+[11:51:09]  Loading plugin: mysql
+[11:51:09]  >> plugin.mysql: R41-4 successfully loaded.
+[11:51:09]   Loaded.
+[11:51:09]  Loading plugin: dc_cmd
+[11:51:09]   Daniel's CMD plugin v2.8
+[11:51:09]     (c) 2014 Daniel_Cortez
+[11:51:09] 	www.pro-pawn.ru
+[11:51:09]   Loaded.
+[11:51:09]  Loading plugin: sscanf
+[11:51:09] 
+[11:51:09]  ===============================
+[11:51:09] 
+[11:51:09]       sscanf plugin loaded.     
+[11:51:09] 
+[11:51:09]          Version: 2.13.8
+[11:51:09] 
+[11:51:09]    (c) 2022 Alex "Y_Less" Cole  
+[11:51:09] 
+[11:51:09]  ===============================
+[11:51:09] 
+[11:51:09]   Loaded.
+[11:51:09]  Loaded 3 plugins.
+
+[11:51:09] 
+[11:51:09] Filterscripts
+[11:51:09] ---------------
+[11:51:09]   Loaded 0 filterscripts.
+
+[11:51:09] Number of vehicle models: 0
+[11:51:27] [connection] 127.0.0.1:55261 requests connection cookie.
+[11:51:28] [connection] incoming connection: 127.0.0.1:55261 id: 0
+[11:51:28] [join] Taxa has joined the server (0:127.0.0.1)
+[11:51:51] 0, 1688633511, 1688633509
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:55:53] filterscripts = ""  (string)
+[11:55:53] 
+[11:55:53] Server Plugins
+[11:55:53] --------------
+[11:55:53]  Loading plugin: mysql
+[11:55:53]  >> plugin.mysql: R41-4 successfully loaded.
+[11:55:53]   Loaded.
+[11:55:53]  Loading plugin: dc_cmd
+[11:55:53]   Daniel's CMD plugin v2.8
+[11:55:53]     (c) 2014 Daniel_Cortez
+[11:55:53] 	www.pro-pawn.ru
+[11:55:53]   Loaded.
+[11:55:53]  Loading plugin: sscanf
+[11:55:53] 
+[11:55:53]  ===============================
+[11:55:53] 
+[11:55:53]       sscanf plugin loaded.     
+[11:55:53] 
+[11:55:53]          Version: 2.13.8
+[11:55:53] 
+[11:55:53]    (c) 2022 Alex "Y_Less" Cole  
+[11:55:53] 
+[11:55:53]  ===============================
+[11:55:53] 
+[11:55:53]   Loaded.
+[11:55:53]  Loaded 3 plugins.
+
+[11:55:53] 
+[11:55:53] Filterscripts
+[11:55:53] ---------------
+[11:55:53]   Loaded 0 filterscripts.
+
+[11:55:53] Number of vehicle models: 0
+[11:55:54] [connection] 127.0.0.1:54812 requests connection cookie.
+[11:55:55] [connection] incoming connection: 127.0.0.1:54812 id: 0
+[11:55:56] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:56:21] filterscripts = ""  (string)
+[11:56:21] 
+[11:56:21] Server Plugins
+[11:56:21] --------------
+[11:56:21]  Loading plugin: mysql
+[11:56:21]  >> plugin.mysql: R41-4 successfully loaded.
+[11:56:21]   Loaded.
+[11:56:21]  Loading plugin: dc_cmd
+[11:56:21]   Daniel's CMD plugin v2.8
+[11:56:21]     (c) 2014 Daniel_Cortez
+[11:56:21] 	www.pro-pawn.ru
+[11:56:21]   Loaded.
+[11:56:21]  Loading plugin: sscanf
+[11:56:21] 
+[11:56:21]  ===============================
+[11:56:21] 
+[11:56:21]       sscanf plugin loaded.     
+[11:56:21] 
+[11:56:21]          Version: 2.13.8
+[11:56:21] 
+[11:56:21]    (c) 2022 Alex "Y_Less" Cole  
+[11:56:21] 
+[11:56:21]  ===============================
+[11:56:21] 
+[11:56:21]   Loaded.
+[11:56:21]  Loaded 3 plugins.
+
+[11:56:21] 
+[11:56:21] Filterscripts
+[11:56:21] ---------------
+[11:56:21]   Loaded 0 filterscripts.
+
+[11:56:21] Number of vehicle models: 0
+[11:56:23] [connection] 127.0.0.1:65215 requests connection cookie.
+[11:56:24] [connection] incoming connection: 127.0.0.1:65215 id: 0
+[11:56:25] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:09:48] filterscripts = ""  (string)
+[12:09:48] 
+[12:09:48] Server Plugins
+[12:09:48] --------------
+[12:09:48]  Loading plugin: mysql
+[12:09:48]  >> plugin.mysql: R41-4 successfully loaded.
+[12:09:48]   Loaded.
+[12:09:48]  Loading plugin: dc_cmd
+[12:09:48]   Daniel's CMD plugin v2.8
+[12:09:48]     (c) 2014 Daniel_Cortez
+[12:09:48] 	www.pro-pawn.ru
+[12:09:48]   Loaded.
+[12:09:48]  Loading plugin: sscanf
+[12:09:48] 
+[12:09:48]  ===============================
+[12:09:48] 
+[12:09:48]       sscanf plugin loaded.     
+[12:09:48] 
+[12:09:48]          Version: 2.13.8
+[12:09:48] 
+[12:09:48]    (c) 2022 Alex "Y_Less" Cole  
+[12:09:48] 
+[12:09:48]  ===============================
+[12:09:48] 
+[12:09:48]   Loaded.
+[12:09:48]  Loaded 3 plugins.
+
+[12:09:48] 
+[12:09:48] Filterscripts
+[12:09:48] ---------------
+[12:09:48]   Loaded 0 filterscripts.
+
+[12:09:48] Number of vehicle models: 0
+[12:09:50] [connection] 127.0.0.1:56042 requests connection cookie.
+[12:09:51] [connection] incoming connection: 127.0.0.1:56042 id: 0
+[12:09:51] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:11:45] filterscripts = ""  (string)
+[12:11:45] 
+[12:11:45] Server Plugins
+[12:11:45] --------------
+[12:11:45]  Loading plugin: mysql
+[12:11:45]  >> plugin.mysql: R41-4 successfully loaded.
+[12:11:45]   Loaded.
+[12:11:45]  Loading plugin: dc_cmd
+[12:11:45]   Daniel's CMD plugin v2.8
+[12:11:45]     (c) 2014 Daniel_Cortez
+[12:11:45] 	www.pro-pawn.ru
+[12:11:45]   Loaded.
+[12:11:45]  Loading plugin: sscanf
+[12:11:45] 
+[12:11:45]  ===============================
+[12:11:45] 
+[12:11:45]       sscanf plugin loaded.     
+[12:11:45] 
+[12:11:45]          Version: 2.13.8
+[12:11:45] 
+[12:11:45]    (c) 2022 Alex "Y_Less" Cole  
+[12:11:45] 
+[12:11:45]  ===============================
+[12:11:45] 
+[12:11:45]   Loaded.
+[12:11:45]  Loaded 3 plugins.
+
+[12:11:45] 
+[12:11:45] Filterscripts
+[12:11:45] ---------------
+[12:11:45]   Loaded 0 filterscripts.
+
+[12:11:45] Number of vehicle models: 0
+[12:11:46] [connection] 127.0.0.1:62837 requests connection cookie.
+[12:11:47] [connection] incoming connection: 127.0.0.1:62837 id: 0
+[12:11:48] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:44:30] filterscripts = ""  (string)
+[12:44:30] 
+[12:44:30] Server Plugins
+[12:44:30] --------------
+[12:44:30]  Loading plugin: mysql
+[12:44:30]  >> plugin.mysql: R41-4 successfully loaded.
+[12:44:30]   Loaded.
+[12:44:30]  Loading plugin: dc_cmd
+[12:44:30]   Daniel's CMD plugin v2.8
+[12:44:30]     (c) 2014 Daniel_Cortez
+[12:44:30] 	www.pro-pawn.ru
+[12:44:30]   Loaded.
+[12:44:30]  Loading plugin: sscanf
+[12:44:30] 
+[12:44:30]  ===============================
+[12:44:30] 
+[12:44:30]       sscanf plugin loaded.     
+[12:44:30] 
+[12:44:30]          Version: 2.13.8
+[12:44:30] 
+[12:44:30]    (c) 2022 Alex "Y_Less" Cole  
+[12:44:30] 
+[12:44:30]  ===============================
+[12:44:30] 
+[12:44:30]   Loaded.
+[12:44:30]  Loaded 3 plugins.
+
+[12:44:30] 
+[12:44:30] Filterscripts
+[12:44:30] ---------------
+[12:44:30]   Loaded 0 filterscripts.
+
+[12:44:30] Number of vehicle models: 0
+[12:44:32] [connection] 127.0.0.1:53973 requests connection cookie.
+[12:44:33] [connection] incoming connection: 127.0.0.1:53973 id: 0
+[12:44:33] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:44:57] filterscripts = ""  (string)
+[12:44:57] 
+[12:44:57] Server Plugins
+[12:44:57] --------------
+[12:44:57]  Loading plugin: mysql
+[12:44:57]  >> plugin.mysql: R41-4 successfully loaded.
+[12:44:57]   Loaded.
+[12:44:57]  Loading plugin: dc_cmd
+[12:44:57]   Daniel's CMD plugin v2.8
+[12:44:57]     (c) 2014 Daniel_Cortez
+[12:44:57] 	www.pro-pawn.ru
+[12:44:57]   Loaded.
+[12:44:57]  Loading plugin: sscanf
+[12:44:57] 
+[12:44:57]  ===============================
+[12:44:57] 
+[12:44:57]       sscanf plugin loaded.     
+[12:44:57] 
+[12:44:57]          Version: 2.13.8
+[12:44:57] 
+[12:44:57]    (c) 2022 Alex "Y_Less" Cole  
+[12:44:57] 
+[12:44:57]  ===============================
+[12:44:57] 
+[12:44:57]   Loaded.
+[12:44:57]  Loaded 3 plugins.
+
+[12:44:57] 
+[12:44:57] Filterscripts
+[12:44:57] ---------------
+[12:44:57]   Loaded 0 filterscripts.
+
+[12:44:57] Number of vehicle models: 0
+[12:45:40] [connection] 127.0.0.1:65080 requests connection cookie.
+[12:45:41] [connection] incoming connection: 127.0.0.1:65080 id: 0
+[12:45:41] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:53:59] filterscripts = ""  (string)
+[12:53:59] 
+[12:53:59] Server Plugins
+[12:53:59] --------------
+[12:53:59]  Loading plugin: mysql
+[12:53:59]  >> plugin.mysql: R41-4 successfully loaded.
+[12:53:59]   Loaded.
+[12:53:59]  Loading plugin: dc_cmd
+[12:53:59]   Daniel's CMD plugin v2.8
+[12:53:59]     (c) 2014 Daniel_Cortez
+[12:53:59] 	www.pro-pawn.ru
+[12:53:59]   Loaded.
+[12:53:59]  Loading plugin: sscanf
+[12:53:59] 
+[12:53:59]  ===============================
+[12:53:59] 
+[12:53:59]       sscanf plugin loaded.     
+[12:53:59] 
+[12:53:59]          Version: 2.13.8
+[12:53:59] 
+[12:53:59]    (c) 2022 Alex "Y_Less" Cole  
+[12:53:59] 
+[12:53:59]  ===============================
+[12:53:59] 
+[12:53:59]   Loaded.
+[12:53:59]  Loaded 3 plugins.
+
+[12:53:59] 
+[12:53:59] Filterscripts
+[12:53:59] ---------------
+[12:53:59]   Loaded 0 filterscripts.
+
+[12:53:59] Number of vehicle models: 0
+[12:54:01] [connection] 127.0.0.1:62426 requests connection cookie.
+[12:54:02] [connection] incoming connection: 127.0.0.1:62426 id: 0
+[12:54:02] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:54:31] filterscripts = ""  (string)
+[12:54:31] 
+[12:54:31] Server Plugins
+[12:54:31] --------------
+[12:54:31]  Loading plugin: mysql
+[12:54:31]  >> plugin.mysql: R41-4 successfully loaded.
+[12:54:31]   Loaded.
+[12:54:31]  Loading plugin: dc_cmd
+[12:54:31]   Daniel's CMD plugin v2.8
+[12:54:31]     (c) 2014 Daniel_Cortez
+[12:54:31] 	www.pro-pawn.ru
+[12:54:31]   Loaded.
+[12:54:31]  Loading plugin: sscanf
+[12:54:31] 
+[12:54:31]  ===============================
+[12:54:31] 
+[12:54:31]       sscanf plugin loaded.     
+[12:54:31] 
+[12:54:31]          Version: 2.13.8
+[12:54:31] 
+[12:54:31]    (c) 2022 Alex "Y_Less" Cole  
+[12:54:31] 
+[12:54:31]  ===============================
+[12:54:31] 
+[12:54:31]   Loaded.
+[12:54:31]  Loaded 3 plugins.
+
+[12:54:31] 
+[12:54:31] Filterscripts
+[12:54:31] ---------------
+[12:54:31]   Loaded 0 filterscripts.
+
+[12:54:31] Number of vehicle models: 0
+[12:54:35] [connection] 127.0.0.1:60401 requests connection cookie.
+[12:54:36] [connection] incoming connection: 127.0.0.1:60401 id: 0
+[12:54:36] [join] Taxa has joined the server (0:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[13:23:40] filterscripts = ""  (string)
+[13:23:40] 
+[13:23:40] Server Plugins
+[13:23:40] --------------
+[13:23:40]  Loading plugin: mysql
+[13:23:40]  >> plugin.mysql: R41-4 successfully loaded.
+[13:23:40]   Loaded.
+[13:23:40]  Loading plugin: dc_cmd
+[13:23:40]   Daniel's CMD plugin v2.8
+[13:23:40]     (c) 2014 Daniel_Cortez
+[13:23:40] 	www.pro-pawn.ru
+[13:23:40]   Loaded.
+[13:23:40]  Loading plugin: sscanf
+[13:23:40] 
+[13:23:40]  ===============================
+[13:23:40] 
+[13:23:40]       sscanf plugin loaded.     
+[13:23:40] 
+[13:23:40]          Version: 2.13.8
+[13:23:40] 
+[13:23:40]    (c) 2022 Alex "Y_Less" Cole  
+[13:23:40] 
+[13:23:40]  ===============================
+[13:23:40] 
+[13:23:40]   Loaded.
+[13:23:40]  Loaded 3 plugins.
+
+[13:23:40] 
+[13:23:40] Filterscripts
+[13:23:40] ---------------
+[13:23:40]   Loaded 0 filterscripts.
+
+[13:23:40] Number of vehicle models: 0
+[13:23:54] [connection] 127.0.0.1:60601 requests connection cookie.
+[13:23:55] [connection] incoming connection: 127.0.0.1:60601 id: 0
+[13:23:55] [join] Taxa has joined the server (0:127.0.0.1)

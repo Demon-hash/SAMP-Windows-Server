@@ -1,0 +1,18 @@
+#if defined _gangs_pack_included
+	#endinput
+#endif
+#define _gangs_pack_included
+
+#define MAX_GANGS 5
+
+#define MAX_GANG_NAME 32
+
+enum GANG_DATA {
+	gdColumnId,
+	gdOwnerId,
+	gdName[MAX_GANG_NAME],
+	gdLevel,
+	gdQuestId,
+	gdQuestProgression,
+	gdPot,
+};
