@@ -7,40 +7,40 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[16:37:47] filterscripts = ""  (string)
-[16:37:47] 
-[16:37:47] Server Plugins
-[16:37:47] --------------
-[16:37:47]  Loading plugin: mysql
-[16:37:47]  >> plugin.mysql: R41-4 successfully loaded.
-[16:37:47]   Loaded.
-[16:37:47]  Loading plugin: dc_cmd
-[16:37:47]   Daniel's CMD plugin v2.8
-[16:37:47]     (c) 2014 Daniel_Cortez
-[16:37:47] 	www.pro-pawn.ru
-[16:37:47]   Loaded.
-[16:37:47]  Loading plugin: sscanf
-[16:37:47] 
-[16:37:47]  ===============================
-[16:37:47] 
-[16:37:47]       sscanf plugin loaded.     
-[16:37:47] 
-[16:37:47]          Version: 2.13.8
-[16:37:47] 
-[16:37:47]    (c) 2022 Alex "Y_Less" Cole  
-[16:37:47] 
-[16:37:47]  ===============================
-[16:37:47] 
-[16:37:47]   Loaded.
-[16:37:47]  Loaded 3 plugins.
+[08:32:31] filterscripts = ""  (string)
+[08:32:31] 
+[08:32:31] Server Plugins
+[08:32:31] --------------
+[08:32:31]  Loading plugin: mysql
+[08:32:31]  >> plugin.mysql: R41-4 successfully loaded.
+[08:32:31]   Loaded.
+[08:32:31]  Loading plugin: dc_cmd
+[08:32:31]   Daniel's CMD plugin v2.8
+[08:32:31]     (c) 2014 Daniel_Cortez
+[08:32:31] 	www.pro-pawn.ru
+[08:32:31]   Loaded.
+[08:32:31]  Loading plugin: sscanf
+[08:32:31] 
+[08:32:31]  ===============================
+[08:32:31] 
+[08:32:31]       sscanf plugin loaded.     
+[08:32:31] 
+[08:32:31]          Version: 2.13.8
+[08:32:31] 
+[08:32:31]    (c) 2022 Alex "Y_Less" Cole  
+[08:32:31] 
+[08:32:31]  ===============================
+[08:32:31] 
+[08:32:31]   Loaded.
+[08:32:31]  Loaded 3 plugins.
 
-[16:37:47] 
-[16:37:47] Filterscripts
-[16:37:47] ---------------
-[16:37:47]   Loaded 0 filterscripts.
+[08:32:31] 
+[08:32:31] Filterscripts
+[08:32:31] ---------------
+[08:32:31]   Loaded 0 filterscripts.
 
-[16:37:56] Status: 0
-[16:37:56] Number of vehicle models: 0
+[08:32:40] Status: 0
+[08:32:40] Number of vehicle models: 0
 
 ----------
 Loaded log file: "server_log.txt".
@@ -50,37 +50,226 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[18:56:48] filterscripts = ""  (string)
-[18:56:48] 
-[18:56:48] Server Plugins
-[18:56:48] --------------
-[18:56:48]  Loading plugin: mysql
-[18:56:48]  >> plugin.mysql: R41-4 successfully loaded.
-[18:56:48]   Loaded.
-[18:56:48]  Loading plugin: dc_cmd
-[18:56:48]   Daniel's CMD plugin v2.8
-[18:56:48]     (c) 2014 Daniel_Cortez
-[18:56:48] 	www.pro-pawn.ru
-[18:56:48]   Loaded.
-[18:56:48]  Loading plugin: sscanf
-[18:56:48] 
-[18:56:48]  ===============================
-[18:56:48] 
-[18:56:48]       sscanf plugin loaded.     
-[18:56:48] 
-[18:56:48]          Version: 2.13.8
-[18:56:48] 
-[18:56:48]    (c) 2022 Alex "Y_Less" Cole  
-[18:56:48] 
-[18:56:48]  ===============================
-[18:56:48] 
-[18:56:48]   Loaded.
-[18:56:48]  Loaded 3 plugins.
+[08:34:38] filterscripts = ""  (string)
+[08:34:38] 
+[08:34:38] Server Plugins
+[08:34:38] --------------
+[08:34:38]  Loading plugin: mysql
+[08:34:38]  >> plugin.mysql: R41-4 successfully loaded.
+[08:34:38]   Loaded.
+[08:34:38]  Loading plugin: dc_cmd
+[08:34:38]   Daniel's CMD plugin v2.8
+[08:34:38]     (c) 2014 Daniel_Cortez
+[08:34:38] 	www.pro-pawn.ru
+[08:34:38]   Loaded.
+[08:34:38]  Loading plugin: sscanf
+[08:34:38] 
+[08:34:38]  ===============================
+[08:34:38] 
+[08:34:38]       sscanf plugin loaded.     
+[08:34:38] 
+[08:34:38]          Version: 2.13.8
+[08:34:38] 
+[08:34:38]    (c) 2022 Alex "Y_Less" Cole  
+[08:34:38] 
+[08:34:38]  ===============================
+[08:34:38] 
+[08:34:38]   Loaded.
+[08:34:38]  Loaded 3 plugins.
 
-[18:56:48] 
-[18:56:48] Filterscripts
-[18:56:48] ---------------
-[18:56:48]   Loaded 0 filterscripts.
+[08:34:38] 
+[08:34:38] Filterscripts
+[08:34:38] ---------------
+[08:34:38]   Loaded 0 filterscripts.
 
-[18:56:57] Status: 0
-[18:56:57] Number of vehicle models: 0
+[08:34:47] Status: 0
+[08:34:47] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[08:53:54] filterscripts = ""  (string)
+[08:53:54] 
+[08:53:54] Server Plugins
+[08:53:54] --------------
+[08:53:54]  Loading plugin: mysql
+[08:53:54]  >> plugin.mysql: R41-4 successfully loaded.
+[08:53:54]   Loaded.
+[08:53:54]  Loading plugin: dc_cmd
+[08:53:54]   Daniel's CMD plugin v2.8
+[08:53:54]     (c) 2014 Daniel_Cortez
+[08:53:54] 	www.pro-pawn.ru
+[08:53:54]   Loaded.
+[08:53:54]  Loading plugin: sscanf
+[08:53:54] 
+[08:53:54]  ===============================
+[08:53:54] 
+[08:53:54]       sscanf plugin loaded.     
+[08:53:54] 
+[08:53:54]          Version: 2.13.8
+[08:53:54] 
+[08:53:54]    (c) 2022 Alex "Y_Less" Cole  
+[08:53:54] 
+[08:53:54]  ===============================
+[08:53:54] 
+[08:53:54]   Loaded.
+[08:53:54]  Loaded 3 plugins.
+
+[08:53:54] 
+[08:53:54] Filterscripts
+[08:53:54] ---------------
+[08:53:54]   Loaded 0 filterscripts.
+
+[08:54:02] Status: 0
+[08:54:02] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[10:58:02] filterscripts = ""  (string)
+[10:58:02] 
+[10:58:02] Server Plugins
+[10:58:02] --------------
+[10:58:02]  Loading plugin: mysql
+[10:58:02]  >> plugin.mysql: R41-4 successfully loaded.
+[10:58:02]   Loaded.
+[10:58:02]  Loading plugin: dc_cmd
+[10:58:02]   Daniel's CMD plugin v2.8
+[10:58:02]     (c) 2014 Daniel_Cortez
+[10:58:02] 	www.pro-pawn.ru
+[10:58:02]   Loaded.
+[10:58:02]  Loading plugin: sscanf
+[10:58:02] 
+[10:58:02]  ===============================
+[10:58:02] 
+[10:58:02]       sscanf plugin loaded.     
+[10:58:02] 
+[10:58:02]          Version: 2.13.8
+[10:58:02] 
+[10:58:02]    (c) 2022 Alex "Y_Less" Cole  
+[10:58:02] 
+[10:58:02]  ===============================
+[10:58:02] 
+[10:58:02]   Loaded.
+[10:58:02]  Loaded 3 plugins.
+
+[10:58:02] 
+[10:58:02] Filterscripts
+[10:58:02] ---------------
+[10:58:02]   Loaded 0 filterscripts.
+
+[10:58:10] Status: 0
+[10:58:10] Number of vehicle models: 0
+[10:58:44] [connection] 127.0.0.1:59345 requests connection cookie.
+[10:58:45] [connection] incoming connection: 127.0.0.1:59345 id: 0
+[10:58:45] [join] Taxa has joined the server (0:127.0.0.1)
+[10:58:45] SELECTu.*,COALESCE(a.rank, 0) as rank,COALESCE(a.kills, 0) as kills,COALESCE(a.deaths, 0) as deaths,COALESCE(a.ability, 0) as ability,COALESCE(a.ran, 0.0) as ran,COALESCE(a.luck, 0) as luck,COALESCE(a.humans, 0) as humans,COALESCE(a.zombies, 0) as zombies,COALESCE(a.meats, 0) as meats,COALESCE(a.killstreak, 0) as killstreak,COALESCE(a.infection, 0) as infection,COALESCE(a.cure, 0) as cure,COALESCE(a.evacs, 0) as evacs,COALESCE(a.reported, 0) as reported,COALESCE(a.purchase, 0) as purchase,COALESCE(a.jumps, 0) as jumps,COALESCE(a.total_points, 0) as total_points,COALESCE(a.hours, 0) as hours,COALESCE(a.minutes, 0) as minutes,COALESCE(a.seconds, 0) as seconds,COALESCE(p.admin, 0) as admin,COALESCE(p.vip, 0) as vip,COALESCE(p.vip_till, 0) as vip_till,COALESCE(g.gang_id, -1) as gang_id,COALESCE(g.rank, 0) as gang_rank,COALESCE(g.warns, 0) as gang_warnsFROM users uLEFT JOIN achievements a ON u.id = a.account_idLEFT JOIN privileges p ON u.id = p.account_idLEFT JOIN gangs_users g ON u.id = g.account_idWHERE u.login = 'Taxa'
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:00:54] filterscripts = ""  (string)
+[11:00:54] 
+[11:00:54] Server Plugins
+[11:00:54] --------------
+[11:00:54]  Loading plugin: mysql
+[11:00:54]  >> plugin.mysql: R41-4 successfully loaded.
+[11:00:54]   Loaded.
+[11:00:54]  Loading plugin: dc_cmd
+[11:00:54]   Daniel's CMD plugin v2.8
+[11:00:54]     (c) 2014 Daniel_Cortez
+[11:00:54] 	www.pro-pawn.ru
+[11:00:54]   Loaded.
+[11:00:54]  Loading plugin: sscanf
+[11:00:54] 
+[11:00:54]  ===============================
+[11:00:54] 
+[11:00:54]       sscanf plugin loaded.     
+[11:00:54] 
+[11:00:54]          Version: 2.13.8
+[11:00:54] 
+[11:00:54]    (c) 2022 Alex "Y_Less" Cole  
+[11:00:54] 
+[11:00:54]  ===============================
+[11:00:54] 
+[11:00:54]   Loaded.
+[11:00:54]  Loaded 3 plugins.
+
+[11:00:54] 
+[11:00:54] Filterscripts
+[11:00:54] ---------------
+[11:00:54]   Loaded 0 filterscripts.
+
+[11:01:02] Status: 0
+[11:01:02] Number of vehicle models: 0
+[11:01:04] [connection] 127.0.0.1:57339 requests connection cookie.
+[11:01:05] [connection] incoming connection: 127.0.0.1:57339 id: 0
+[11:01:05] [join] Taxa has joined the server (0:127.0.0.1)
+[11:01:05] SELECTu.*,COALESCE(a.rank, 0) as rank,COALESCE(a.kills, 0) as kills,COALESCE(a.deaths, 0) as deaths,COALESCE(a.ability, 0) as ability,COALESCE(a.ran, 0.0) as ran,COALESCE(a.luck, 0) as luck,COALESCE(a.humans, 0) as humans,COALESCE(a.zombies, 0) as zombies,COALESCE(a.meats, 0) as meats,COALESCE(a.killstreak, 0) as killstreak,COALESCE(a.infection, 0) as infection,COALESCE(a.cure, 0) as cure,COALESCE(a.evacs, 0) as evacs,COALESCE(a.reported, 0) as reported,COALESCE(a.purchase, 0) as purchase,COALESCE(a.jumps, 0) as jumps,COALESCE(a.total_points, 0) as total_points,COALESCE(a.hours, 0) as hours,COALESCE(a.minutes, 0) as minutes,COALESCE(a.seconds, 0) as seconds,COALESCE(p.admin, 0) as admin,COALESCE(p.vip, 0) as vip,COALESCE(p.vip_till, 0) as vip_till,COALESCE(g.gang_id, -1) as gang_id,COALESCE(g.rank, 0) as gang_rank,COALESCE(g.warns, 0) as gang_warns
+FROM users u
+LEFT JOIN achievements a ON u.id = a.account_id
+LEFT JOIN privileges p ON u.id = p.account_id
+LEFT JOIN gangs_users g ON u.id = g.account_id
+WHERE u.login = 'Taxa'
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:05:47] filterscripts = ""  (string)
+[11:05:47] 
+[11:05:47] Server Plugins
+[11:05:47] --------------
+[11:05:47]  Loading plugin: mysql
+[11:05:47]  >> plugin.mysql: R41-4 successfully loaded.
+[11:05:47]   Loaded.
+[11:05:47]  Loading plugin: dc_cmd
+[11:05:47]   Daniel's CMD plugin v2.8
+[11:05:47]     (c) 2014 Daniel_Cortez
+[11:05:47] 	www.pro-pawn.ru
+[11:05:47]   Loaded.
+[11:05:47]  Loading plugin: sscanf
+[11:05:47] 
+[11:05:47]  ===============================
+[11:05:47] 
+[11:05:47]       sscanf plugin loaded.     
+[11:05:47] 
+[11:05:47]          Version: 2.13.8
+[11:05:47] 
+[11:05:47]    (c) 2022 Alex "Y_Less" Cole  
+[11:05:47] 
+[11:05:47]  ===============================
+[11:05:47] 
+[11:05:47]   Loaded.
+[11:05:47]  Loaded 3 plugins.
+
+[11:05:47] 
+[11:05:47] Filterscripts
+[11:05:47] ---------------
+[11:05:47]   Loaded 0 filterscripts.
+
+[11:05:55] Status: 0
+[11:05:55] Number of vehicle models: 0
+[11:06:03] [connection] 127.0.0.1:57776 requests connection cookie.
+[11:06:04] [connection] incoming connection: 127.0.0.1:57776 id: 0
+[11:06:05] [join] Taxa has joined the server (0:127.0.0.1)
+[11:06:05] OK

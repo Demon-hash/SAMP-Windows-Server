@@ -1,49 +1,70 @@
 #include <packs/core>
-#include <packs/config>
-#include <packs/teams>
+#include <packs/colors>
 #include <packs/player>
-#include <packs/gangs>
+#include <packs/privileges>
+#include <packs/achievements>
+#include <packs/misc>
 #include <packs/round>
+#include <packs/teams>
+#include <packs/gangs>
 #include <packs/pickups>
 #include <packs/weapons>
-#include <packs/misc>
-#include <packs/colors>
 #include <packs/classes>
 #include <packs/templates>
+#include <packs/config>
 
 #include <packs/developer>
 
-static MySQL:Database;
-static updateTimerId;
-
 static const sqlTemplates[][] = {
     { REGISTRATION_TEMPLATE }, { USERS_TEMPLATE }, { PRIVILEGES_TEMPLATE },
-	{ GANGS_TEMPLATE }, { GANGS_USERS_TEMPLATE },
-	{ GANGS_REQUESTS_TEMPLATE }, { GANGS_WARNS_TEMPLATE },
-	{ GANGS_BLACKLISTED_TEMPLATE }, { GANGS_CONFIG_TEMPLATE },
-	{ MAPS_TEMPLATE },
-	{ WEAPONS_TEMPLATE },
-	{ LANGUAGES_TEMPLATE }, { CLASSES_TEMPLATE },
-	{ BANLOG_TEMPLATE }, { NAMELOG_TEMPLATE }, { LOGINLOG_TEMPLATE },
-	{ PAYLOG_TEMPLATE }, { AUCTIONLOG_TEMPLATE },
-	{ AUCTION_TEMPLATE }, { AUCTION_CASHBACK_TEMPLATE },
-	{ ACHIEVEMENTS_TEMPLATE },
-	{ CONFIG_TEMPLATE },
-	{ STATS_TEMPLATE }
+	{ GANGS_TEMPLATE }, { GANGS_USERS_TEMPLATE }, { GANGS_REQUESTS_TEMPLATE },
+	{ GANGS_WARNS_TEMPLATE }, { GANGS_BLACKLISTED_TEMPLATE },
+	{ GANGS_CONFIG_TEMPLATE }, { MAPS_TEMPLATE }, { WEAPONS_TEMPLATE },
+	{ LANGUAGES_TEMPLATE }, { CLASSES_TEMPLATE }, { BANLOG_TEMPLATE },
+	{ NAMELOG_TEMPLATE }, { LOGINLOG_TEMPLATE }, { PAYLOG_TEMPLATE },
+	{ AUCTIONLOG_TEMPLATE }, { WARNSLOG_TEMPLATE }, { MUTESLOG_TEMPLATE },
+	{ MUTESLOG_TEMPLATE }, { JAILSLOG_TEMPLATE }, { GANGPAYLOG_TEMPLATE },
+	{ GANGDEPOSITLOG_TEMPLATE }, { AUCTION_TEMPLATE },
+	{ AUCTION_CASHBACK_TEMPLATE }, { ACHIEVEMENTS_TEMPLATE },
+	{ CONFIG_TEMPLATE }, { STATS_TEMPLATE }
+};
+
+static const sqlPredifinedValues[][] = {
+	{ PREDIFINED_CIVILIAN }, { PREDIFINED_NURSE },{ PREDIFINED_ENGINEER },
+	{ PREDIFINED_JUMPER }, { PREDIFINED_FAKE_ZOMBIE }, { PREDIFINED_RUNNER },
+	{ PREDIFINED_DOCTOR }, { PREDIFINED_STANDARD_ZOMBIE },
+	{ PREDIFINED_ROGUE_ZOMBIE }, { PREDIFINED_FAST_ZOMBIE },
+	{ PREDIFINED_STOMPER_ZOMBIE }, { PREDIFINED_RADIOACTIVE_ZOMBIE },
+	{ PREDIFINED_SLOW_ZOMBIE }, { PREDIFINED_BOOMER_ZOMBIE },
+	{ PREDIFINED_RUNNER_ZOMBIE }, { PREDIFINED_SEEKER_ZOMBIE },
+	{ PREDIFINED_CONFIG }, { PREDIFINED_GANGS_CONFIG }, { PREDIFINED_SILINCED },
+    { PREDIFINED_COLT45 }, { PREDIFINED_DEAGLE }, { PREDIFINED_UZI },
+    { PREDIFINED_TEC9 }, { PREDIFINED_MP5 }, { PREDIFINED_AK47 },
+    { PREDIFINED_M4 }, { PREDIFINED_RIFLE }, { PREDIFINED_SNIPER },
+    { PREDIFINED_FLAMETHOWER }, { PREDIFINED_GRENADE }, { PREDIFINED_SPAS }
 };
 
 static Player[MAX_PLAYERS][PLAYER_DATA];
 static Round[MAX_PLAYERS][ROUND_DATA];
 static Misc[MAX_PLAYERS][MISC_DATA];
+static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
+static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
+
 static Gangs[MAX_GANGS][GANG_DATA];
 static Pickup[MAX_PICKUPS][PICKUP_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
+
 static Config[CONFIG_DATA];
 
+static MySQL:Database;
+static updateTimerId;
 
 // static Language[MAX_PLAYERS][LANGUAGE_DATA];
 
 /*
+	1.1 Account
+	    * We have the right to collect this information: IPs, Machine IDs, (un)bans, (gang) payments / deposits, names, mutes, warns, jails
+	
 	- The purchase of game values for real money between players is allowed, however, the administration and the founder of the project are not responsible for the transactions made
 		* In case of cheating, we can ban the cheater
 */
@@ -51,33 +72,35 @@ static Config[CONFIG_DATA];
 /*
  - General Changes To Gameplay:
  - Zombies don't have chainsaw anymore, use your fists to deal damage (5 HP)
- - Complete achievements to level up faster
- - Level unlocks new classes (abilities), but not weapons
+ - Classes unlocks abilities, but not weapons, you can set your own weapons
+ - All classes can be infected
  - Points is gained from the quality of the round you played:
     * Survival (5 for evacuation)
     * Infect / Ability / Cure (1)
     
  - Gangs:
-    - Capacity is 15 members only
+    - Capacity is 10 members only,
     - Create a gang required 25,000 points
  	- Quests (5):
-		* Reach a total of 20,000 points (Reward: 25 armour)
 		* Reach a total of 50,000 points (Reward: Country Rifle)
-		* Reach a total of 80,000 points (Reward: Sniper Rifle)
-		* Reach a total of 140,000 points (Reward: Ak47)
-		* Reach a total of 200,000 points (Reward: M4)
+		* Reach a total of 100,000 points (Reward: Sniper Rifle)
+		* Reach a total of 250,000 points (Reward: Flamethrower)
+		* Reach a total of 500,000 points (Reward: Grenade)
+		* Reach a total of 1,000,000 points (Reward: Combat Shotgun)
 	 - How to capture:
     	* At the end of the round, gang players will receive weapons and must inflict the maximum possible damage on the spawned bot
 		* The map will be captured by the gang that deals the most damage
-		* Character level gives additional damage to the bot
 		* Weapon modifications provide additional damage to the bot
  - Weapons:
-    * Achieve 25 killstreak in a row using Silinced Pistol (Reward: Colt45)
-    * Achieve 40 killstreak in a row using Colt45 (Reward: Shotgun)
+    * Achieve 40 killstreak in a row using Silinced Pistol (Reward: Colt45)
+    * Achieve 45 killstreak in a row using Colt45 (Reward: Shotgun)
     * Achieve 50 killstreak in a row using Shotgun (Reward: Deagle)
  	* Kill 250 zombies using Deagle (Reward: UZI)
-	* Kill 250 zombies using UZI (Reward: Tec9)
-	* Kill 250 zombies using Tec9 (Reward: MP5)
+	* Kill 500 zombies using UZI (Reward: Tec9)
+	* Kill 750 zombies using Tec9 (Reward: MP5)
+	* Kill 1250 zombies using MP5 (Reward: Ak47)
+	* Kill 1500 zombies using Ak47 (Reward: M4)
+	
 	* Killing a zombie with a certain weapon can create a certain weapon pickup that can be sold (You can buy weapons from other players)
  - Maps:
     * Captured map gives more points for killing (+2)
@@ -88,7 +111,16 @@ static Config[CONFIG_DATA];
 
 /*
 	General Weekly Quests:
-	
+ 	- Kill 50 players (Armor Chest) (multiple)
+ 	- Kill 100 zombies (Double Ammo Chest) (multiple)
+ 	
+ 	- Collect 300 meats (Accessory Chest) (one per week)
+	- Infect 300 humans (Accessory Chest) (one per week)
+ 	- Cure 300 humans (Accessory Chest) (one per week)
+ 	
+ 	- Achieve 50 killstreak in a row (Weapon Module Chest) (one per week)
+ 	- Achieve 100 killstreak in a row (Weapon Module Chest) (one per week)
+	- Achieve 150 killstreak in a row (Weapon Module Chest) (one per week)
 */
 
 /*
@@ -182,8 +214,14 @@ public OnGameModeInit() {
 
 	mysql_set_charset(SQL_CHARSET);
 	for(new sqlTemplateId; sqlTemplateId < sizeof(sqlTemplates); sqlTemplateId++) {
-		mysql_tquery(Database, sqlTemplates[sqlTemplateId]);
+		mysql_query(Database, sqlTemplates[sqlTemplateId]);
 	}
+	
+	for(new sqlPredifinedValue; sqlPredifinedValue < sizeof(sqlPredifinedValues); sqlPredifinedValue++) {
+		mysql_query(Database, sqlPredifinedValues[sqlPredifinedValue]);
+	}
+	
+	
  	mysql_log(SQL_LOG_LEVEL);
 	
 	printf("Status: %d", mysql_errno(Database));
@@ -203,6 +241,7 @@ public OnGameModeExit() {
 
 public OnPlayerConnect(playerid) {
     ClearAllPlayerData(playerid);
+    CheckForAccount(playerid);
     return 1;
 }
 
@@ -216,7 +255,7 @@ public OnPlayerSpawn(playerid) {
 }
 
 public OnPlayerUpdate(playerid) {
-	SetPlayerScore(playerid, Player[playerid][pd_vip]);
+	// SetPlayerScore(playerid, Player[playerid][pRank]);
 	return 1;
 }
 
@@ -271,6 +310,10 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
 }
 
 public OnPlayerText(playerid, text[]) {
+	if(!Misc[playerid][mdIsLogged]) {
+	    return 0;
+	}
+
 	new i_pos;
 	while(text[i_pos]) {
 		if(text[i_pos] == '%') text[i_pos] = '#';
@@ -291,10 +334,18 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
 }
 
 public OnPlayerCommandReceived(playerid, cmdtext[]) {
+	if(!Misc[playerid][mdIsLogged]) {
+	    return 0;
+	}
+	
 	return 1;
 }
 
 public OnPlayerCommandPerformed(playerid, cmdtext[], success) {
+	if(success != 1) {
+		SendClientMessage(playerid, 0xFF0000FF, "Unknown command");
+		return 0;
+	}
 	return 1;
 }
 
@@ -318,6 +369,90 @@ custom Update() {
 	}
 }
 
+custom CheckForAccount(const playerid) {
+	static const template[] = "\
+        SELECT \n\
+		u.*,\n\
+		COALESCE(a.rank, 0) as rank,\n\
+		COALESCE(a.kills, 0) as kills,\n\
+		COALESCE(a.deaths, 0) as deaths,\n\
+		COALESCE(a.ability, 0) as ability,\n\
+		COALESCE(a.ran, 0.0) as ran,\n\
+		COALESCE(a.luck, 0) as luck,\n\
+		COALESCE(a.humans, 0) as humans,\n\
+		COALESCE(a.zombies, 0) as zombies,\n\
+		COALESCE(a.meats, 0) as meats,\n\
+		COALESCE(a.killstreak, 0) as killstreak,\n\
+		COALESCE(a.infection, 0) as infection,\n\
+		COALESCE(a.cure, 0) as cure,\n\
+		COALESCE(a.evacs, 0) as evacs,\n\
+		COALESCE(a.reported, 0) as reported,\n\
+		COALESCE(a.purchase, 0) as purchase,\n\
+		COALESCE(a.jumps, 0) as jumps,\n\
+		COALESCE(a.total_points, 0) as total_points,\n\
+		COALESCE(a.hours, 0) as hours,\n\
+		COALESCE(a.minutes, 0) as minutes,\n\
+		COALESCE(a.seconds, 0) as seconds,\n\
+		COALESCE(p.admin, 0) as admin,\n\
+		COALESCE(p.vip, 0) as vip,\n\
+		COALESCE(p.vip_till, 0) as vip_till,\n\
+		COALESCE(g.gang_id, -1) as gang_id,\n\
+		COALESCE(g.rank, 0) as gang_rank,\n\
+		COALESCE(g.warns, 0) as gang_warns\n\
+		FROM users u\n\
+		LEFT JOIN achievements a ON u.id = a.account_id\n\
+		LEFT JOIN privileges p ON u.id = p.account_id\n\
+		LEFT JOIN gangs_users g ON u.id = g.account_id\n\
+		WHERE u.login = '%e'\
+	";
+
+	new query[sizeof(template) + MAX_PLAYER_NAME];
+	mysql_format(Database, query, sizeof(query), template, Misc[playerid][mdPlayerName]);
+	mysql_tquery(Database, query, "LoginOrRegister", "i", playerid);
+}
+
+custom LoginOrRegister(playerid) {
+    if(cache_num_rows() > 0) {
+		cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
+		
+        cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
+        cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
+        cache_get_value_name_int(0, "points", Player[playerid][pPoints]);
+        
+        cache_get_value_name_int(0, "rank", Achievements[playerid][achRank]);
+        cache_get_value_name_int(0, "kills", Achievements[playerid][achKills]);
+        cache_get_value_name_int(0, "deaths", Achievements[playerid][achDeaths]);
+        cache_get_value_name_int(0, "ability", Achievements[playerid][achAbility]);
+        cache_get_value_name_int(0, "luck", Achievements[playerid][achLuck]);
+        
+        cache_get_value_name_int(0, "humans", Achievements[playerid][achHumans]);
+        cache_get_value_name_int(0, "zombies", Achievements[playerid][achZombies]);
+        cache_get_value_name_int(0, "meats", Achievements[playerid][achMeats]);
+        cache_get_value_name_int(0, "killstreak", Achievements[playerid][achKillstreak]);
+        cache_get_value_name_int(0, "infection", Achievements[playerid][achInfection]);
+        cache_get_value_name_int(0, "cure", Achievements[playerid][achCure]);
+        cache_get_value_name_int(0, "evacs", Achievements[playerid][achEvac]);
+        cache_get_value_name_int(0, "reported", Achievements[playerid][achReported]);
+        cache_get_value_name_int(0, "purchase", Achievements[playerid][achPurchase]);
+        cache_get_value_name_int(0, "jumps", Achievements[playerid][achJumps]);
+        cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
+        cache_get_value_name_int(0, "hours", Achievements[playerid][achHours]);
+        cache_get_value_name_int(0, "minutes", Achievements[playerid][achMinutes]);
+        cache_get_value_name_int(0, "seconds", Achievements[playerid][achSeconds]);
+        cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
+        
+        cache_get_value_name_int(0, "admin", Privileges[playerid][prsAdmin]);
+        cache_get_value_name_int(0, "vip", Privileges[playerid][prsVip]);
+        cache_get_value_name_int(0, "vip_till", Privileges[playerid][prsVipTill]);
+        
+        cache_get_value_name_int(0, "gang_id", Misc[playerid][mdGang]);
+        cache_get_value_name_int(0, "gang_rank", Misc[playerid][mdGangRank]);
+        cache_get_value_name_int(0, "gang_warns", Misc[playerid][mdGangWarns]);
+        return 1;
+    }
+
+    return 0;
+}
 
 stock CreateDropOnDeath(const playerid) {
 	new Float:pos[3];
@@ -333,56 +468,87 @@ stock wipe() {
 }
 
 stock ClearClassesData() {
-	new i, j;
-	for( i = 0; i < MAX_CLASSES; i++ ) {
+	for( new i; i < MAX_CLASSES; i++ ) {
 	    Classes[i][cldId] = -1;
-	    Classes[i][cldTranslateId] = -1;
 	    Classes[i][cldTeam] = TEAM_UNKNOWN;
 	    Classes[i][cldAbility] = -1;
 	    Classes[i][cldLevel] = 0;
-	    Classes[i][cldHealth] = 0;
+	    Classes[i][cldHealth] = 100;
 	    Classes[i][cldArmour] = 0;
 	    Classes[i][cldCooldown] = 0;
-
-	    Classes[i][cldDisabled] = 0;
-
-		for( j = 0; j < MAX_CLASS_SKINS; j++ ) {
-			Classes[i][cldSkin][j] = -1;
-		}
-
-		for( j = 0; j < MAX_CLASS_WEAPONS; j++ ) {
-			Classes[i][cldWeapons][j] = -1;
-			Classes[i][cldAmmo][j] = -1;
-		}
+        Classes[i][cldSkin] = 1;
+	    Classes[i][cldDisabled] = 1;
+	    
+		strmid(Classes[i][cldName], "", 0, MAX_CLASS_NAME);
+		strmid(Classes[i][cldRuName], "", 0, MAX_CLASS_NAME);
+		
+		strmid(Classes[i][cldDesc], "", 0, MAX_CLASS_DESC);
+		strmid(Classes[i][cldRuDesc], "", 0, MAX_CLASS_DESC);
 	}
 }
 
 stock ClearAllPlayerData(const playerid) {
-	SetPlayerHealthAC(playerid, 100.0);
-    SetPlayerArmourAC(playerid, 0.0);
-    SetPlayerVirtualWorld(playerid, 1000 + playerid);
-    
+	SetPlayerVirtualWorld(playerid, 1000 + playerid);
+
     ClearPlayerData(playerid);
+    ClearPrevilegesData(playerid);
     ClearMiscData(playerid);
+    ClearAchievementsData(playerid);
     ClearRoundData(playerid);
     ResetWeapons(playerid);
+    
+    SetPlayerHealthAC(playerid, 100.0);
+    SetPlayerArmourAC(playerid, 0.0);
 }
 
 stock ClearPlayerData(const playerid) {
-    Player[playerid][pd_xp] = 0;
-    Player[playerid][pd_level] = 0;
+    Player[playerid][pAccountId] = 0;
+    Player[playerid][pLanguage] = 0;
+    Player[playerid][pPoints] = 0;
+}
+
+stock ClearAchievementsData(const playerid) {
+    Achievements[playerid][achHumans] = 0;
+    Achievements[playerid][achZombies] = 0;
+    Achievements[playerid][achMeats] = 0;
+    Achievements[playerid][achKillstreak] = 0;
+    Achievements[playerid][achInfection] = 0;
+    Achievements[playerid][achCure] = 0;
+    Achievements[playerid][achEvac] = 0;
+    Achievements[playerid][achReported] = 0;
+    Achievements[playerid][achPurchase] = 0;
+    Achievements[playerid][achJumps] = 0;
+    Achievements[playerid][achTotalPoints] = 0;
+    Achievements[playerid][achHours] = 0;
+    Achievements[playerid][achMinutes] = 0;
+    Achievements[playerid][achSeconds] = 0;
+    Achievements[playerid][achRan] = 0.0;
+}
+		
+stock ClearPrevilegesData(const playerid) {
+	Privileges[playerid][prsAdmin] = 0;
+	Privileges[playerid][prsVip] = 0;
+ 	Privileges[playerid][prsVipTill] = 0;
 }
 
 stock ClearMiscData(const playerid) {
-    Misc[playerid][mdPlayerTeam] = TEAM_UNKNOWN;
     GetPlayerName(playerid, Misc[playerid][mdPlayerName], MAX_PLAYER_NAME);
+    GetPlayerIp(playerid, Misc[playerid][mdIp], MAX_PLAYER_IP);
+    
+    Misc[playerid][mdPlayerTeam] = TEAM_UNKNOWN;
     Misc[playerid][mdSpawnProtection] = 0;
     Misc[playerid][mdIgnoreAnticheatFor] = 0;
+    Misc[playerid][mdGang] = -1;
+	Misc[playerid][mdGangRank] = 0;
+	Misc[playerid][mdGangWarns] = 0;
+    Misc[playerid][mdIsLogged] = false;
     
     for( new i = 0; i < MAX_PLAYER_TEAMS; i++ ) {
 	    Misc[playerid][mdCurrentClass][i] = 0;
         Misc[playerid][mdNextClass][i] = -1;
     }
+    
+    strmid(Misc[playerid][mdPassword], "", 0, MAX_PLAYER_PASSWORD);
 }
 
 stock ClearRoundData(const playerid) {

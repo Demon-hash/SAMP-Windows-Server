@@ -3,22 +3,22 @@
 #endif
 #define _classes_pack_included
 
-#define MAX_CLASSES 50
-
-#define MAX_CLASS_SKINS 3
-#define MAX_CLASS_WEAPONS 9
+#define MAX_CLASSES 20
+#define MAX_CLASS_NAME 64
+#define MAX_CLASS_DESC 64
 
 enum CLASSES_DATA {
 	cldId,
-	cldTranslateId,
+	cldName[MAX_CLASS_NAME],
+	cldDesc[MAX_CLASS_DESC],
+	cldRuName[MAX_CLASS_NAME],
+	cldRuDesc[MAX_CLASS_DESC],
 	cldTeam,
 	cldHealth,
 	cldArmour,
 	cldLevel,
 	cldAbility,
 	cldCooldown,
-	cldSkin[MAX_CLASS_SKINS],
-	cldWeapons[MAX_CLASS_WEAPONS],
-	cldAmmo[MAX_CLASS_WEAPONS],
+	cldSkin,
 	cldDisabled,
 };
