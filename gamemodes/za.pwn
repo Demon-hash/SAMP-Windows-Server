@@ -17,11 +17,19 @@ static MySQL:Database;
 static updateTimerId;
 
 static const sqlTemplates[][] = {
-	{ USERS_TEMPLATE }, { GANGS_TEMPLATE }, { GANGS_USERS_TEMPLATE },
+    { REGISTRATION_TEMPLATE }, { USERS_TEMPLATE }, { PRIVILEGES_TEMPLATE },
+	{ GANGS_TEMPLATE }, { GANGS_USERS_TEMPLATE },
 	{ GANGS_REQUESTS_TEMPLATE }, { GANGS_WARNS_TEMPLATE },
-	{ GANGS_BLACKLISTED_TEMPLATE }, { MAPS_TEMPLATE }, { WEAPONS_TEMPLATE },
-	{ LANGUAGES_TEMPLATE }, { CLASSES_TEMPLATE }, { CONFIG_TEMPLATE },
-	{ STATS_TEMPLATE }, { BANLOG_TEMPLATE }, { AUCTION_TEMPLATE }
+	{ GANGS_BLACKLISTED_TEMPLATE }, { GANGS_CONFIG_TEMPLATE },
+	{ MAPS_TEMPLATE },
+	{ WEAPONS_TEMPLATE },
+	{ LANGUAGES_TEMPLATE }, { CLASSES_TEMPLATE },
+	{ BANLOG_TEMPLATE }, { NAMELOG_TEMPLATE }, { LOGINLOG_TEMPLATE },
+	{ PAYLOG_TEMPLATE }, { AUCTIONLOG_TEMPLATE },
+	{ AUCTION_TEMPLATE }, { AUCTION_CASHBACK_TEMPLATE },
+	{ ACHIEVEMENTS_TEMPLATE },
+	{ CONFIG_TEMPLATE },
+	{ STATS_TEMPLATE }
 };
 
 static Player[MAX_PLAYERS][PLAYER_DATA];
@@ -45,14 +53,12 @@ static Config[CONFIG_DATA];
  - Zombies don't have chainsaw anymore, use your fists to deal damage (5 HP)
  - Complete achievements to level up faster
  - Level unlocks new classes (abilities), but not weapons
- - Experience is gained from the quality of the round you played:
-    * Survival (2.5% for evacuation)
-    * Kills (0.2%)
-    * Infect / Ability / Cure (0.1%)
+ - Points is gained from the quality of the round you played:
+    * Survival (5 for evacuation)
+    * Infect / Ability / Cure (1)
     
  - Gangs:
     - Capacity is 15 members only
-    - For killing any player you get from 0 to (3/5) points (Points can be sold)
     - Create a gang required 25,000 points
  	- Quests (5):
 		* Reach a total of 20,000 points (Reward: 25 armour)
@@ -112,31 +118,36 @@ static Config[CONFIG_DATA];
      	"%sMedic\t%s/cure 50 humans (150 EXP){FFFFFF} [%d/50]\n", 
      	"%sDoctor\t%s/cure 100 humans (400 EXP){FFFFFF} [%d/100]\n",
      	"%sRisen from the grave\t%sDie 10 times (10 EXP){FFFFFF} [%d/10]\n",
-     	"%sI'm IMMORTAL\t%sDie 100 times (100 EXP){FFFFFF} [%d/100]\n",
+     	"%sDead Rising Army\t%sDie 100 times (100 EXP){FFFFFF} [%d/100]\n",
      	"%sDo Not Even Try\t%sDie 1000 times (1000 EXP){FFFFFF} [%d/1000]\n",
-     	"%sTeam player\t%sJoin a gang (10 EXP){FFFFFF} [%d/1]\n",
-     	"%sYou will not catch up\t%sEvac 5 times in a row (2000 EXP){FFFFFF} [%d/1]\n",
+
+		 "%sCollection Point\t%sEvac 5 times (2000 EXP){FFFFFF} [%d/1]\n",
+		 "%sSafe Place\t%sEvac 100 times (2000 EXP){FFFFFF} [%d/1]\n",
+		 "%sSafe Zone\t%sEvac 300 times (2000 EXP){FFFFFF} [%d/1]\n",
+     	
      	"%sTrust but check\t%s/report 10 cheaters (100 EXP){FFFFFF} [%d/10]\n",
      	"%sExemplary\t%s/report 50 cheaters (500 EXP){FFFFFF} [%d/50]\n",
      	"%sLaw-abiding\t%s/report 100 cheaters (2000 EXP){FFFFFF} [%d/100]\n",
+     	
      	"%sAmateur\t%sMake 50 purchases in /shop (200 EXP){FFFFFF} [%d/50]\n",
      	"%sShopaholic\t%sMake 100 purchases in /shop (1000 EXP){FFFFFF} [%d/100]\n",
      	"%sMoney in nowhere\t%sMake 200 purchases in /shop (5000 EXP){FFFFFF} [%d/200]\n",
-     	"%sPoor appetite\t%sInfect 100 humans with Flesher meats (20 EXP){FFFFFF} [%d/100]\n",
- 		"%sEternal void\t%sBecome the last survivor and evacuate (200 EXP){FFFFFF} [%d/1]\n",
-        "%sWinner\t%sWin 300 rounds as human (3000 EXP){FFFFFF} [%d/300]\n", // 56
-        "%sFan\t%sPlay 24 hours in total (2000 EXP){FFFFFF} [%d/24]\n", // 63
-        "%sGamer\t%sPlay 300 hours in total (10000 EXP){FFFFFF} [%d/300]\n", // 64
-        "%sExanimate\t%sPlay 650 hours in total (50000 EXP){FFFFFF} [%d/650]\n", // 65
+     	
+     	"%sIn cash\t%sGet a total of 100,000 points (5000 EXP){FFFFFF} [%d/200]\n",
+     	"%sBusinessman\t%sGet a total of 500,000 points (5000 EXP){FFFFFF} [%d/200]\n",
+     	"%sMillionaire\t%sGet a total of 1,000,000 points (5000 EXP){FFFFFF} [%d/200]\n",
+
+        "%sUnknown virus\t%sInfect 50 humans (20 EXP){FFFFFF} [%d/1000]\n",
+        "%sDisease\t%sInfect 300 humans (20 EXP){FFFFFF} [%d/1000]\n",
+		"%sMass infection\t%sInfect 1000 humans (20 EXP){FFFFFF} [%d/1000]\n",
+        
+        "%sFan\t%sPlay for one week in total (50 EXP){FFFFFF} [%d/168]\n",
+        "%sGamer\t%sPlay for half a year in total (200 EXP){FFFFFF} [%d/4380]\n",
+        "%sExanimate\t%sPlay for 1 year in total (500 EXP){FFFFFF} [%d/8760]\n",
         "%sJumper\t%sJump 100 times (200 EXP){FFFFFF} [%d/100]\n", // 66
         "%sToad paws\t%sJump 300 times (700 EXP){FFFFFF} [%d/300]\n", // 67
         "%sPilot\t%sJump 700 times (1500 EXP){FFFFFF} [%d/700]\n", // 68
-        "%sIron Fist\t%sKill 300 people by fists (5000 EXP){FFFFFF} [%d/300]\n", // 69
-        "%sPulsation\t%sDo not stop the whole round playing as a human (5000 EXP)\n", // 70
-        "%sCosmonaut\t%sSpend 2 seconds in flight (1000 EXP)\n", // 71
-        "%sMeat grinder\t%sGet 3 consecutive kills in 5 seconds (2000 EXP)\n", // 74
 
-		"%sTime victim\t%sKill human hero (100 EXP)\n", // 
         "%sParable\t%sComplete 1 gang quests (5000 EXP)\n", // 77
         "%sTales\t%sComplete 2 gang quests (5000 EXP)\n", // 77
         "%sStory\t%sComplete 3 gang quests (5000 EXP)\n", // 77
@@ -331,6 +342,7 @@ stock ClearClassesData() {
 	    Classes[i][cldLevel] = 0;
 	    Classes[i][cldHealth] = 0;
 	    Classes[i][cldArmour] = 0;
+	    Classes[i][cldCooldown] = 0;
 
 	    Classes[i][cldDisabled] = 0;
 

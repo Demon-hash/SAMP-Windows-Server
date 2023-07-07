@@ -16,6 +16,7 @@ enum CLASSES_DATA {
 	cldArmour,
 	cldLevel,
 	cldAbility,
+	cldCooldown,
 	cldSkin[MAX_CLASS_SKINS],
 	cldWeapons[MAX_CLASS_WEAPONS],
 	cldAmmo[MAX_CLASS_WEAPONS],
