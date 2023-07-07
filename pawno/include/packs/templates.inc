@@ -344,7 +344,8 @@
 	`name` varchar(64) NOT NULL default '',\
 	`mode` varchar(64) NOT NULL default '',\
 	`discord` varchar(64) NOT NULL default '',\
-	`site` varchar(255) NOT NULL default '',\
+	`site` varchar(64) NOT NULL default '',\
+	`language` varchar(64) NOT NULL default '',\
    	PRIMARY KEY (`id`)\
 );"
 

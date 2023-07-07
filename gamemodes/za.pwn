@@ -56,6 +56,8 @@ static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 
 static MySQL:Database;
 static updateTimerId;
+static bool:isRoundStarted;
+static mapId = 0;
 
 // ShowPlayerDialog
 // SendClientMessage
@@ -218,23 +220,23 @@ public OnGameModeInit() {
 	
 	new i;
 	for(i = 0; i < sizeof(sqlTemplates); i++) {
-		mysql_query(Database, sqlTemplates[i]);
+		mysql_tquery(Database, sqlTemplates[i]);
 	}
 	
 	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) {
-		mysql_query(Database, sqlPredifinedValues[i]);
+		mysql_tquery(Database, sqlPredifinedValues[i]);
 	}
 	
 	for(i = 0; i < sizeof(sqlPredifinedLocalization); i++ ) {
-	    mysql_query(Database, sqlPredifinedLocalization[i]);
+	    mysql_tquery(Database, sqlPredifinedLocalization[i]);
 	}
 	
+	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
  	mysql_log(SQL_LOG_LEVEL);
+ 	
 	printf("Status: %d", mysql_errno(Database));
 	
-	// SetGameModeText("Zombie Server");
-	// SendRconCommand("weburl "SITE"");
-	
+	SetGameModeText("Zombies");
 	updateTimerId = SetTimer("Update", 1000, true);
 	return 1;
 }
@@ -252,11 +254,16 @@ public OnPlayerConnect(playerid) {
 }
 
 public OnPlayerRequestClass(playerid, classid) {
-    SetPlayerPos(playerid, 2415.5414,-50.4586,28.1535);
-	SetPlayerFacingAngle(playerid, 1.4218);
-	SetPlayerCameraPos(playerid, 2415.7615, -45.1561, 28.8247);
-	SetPlayerCameraLookAt(playerid, 2415.7559, -46.1539, 28.6447);
-	SetPlayerSkin(playerid, 181);
+    SetPlayerPos(playerid, ServerConfig[svCfgPreviewBotPos][0],
+	ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2]);
+	SetPlayerFacingAngle(playerid, ServerConfig[svCfgPreviewBotPos][3]);
+	
+	SetPlayerCameraPos(playerid, ServerConfig[svCfgPreviewCameraPos][0],
+	ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2]);
+	SetPlayerCameraLookAt(playerid, ServerConfig[svCfgPreviewCameraPos][3],
+	ServerConfig[svCfgPreviewCameraPos][4], ServerConfig[svCfgPreviewCameraPos][5]);
+	
+	SetPlayerSkin(playerid, ServerConfig[svCfgPreviewBot]);
 	return 1;
 }
 
@@ -451,6 +458,85 @@ custom Update() {
 	}
 }
 
+custom LoadMap() {
+    if(cache_num_rows() > 0) {
+        SetMapId();
+        StartMap();
+        
+        LoadFilterScript(Map[m_FSMapName]);
+    }
+}
+
+stock SetMapId() [
+    if(mapid < maps) {
+		mapid++;
+	} else {
+		mapid = 0;
+	}
+}
+
+custom StartMap() {
+	if(isRoundStarted) {
+	    return 0;
+	}
+	
+	UnloadFilterScript(Map[m_FSMapLastName]);
+	SetWeather(Map[m_Weather]);
+	SetWorldTime(Map[m_Time]);
+	
+	new state;
+	
+	if(IsValidObject(mapGate)) {
+		DestroyObject(mapGate);
+		mapGate = INVALID_OBJECT_ID;
+	}
+	
+	foreach(Player, i) {
+	    ClearRoundData(i);
+	    CurePlayer(i);
+
+     	SetPlayerTeamEx(i, TEAM_HUMAN);
+    	DisablePlayerCheckpoint(i);
+    	
+    	state = GetPlayerState(i);
+    	if(state == PLAYER_STATE_DRIVER || state == PLAYER_STATE_PASSENGER) {
+    		RemovePlayerFromVehicle(i);
+    	}
+    	
+    	if(state == PLAYER_STATE_SPECTATING) {
+    	    TogglePlayerSpectating(i, 0);
+		}
+		
+		if(state != PLAYER_STATE_NONE && state != PLAYER_STATE_WASTED) {
+			SpawnPlayer(i);
+		}
+    	
+    	if(Map[m_GangControll] > 0) {
+		    SendClientMessageFormat(i,-1,serverLang[Player[i][pLang]][196], mapid, Map[m_MapName], Map[m_Author], Clan[Map[m_GangControll]][Full]);
+		}
+		else {
+			SendClientMessageFormat(i,-1,serverLang[Player[i][pLang]][33], mapid, Map[m_MapName], Map[m_Author]);
+		}
+    	
+    	if(Map[m_Interior] <= 0) {
+			SendClientMessage(i,-1,serverLang[Player[i][pLang]][34]);
+		}
+		
+		for( new j = 0; j < sizeof(Map[ZombieSpawnX]); j++ ) {
+        	DeletePlayer3DTextLabel(SpawnPoints[j]);
+    		SpawnPoints[j] = CreatePlayer3DTextLabel("{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here", 0xFF0000FF, Map[ZombieSpawnX][j], Map[ZombieSpawnY][j], Map[ZombieSpawnZ][j], 50.0, 0, 1);
+		}
+	}
+	
+	SetZombies();
+
+    ClearAllPickups();
+	DestroyAllVehicle();
+	
+    isRoundStarted = true;
+	return 1;
+}
+
 custom LoadLocalization(const playerid, const type) {
     static const query[] = LOAD_LOCALIZATION_QUERY;
 	static const locale[][] = { ENGLISH_LOCALE, RUSSIAN_LOCALE };
@@ -491,6 +577,36 @@ custom GetUserAccountId(const playerid) {
 
 custom KickForAuthTimeout(const playerid) {
     Kick(playerid);
+}
+
+custom LoadServerConfiguration() {
+    if(cache_num_rows() > 0) {
+        new buff[256];
+        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
+        
+        cache_get_value_name(0, "preview_bot_coords", buff);
+		sscanf(buff, "p<,>ffff", ServerConfig[svCfgPreviewBotPos][0],
+		ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2],
+		ServerConfig[svCfgPreviewBotPos][3]);
+		
+		cache_get_value_name(0, "preview_camera_coords", buff);
+		sscanf(buff, "p<,>ffffff", ServerConfig[svCfgPreviewCameraPos][0],
+		ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2],
+		ServerConfig[svCfgPreviewCameraPos][3], ServerConfig[svCfgPreviewCameraPos][4],
+		ServerConfig[svCfgPreviewCameraPos][5]);
+        
+        cache_get_value_name(0, "name", ServerConfig[svCfgName]);
+        cache_get_value_name(0, "mode", ServerConfig[svCfgMode]);
+        cache_get_value_name(0, "discord", ServerConfig[svCfgDiscord]);
+        cache_get_value_name(0, "site", ServerConfig[svCfgSite]);
+        cache_get_value_name(0, "language", ServerConfig[svCfgLanguage]);
+        
+        format(buff, sizeof(buff), "weburl %s", ServerConfig[svCfgSite]);
+        SendRconCommand(buff);
+        
+        format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
+        SendRconCommand(buff);
+	}
 }
 
 custom LoginOrRegister(const playerid) {
@@ -615,8 +731,7 @@ stock ClearClassesData() {
 stock ClearAllPlayerData(const playerid) {
 	SetPlayerVirtualWorld(playerid, 1000 + playerid);
 	
-    ClearPlayerTimers(playerid);
-    
+	ClearPlayerTimers(playerid);
     ClearPlayerData(playerid);
     ClearPrevilegesData(playerid);
     ClearMiscData(playerid);
@@ -692,11 +807,15 @@ stock ClearMiscData(const playerid) {
 }
 
 stock ClearRoundData(const playerid) {
-	Round[playerid][rpp_survival_time] = 0;
-	Round[playerid][rpp_kills] = 0;
-	
-	Round[playerid][rpp_deaths] = 0;
-	Round[playerid][rpp_infected] = 0;
+    Round[playerid][rdIsEvacuated] = false;
+    
+    for( new b = 0; b < 18; b++ ) {
+    	if(IsValidObject(box[i][b])) {
+			DestroyObject(box[i][b]);
+			Delete3DTextLabel(boxText[i][b]);
+			box[i][b] = INVALID_OBJECT_ID;
+		}
+	}
 }
 
 stock GetPlayerTeamEx(const playerid) {

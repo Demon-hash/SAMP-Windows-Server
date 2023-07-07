@@ -10,6 +10,7 @@
 #define REG_GANG_ACCCOUNT_QUERY "INSERT INTO `gangs_users` (`id`) VALUE (NULL);"
 #define CREATE_SESSION_QUERY "INSERT INTO `login_log` (`account_id`, `date`, `ip`, `key`) VALUES (%d, %d, '%e', '%e');"
 #define LOAD_LOCALIZATION_QUERY "SELECT * FROM %e WHERE 1;"
+#define LOAD_SERVER_CFG_QUERY "SELECT * FROM config WHERE 1;"
 
 #define CHECK_USER_QUERY "\
 	SELECT \n\
