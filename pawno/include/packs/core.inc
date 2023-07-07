@@ -4,6 +4,23 @@
 #define _core_pack_included
 
 #include <a_samp>
+#include <packs/colors>
+#include <packs/player>
+#include <packs/privileges>
+#include <packs/achievements>
+#include <packs/misc>
+#include <packs/round>
+#include <packs/teams>
+#include <packs/gangs>
+#include <packs/pickups>
+#include <packs/weapons>
+#include <packs/classes>
+#include <packs/templates>
+#include <packs/config>
+#include <packs/queries>
+#include <packs/dialogs>
+#include <packs/language>
+
 #include <dependencies/foreach>
 #include <dependencies/sscanf2>
 #include <dependencies/dc_cmd>
@@ -16,6 +33,8 @@
 #undef MAX_VEHICLES
 #define MAX_VEHICLES 50
 
+#define TIME_LENGTH 12
+
 #define SQL_HOST "db3.myarena.ru"
 #define SQL_USER "u9764_taxa"
 #define SQL_PASS "d@u87Ud!KA87Rj"
@@ -24,6 +43,10 @@
 
 #if !defined IsValidVehicle
 	native IsValidVehicle(vehicleid);
+#endif
+
+#if !defined gpci
+    native gpci(playerid, serial[], len);
 #endif
 
 #define custom%0(%1) forward%0(%1);public%0(%1)

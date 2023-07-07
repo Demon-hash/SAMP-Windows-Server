@@ -3,8 +3,7 @@
 #endif
 #define _player_pack_included
 
-#undef MAX_PLAYERS
-#define MAX_PLAYERS 50
+#define MAX_PLAYER_ID_LENGTH 12
 
 enum PLAYER_DATA {
 	pAccountId,

@@ -1,1 +1,0 @@
-[11:05:55] [plugins/mysql] error #1075 while executing query "CREATE TABLE IF NOT EXISTS english (`id` int(11) unsigned NOT NULL auto_increment,`for` int(11) unsigned NOT NULL auto_increment,`text` varchar(255) NOT NULL default '',PRIMARY KEY (`id`));": Incorrect table definition; there can be only one auto column and it must be defined as a key

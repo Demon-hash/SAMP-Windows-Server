@@ -6,6 +6,8 @@
 #define MAX_PLAYER_IP 16
 #define MAX_PLAYER_PASSWORD 32
 
+#define GPCI_LENGTH 41
+
 enum MISC_DATA {
 	mdPlayerName[MAX_PLAYER_NAME],
 	mdCurrentClass[3],
@@ -21,4 +23,8 @@ enum MISC_DATA {
 	mdGangWarns,
 	mdPassword[MAX_PLAYER_PASSWORD],
 	mdIp[MAX_PLAYER_IP],
+	mdSerial[GPCI_LENGTH],
+	mdDialogId,
+	mdKickForAuthTimeout,
+	mdKickForAuthTries,
 };
