@@ -20,6 +20,7 @@
 #include <packs/queries>
 #include <packs/dialogs>
 #include <packs/language>
+#include <packs/maps>
 
 #include <dependencies/foreach>
 #include <dependencies/sscanf2>
@@ -33,7 +34,7 @@
 #undef MAX_VEHICLES
 #define MAX_VEHICLES 50
 
-#define TIME_LENGTH 12
+#define MAX_ID_LENGTH 12
 
 #define SQL_HOST "db3.myarena.ru"
 #define SQL_USER "u9764_taxa"

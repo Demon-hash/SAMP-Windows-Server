@@ -49,18 +49,24 @@ static Pickups[MAX_PICKUPS][PICKUP_DATA];
 static Gangs[MAX_GANGS][GANG_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
 
+static MapConfig[MAP_DATA];
 static AchievementsConfig[1];
 static AnticheatConfig[1];
 static ServerConfig[CONFIG_DATA];
+
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 
 static MySQL:Database;
 static updateTimerId;
-static bool:isRoundStarted;
-static mapId = 0;
+
+static Text:TimeLeftTexture, Text:InfectedTexture, Text:UntillEvacRectangleTexture;
+
+static Text:UntilEvacTextTexture[MAX_PLAYERS], Text:AliveInfoTexture[MAX_PLAYERS], Text:PointsTexture[MAX_PLAYERS];
 
 // ShowPlayerDialog
 // SendClientMessage
+// format
+// CreatePlayer3DTextLabel
 // static Language[MAX_PLAYERS][LANGUAGE_DATA];
 
 /*
@@ -78,7 +84,9 @@ static mapId = 0;
  - All classes can be infected
  - Points is gained from the quality of the round you played:
     * Survival (5 for evacuation)
-    * Infect / Ability / Cure (1)
+    * Infect / Ability / Cure (3)
+    * Kill (1)
+    * Camping (0.3)
     
  - Gangs:
     - Capacity is 10 members only,
@@ -205,8 +213,10 @@ main() {
 }
 
 public OnGameModeInit() {
-	ClearAllPickups();
-	ClearClassesData();
+	InitializePickups();
+	InitializeClassesData();
+	InitializePlayersScreenTextures();
+	InitializeDefaultValues();
 	
 	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
     ShowNameTags(1);
@@ -232,6 +242,8 @@ public OnGameModeInit() {
 	}
 	
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
+	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
+	
  	mysql_log(SQL_LOG_LEVEL);
  	
 	printf("Status: %d", mysql_errno(Database));
@@ -243,7 +255,9 @@ public OnGameModeInit() {
 
 public OnGameModeExit() {
     mysql_close(Database);
-	KillTimerEx(updateTimerId);
+	KillTimer(updateTimerId);
+	UnloadFilterScript(MapConfig[mpFilename]);
+	DestroyPlayersScreenTextures();
 	return 1;
 }
 
@@ -284,6 +298,11 @@ public OnPlayerSpawn(playerid) {
 	}
 	
     SetByCurrentClass(playerid);
+    
+    CheckToStartMap();
+    
+    SetPlayerWeather(playerid, MapConfig[mpWeather]);
+	SetPlayerTime(playerid, MapConfig[mpTime], 0);
 	return 1;
 }
 
@@ -299,7 +318,8 @@ public OnPlayerDeath(playerid, killerid, reason) {
 
     reason = clamp(reason, WEAPON_FISTS, WEAPON_COLLISION);
 	SendDeathMessage(killerid, playerid, reason);
-	
+
+ 	ClearPlayerRoundData(playerid);
 	CreateDropOnDeath(playerid, killerid);
 	return 1;
 }
@@ -450,91 +470,289 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
 	return 1;
 }
 
+public OnQueryError(errorid, const error[], const callback[], const query[], MySQL:handle) {
+	printf("SQL: %s(%d) > (%s) > %s", error, errorid, callback, query);
+	return 1;
+}
+
 custom Update() {
 	static Float:hp, Float:armour;
+	
+	static currentHour, currentMinute, currentSecond, formated[48];
+	gettime(currentHour, currentMinute, currentSecond);
 
 	foreach(Player, playerid) {
+	    if(Misc[playerid][mdKickForAuthTimeout] > 0) {
+	        Misc[playerid][mdKickForAuthTimeout]--;
+	        if(Misc[playerid][mdKickForAuthTimeout] == 0) {
+	            KickForAuthTimeout(playerid);
+	            Misc[playerid][mdKickForAuthTimeout] = -1;
+				continue;
+	        }
+	    }
+	    
 	    CheckAndNormalizeACValues(playerid, hp, armour);
+	    
+	    if(Misc[playerid][mdIsLogged]) {
+	    	if(Round[playerid][rdIsInfected]) {
+	        	SetPlayerColor(playerid, COLOR_INFECTED);
+	        	TextDrawShowForPlayer(playerid, InfectedTexture);
+	        	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
+	        	SetPlayerDrunkLevel(playerid, 50000);
+    		}
+    		
+    		format(formated, sizeof(formated),"%d", Player[playerid][pPoints]);
+    		TextDrawSetString(PointsTexture[playerid], formated);
+    		
+    		format(formated, sizeof(formated), "~w~humans: %d~n~~r~zombies: %d", MapConfig[mpTeamCount][1], MapConfig[mpTeamCount][0]);
+            TextDrawSetString(AliveInfoTexture[playerid], formated);
+	    }
 	}
+	
+	if((currentSecond % MAP_UPDATE_TIME) == 0) {
+		OnMapUpdate();
+	}
+}
+
+custom LoadMapsCount() {
+     if(cache_num_rows()) {
+        cache_get_value_name_int(0, "maps", MapConfig[mpCount]);
+        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        printf("%d maps are loaded!", MapConfig[mpCount]);
+        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    }
 }
 
 custom LoadMap() {
     if(cache_num_rows() > 0) {
-        SetMapId();
-        StartMap();
+        new buff[256];
         
-        LoadFilterScript(Map[m_FSMapName]);
-    }
-}
+        strmid(MapConfig[mpAuthor], "", 0, MAX_PLAYER_NAME);
+        
+	    cache_get_value_name_int(0, "weather", MapConfig[mpWeather]);
+	    cache_get_value_name_int(0, "interior", MapConfig[mpInterior]);
+	    cache_get_value_name_int(0, "time", MapConfig[mpTime]);
+	    cache_get_value_name_int(0, "gang", MapConfig[mpGang]);
+	    cache_get_value_name_int(0, "water", MapConfig[mpWaterAllowed]);
+    	
+    	cache_get_value_name(0, "login", MapConfig[mpAuthor]);
+        cache_get_value_name(0, "name", MapConfig[mpName]);
+        cache_get_value_name(0, "filename", MapConfig[mpFilename]);
+        
+        cache_get_value_name_float(0, "gates_speed", MapConfig[mpGateSpeed]);
+    	cache_get_value_name_float(0, "checkpoint_size", MapConfig[mpCheckpointSize]);
+        
+    	cache_get_value_name(0, "gates_ids", buff);
+    	sscanf(buff, "p<,>ii", MapConfig[mpGates][0], MapConfig[mpGates][1]);
+    	
+	    cache_get_value_name(0, "humans_coords", buff);
+     	sscanf(buff, "p<,>ffffffffffff",
+		 	MapConfig[mpHumanSpawnX][0], MapConfig[mpHumanSpawnY][0],
+			MapConfig[mpHumanSpawnZ][0], MapConfig[mpHumanSpawnA][0],
+		 	MapConfig[mpHumanSpawnX][1], MapConfig[mpHumanSpawnY][1],
+		 	MapConfig[mpHumanSpawnZ][1], MapConfig[mpHumanSpawnA][1],
+		 	MapConfig[mpHumanSpawnX][2], MapConfig[mpHumanSpawnY][2],
+		 	MapConfig[mpHumanSpawnZ][2], MapConfig[mpHumanSpawnA][2]
+		);
+		
+		cache_get_value_name(0, "zombies_coords", buff);
+     	sscanf(buff, "p<,>ffffffffffff",
+		 	MapConfig[mpZombieSpawnX][0], MapConfig[mpZombieSpawnY][0],
+	 		MapConfig[mpZombieSpawnZ][0], MapConfig[mpZombieSpawnA][0],
+		 	MapConfig[mpZombieSpawnX][1], MapConfig[mpZombieSpawnY][1],
+	 		MapConfig[mpZombieSpawnZ][1], MapConfig[mpZombieSpawnA][1],
+		 	MapConfig[mpZombieSpawnX][2], MapConfig[mpZombieSpawnY][2],
+	 		MapConfig[mpZombieSpawnZ][2], MapConfig[mpZombieSpawnA][2]
+		);
+		
+		cache_get_value_name(0, "npc_coords", buff);
+     	sscanf(buff, "p<,>ffff",
+		 	MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
+	 		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+	 	);
+	 	
+	 	cache_get_value_name(0, "checkpoint_coords", buff);
+	 	sscanf(buff, "p<,>fff",
+		 	MapConfig[mpCheckpointCoords][0],
+	 	    MapConfig[mpCheckpointCoords][1],
+		 	MapConfig[mpCheckpointCoords][2]
+	 	);
+		 
+	 	cache_get_value_name(0, "camera_coords", buff);
+ 		sscanf(buff, "p<,>ffffff",
+		 	MapConfig[mpCameraCoords][0], MapConfig[mpCameraCoords][1], MapConfig[mpCameraCoords][2],
+		 	MapConfig[mpCameraLookAt][0], MapConfig[mpCameraLookAt][1], MapConfig[mpCameraLookAt][2]
+	 	);
 
-stock SetMapId() [
-    if(mapid < maps) {
-		mapid++;
-	} else {
-		mapid = 0;
-	}
+		cache_get_value_name(0, "gates_coords", buff);
+ 		sscanf(buff, "p<,>ffffffffffff",
+		 	MapConfig[mpGatesCoords][0], MapConfig[mpGatesCoords][1], MapConfig[mpGatesCoords][2],
+		 	MapConfig[mpGatesCoords][3], MapConfig[mpGatesCoords][4], MapConfig[mpGatesCoords][5],
+		 	MapConfig[mpGatesCoords][6], MapConfig[mpGatesCoords][7], MapConfig[mpGatesCoords][8],
+		 	MapConfig[mpGatesCoords][9], MapConfig[mpGatesCoords][10], MapConfig[mpGatesCoords][11]
+	 	);
+	 	
+	 	cache_get_value_name(0, "gates_move_coords", buff);
+ 		sscanf(buff, "p<,>ffffffffffff",
+		 	MapConfig[mpGatesMoveCoords][0], MapConfig[mpGatesMoveCoords][1], MapConfig[mpGatesMoveCoords][2],
+		 	MapConfig[mpGatesMoveCoords][3], MapConfig[mpGatesMoveCoords][4], MapConfig[mpGatesMoveCoords][5],
+		 	MapConfig[mpGatesMoveCoords][6], MapConfig[mpGatesMoveCoords][7], MapConfig[mpGatesMoveCoords][8],
+		 	MapConfig[mpGatesMoveCoords][9], MapConfig[mpGatesMoveCoords][10], MapConfig[mpGatesMoveCoords][11]
+	 	);
+    
+    	strmid(MapConfig[mpPrevFilename], MapConfig[mpFilename], 0, MAX_MAP_FILENAME);
+    	
+    	SetMapId();
+    	StartMap();
+    	SetMapName();
+    	
+    	LoadFilterScript(MapConfig[mpFilename]);
+ 	}
 }
 
 custom StartMap() {
-	if(isRoundStarted) {
+	/*if(!MapConfig[mpIsStarted]) {
 	    return 0;
-	}
+	}*/
 	
-	UnloadFilterScript(Map[m_FSMapLastName]);
-	SetWeather(Map[m_Weather]);
-	SetWorldTime(Map[m_Time]);
+	static j;
+	static author[64] = "";
+	static controlled[96] = "";
+	static formated[256];
+
+	UnloadFilterScript(MapConfig[mpPrevFilename]);
 	
-	new state;
-	
-	if(IsValidObject(mapGate)) {
-		DestroyObject(mapGate);
-		mapGate = INVALID_OBJECT_ID;
+	for( j = 0; j < MAX_MAP_GATES; j++ ) {
+	    DestroyObjectEx(MapConfig[mpGates][j]);
 	}
 	
 	foreach(Player, i) {
-	    ClearRoundData(i);
-	    CurePlayer(i);
+	    ClearPlayerRoundData(i);
 
-     	SetPlayerTeamEx(i, TEAM_HUMAN);
+     	SetPlayerTeamAC(i, TEAM_HUMAN);
     	DisablePlayerCheckpoint(i);
     	
-    	state = GetPlayerState(i);
-    	if(state == PLAYER_STATE_DRIVER || state == PLAYER_STATE_PASSENGER) {
+    	if(IsPlayerInAnyVehicle(i)) {
     		RemovePlayerFromVehicle(i);
     	}
     	
-    	if(state == PLAYER_STATE_SPECTATING) {
+    	if(GetPlayerState(i) == PLAYER_STATE_SPECTATING) {
     	    TogglePlayerSpectating(i, 0);
 		}
 		
-		if(state != PLAYER_STATE_NONE && state != PLAYER_STATE_WASTED) {
-			SpawnPlayer(i);
-		}
+		if(strlen(MapConfig[mpAuthor])) {
+    		format(author, sizeof(author), "(by %s)", MapConfig[mpName]);
+ 		}
+
+ 		if(MapConfig[mpGang]) {
+ 	    	format(controlled, sizeof(controlled), "(captured by %s)", Gangs[MapConfig[mpGang]][gdName]);
+ 		}
     	
-    	if(Map[m_GangControll] > 0) {
-		    SendClientMessageFormat(i,-1,serverLang[Player[i][pLang]][196], mapid, Map[m_MapName], Map[m_Author], Clan[Map[m_GangControll]][Full]);
-		}
-		else {
-			SendClientMessageFormat(i,-1,serverLang[Player[i][pLang]][33], mapid, Map[m_MapName], Map[m_Author]);
-		}
+    	format(formated, sizeof(formated), "|: Entering The Map #%d %s %s %s", MapConfig[mpId], MapConfig[mpName], author, controlled);
+	    SendClientMessage(i, 0xE48800FF, formated);
     	
-    	if(Map[m_Interior] <= 0) {
-			SendClientMessage(i,-1,serverLang[Player[i][pLang]][34]);
+    	if(MapConfig[mpInterior] <= 0) {
+			SendClientMessage(i, 0xFFF000FF, "Creating objects...");
 		}
 		
-		for( new j = 0; j < sizeof(Map[ZombieSpawnX]); j++ ) {
-        	DeletePlayer3DTextLabel(SpawnPoints[j]);
-    		SpawnPoints[j] = CreatePlayer3DTextLabel("{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here", 0xFF0000FF, Map[ZombieSpawnX][j], Map[ZombieSpawnY][j], Map[ZombieSpawnZ][j], 50.0, 0, 1);
-		}
+		SpawnPlayer(i);
+		SetCameraBehindPlayer(i);
 	}
 	
-	SetZombies();
+	// SetZombies();
 
-    ClearAllPickups();
-	DestroyAllVehicle();
+    InitializePickups();
 	
-    isRoundStarted = true;
+    MapConfig[mpIsStarted] = true;
+    MapConfig[mpPaused] = false;
+    
+    MapConfig[mpTimeoutIgnoreTick] = 0;
+    MapConfig[mpTimeout] = MAP_TIME;
+    MapConfig[mpTimeoutBeforeEnd] = -MAP_UPDATE_TIME;
+    MapConfig[mpTimeoutBeforeStart] = -MAP_UPDATE_TIME;
 	return 1;
+}
+
+custom OnMapUpdate() {
+	if(MapConfig[mpPaused]) {
+	    return 0;
+	}
+	
+	if(MapConfig[mpTimeoutIgnoreTick] > 0) {
+	    MapConfig[mpTimeoutIgnoreTick]--;
+	    return 0;
+	}
+	
+	if(MapConfig[mpTimeoutBeforeStart] >= MAP_UPDATE_TIME) {
+	    MapConfig[mpTimeoutBeforeStart] -= MAP_UPDATE_TIME;
+
+	    if(MapConfig[mpTimeoutBeforeStart] == 0) {
+	        LoadNewMap();
+	    }
+	}
+	
+	if(MapConfig[mpTimeoutBeforeEnd] >= MAP_UPDATE_TIME) {
+	    MapConfig[mpTimeoutBeforeEnd] -= MAP_UPDATE_TIME;
+	    
+	    if(MapConfig[mpTimeoutBeforeEnd] == 0) {
+	        EndMap();
+	    }
+	}
+	
+	if(MapConfig[mpTimeout] >= MAP_UPDATE_TIME) {
+	    MapConfig[mpTimeout] -= MAP_UPDATE_TIME;
+	    
+	    static tm[4];
+		format(tm,sizeof(tm), "%d", MapConfig[mpTimeout]);
+		TextDrawSetString(TimeLeftTexture, tm);
+	    
+        if(MapConfig[mpTimeout] == 0) {
+			TextDrawSetString(TimeLeftTexture, "...");
+
+			if(MapConfig[mpGates][0]) {
+				MoveObject(
+					MapConfig[mpGates][0],
+					MapConfig[mpGatesMoveCoords][0], MapConfig[mpGatesMoveCoords][1], MapConfig[mpGatesMoveCoords][2],
+					MapConfig[mpGateSpeed],
+					MapConfig[mpGatesMoveCoords][3], MapConfig[mpGatesMoveCoords][4], MapConfig[mpGatesMoveCoords][5]
+				);
+			}
+			
+			if(MapConfig[mpGates][1]) {
+				MoveObject(
+					MapConfig[mpGates][1],
+					MapConfig[mpGatesMoveCoords][6], MapConfig[mpGatesMoveCoords][7], MapConfig[mpGatesMoveCoords][8],
+					MapConfig[mpGateSpeed],
+					MapConfig[mpGatesMoveCoords][9], MapConfig[mpGatesMoveCoords][10], MapConfig[mpGatesMoveCoords][11]
+				);
+			}
+
+			foreach(Player, i) {
+		    	SendClientMessage(i, 0xFF0000FF, ">> An evacuation has arrived for humans!");
+				SendClientMessage(i, 0xFF0000FF, ">> Humans get to the checkpoint within a minute!");
+				ShowCheckpoint(i);
+			}
+			
+			MapConfig[mpTimeoutIgnoreTick] = 1;
+			MapConfig[mpTimeoutBeforeEnd] = MAP_END_TIME;
+ 		}
+	}
+	
+	return 1;
+}
+
+custom EndMap() {
+    foreach(Player, i) {
+    	SetPlayerCameraPos(i, MapConfig[mpCameraCoords][0], MapConfig[mpCameraCoords][1], MapConfig[mpCameraCoords][2]);
+   		SetPlayerCameraLookAt(i, MapConfig[mpCameraLookAt][0], MapConfig[mpCameraLookAt][1], MapConfig[mpCameraLookAt][2]);
+    	
+		SendClientMessage(i, 0xFFFFFFFF, "Beginning new a round...");
+		GameTextForPlayer(i, "~r~ROUND OVER~n~~w~STARTING NEW ROUND...", 5000, 5);
+	}
+	
+	MapConfig[mpTimeoutIgnoreTick] = 1;
+	MapConfig[mpTimeoutBeforeStart] = MAP_RESTART_TIME;
+	MapConfig[mpIsStarted] = false;
 }
 
 custom LoadLocalization(const playerid, const type) {
@@ -562,7 +780,7 @@ custom GetUserAccountId(const playerid) {
     }
     
     static const accountInformationQuery[] = REG_ACCOUNT_INFORMATION_QUERY;
-	new formatedAccountInformationQuery[sizeof(accountInformationQuery) + TIME_LENGTH + GPCI_LENGTH + MAX_PLAYER_IP];
+	new formatedAccountInformationQuery[sizeof(accountInformationQuery) + MAX_ID_LENGTH + GPCI_LENGTH + MAX_PLAYER_IP];
     
     mysql_format(Database, formatedAccountInformationQuery, sizeof(formatedAccountInformationQuery), accountInformationQuery, gettime(), Misc[playerid][mdIp], Misc[playerid][mdSerial]);
     mysql_tquery(Database, formatedAccountInformationQuery);
@@ -583,6 +801,11 @@ custom LoadServerConfiguration() {
     if(cache_num_rows() > 0) {
         new buff[256];
         cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
+        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
+        cache_get_value_name_int(0, "max_auth_timeout", ServerConfig[svCfgAuthTimeout]);
+        cache_get_value_name_int(0, "max_auth_tries", ServerConfig[svCfgAuthTries]);
+        
+        cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
         
         cache_get_value_name(0, "preview_bot_coords", buff);
 		sscanf(buff, "p<,>ffff", ServerConfig[svCfgPreviewBotPos][0],
@@ -610,7 +833,7 @@ custom LoadServerConfiguration() {
 }
 
 custom LoginOrRegister(const playerid) {
-	Misc[playerid][mdKickForAuthTimeout] = SetTimerEx("KickForAuthTimeout", 120000, false, "i", playerid);
+	Misc[playerid][mdKickForAuthTimeout] = (ServerConfig[svCfgAuthTimeout] * 60);
 
     if(cache_num_rows() > 0) {
 		cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
@@ -666,6 +889,62 @@ custom InitializeLocation(const playerid, const type) {
     }
 }
 
+stock LoadFilterScript(const filename[]) {
+	static const cmd[] = "loadfs %s";
+	new formated[sizeof(cmd) + MAX_MAP_FILENAME];
+	format(formated, sizeof(formated), cmd, filename);
+	SendRconCommand(formated);
+}
+
+stock UnloadFilterScript(const filename[]) {
+	static const cmd[] = "unloadfs %s";
+	new formated[sizeof(cmd) + MAX_MAP_FILENAME];
+	format(formated, sizeof(formated), cmd, filename);
+	SendRconCommand(formated);
+}
+
+stock SetMapName() {
+    static const cmd[] = "mapname %s";
+    new formated[sizeof(cmd) + MAX_MAP_NAME];
+	format(formated, sizeof(formated), cmd, MapConfig[mpName]);
+	SendRconCommand(formated);
+}
+
+stock CheckToStartMap() {
+    if(!MapConfig[mpIsStarted] && !MapConfig[mpPaused]) {
+		LoadNewMap();
+	}
+}
+
+stock ShowCheckpoint(const playerid) {
+	SetPlayerCheckpoint(playerid,
+		MapConfig[mpCheckpointCoords][0],
+		MapConfig[mpCheckpointCoords][1],
+		MapConfig[mpCheckpointCoords][2],
+		MapConfig[mpCheckpointSize]
+	);
+}
+
+stock LoadNewMap() {
+	if((MapConfig[mpId]-1) > MapConfig[mpCount] || MapConfig[mpId] < 1) {
+		MapConfig[mpId] = 1;
+	}
+	
+	static const loadMapQuery[] = LOAD_MAP_DATA_QUERY;
+	new formated[sizeof(loadMapQuery) + MAX_ID_LENGTH];
+ 	mysql_format(Database, formated, sizeof(formated), loadMapQuery, MapConfig[mpId]);
+ 	mysql_tquery(Database, formated, "LoadMap");
+}
+
+
+stock SetMapId() {
+    if(MapConfig[mpId] < MapConfig[mpCount]) {
+		MapConfig[mpId]++;
+	} else {
+		MapConfig[mpId] = 1;
+	}
+}
+
 stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 	new formated[256];
 	format(formated, sizeof(formated),
@@ -693,21 +972,18 @@ stock ShowRegisterDialog(const playerid, const type = DIALOG_NOERROR) {
 
 stock AfterAuthorization(const playerid) {
     static const sessionQuery[] = CREATE_SESSION_QUERY;
-    new formatedSessionQuery[sizeof(sessionQuery) + MAX_PLAYER_ID_LENGTH + TIME_LENGTH + MAX_PLAYER_IP + GPCI_LENGTH];
+    new formatedSessionQuery[sizeof(sessionQuery) + MAX_ID_LENGTH + MAX_ID_LENGTH + MAX_PLAYER_IP + GPCI_LENGTH];
     mysql_format(Database, formatedSessionQuery, sizeof(formatedSessionQuery), sessionQuery, Player[playerid][pAccountId], gettime(), Misc[playerid][mdIp], Misc[playerid][mdSerial]);
     mysql_tquery(Database, formatedSessionQuery);
-
-	KillTimerEx(Misc[playerid][mdKickForAuthTimeout]);
+	
+	Misc[playerid][mdKickForAuthTimeout] = -1;
 	
 	Misc[playerid][mdIsLogged] = true;
-    SetPlayerTeamEx(playerid, TEAM_ZOMBIE);
+    SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
    	SpawnPlayer(playerid);
 }
 
-stock wipe() {
-}
-
-stock ClearClassesData() {
+stock InitializeClassesData() {
 	for( new i; i < MAX_CLASSES; i++ ) {
 	    Classes[i][cldId] = -1;
 	    Classes[i][cldTeam] = TEAM_UNKNOWN;
@@ -731,20 +1007,15 @@ stock ClearClassesData() {
 stock ClearAllPlayerData(const playerid) {
 	SetPlayerVirtualWorld(playerid, 1000 + playerid);
 	
-	ClearPlayerTimers(playerid);
     ClearPlayerData(playerid);
-    ClearPrevilegesData(playerid);
-    ClearMiscData(playerid);
-    ClearAchievementsData(playerid);
-    ClearRoundData(playerid);
+    ClearPlayerPrevilegesData(playerid);
+    ClearPlayerMiscData(playerid);
+    ClearPlayerAchievementsData(playerid);
+    ClearPlayerRoundData(playerid);
     ResetWeapons(playerid);
     
     SetPlayerHealthAC(playerid, 100.0);
     SetPlayerArmourAC(playerid, 0.0);
-}
-
-stock ClearPlayerTimers(const playerid) {
-    KillTimerEx(Misc[playerid][mdKickForAuthTimeout]);
 }
 
 stock ClearPlayerData(const playerid) {
@@ -753,7 +1024,7 @@ stock ClearPlayerData(const playerid) {
     Player[playerid][pPoints] = 0;
 }
 
-stock ClearAchievementsData(const playerid) {
+stock ClearPlayerAchievementsData(const playerid) {
 	Achievements[playerid][achRank] = 0;
  	Achievements[playerid][achKills] = 0;
   	Achievements[playerid][achDeaths] = 0;
@@ -776,13 +1047,13 @@ stock ClearAchievementsData(const playerid) {
     Achievements[playerid][achRan] = 0.0;
 }
 		
-stock ClearPrevilegesData(const playerid) {
+stock ClearPlayerPrevilegesData(const playerid) {
 	Privileges[playerid][prsAdmin] = 0;
 	Privileges[playerid][prsVip] = 0;
  	Privileges[playerid][prsVipTill] = 0;
 }
 
-stock ClearMiscData(const playerid) {
+stock ClearPlayerMiscData(const playerid) {
     GetPlayerName(playerid, Misc[playerid][mdPlayerName], MAX_PLAYER_NAME);
     GetPlayerIp(playerid, Misc[playerid][mdIp], MAX_PLAYER_IP);
     gpci(playerid, Misc[playerid][mdSerial], GPCI_LENGTH);
@@ -796,7 +1067,7 @@ stock ClearMiscData(const playerid) {
 	Misc[playerid][mdDialogId] = -1;
     Misc[playerid][mdIsLogged] = false;
     Misc[playerid][mdKickForAuthTimeout] = -1;
-    Misc[playerid][mdKickForAuthTries] = 3;
+    Misc[playerid][mdKickForAuthTries] = ServerConfig[svCfgAuthTries];
     
     for( new i = 0; i < MAX_PLAYER_TEAMS; i++ ) {
 	    Misc[playerid][mdCurrentClass][i] = 0;
@@ -806,15 +1077,126 @@ stock ClearMiscData(const playerid) {
     strmid(Misc[playerid][mdPassword], "", 0, MAX_PLAYER_PASSWORD);
 }
 
-stock ClearRoundData(const playerid) {
-    Round[playerid][rdIsEvacuated] = false;
-    
-    for( new b = 0; b < 18; b++ ) {
-    	if(IsValidObject(box[i][b])) {
-			DestroyObject(box[i][b]);
-			Delete3DTextLabel(boxText[i][b]);
-			box[i][b] = INVALID_OBJECT_ID;
+stock InitializePlayersScreenTextures() {
+	TimeLeftTexture = TextDrawCreate(22.000000, 251.000000, "300");
+	TextDrawBackgroundColor(TimeLeftTexture, 255);
+	TextDrawFont(TimeLeftTexture, 3);
+	TextDrawLetterSize(TimeLeftTexture, 1.770000, 3.499999);
+	TextDrawColor(TimeLeftTexture, 16777215);
+	TextDrawSetOutline(TimeLeftTexture, 0);
+	TextDrawSetProportional(TimeLeftTexture, 1);
+	TextDrawSetShadow(TimeLeftTexture, 1);
+	
+	InfectedTexture = TextDrawCreate(655.500000, 1.500000, "usebox");
+ 	TextDrawBackgroundColor(InfectedTexture, 255);
+  	TextDrawFont(InfectedTexture, 0);
+	TextDrawLetterSize(InfectedTexture, 0.000000, 50.262496);
+	TextDrawColor(InfectedTexture, 0);
+	TextDrawSetOutline(InfectedTexture, 0);
+	TextDrawSetProportional(InfectedTexture, 1);
+	TextDrawSetShadow(InfectedTexture, 1);
+	TextDrawUseBox(InfectedTexture, true);
+	TextDrawBoxColor(InfectedTexture, 0xFF0000BB);
+	TextDrawTextSize(InfectedTexture, -2.000000, 0.000000);
+	
+	UntillEvacRectangleTexture = TextDrawCreate(14.000000, 283.937500, "LD_SPAC:white");
+	TextDrawLetterSize(UntillEvacRectangleTexture, 0.000000, 0.000000);
+	TextDrawTextSize(UntillEvacRectangleTexture, 119.500000, 21.437500);
+	TextDrawAlignment(UntillEvacRectangleTexture, 1);
+	TextDrawColor(UntillEvacRectangleTexture, 255);
+	TextDrawSetShadow(UntillEvacRectangleTexture, 0);
+	TextDrawSetOutline(UntillEvacRectangleTexture, 0);
+	TextDrawBackgroundColor(UntillEvacRectangleTexture, 255);
+	TextDrawFont(UntillEvacRectangleTexture, 4);
+
+	for( new i; i < MAX_PLAYERS; i++ ) {
+        UntilEvacTextTexture[i] = TextDrawCreate(18.500000, 285.250000, "UNTIL EVAC");
+		TextDrawLetterSize(UntilEvacTextTexture[i], 0.562500, 1.984999);
+		TextDrawAlignment(UntilEvacTextTexture[i], 1);
+		TextDrawColor(UntilEvacTextTexture[i], 0xFF0000FF);
+		TextDrawSetShadow(UntilEvacTextTexture[i], 0);
+		TextDrawSetOutline(UntilEvacTextTexture[i], 1);
+		TextDrawBackgroundColor(UntilEvacTextTexture[i], 51);
+		TextDrawFont(UntilEvacTextTexture[i], 1);
+		TextDrawSetProportional(UntilEvacTextTexture[i], 1);
+
+	    AliveInfoTexture[i] = TextDrawCreate(21.500000, 220.000000, "~b~humans: 0~n~~g~zombies: 0");
+		TextDrawLetterSize(AliveInfoTexture[i], 0.511498, 1.477498);
+		TextDrawAlignment(AliveInfoTexture[i], 1);
+		TextDrawColor(AliveInfoTexture[i], -16776961);
+		TextDrawSetShadow(AliveInfoTexture[i], 1);
+		TextDrawSetOutline(AliveInfoTexture[i], 0);
+		TextDrawBackgroundColor(AliveInfoTexture[i], 255);
+		TextDrawFont(AliveInfoTexture[i], 2);
+		TextDrawSetProportional(AliveInfoTexture[i], 1);
+		
+		PointsTexture[i] = TextDrawCreate(546.000000, 35.000000, "0");
+	    TextDrawBackgroundColor(PointsTexture[i], 255);
+	    TextDrawFont(PointsTexture[i], 2);
+	    TextDrawLetterSize(PointsTexture[i], 0.270000, 1.000000);
+	    TextDrawColor(PointsTexture[i], 16777215);
+	    TextDrawSetOutline(PointsTexture[i], 0);
+	    TextDrawSetProportional(PointsTexture[i], 1);
+	    TextDrawSetShadow(PointsTexture[i], 1);
+	}
+}
+
+stock InitializeDefaultValues() {
+    new i, j;
+    for( i = 0; i < MAX_PLAYERS; i++ ) {
+        for( j = 0; j < MAX_ROUND_BOXES; j++ ) {
+			Round[i][rdBox][j] = INVALID_OBJECT_ID;
+			Round[i][rdBoxText][j] = Text3D:-1;
 		}
+		
+		for( j = 0; j < MAX_MAP_SPAWNS; j++ ) {
+		    Misc[i][mdSpawnPoints][j] = PlayerText3D:-1;
+		}
+    }
+    
+    for( j = 0; j < MAX_MAP_GATES; j++ ) {
+	    MapConfig[mpGates][j] = INVALID_OBJECT_ID;
+	}
+}
+
+stock DestroyPlayersScreenTextures() {
+    for( new i; i < MAX_PLAYERS; i++ ) {
+        if(IsPlayerConnected(i)) {
+            TextDrawHideForPlayer(i, UntilEvacTextTexture[i]);
+            TextDrawHideForPlayer(i, AliveInfoTexture[i]);
+            TextDrawHideForPlayer(i, PointsTexture[i]);
+        }
+        
+        TextDrawDestroy(UntilEvacTextTexture[i]);
+        TextDrawDestroy(AliveInfoTexture[i]);
+        TextDrawDestroy(PointsTexture[i]);
+	}
+	
+	TextDrawHideForAll(UntillEvacRectangleTexture);
+	TextDrawDestroy(UntillEvacRectangleTexture);
+	
+	TextDrawHideForAll(InfectedTexture);
+	TextDrawDestroy(InfectedTexture);
+	
+	TextDrawHideForAll(TimeLeftTexture);
+	TextDrawDestroy(TimeLeftTexture);
+}
+
+stock ClearPlayerRoundData(const playerid) {
+    Round[playerid][rdIsEvacuated] = false;
+    Round[playerid][rdIsInfected] = false;
+    SetPlayerDrunkLevel(playerid, 0);
+    TextDrawHideForPlayer(playerid, InfectedTexture);
+
+    new i;
+    for( i = 0; i < MAX_ROUND_BOXES; i++ ) {
+		DestroyObjectEx(Round[playerid][rdBox][i]);
+		Delete3DTextLabelEx(Round[playerid][rdBoxText][i]);
+	}
+	
+	for( i = 0; i < MAX_MAP_SPAWNS; i++ ) {
+		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
+		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, "{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here", 0xFF0000FF, MapConfig[mpZombieSpawnX][i], MapConfig[mpZombieSpawnY][i], MapConfig[mpZombieSpawnZ][i], 50.0);
 	}
 }
 
@@ -822,7 +1204,24 @@ stock GetPlayerTeamEx(const playerid) {
 	return Misc[playerid][mdPlayerTeam];
 }
 
-stock SetPlayerTeamEx(const playerid, const teamid) {
+stock SetPlayerTeamAC(const playerid, const teamid) {
+	switch(teamid) {
+	    case TEAM_ZOMBIE: {
+			MapConfig[mpTeamCount][0]++;
+			
+			if(GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
+				MapConfig[mpTeamCount][1]--;
+			}
+		}
+	    case TEAM_HUMAN: {
+			MapConfig[mpTeamCount][1]++;
+			
+			if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
+				MapConfig[mpTeamCount][0]--;
+			}
+        }
+	}
+
 	SetPlayerTeam(playerid, teamid);
 	Misc[playerid][mdPlayerTeam] = teamid;
 }
@@ -831,10 +1230,13 @@ stock SetByCurrentClass(const playerid) {
 	SetPlayerHealthAC(playerid, 100.0);
     SetPlayerArmourAC(playerid, 0.0);
     ResetWeapons(playerid);
+    ClearPlayerRoundData(playerid);
 
 	new team = Misc[playerid][mdPlayerTeam];
 	new next = Misc[playerid][mdNextClass][team];
 	new current = Misc[playerid][mdCurrentClass][team];
+	new point = random(MAX_MAP_SPAWNS);
+	new Float:distance = random(50) / 100;
 	
 	if(next > -1) {
 	    current = next;
@@ -844,9 +1246,33 @@ stock SetByCurrentClass(const playerid) {
 	}
 	
 	switch(GetPlayerTeamEx(playerid)) {
-	    case TEAM_ZOMBIE: SetZombie(playerid, current);
-	    case TEAM_HUMAN: SetHuman(playerid, current);
+	    case TEAM_ZOMBIE: {
+			SetZombie(playerid, current);
+			SetPlayerPos(playerid, 	MapConfig[mpZombieSpawnX][point] + distance, MapConfig[mpZombieSpawnY][point] + distance, MapConfig[mpZombieSpawnZ][point]);
+			SetPlayerFacingAngle(playerid, MapConfig[mpZombieSpawnA][point]);
+			SetCameraBehindPlayer(playerid);
+		}
+	    case TEAM_HUMAN: {
+			SetHuman(playerid, current);
+			SetPlayerPos(playerid, 	MapConfig[mpHumanSpawnX][point] + distance, MapConfig[mpHumanSpawnY][point] + distance, MapConfig[mpHumanSpawnZ][point]);
+			SetPlayerFacingAngle(playerid, MapConfig[mpHumanSpawnA][point]);
+			SetCameraBehindPlayer(playerid);
+  		}
 	}
+	
+	TextDrawShowForPlayer(playerid, TimeLeftTexture);
+	TextDrawShowForPlayer(playerid, UntillEvacRectangleTexture);
+	TextDrawShowForPlayer(playerid, UntilEvacTextTexture[playerid]);
+ 	TextDrawShowForPlayer(playerid, AliveInfoTexture[playerid]);
+  	TextDrawShowForPlayer(playerid, PointsTexture[playerid]);
+}
+
+stock InfectPlayer(const playerid, const targetId) {
+	if(Round[playerid][rdIsInfected]) {
+	    return 0;
+	}
+    
+    Round[playerid][rdIsInfected] = true;
 }
 
 Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
@@ -879,6 +1305,7 @@ stock CreateDropOnDeath(const playerid, const killerid) {
 
 	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
   	CreatePickupEx(type[index], STATIC_PICKUP_TYPE, pos[0], pos[1], pos[2], GetPlayerVirtualWorld(playerid), IsPlayerConnected(killerid) ? killerid : -1);
+  	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
 	return 1;
 }
 
@@ -922,13 +1349,13 @@ stock DestroyPickupEx(const pickupid) {
     DestroyPickup(pickupid);
 }
 
-stock ClearAllPickups() {
+stock InitializePickups() {
 	for( new i = 0; i < MAX_PICKUPS; i++ ) {
 	    DestroyPickupEx(i);
 	}
 }
 
-stock ResetWeapons(playerid) {
+stock ResetWeapons(const playerid) {
     new gunname[32];
 	for(new i = 0; i < 46; i++) {
 		GetWeaponName(i, gunname, sizeof(gunname));
@@ -938,7 +1365,7 @@ stock ResetWeapons(playerid) {
     ResetPlayerWeapons(playerid);
 }
 
-stock GivePlayerWeaponAC(playerid, weapid, ammo) {
+stock GivePlayerWeaponAC(const playerid, const weapid, const ammo) {
     new gunname[32], stack = min(1000, GetPVarInt(playerid, gunname) + ammo);
     GetWeaponName(weapid, gunname, sizeof(gunname));
     SetPVarInt(playerid, gunname, stack);
@@ -947,21 +1374,21 @@ stock GivePlayerWeaponAC(playerid, weapid, ammo) {
 	return 1;
 }
 
-stock GetPlayerHealthEx(playerid, &Float:hp) {
-	hp = Misc[playerid][mdHealth];
+stock Float:GetPlayerHealthEx(const playerid) {
+	return Misc[playerid][mdHealth];
 }
 
-stock GetPlayerArmourEx(playerid, &Float:armour) {
-	armour = Misc[playerid][mdArmour];
+stock Float:GetPlayerArmourEx(const playerid) {
+	return Misc[playerid][mdArmour];
 }
 
-stock SetPlayerHealthAC(playerid, Float:hp) {
+stock SetPlayerHealthAC(const playerid, const Float:hp) {
 	Misc[playerid][mdIgnoreAnticheatFor] = 3;
  	Misc[playerid][mdHealth] = hp;
    	SetPlayerHealth(playerid, hp);
 }
 
-stock SetPlayerArmourAC(playerid, Float:armour) {
+stock SetPlayerArmourAC(const playerid, const Float:armour) {
 	Misc[playerid][mdIgnoreAnticheatFor] = 3;
 	Misc[playerid][mdArmour] = armour;
    	SetPlayerArmour(playerid, armour);
@@ -1025,10 +1452,23 @@ stock SetHuman(const playerid, const classid) {
     SetPlayerVirtualWorld(playerid, 0);
 }
 
-stock KillTimerEx(&timerid) {
-	if(timerid >= 0) {
-		KillTimer(timerid);
+stock DestroyObjectEx(&objectid) {
+	if(objectid != INVALID_OBJECT_ID) {
+		DestroyObject(objectid);
 	}
-	
-    timerid = -1;
+	objectid = INVALID_OBJECT_ID;
+}
+
+stock DeletePlayer3DTextLabelEx(playerid, &id) {
+	if(id > -1) {
+	    DeletePlayer3DTextLabel(playerid, PlayerText3D:id);
+	}
+	id = -1;
+}
+
+stock Delete3DTextLabelEx(&id) {
+	if(id > -1) {
+	    Delete3DTextLabel(Text3D:id);
+	}
+	id = -1;
 }

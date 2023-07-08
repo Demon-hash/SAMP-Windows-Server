@@ -7,6 +7,7 @@
 #define MAX_PLAYER_PASSWORD 32
 
 #define GPCI_LENGTH 41
+#define MAX_MAP_SPAWN 3 
 
 enum MISC_DATA {
 	mdPlayerName[MAX_PLAYER_NAME],
@@ -27,4 +28,5 @@ enum MISC_DATA {
 	mdDialogId,
 	mdKickForAuthTimeout,
 	mdKickForAuthTries,
+	PlayerText3D:mdSpawnPoints[3],
 };

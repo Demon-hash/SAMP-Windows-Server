@@ -12,4 +12,7 @@ enum CONFIG_DATA {
 	svCfgDiscord[64],
 	svCfgSite[64],
 	svCfgLanguage[64],
+	Float:svCfgInfectionDamage,
+	svCfgAuthTries,
+	svCfgAuthTimeout,
 };
