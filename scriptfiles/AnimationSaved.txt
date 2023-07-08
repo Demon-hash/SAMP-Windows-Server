@@ -1,0 +1,3 @@
+
+ApplyAnimation(playerid, "FIGHT_B", "FIGHTB_G", 4.1, true, false, false, false, 0, false); // stomper
+ApplyAnimation(playerid, "MISC", "BMX_IDLELOOP_01", 4.1, true, false, false, false, 0, false); // zombie

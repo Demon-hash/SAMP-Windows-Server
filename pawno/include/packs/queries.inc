@@ -13,6 +13,8 @@
 #define LOAD_SERVER_CFG_QUERY "SELECT * FROM config WHERE 1;"
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`='0';"
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
+#define LOAD_GANGS_CFG_QUERY "SELECT * FROM gangs_config WHERE 1;"
+
 
 #define CHECK_USER_QUERY "\
 	SELECT \n\

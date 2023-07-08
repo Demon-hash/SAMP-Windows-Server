@@ -16,7 +16,7 @@ static const sqlTemplates[][] = {
 	GANGDEPOSITLOG_TEMPLATE, AUCTION_TEMPLATE,
 	AUCTION_CASHBACK_TEMPLATE, ACHIEVEMENTS_TEMPLATE,
 	CONFIG_TEMPLATE, STATS_TEMPLATE, ANTICHEAT_TEMPLATE,
-	ACHIEVEMENTS_CONFIG_TEMPLATE
+	ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -31,7 +31,8 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_UZI, PREDIFINED_TEC9, PREDIFINED_MP5, PREDIFINED_AK47,
     PREDIFINED_M4, PREDIFINED_RIFLE, PREDIFINED_SNIPER,
     PREDIFINED_FLAMETHOWER, PREDIFINED_GRENADE, PREDIFINED_SPAS,
-    PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT
+    PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
+    PREDIFINED_MAP_VILLAGE
 };
 
 static const sqlPredifinedLocalization[][] = {
@@ -52,22 +53,26 @@ static Classes[MAX_CLASSES][CLASSES_DATA];
 static MapConfig[MAP_DATA];
 static AchievementsConfig[1];
 static AnticheatConfig[1];
+static GangsConfig[GANGS_CONFIG_DATA];
 static ServerConfig[CONFIG_DATA];
 
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 
-static MySQL:Database;
-static updateTimerId;
-
-static Text:TimeLeftTexture, Text:InfectedTexture, Text:UntillEvacRectangleTexture;
-
-static Text:UntilEvacTextTexture[MAX_PLAYERS], Text:AliveInfoTexture[MAX_PLAYERS], Text:PointsTexture[MAX_PLAYERS];
+static
+	MySQL:Database,
+	updateTimerId,
+	Text:TimeLeftTexture,
+	Text:InfectedTexture,
+	Text:UntillEvacRectangleTexture,
+	Text:UntilEvacTextTexture[MAX_PLAYERS],
+	Text:AliveInfoTexture[MAX_PLAYERS],
+	Text:PointsTexture[MAX_PLAYERS];
 
 // ShowPlayerDialog
 // SendClientMessage
 // format
 // CreatePlayer3DTextLabel
-// static Language[MAX_PLAYERS][LANGUAGE_DATA];
+// OnPlayerGiveDamageActor
 
 /*
 	1.1 Account
@@ -92,26 +97,14 @@ static Text:UntilEvacTextTexture[MAX_PLAYERS], Text:AliveInfoTexture[MAX_PLAYERS
     - Capacity is 10 members only,
     - Create a gang required 25,000 points
  	- Quests (5):
-		* Reach a total of 50,000 points (Reward: Country Rifle)
-		* Reach a total of 75,000 points (Reward: Sniper Rifle)
-		* Reach a total of 100,000 points (Reward: Flamethrower)
-		* Reach a total of 1,00,000 points (Reward: Grenade)
-		* Reach a total of 5,000,000 points (Reward: Combat Shotgun)
+		* Reach a total of 100,000 points (Reward: 10 Armour)
+		* Reach a total of 200,000 points (Reward: 20 Armour)
+		* Reach a total of 300,000 points (Reward: 30 Armour)
+		* Reach a total of 400,000 points (Reward: 40 Armour)
+		* Reach a total of 500,000 points (Reward: 50 Armour)
 	 - How to capture:
     	* At the end of the round, gang players will receive weapons and must inflict the maximum possible damage on the spawned bot
 		* The map will be captured by the gang that deals the most damage
-		* Weapon modifications provide additional damage to the bot
- - Weapons:
-    * Achieve 40 killstreak in a row using Silinced Pistol (Reward: Colt45)
-    * Achieve 45 killstreak in a row using Colt45 (Reward: Shotgun)
-    * Achieve 50 killstreak in a row using Shotgun (Reward: Deagle)
- 	* Kill 250 zombies using Deagle (Reward: UZI)
-	* Kill 500 zombies using UZI (Reward: Tec9)
-	* Kill 750 zombies using Tec9 (Reward: MP5)
-	* Kill 1250 zombies using MP5 (Reward: Ak47)
-	* Kill 1500 zombies using Ak47 (Reward: M4)
-	
-	* Killing a zombie with a certain weapon can create a certain weapon pickup that can be sold (You can buy weapons from other players)
  - Maps:
     * Captured map gives more points for killing (+2)
     * The gang holding the map receives additional experience points for actions:
@@ -121,19 +114,11 @@ static Text:UntilEvacTextTexture[MAX_PLAYERS], Text:AliveInfoTexture[MAX_PLAYERS
 
 /*
 	General Weekly Quests:
- 	- Kill 50 players (Armor Chest) (multiple)
- 	- Kill 100 players (Double Ammo Chest) (multiple)
- 	
  	- Kill 300 zombies (Skins Chest) (one per week)
  	- Kill 300 humans (Skins Chest) (one per week)
  	
- 	- Collect 300 meats (Accessory Chest) (one per week)
 	- Infect 300 humans (Accessory Chest) (one per week)
  	- Cure 300 humans (Accessory Chest) (one per week)
- 	
- 	- Achieve 50 killstreak in a row (Weapon Module Chest) (one per week)
- 	- Achieve 100 killstreak in a row (Weapon Module Chest) (one per week)
-	- Achieve 150 killstreak in a row (Weapon Module Chest) (one per week)
 */
 
 /*
@@ -242,6 +227,7 @@ public OnGameModeInit() {
 	}
 	
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
+	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsConfiguration");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
 	
  	mysql_log(SQL_LOG_LEVEL);
@@ -307,6 +293,9 @@ public OnPlayerSpawn(playerid) {
 }
 
 public OnPlayerUpdate(playerid) {
+	if(GetPlayerSpeed(playerid) >= 10) {
+	    Achievements[playerid][achRan] += 0.0125; // 0.125 for humans
+	}
 	SetPlayerScore(playerid, Achievements[playerid][achRank]);
 	return 1;
 }
@@ -470,6 +459,14 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
 	return 1;
 }
 
+public OnPlayerGiveDamageActor(playerid, damaged_actorid, Float: amount, weaponid, bodypart) {
+	if(damaged_actorid == MapConfig[mpActor]) {
+	    new Float:hp;
+	    GetActorHealth(damaged_actorid, hp);
+	    SetActorHealth(damaged_actorid, hp - max(1, Achievements[playerid][achRank]));
+ 	}
+}
+
 public OnQueryError(errorid, const error[], const callback[], const query[], MySQL:handle) {
 	printf("SQL: %s(%d) > (%s) > %s", error, errorid, callback, query);
 	return 1;
@@ -534,6 +531,7 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "time", MapConfig[mpTime]);
 	    cache_get_value_name_int(0, "gang", MapConfig[mpGang]);
 	    cache_get_value_name_int(0, "water", MapConfig[mpWaterAllowed]);
+	    cache_get_value_name_int(0, "npc_skin", MapConfig[mpGangNPCSkin]);
     	
     	cache_get_value_name(0, "login", MapConfig[mpAuthor]);
         cache_get_value_name(0, "name", MapConfig[mpName]);
@@ -544,6 +542,31 @@ custom LoadMap() {
         
     	cache_get_value_name(0, "gates_ids", buff);
     	sscanf(buff, "p<,>ii", MapConfig[mpGates][0], MapConfig[mpGates][1]);
+    	
+    	cache_get_value_name(0, "npc_coords", buff);
+     	sscanf(buff, "p<,>ffff",
+		 	MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
+     		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+ 		);
+ 		
+ 		cache_get_value_name(0, "flag_coords", buff);
+     	sscanf(buff, "p<,>ffffff",
+		 	MapConfig[mpFlagCoords][0], MapConfig[mpFlagCoords][1],
+     		MapConfig[mpFlagCoords][2], MapConfig[mpFlagCoords][3],
+     		MapConfig[mpFlagCoords][4], MapConfig[mpFlagCoords][5]
+ 		);
+ 		
+ 		cache_get_value_name(0, "flag_coords_text", buff);
+     	sscanf(buff, "p<,>fff",
+		 	MapConfig[mpFlagTextCoords][0], MapConfig[mpFlagTextCoords][1],
+     		MapConfig[mpFlagTextCoords][2]
+ 		);
+ 		
+ 		cache_get_value_name(0, "npc_coords", buff);
+     	sscanf(buff, "p<,>ffff",
+		 	MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
+     		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+ 		);
     	
 	    cache_get_value_name(0, "humans_coords", buff);
      	sscanf(buff, "p<,>ffffffffffff",
@@ -607,7 +630,29 @@ custom LoadMap() {
     	SetMapName();
     	
     	LoadFilterScript(MapConfig[mpFilename]);
- 	}
+    	
+		DestroyActor(MapConfig[mpActor]);
+		DestroyObjectEx(MapConfig[mpFlag]);
+		Delete3DTextLabelEx(MapConfig[mpFlagText]);
+		
+    	MapConfig[mpActor] = CreateActor(MapConfig[mpGangNPCSkin],
+			MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
+     		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+   		);
+
+		SetActorInvulnerable(MapConfig[mpActor], false);
+		SetActorHealth(MapConfig[mpActor], GangsConfig[gdCfgBotHealth]);
+
+		MapConfig[mpFlag] = CreateObject(11245,
+		   	MapConfig[mpFlagCoords][0], MapConfig[mpFlagCoords][1],
+     		MapConfig[mpFlagCoords][2], MapConfig[mpFlagCoords][3],
+     		MapConfig[mpFlagCoords][4], MapConfig[mpFlagCoords][5], 50.0
+		);
+		
+		new text[512];
+		format(text, sizeof(text), "{FFFFFF}%s\n{FFF000}Controlled by {FFFFFF}Testing Gang\n{FFF000}Captured at {FFFFFF}18:06 {FFF000}on {FFFFFF}08/07/2023\n{FFF000}This gang has killed the defender or scored a large number of points to capture the map\n{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+2{FFF000} points for curing humans\n{FFFFFF}+2{FFF000} points for infecting humans\n{FFFFFF}+1{FFF000} points for killing players", MapConfig[mpName]);
+		MapConfig[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, MapConfig[mpFlagTextCoords][0], MapConfig[mpFlagTextCoords][1], MapConfig[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+	 }
 }
 
 custom StartMap() {
@@ -795,6 +840,19 @@ custom GetUserAccountId(const playerid) {
 
 custom KickForAuthTimeout(const playerid) {
     Kick(playerid);
+}
+
+custom LoadGangsConfiguration() {
+    if(cache_num_rows() > 0) {
+        cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
+        cache_get_value_name_int(0, "required", GangsConfig[gdCfgRequired]);
+        cache_get_value_name_int(0, "default", GangsConfig[gdCfgDefault]);
+        
+        cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
+        cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
+        cache_get_value_name_float(0, "bot_health", GangsConfig[gdCfgBotHealth]);
+        cache_get_value_name_float(0, "flag_distance", GangsConfig[gdCfgFlagDistance]);
+    }
 }
 
 custom LoadServerConfiguration() {
@@ -1157,6 +1215,10 @@ stock InitializeDefaultValues() {
     for( j = 0; j < MAX_MAP_GATES; j++ ) {
 	    MapConfig[mpGates][j] = INVALID_OBJECT_ID;
 	}
+	
+	MapConfig[mpActor] = -1;
+	MapConfig[mpFlag] = -1;
+	MapConfig[mpFlagText] = Text3D:-1;
 }
 
 stock DestroyPlayersScreenTextures() {
@@ -1205,21 +1267,25 @@ stock GetPlayerTeamEx(const playerid) {
 }
 
 stock SetPlayerTeamAC(const playerid, const teamid) {
-	switch(teamid) {
-	    case TEAM_ZOMBIE: {
-			MapConfig[mpTeamCount][0]++;
-			
-			if(GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
-				MapConfig[mpTeamCount][1]--;
+	new old = GetPlayerTeamEx(playerid);
+
+	if(old != teamid) {
+	    switch(teamid) {
+	    	case TEAM_ZOMBIE: {
+				MapConfig[mpTeamCount][0]++;
+
+				if(old == TEAM_HUMAN) {
+					MapConfig[mpTeamCount][1]--;
+				}
 			}
+	    	case TEAM_HUMAN: {
+				MapConfig[mpTeamCount][1]++;
+
+				if(old == TEAM_ZOMBIE) {
+					MapConfig[mpTeamCount][0]--;
+				}
+        	}
 		}
-	    case TEAM_HUMAN: {
-			MapConfig[mpTeamCount][1]++;
-			
-			if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
-				MapConfig[mpTeamCount][0]--;
-			}
-        }
 	}
 
 	SetPlayerTeam(playerid, teamid);
@@ -1450,6 +1516,13 @@ stock SetZombie(const playerid, const classid) {
 stock SetHuman(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_HUMAN);
     SetPlayerVirtualWorld(playerid, 0);
+}
+
+stock GetPlayerSpeed(const playerid) {
+    new Float:st[4];
+    GetPlayerVelocity(playerid,st[0],st[1],st[2]);
+    st[3] = floatsqroot(floatpower(floatabs(st[0]), 2.0) + floatpower(floatabs(st[1]), 2.0) + floatpower(floatabs(st[2]), 2.0)) * 150.0;
+    return floatround(st[3]);
 }
 
 stock DestroyObjectEx(&objectid) {

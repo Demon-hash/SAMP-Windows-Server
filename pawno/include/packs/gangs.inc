@@ -17,3 +17,13 @@ enum GANG_DATA {
 	gdQuestProgression,
 	gdPot,
 };
+
+enum GANGS_CONFIG_DATA {
+	gdCfgCapacity,
+	gdCfgRequired,
+	gdCfgDefault,
+	Float:gdCfgMultiply,
+	Float:gdCfgArmourPerLevel,
+	Float:gdCfgBotHealth,
+	Float:gdCfgFlagDistance,
+};

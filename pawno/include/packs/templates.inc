@@ -200,7 +200,6 @@
 	`tag` varchar(6) NOT NULL default '',\
 	`level` int(3) unsigned NOT NULL default '0',\
 	`points` int(6) unsigned NOT NULL default '0',\
-	`skin` int(3) unsigned NOT NULL default '0',\
 	`house` int(1) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
@@ -254,16 +253,11 @@
 	`id` int(11) unsigned NOT NULL,\
 	`capacity` int(3) unsigned NOT NULL default '10',\
 	`required` int(6) unsigned NOT NULL default '25000',\
-	`first` int(6) unsigned NOT NULL default '50000',\
-	`second` int(6) unsigned NOT NULL default '75000',\
-	`three` int(6) unsigned NOT NULL default '100000',\
-	`four` int(6) unsigned NOT NULL default '1000000',\
-	`five` int(6) unsigned NOT NULL default '5000000',\
-	`first_reward` int(2) unsigned NOT NULL default '33',\
-	`second_reward` int(2) unsigned NOT NULL default '34',\
-	`third_reward` int(2) unsigned NOT NULL default '37',\
-	`four_reward` int(2) unsigned NOT NULL default '16',\
-	`five_reward` int(2) unsigned NOT NULL default '27',\
+	`default` int(6) unsigned NOT NULL default '100000',\
+	`multiply` DECIMAL(6,3) unsigned NOT NULL default '2',\
+	`armour_per_level` DECIMAL(6,3) unsigned NOT NULL default '10',\
+	`bot_health` DECIMAL(6,3) unsigned NOT NULL default '50000',\
+	`flag_distance` DECIMAL(6,3) unsigned NOT NULL default '100',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -288,6 +282,10 @@
 	`gates_coords` TEXT NOT NULL default '',\
 	`gates_move_coords` TEXT NOT NULL default '',\
 	`npc_coords` TEXT NOT NULL default '',\
+	`npc_skin` int(3) unsigned NOT NULL default '1',\
+	`flag_coords` TEXT NOT NULL default '',\
+	`flag_coords_text` TEXT NOT NULL default '',\
+	`flag_date` int(11) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
 	PRIMARY KEY (`id`)\
 );"
@@ -333,7 +331,7 @@
 	CREATE TABLE IF NOT EXISTS config (\
 	`id` int(11) unsigned NOT NULL,\
 	`kills` int(3) unsigned NOT NULL default '1',\
-	`evacuation` int(3) unsigned NOT NULL default '5',\
+	`evacuation` int(3) unsigned NOT NULL default '15',\
 	`cure` int(3) unsigned NOT NULL default '1',\
 	`infect` int(3) unsigned NOT NULL default '1',\
 	`ability` int(3) unsigned NOT NULL default '1',\
@@ -397,6 +395,28 @@
 	`points` int(11) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
+
+#define ROUND_SESSION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS round_session (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`map_id` int(11) unsigned NOT NULL,\
+	`team` int(3) unsigned NOT NULL,\
+	`survival` int(2) unsigned NOT NULL default '0',\
+	`killing` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`care` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`mobility_as_human` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`mobility_as_zombie` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`brutality` DECIMAL(6,3) unsigned NOT NULL default '0',\
+   	PRIMARY KEY (`id`)\
+);"
+
+#define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
+	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `npc_coords`, `npc_skin`, `flag_coords`, `flag_coords_text`, `disabled`) \
+	VALUES \
+	(1, 'The Village', 'village', 0, 0, 12, '15.000', '', '1.000', 12, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,16.1849,1.0143', 158, '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', 0);\
+"
 
 #define PREDIFINED_CIVILIAN "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (1, \"Civilian|Гражданский\", \"No abilities|Без способностей\", 2, 0, 0, 0, 37, 0);"
 #define PREDIFINED_NURSE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (2, \"Nurse|Медсестра\", \"Can Cure|Может Лечить\", 2, 0, 1, 5, 308, 0);"
