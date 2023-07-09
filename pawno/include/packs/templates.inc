@@ -276,8 +276,9 @@
 	`checkpoint_coords` TEXT NOT NULL default '',\
 	`gates_coords` TEXT NOT NULL default '',\
 	`gates_move_coords` TEXT NOT NULL default '',\
-	`npc_coords` TEXT NOT NULL default '',\
-	`npc_skin` int(3) unsigned NOT NULL default '1',\
+	`crystal_coords` TEXT NOT NULL default '',\
+	`near_crystal_coords` TEXT NOT NULL default '',\
+	`crystal_id` int(6) unsigned NOT NULL default '18876',\
 	`flag_coords` TEXT NOT NULL default '',\
 	`flag_coords_text` TEXT NOT NULL default '',\
 	`flag_date` int(11) unsigned NOT NULL default '0',\
@@ -429,7 +430,7 @@
 	`id` int(11) unsigned NOT NULL,\
 	`total` int(6) unsigned NOT NULL default '300',\
 	`update` int(6) unsigned NOT NULL default '5',\
-	`balance` int(6) unsigned NOT NULL default '10',\
+	`balance` int(6) unsigned NOT NULL default '30',\
 	`end` int(6) unsigned NOT NULL default '60',\
 	`restart` int(6) unsigned NOT NULL default '10',\
    	PRIMARY KEY (`id`)\
@@ -464,9 +465,9 @@
 #define PREDIFINED_MAP_CONFIG "INSERT IGNORE INTO map_config (id) VALUES (1);"
 
 #define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
-	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `npc_coords`, `npc_skin`, `flag_coords`, `flag_coords_text`, `disabled`) \
+	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
 	VALUES \
-	(1, 'The Village', 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', 158, '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', 0);\
+	(1, 'The Village', 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
 "
 
 #define PREDIFINED_CIVILIAN "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (1, \"Civilian|Гражданский\", \"No abilities|Без способностей\", 2, 0, 0, 0, 37, 0);"

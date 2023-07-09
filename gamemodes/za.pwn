@@ -332,7 +332,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
             }
 	    }
 	    case BULLET_HIT_TYPE_OBJECT: {
-	        if(hitid == Map[mpCrystal]) {
+	        if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
 	            Map[mpCrystalHealth] -= float(max(1, Achievements[playerid][achRank]));
 	            
 	        	new text[256];
@@ -579,7 +579,7 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "time", Map[mpTime]);
 	    cache_get_value_name_int(0, "gang", Map[mpGang]);
 	    cache_get_value_name_int(0, "water", Map[mpWaterAllowed]);
-	    cache_get_value_name_int(0, "npc_skin", Map[mpGangNPCSkin]);
+	    cache_get_value_name_int(0, "crystal_id", Map[mpGangCrystalId]);
 	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
     	
     	cache_get_value_name(0, "login", Map[mpAuthor]);
@@ -592,10 +592,16 @@ custom LoadMap() {
     	cache_get_value_name(0, "gates_ids", buff);
     	sscanf(buff, "p<,>ii", Map[mpGates][0], Map[mpGates][1]);
     	
-    	cache_get_value_name(0, "npc_coords", buff);
+    	cache_get_value_name(0, "crystal_coords", buff);
      	sscanf(buff, "p<,>ffff",
-		 	Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
-     		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
+		 	Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1],
+     		Map[mpGangCrystalSpawn][2], Map[mpGangCrystalSpawn][3]
+ 		);
+ 		
+ 		cache_get_value_name(0, "near_crystal_coords", buff);
+     	sscanf(buff, "p<,>ffff",
+		 	Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1],
+     		Map[mpGangNearCrystalSpawn][2], Map[mpGangNearCrystalSpawn][3]
  		);
  		
  		cache_get_value_name(0, "flag_coords", buff);
@@ -609,12 +615,6 @@ custom LoadMap() {
      	sscanf(buff, "p<,>fff",
 		 	Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1],
      		Map[mpFlagTextCoords][2]
- 		);
- 		
- 		cache_get_value_name(0, "npc_coords", buff);
-     	sscanf(buff, "p<,>ffff",
-		 	Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
-     		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
  		);
     	
 	    cache_get_value_name(0, "humans_coords", buff);
@@ -636,12 +636,6 @@ custom LoadMap() {
 		 	Map[mpZombieSpawnX][2], Map[mpZombieSpawnY][2],
 	 		Map[mpZombieSpawnZ][2], Map[mpZombieSpawnA][2]
 		);
-		
-		cache_get_value_name(0, "npc_coords", buff);
-     	sscanf(buff, "p<,>ffff",
-		 	Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
-	 		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
-	 	);
 	 	
 	 	cache_get_value_name(0, "checkpoint_coords", buff);
 	 	sscanf(buff, "p<,>fff",
@@ -706,15 +700,6 @@ custom LoadMap() {
 			);
 			
 			Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
-		} else {
-		    Map[mpCrystal] = CreateObject(18876,
-				Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
-				Map[mpGangNPCSpawn][2], 0.0, 0.0, Map[mpGangNPCSpawn][3]
-			);
-			
-			new text[256];
-			format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
-			Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1], Map[mpGangNPCSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 		}
 	 }
 }
@@ -768,6 +753,7 @@ custom StartMap() {
 	
     Map[mpIsStarted] = true;
     Map[mpPaused] = false;
+    Map[mpTimeoutBeforeCrystal] = false;
     
     Map[mpTimeoutIgnoreTick] = 0;
     Map[mpEvacuatedHumans] = 0;
@@ -796,7 +782,7 @@ custom OnMapUpdate() {
 	    }
 	}
 	
-	if(ServerConfig[svCfgCurrentOnline] >= 2 && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted]) {
+	if(ServerConfig[svCfgCurrentOnline] >= 2 && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
 	    foreach(Player, i) {
 			SendClientMessage(i, 0xf21822FF, ">> The world ceased to exist, all humans died");
 			SendClientMessage(i, 0xf21822FF, ">> Zombies have won");
@@ -809,7 +795,9 @@ custom OnMapUpdate() {
 	    Map[mpTimeoutBeforeEnd] -= MapConfig[mpCfgUpdate];
 	    
 	    if(Map[mpTimeoutBeforeEnd] == 0) {
-	        EndMap();
+	        if(!SpawnCrystalOnMapEnd()) {
+                EndMap();
+	        }
 	    }
 	}
 	
@@ -1550,19 +1538,17 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 
 	if(old != teamid) {
 	    switch(teamid) {
+	        case TEAM_UNKNOWN: {
+	            if(old == TEAM_ZOMBIE) Map[mpTeamCount][0]--;
+                if(old == TEAM_HUMAN) Map[mpTeamCount][1]--;
+	        }
 	    	case TEAM_ZOMBIE: {
 				Map[mpTeamCount][0]++;
-
-				if(old == TEAM_HUMAN) {
-					Map[mpTeamCount][1]--;
-				}
+				if(old == TEAM_HUMAN) Map[mpTeamCount][1]--;
 			}
 	    	case TEAM_HUMAN: {
 				Map[mpTeamCount][1]++;
-
-				if(old == TEAM_ZOMBIE) {
-					Map[mpTeamCount][0]--;
-				}
+				if(old == TEAM_ZOMBIE) Map[mpTeamCount][0]--;
         	}
 		}
 	}
@@ -1818,6 +1804,11 @@ stock SetHuman(const playerid, const classid) {
     LoadPlayerWeaponsOnStart(playerid);
 }
 
+stock SetUnknown(const playerid) {
+	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
+    LoadPlayerWeaponsOnStart(playerid);
+}
+
 stock SetToZombieOrHuman(playerid) {
 	if(random(2) == 0) {
 		SetPlayerTeamAC(playerid, TEAM_HUMAN);
@@ -1863,6 +1854,38 @@ stock GetWeaponFromConfigById(const weaponid) {
 	}
 	
 	return -1;
+}
+
+stock SpawnCrystalOnMapEnd() {
+    if(!Map[mpTimeoutBeforeCrystal] && Map[mpGang] <= 0) {
+	    Map[mpCrystal] = CreateObject(Map[mpGangCrystalId],
+			Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1],
+			Map[mpGangCrystalSpawn][2], 0.0, 0.0, Map[mpGangCrystalSpawn][3]
+		);
+		
+		Map[mpTimeoutBeforeCrystal] = true;
+		Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgBalance];
+
+		new text[256];
+		format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
+		Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1], Map[mpGangCrystalSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+
+		foreach(Player, i) {
+		    if(Misc[i][mdGangRank]) {
+		        SendClientMessage(i, 0xb823b3FF, ">> A crystal stone has appeared, deal as much damage as possible!");
+                SetPlayerInterior(i, 0);
+				DisablePlayerCheckpoint(i);
+				SetPlayerPos(i, Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1], Map[mpGangNearCrystalSpawn][2]);
+				SetPlayerFacingAngle(i, Map[mpGangNearCrystalSpawn][3]);
+				SetUnknown(i);
+				SetPlayerVirtualWorld(i, 2500);
+			}
+		}
+		
+		return 1;
+	}
+	
+	return 0;
 }
 
 stock LoadPlayerWeaponsOnStart(const playerid) {
@@ -1946,6 +1969,8 @@ CMD:test(playerid) {
 	if(weapon == WEAPON_SILENCED) {
 	    weapon = WEAPON_COLT45;
 	}
+	
+	Map[mpTimeout] = 10;
 
 	new slot = GetWeaponByChance(weapon, random(100), index);
 	if(slot > -1) {
