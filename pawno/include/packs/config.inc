@@ -5,6 +5,8 @@
 
 enum CONFIG_DATA {
 	svCfgPreviewBot,
+	svCfgInfectionDrunkLevel,
+	svCfgPickupProtection,
 	Float:svCfgPreviewBotPos[4],
 	Float:svCfgPreviewCameraPos[6],
 	svCfgName[64],

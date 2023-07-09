@@ -4,11 +4,6 @@
 #define _maps_pack_included
 
 #define MAP_NONE_TIME -1
-#define MAP_TIME 300
-#define MAP_RESTART_TIME 10
-#define MAP_UPDATE_TIME 5
-#define MAP_END_TIME 60
-#define MAP_BALANCE_TIME 10
 
 #define MAX_MAP_FILENAME 64
 #define MAX_MAP_NAME 64
@@ -61,4 +56,12 @@ enum MAP_DATA {
 	Float:mpCameraLookAt[MAX_MAP_SPAWNPOINT_DATA - 1],
 	Float:mpGatesCoords[MAX_MAP_GATE_DATA * MAX_MAP_GATES],
 	Float:mpGatesMoveCoords[MAX_MAP_GATE_DATA * MAX_MAP_GATES],
+};
+
+enum MAP_CONFIG_DATA {
+	mpCfgTotal,
+	mpCfgUpdate,
+	mpCfgBalance,
+	mpCfgEnd,
+	mpCfgRestart,
 };

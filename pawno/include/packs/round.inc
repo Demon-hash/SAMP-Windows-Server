@@ -26,6 +26,7 @@ enum ROUND_SESSION_DATA {
 
 enum ROUND_DATA_CONFIG {
 	rdCfgSurvivalPer,
+	rdCfgCap,
 	Float:rdCfgEvac,
 	Float:rdCfgSurvival,
 	Float:rdCfgKilling,

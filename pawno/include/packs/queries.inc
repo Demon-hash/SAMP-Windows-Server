@@ -16,6 +16,8 @@
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
 #define LOAD_GANGS_CFG_QUERY "SELECT * FROM gangs_config WHERE 1;"
 #define LOAD_EVAC_CFG_QUERY "SELECT * FROM evac_config WHERE 1;"
+#define LOAD_MAP_CFG_QUERY "SELECT * FROM map_config WHERE 1;"
+
 
 #define CHECK_USER_QUERY "\
 	SELECT \n\

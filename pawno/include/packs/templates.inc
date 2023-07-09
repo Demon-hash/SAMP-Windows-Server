@@ -325,12 +325,14 @@
 #define CONFIG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS config (\
 	`id` int(11) unsigned NOT NULL,\
+	`pickup_protection` int(4) unsigned NOT NULL default '30',\
 	`kills` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '15',\
 	`cure` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`ability` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`infection_damage` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
 	`fists_damage` DECIMAL(6,3) unsigned NOT NULL default '5.0',\
+	`infection_drunk` int(6) unsigned NOT NULL default '50000',\
 	`max_auth_timeout` int(3) unsigned NOT NULL default '2',\
 	`max_auth_tries` int(3) unsigned NOT NULL default '3',\
 	`preview_bot` int(3) unsigned NOT NULL default '181',\
@@ -419,6 +421,7 @@
 	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
 	`brutality` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`undead` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`cap` int(3) unsigned NOT NULL default '25',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -427,7 +430,18 @@
 	`id` int(11) unsigned NOT NULL,\
 	`interior` int(4) unsigned NOT NULL default '3',\
 	`sound` int(5) unsigned NOT NULL default '5448',\
-	`position` varchar(255) unsigned NOT NULL default '960.3299,-52.5693,1001.1172,0.0',\
+	`position` varchar(255) NOT NULL default '960.3299,-52.5693,1001.1172,0.0',\
+   	PRIMARY KEY (`id`)\
+);"
+
+#define MAP_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS map_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`total` int(6) unsigned NOT NULL default '300',\
+	`update` int(6) unsigned NOT NULL default '5',\
+	`balance` int(6) unsigned NOT NULL default '10',\
+	`end` int(6) unsigned NOT NULL default '60',\
+	`restart` int(6) unsigned NOT NULL default '10',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -436,6 +450,7 @@
 #define PREDIFINED_ANTICHEAT "INSERT IGNORE INTO anticheat (id) VALUES (1);"
 #define PREDIFINED_ROUND_CONFIG "INSERT IGNORE INTO round_config (id) VALUES (1);"
 #define PREDIFINED_EVAC_CONFIG "INSERT IGNORE INTO evac_config (id) VALUES (1);"
+#define PREDIFINED_MAP_CONFIG "INSERT IGNORE INTO map_config (id) VALUES (1);"
 
 #define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
 	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `npc_coords`, `npc_skin`, `flag_coords`, `flag_coords_text`, `disabled`) \

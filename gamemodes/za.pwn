@@ -13,7 +13,7 @@ static const sqlTemplates[][] = {
 	AUCTION_TEMPLATE, AUCTION_CASHBACK_TEMPLATE,
 	ACHIEVEMENTS_TEMPLATE, CONFIG_TEMPLATE, STATS_TEMPLATE,
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
-	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE
+	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -29,7 +29,8 @@ static const sqlPredifinedValues[][] = {
     PREDIFINED_M4, PREDIFINED_RIFLE, PREDIFINED_SNIPER,
     PREDIFINED_FLAMETHOWER, PREDIFINED_GRENADE, PREDIFINED_SPAS,
     PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
-    PREDIFINED_MAP_VILLAGE, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG
+    PREDIFINED_MAP_VILLAGE, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG,
+    PREDIFINED_MAP_CONFIG
 };
 
 static const sqlPredifinedLocalization[][] = {
@@ -50,12 +51,13 @@ static Gangs[MAX_GANGS][GANG_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
 static Pickups[MAX_PICKUPS][PICKUP_DATA];
 
-static MapConfig[MAP_DATA];
+static Map[MAP_DATA];
 static RoundConfig[ROUND_DATA_CONFIG];
 
 static AchievementsConfig[1];
 static AnticheatConfig[1];
 static GangsConfig[GANGS_CONFIG_DATA];
+static MapConfig[MAP_CONFIG_DATA];
 static EvacuationConfig[EVACUATION_CONFIG_DATA];
 static ServerConfig[CONFIG_DATA];
 
@@ -100,6 +102,7 @@ public OnGameModeInit() {
 	InitializePlayersScreenTextures();
 	InitializeDefaultValues();
 	
+	SetGameModeText("Zombies");
 	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
     ShowNameTags(1);
 	SetTeamCount(MAX_PLAYER_TEAMS);
@@ -125,16 +128,13 @@ public OnGameModeInit() {
 	
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
 	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsConfiguration");
-	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundDataConfiguration");
-	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacDataConfiguration");
-	
+	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundConfiguration");
+	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacConfiguration");
+	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapConfiguration");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
-	
  	mysql_log(SQL_LOG_LEVEL);
  	
-	printf("Status: %d", mysql_errno(Database));
-	
-	SetGameModeText("Zombies");
+	printf("Started with status of %d", mysql_errno(Database));
 	updateTimerId = SetTimer("Update", 1000, true);
 	return 1;
 }
@@ -142,7 +142,7 @@ public OnGameModeInit() {
 public OnGameModeExit() {
     mysql_close(Database);
 	KillTimer(updateTimerId);
-	UnloadFilterScript(MapConfig[mpFilename]);
+	UnloadFilterScript(Map[mpFilename]);
 	DestroyPlayersScreenTextures();
 	return 1;
 }
@@ -175,7 +175,7 @@ public OnPlayerRequestClass(playerid, classid) {
 
     SetSpawnInfo(
 		playerid, TEAM_ZOMBIE, ServerConfig[svCfgPreviewBot],
-		MapConfig[mpZombieSpawnX][0], MapConfig[mpZombieSpawnY][0], MapConfig[mpZombieSpawnZ][0],
+		Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0],
 		0.0, 0, 0, 0, 0, 0, 0
 	);
 
@@ -207,8 +207,8 @@ public OnPlayerSpawn(playerid) {
     CheckToStartMap();
     SetByCurrentClass(playerid);
     SetPlayerVirtualWorld(playerid, 0);
-    SetPlayerWeather(playerid, MapConfig[mpWeather]);
-	SetPlayerTime(playerid, MapConfig[mpTime], 0);
+    SetPlayerWeather(playerid, Map[mpWeather]);
+	SetPlayerTime(playerid, Map[mpTime], 0);
 	return 1;
 }
 
@@ -428,7 +428,7 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
 }
 
 public OnPlayerGiveDamageActor(playerid, damaged_actorid, Float: amount, weaponid, bodypart) {
-	if(damaged_actorid == MapConfig[mpActor]) {
+	if(damaged_actorid == Map[mpActor]) {
 	    new Float:hp;
 	    GetActorHealth(damaged_actorid, hp);
 	    SetActorHealth(damaged_actorid, hp - max(1, Achievements[playerid][achRank]));
@@ -463,34 +463,34 @@ custom Update() {
 	        	SetPlayerColor(playerid, COLOR_INFECTED);
 	        	TextDrawShowForPlayer(playerid, InfectedTexture);
 	        	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
-	        	SetPlayerDrunkLevel(playerid, 50000);
+	        	SetPlayerDrunkLevel(playerid, ServerConfig[svCfgInfectionDrunkLevel]);
     		}
     		
     		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
     		TextDrawSetString(PointsTexture[playerid], formated);
     		
-    		format(formated, sizeof(formated), "~w~humans: %d~n~~r~zombies: %d", MapConfig[mpTeamCount][1], MapConfig[mpTeamCount][0]);
+    		format(formated, sizeof(formated), "~w~humans: %d~n~~r~zombies: %d", Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(AliveInfoTexture[playerid], formated);
             
-            if(!MapConfig[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (MapConfig[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
+            if(!Map[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (Map[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
                 RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgSurvival];
             }
 	    }
 	}
 	
-	if((currentSecond % MAP_UPDATE_TIME) == 0) {
+	if((currentSecond % MapConfig[mpCfgUpdate]) == 0) {
 		OnMapUpdate();
 	}
 }
 
 custom LoadMapsCount() {
 	if(cache_num_rows()) {
-        cache_get_value_name_int(0, "maps", MapConfig[mpCount]);
-        printf("(4) Load maps... (%d)", MapConfig[mpCount]);
+        cache_get_value_name_int(0, "maps", Map[mpCount]);
+        printf("Loaded %d maps in total", Map[mpCount]);
         return 1;
     }
     
-	printf("(4) Load maps failed");
+	printf("Loading maps failed");
 	return 0;
 }
 
@@ -499,130 +499,130 @@ custom LoadMap() {
         static buff[256];
 		static year, mounth, day, hours, minutes, seconds;
         
-        strmid(MapConfig[mpAuthor], "", 0, MAX_PLAYER_NAME);
+        strmid(Map[mpAuthor], "", 0, MAX_PLAYER_NAME);
         
-	    cache_get_value_name_int(0, "weather", MapConfig[mpWeather]);
-	    cache_get_value_name_int(0, "interior", MapConfig[mpInterior]);
-	    cache_get_value_name_int(0, "time", MapConfig[mpTime]);
-	    cache_get_value_name_int(0, "gang", MapConfig[mpGang]);
-	    cache_get_value_name_int(0, "water", MapConfig[mpWaterAllowed]);
-	    cache_get_value_name_int(0, "npc_skin", MapConfig[mpGangNPCSkin]);
-	    cache_get_value_name_int(0, "flag_date", MapConfig[mpFlagDate]);
+	    cache_get_value_name_int(0, "weather", Map[mpWeather]);
+	    cache_get_value_name_int(0, "interior", Map[mpInterior]);
+	    cache_get_value_name_int(0, "time", Map[mpTime]);
+	    cache_get_value_name_int(0, "gang", Map[mpGang]);
+	    cache_get_value_name_int(0, "water", Map[mpWaterAllowed]);
+	    cache_get_value_name_int(0, "npc_skin", Map[mpGangNPCSkin]);
+	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
     	
-    	cache_get_value_name(0, "login", MapConfig[mpAuthor]);
-        cache_get_value_name(0, "name", MapConfig[mpName]);
-        cache_get_value_name(0, "filename", MapConfig[mpFilename]);
+    	cache_get_value_name(0, "login", Map[mpAuthor]);
+        cache_get_value_name(0, "name", Map[mpName]);
+        cache_get_value_name(0, "filename", Map[mpFilename]);
         
-        cache_get_value_name_float(0, "gates_speed", MapConfig[mpGateSpeed]);
-    	cache_get_value_name_float(0, "checkpoint_size", MapConfig[mpCheckpointSize]);
+        cache_get_value_name_float(0, "gates_speed", Map[mpGateSpeed]);
+    	cache_get_value_name_float(0, "checkpoint_size", Map[mpCheckpointSize]);
         
     	cache_get_value_name(0, "gates_ids", buff);
-    	sscanf(buff, "p<,>ii", MapConfig[mpGates][0], MapConfig[mpGates][1]);
+    	sscanf(buff, "p<,>ii", Map[mpGates][0], Map[mpGates][1]);
     	
     	cache_get_value_name(0, "npc_coords", buff);
      	sscanf(buff, "p<,>ffff",
-		 	MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
-     		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+		 	Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
+     		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
  		);
  		
  		cache_get_value_name(0, "flag_coords", buff);
      	sscanf(buff, "p<,>ffffff",
-		 	MapConfig[mpFlagCoords][0], MapConfig[mpFlagCoords][1],
-     		MapConfig[mpFlagCoords][2], MapConfig[mpFlagCoords][3],
-     		MapConfig[mpFlagCoords][4], MapConfig[mpFlagCoords][5]
+		 	Map[mpFlagCoords][0], Map[mpFlagCoords][1],
+     		Map[mpFlagCoords][2], Map[mpFlagCoords][3],
+     		Map[mpFlagCoords][4], Map[mpFlagCoords][5]
  		);
  		
  		cache_get_value_name(0, "flag_coords_text", buff);
      	sscanf(buff, "p<,>fff",
-		 	MapConfig[mpFlagTextCoords][0], MapConfig[mpFlagTextCoords][1],
-     		MapConfig[mpFlagTextCoords][2]
+		 	Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1],
+     		Map[mpFlagTextCoords][2]
  		);
  		
  		cache_get_value_name(0, "npc_coords", buff);
      	sscanf(buff, "p<,>ffff",
-		 	MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
-     		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+		 	Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
+     		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
  		);
     	
 	    cache_get_value_name(0, "humans_coords", buff);
      	sscanf(buff, "p<,>ffffffffffff",
-		 	MapConfig[mpHumanSpawnX][0], MapConfig[mpHumanSpawnY][0],
-			MapConfig[mpHumanSpawnZ][0], MapConfig[mpHumanSpawnA][0],
-		 	MapConfig[mpHumanSpawnX][1], MapConfig[mpHumanSpawnY][1],
-		 	MapConfig[mpHumanSpawnZ][1], MapConfig[mpHumanSpawnA][1],
-		 	MapConfig[mpHumanSpawnX][2], MapConfig[mpHumanSpawnY][2],
-		 	MapConfig[mpHumanSpawnZ][2], MapConfig[mpHumanSpawnA][2]
+		 	Map[mpHumanSpawnX][0], Map[mpHumanSpawnY][0],
+			Map[mpHumanSpawnZ][0], Map[mpHumanSpawnA][0],
+		 	Map[mpHumanSpawnX][1], Map[mpHumanSpawnY][1],
+		 	Map[mpHumanSpawnZ][1], Map[mpHumanSpawnA][1],
+		 	Map[mpHumanSpawnX][2], Map[mpHumanSpawnY][2],
+		 	Map[mpHumanSpawnZ][2], Map[mpHumanSpawnA][2]
 		);
 		
 		cache_get_value_name(0, "zombies_coords", buff);
      	sscanf(buff, "p<,>ffffffffffff",
-		 	MapConfig[mpZombieSpawnX][0], MapConfig[mpZombieSpawnY][0],
-	 		MapConfig[mpZombieSpawnZ][0], MapConfig[mpZombieSpawnA][0],
-		 	MapConfig[mpZombieSpawnX][1], MapConfig[mpZombieSpawnY][1],
-	 		MapConfig[mpZombieSpawnZ][1], MapConfig[mpZombieSpawnA][1],
-		 	MapConfig[mpZombieSpawnX][2], MapConfig[mpZombieSpawnY][2],
-	 		MapConfig[mpZombieSpawnZ][2], MapConfig[mpZombieSpawnA][2]
+		 	Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0],
+	 		Map[mpZombieSpawnZ][0], Map[mpZombieSpawnA][0],
+		 	Map[mpZombieSpawnX][1], Map[mpZombieSpawnY][1],
+	 		Map[mpZombieSpawnZ][1], Map[mpZombieSpawnA][1],
+		 	Map[mpZombieSpawnX][2], Map[mpZombieSpawnY][2],
+	 		Map[mpZombieSpawnZ][2], Map[mpZombieSpawnA][2]
 		);
 		
 		cache_get_value_name(0, "npc_coords", buff);
      	sscanf(buff, "p<,>ffff",
-		 	MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
-	 		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+		 	Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
+	 		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
 	 	);
 	 	
 	 	cache_get_value_name(0, "checkpoint_coords", buff);
 	 	sscanf(buff, "p<,>fff",
-		 	MapConfig[mpCheckpointCoords][0],
-	 	    MapConfig[mpCheckpointCoords][1],
-		 	MapConfig[mpCheckpointCoords][2]
+		 	Map[mpCheckpointCoords][0],
+	 	    Map[mpCheckpointCoords][1],
+		 	Map[mpCheckpointCoords][2]
 	 	);
 		 
 	 	cache_get_value_name(0, "camera_coords", buff);
  		sscanf(buff, "p<,>ffffff",
-		 	MapConfig[mpCameraCoords][0], MapConfig[mpCameraCoords][1], MapConfig[mpCameraCoords][2],
-		 	MapConfig[mpCameraLookAt][0], MapConfig[mpCameraLookAt][1], MapConfig[mpCameraLookAt][2]
+		 	Map[mpCameraCoords][0], Map[mpCameraCoords][1], Map[mpCameraCoords][2],
+		 	Map[mpCameraLookAt][0], Map[mpCameraLookAt][1], Map[mpCameraLookAt][2]
 	 	);
 
 		cache_get_value_name(0, "gates_coords", buff);
  		sscanf(buff, "p<,>ffffffffffff",
-		 	MapConfig[mpGatesCoords][0], MapConfig[mpGatesCoords][1], MapConfig[mpGatesCoords][2],
-		 	MapConfig[mpGatesCoords][3], MapConfig[mpGatesCoords][4], MapConfig[mpGatesCoords][5],
-		 	MapConfig[mpGatesCoords][6], MapConfig[mpGatesCoords][7], MapConfig[mpGatesCoords][8],
-		 	MapConfig[mpGatesCoords][9], MapConfig[mpGatesCoords][10], MapConfig[mpGatesCoords][11]
+		 	Map[mpGatesCoords][0], Map[mpGatesCoords][1], Map[mpGatesCoords][2],
+		 	Map[mpGatesCoords][3], Map[mpGatesCoords][4], Map[mpGatesCoords][5],
+		 	Map[mpGatesCoords][6], Map[mpGatesCoords][7], Map[mpGatesCoords][8],
+		 	Map[mpGatesCoords][9], Map[mpGatesCoords][10], Map[mpGatesCoords][11]
 	 	);
 	 	
 	 	cache_get_value_name(0, "gates_move_coords", buff);
  		sscanf(buff, "p<,>ffffffffffff",
-		 	MapConfig[mpGatesMoveCoords][0], MapConfig[mpGatesMoveCoords][1], MapConfig[mpGatesMoveCoords][2],
-		 	MapConfig[mpGatesMoveCoords][3], MapConfig[mpGatesMoveCoords][4], MapConfig[mpGatesMoveCoords][5],
-		 	MapConfig[mpGatesMoveCoords][6], MapConfig[mpGatesMoveCoords][7], MapConfig[mpGatesMoveCoords][8],
-		 	MapConfig[mpGatesMoveCoords][9], MapConfig[mpGatesMoveCoords][10], MapConfig[mpGatesMoveCoords][11]
+		 	Map[mpGatesMoveCoords][0], Map[mpGatesMoveCoords][1], Map[mpGatesMoveCoords][2],
+		 	Map[mpGatesMoveCoords][3], Map[mpGatesMoveCoords][4], Map[mpGatesMoveCoords][5],
+		 	Map[mpGatesMoveCoords][6], Map[mpGatesMoveCoords][7], Map[mpGatesMoveCoords][8],
+		 	Map[mpGatesMoveCoords][9], Map[mpGatesMoveCoords][10], Map[mpGatesMoveCoords][11]
 	 	);
     
-    	strmid(MapConfig[mpPrevFilename], MapConfig[mpFilename], 0, MAX_MAP_FILENAME);
+    	strmid(Map[mpPrevFilename], Map[mpFilename], 0, MAX_MAP_FILENAME);
     	
     	SetMapId();
     	StartMap();
     	SetMapName();
     	
-    	LoadFilterScript(MapConfig[mpFilename]);
+    	LoadFilterScript(Map[mpFilename]);
     	
-		DestroyActorEx(MapConfig[mpActor]);
-		DestroyObjectEx(MapConfig[mpFlag]);
-		Delete3DTextLabelEx(MapConfig[mpFlagText]);
+		DestroyActorEx(Map[mpActor]);
+		DestroyObjectEx(Map[mpFlag]);
+		Delete3DTextLabelEx(Map[mpFlagText]);
 		
-		if(MapConfig[mpGang]) {
-            TimestampToDate(MapConfig[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-			MapConfig[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
-			   	MapConfig[mpFlagCoords][0], MapConfig[mpFlagCoords][1],
-	     		MapConfig[mpFlagCoords][2], MapConfig[mpFlagCoords][3],
-	     		MapConfig[mpFlagCoords][4], MapConfig[mpFlagCoords][5], 50.0
+		if(Map[mpGang]) {
+            TimestampToDate(Map[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+			Map[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
+			   	Map[mpFlagCoords][0], Map[mpFlagCoords][1],
+	     		Map[mpFlagCoords][2], Map[mpFlagCoords][3],
+	     		Map[mpFlagCoords][4], Map[mpFlagCoords][5], 50.0
 			);
 
 			new text[768];
 			format(text, sizeof(text), GANG_CONTROL_TEXT,
-		  		MapConfig[mpName],
-				Gangs[MapConfig[mpGang]][gdName],
+		  		Map[mpName],
+				Gangs[Map[mpGang]][gdName],
 				hours, minutes,
 				day, mounth, year,
 			 	GangsConfig[gdCfgPerEvac],
@@ -632,22 +632,22 @@ custom LoadMap() {
 				GangsConfig[gdCfgPerAssist]
 			);
 			
-			MapConfig[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, MapConfig[mpFlagTextCoords][0], MapConfig[mpFlagTextCoords][1], MapConfig[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+			Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 		}
 		
-    	MapConfig[mpActor] = CreateActor(MapConfig[mpGangNPCSkin],
-			MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
-     		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
+    	Map[mpActor] = CreateActor(Map[mpGangNPCSkin],
+			Map[mpGangNPCSpawn][0], Map[mpGangNPCSpawn][1],
+     		Map[mpGangNPCSpawn][2], Map[mpGangNPCSpawn][3]
    		);
    		
-   		SetActorInvulnerable(MapConfig[mpActor], false);
-		SetActorHealth(MapConfig[mpActor], GangsConfig[gdCfgBotHealth]);
+   		SetActorInvulnerable(Map[mpActor], false);
+		SetActorHealth(Map[mpActor], GangsConfig[gdCfgBotHealth]);
 
 	 }
 }
 
 custom StartMap() {
-	/*if(!MapConfig[mpIsStarted]) {
+	/*if(!Map[mpIsStarted]) {
 	    return 0;
 	}*/
 	
@@ -656,10 +656,10 @@ custom StartMap() {
 	static controlled[96] = "";
 	static formated[256];
 
-	UnloadFilterScript(MapConfig[mpPrevFilename]);
+	UnloadFilterScript(Map[mpPrevFilename]);
 	
 	for( j = 0; j < MAX_MAP_GATES; j++ ) {
-	    DestroyObjectEx(MapConfig[mpGates][j]);
+	    DestroyObjectEx(Map[mpGates][j]);
 	}
 	
 	foreach(Player, i) {
@@ -674,18 +674,18 @@ custom StartMap() {
     	    TogglePlayerSpectating(i, 0);
 		}
 		
-		if(strlen(MapConfig[mpAuthor])) {
-    		format(author, sizeof(author), "(by %s)", MapConfig[mpName]);
+		if(strlen(Map[mpAuthor])) {
+    		format(author, sizeof(author), "(by %s)", Map[mpName]);
  		}
 
- 		if(MapConfig[mpGang]) {
- 	    	format(controlled, sizeof(controlled), "(captured by %s)", Gangs[MapConfig[mpGang]][gdName]);
+ 		if(Map[mpGang]) {
+ 	    	format(controlled, sizeof(controlled), "(captured by %s)", Gangs[Map[mpGang]][gdName]);
  		}
     	
-    	format(formated, sizeof(formated), "|: Entering The Map #%d %s %s %s", MapConfig[mpId], MapConfig[mpName], author, controlled);
+    	format(formated, sizeof(formated), "|: Entering The Map #%d %s %s %s", Map[mpId], Map[mpName], author, controlled);
 	    SendClientMessage(i, 0xE48800FF, formated);
     	
-    	if(MapConfig[mpInterior] <= 0) {
+    	if(Map[mpInterior] <= 0) {
 			SendClientMessage(i, 0xFFF000FF, "Creating objects...");
 		}
 		
@@ -698,67 +698,67 @@ custom StartMap() {
 
     InitializePickups();
 	
-    MapConfig[mpIsStarted] = true;
-    MapConfig[mpPaused] = false;
+    Map[mpIsStarted] = true;
+    Map[mpPaused] = false;
     
-    MapConfig[mpTimeoutIgnoreTick] = 0;
-    MapConfig[mpTimeout] = MAP_TIME;
-    MapConfig[mpTimeoutBeforeEnd] = -MAP_UPDATE_TIME;
-    MapConfig[mpTimeoutBeforeStart] = -MAP_UPDATE_TIME;
+    Map[mpTimeoutIgnoreTick] = 0;
+    Map[mpTimeout] = MapConfig[mpCfgTotal];
+    Map[mpTimeoutBeforeEnd] = -MapConfig[mpCfgUpdate];
+    Map[mpTimeoutBeforeStart] = -MapConfig[mpCfgUpdate];
 	return 1;
 }
 
 custom OnMapUpdate() {
-	if(MapConfig[mpPaused]) {
+	if(Map[mpPaused]) {
 	    return 0;
 	}
 	
-	if(MapConfig[mpTimeoutIgnoreTick] > 0) {
-	    MapConfig[mpTimeoutIgnoreTick]--;
+	if(Map[mpTimeoutIgnoreTick] > 0) {
+	    Map[mpTimeoutIgnoreTick]--;
 	    return 0;
 	}
 	
-	if(MapConfig[mpTimeoutBeforeStart] >= MAP_UPDATE_TIME) {
-	    MapConfig[mpTimeoutBeforeStart] -= MAP_UPDATE_TIME;
+	if(Map[mpTimeoutBeforeStart] >= MapConfig[mpCfgUpdate]) {
+	    Map[mpTimeoutBeforeStart] -= MapConfig[mpCfgUpdate];
 
-	    if(MapConfig[mpTimeoutBeforeStart] == 0) {
+	    if(Map[mpTimeoutBeforeStart] == 0) {
 	        LoadNewMap();
 	    }
 	}
 	
-	if(MapConfig[mpTimeoutBeforeEnd] >= MAP_UPDATE_TIME) {
-	    MapConfig[mpTimeoutBeforeEnd] -= MAP_UPDATE_TIME;
+	if(Map[mpTimeoutBeforeEnd] >= MapConfig[mpCfgUpdate]) {
+	    Map[mpTimeoutBeforeEnd] -= MapConfig[mpCfgUpdate];
 	    
-	    if(MapConfig[mpTimeoutBeforeEnd] == 0) {
+	    if(Map[mpTimeoutBeforeEnd] == 0) {
 	        EndMap();
 	    }
 	}
 	
-	if(MapConfig[mpTimeout] >= MAP_UPDATE_TIME) {
-	    MapConfig[mpTimeout] -= MAP_UPDATE_TIME;
+	if(Map[mpTimeout] >= MapConfig[mpCfgUpdate]) {
+	    Map[mpTimeout] -= MapConfig[mpCfgUpdate];
 	    
 	    static tm[4];
-		format(tm,sizeof(tm), "%d", MapConfig[mpTimeout]);
+		format(tm,sizeof(tm), "%d", Map[mpTimeout]);
 		TextDrawSetString(TimeLeftTexture, tm);
 	    
-        if(MapConfig[mpTimeout] == 0) {
+        if(Map[mpTimeout] == 0) {
 			TextDrawSetString(TimeLeftTexture, "...");
 
-			if(MapConfig[mpGates][0]) {
+			if(Map[mpGates][0]) {
 				MoveObject(
-					MapConfig[mpGates][0],
-					MapConfig[mpGatesMoveCoords][0], MapConfig[mpGatesMoveCoords][1], MapConfig[mpGatesMoveCoords][2],
-					MapConfig[mpGateSpeed],
-					MapConfig[mpGatesMoveCoords][3], MapConfig[mpGatesMoveCoords][4], MapConfig[mpGatesMoveCoords][5]
+					Map[mpGates][0],
+					Map[mpGatesMoveCoords][0], Map[mpGatesMoveCoords][1], Map[mpGatesMoveCoords][2],
+					Map[mpGateSpeed],
+					Map[mpGatesMoveCoords][3], Map[mpGatesMoveCoords][4], Map[mpGatesMoveCoords][5]
 				);
 			}
 			
-			if(MapConfig[mpGates][1]) {
+			if(Map[mpGates][1]) {
 				MoveObject(
-					MapConfig[mpGates][1],
-					MapConfig[mpGatesMoveCoords][6], MapConfig[mpGatesMoveCoords][7], MapConfig[mpGatesMoveCoords][8],
-					MapConfig[mpGateSpeed],
-					MapConfig[mpGatesMoveCoords][9], MapConfig[mpGatesMoveCoords][10], MapConfig[mpGatesMoveCoords][11]
+					Map[mpGates][1],
+					Map[mpGatesMoveCoords][6], Map[mpGatesMoveCoords][7], Map[mpGatesMoveCoords][8],
+					Map[mpGateSpeed],
+					Map[mpGatesMoveCoords][9], Map[mpGatesMoveCoords][10], Map[mpGatesMoveCoords][11]
 				);
 			}
 
@@ -768,8 +768,8 @@ custom OnMapUpdate() {
 				ShowCheckpoint(i);
 			}
 			
-			MapConfig[mpTimeoutIgnoreTick] = 1;
-			MapConfig[mpTimeoutBeforeEnd] = MAP_END_TIME;
+			Map[mpTimeoutIgnoreTick] = 1;
+			Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgEnd];
  		}
 	}
 	
@@ -778,8 +778,8 @@ custom OnMapUpdate() {
 
 custom EndMap() {
     foreach(Player, i) {
-    	SetPlayerCameraPos(i, MapConfig[mpCameraCoords][0], MapConfig[mpCameraCoords][1], MapConfig[mpCameraCoords][2]);
-   		SetPlayerCameraLookAt(i, MapConfig[mpCameraLookAt][0], MapConfig[mpCameraLookAt][1], MapConfig[mpCameraLookAt][2]);
+    	SetPlayerCameraPos(i, Map[mpCameraCoords][0], Map[mpCameraCoords][1], Map[mpCameraCoords][2]);
+   		SetPlayerCameraLookAt(i, Map[mpCameraLookAt][0], Map[mpCameraLookAt][1], Map[mpCameraLookAt][2]);
     	
 		SendClientMessage(i, 0xFFFFFFFF, "Beginning new a round...");
 		GameTextForPlayer(i, "~r~ROUND OVER~n~~w~STARTING NEW ROUND...", 5000, 5);
@@ -787,9 +787,9 @@ custom EndMap() {
 		GivePointsForRound(i);
 	}
 	
-	MapConfig[mpTimeoutIgnoreTick] = 1;
-	MapConfig[mpTimeoutBeforeStart] = MAP_RESTART_TIME;
-	MapConfig[mpIsStarted] = false;
+	Map[mpTimeoutIgnoreTick] = 1;
+	Map[mpTimeoutBeforeStart] = MapConfig[mpCfgRestart];
+	Map[mpIsStarted] = false;
 }
 
 custom LoadLocalization(const playerid, const type) {
@@ -834,9 +834,80 @@ custom KickForAuthTimeout(const playerid) {
     Kick(playerid);
 }
 
-custom LoadRoundDataConfiguration() {
+custom LoadServerConfiguration() {
+    if(cache_num_rows() > 0) {
+        new buff[256];
+        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
+        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
+        cache_get_value_name_int(0, "max_auth_timeout", ServerConfig[svCfgAuthTimeout]);
+        cache_get_value_name_int(0, "max_auth_tries", ServerConfig[svCfgAuthTries]);
+        cache_get_value_name_int(0, "infection_drunk", ServerConfig[svCfgInfectionDrunkLevel]);
+        cache_get_value_name_int(0, "pickup_protection", ServerConfig[svCfgPickupProtection]);
+
+        cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
+
+        cache_get_value_name(0, "preview_bot_coords", buff);
+		sscanf(buff, "p<,>ffff", ServerConfig[svCfgPreviewBotPos][0],
+		ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2],
+		ServerConfig[svCfgPreviewBotPos][3]);
+
+		cache_get_value_name(0, "preview_camera_coords", buff);
+		sscanf(buff, "p<,>ffffff", ServerConfig[svCfgPreviewCameraPos][0],
+		ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2],
+		ServerConfig[svCfgPreviewCameraPos][3], ServerConfig[svCfgPreviewCameraPos][4],
+		ServerConfig[svCfgPreviewCameraPos][5]);
+
+        cache_get_value_name(0, "name", ServerConfig[svCfgName]);
+        cache_get_value_name(0, "mode", ServerConfig[svCfgMode]);
+        cache_get_value_name(0, "discord", ServerConfig[svCfgDiscord]);
+        cache_get_value_name(0, "site", ServerConfig[svCfgSite]);
+        cache_get_value_name(0, "language", ServerConfig[svCfgLanguage]);
+
+        format(buff, sizeof(buff), "weburl %s", ServerConfig[svCfgSite]);
+        SendRconCommand(buff);
+
+        format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
+        SendRconCommand(buff);
+
+        printf("(1): Server configuration loaded...");
+        return 1;
+	}
+
+	printf("(1): Server configuration failed");
+	return 0;
+}
+
+custom LoadGangsConfiguration() {
+    if(cache_num_rows() > 0) {
+        cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
+        cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
+
+        cache_get_value_name_float(0, "required", GangsConfig[gdCfgRequired]);
+        cache_get_value_name_float(0, "default", GangsConfig[gdCfgDefault]);
+
+        cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
+        cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
+        cache_get_value_name_float(0, "bot_health", GangsConfig[gdCfgBotHealth]);
+        cache_get_value_name_float(0, "flag_distance", GangsConfig[gdCfgFlagDistance]);
+
+        cache_get_value_name_float(0, "per_cure", GangsConfig[gdCfgPerCure]);
+        cache_get_value_name_float(0, "per_kill", GangsConfig[gdCfgPerKill]);
+        cache_get_value_name_float(0, "per_evac", GangsConfig[gdCfgPerEvac]);
+        cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
+        cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
+
+        printf("(2): Server gangs configuration loaded...");
+        return 1;
+    }
+
+    printf("(2): Server gangs configuration failed");
+    return 0;
+}
+
+custom LoadRoundConfiguration() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "survival_per", RoundConfig[rdCfgSurvivalPer]);
+        cache_get_value_name_int(0, "cap", RoundConfig[rdCfgCap]);
         cache_get_value_name_float(0, "evac", RoundConfig[rdCfgEvac]);
         cache_get_value_name_float(0, "survival", RoundConfig[rdCfgSurvival]);
         cache_get_value_name_float(0, "killing", RoundConfig[rdCfgKilling]);
@@ -854,16 +925,16 @@ custom LoadRoundDataConfiguration() {
     return 0;
 }
 
-custom LoadEvacDataConfiguration() {
+custom LoadEvacConfiguration() {
     if(cache_num_rows() > 0) {
         new buff[256];
+        cache_get_value_name(0, "position", buff);
         cache_get_value_name_int(0, "interior", EvacuationConfig[ecdCfgInterior]);
         cache_get_value_name_int(0, "sound", EvacuationConfig[ecdCfgSound]);
-        cache_get_value_name(0, "position", buff);
-        
-        sscanf(buff, "<,>ffff",
-			EvacuationConfig[ecdCfgPosition][0], EvacuationConfig[ecdCfgPosition][1],
-			EvacuationConfig[ecdCfgPosition][2],  EvacuationConfig[ecdCfgPosition][3]
+
+        sscanf(buff, "p<,>ffff", EvacuationConfig[ecdCfgPosition][0],
+			EvacuationConfig[ecdCfgPosition][1], EvacuationConfig[ecdCfgPosition][2],
+			EvacuationConfig[ecdCfgPosition][3]
 		);
 
         printf("(4): Evacuation configuration loaded...");
@@ -874,72 +945,20 @@ custom LoadEvacDataConfiguration() {
     return 0;
 }
 
-custom LoadGangsConfiguration() {
+custom LoadMapConfiguration() {
     if(cache_num_rows() > 0) {
-        cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
-        cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
+        cache_get_value_name_int(0, "total", MapConfig[mpCfgTotal]);
+        cache_get_value_name_int(0, "update", MapConfig[mpCfgUpdate]);
+        cache_get_value_name_int(0, "balance", MapConfig[mpCfgBalance]);
+        cache_get_value_name_int(0, "end", MapConfig[mpCfgEnd]);
+        cache_get_value_name_int(0, "restart", MapConfig[mpCfgRestart]);
         
-        cache_get_value_name_float(0, "required", GangsConfig[gdCfgRequired]);
-        cache_get_value_name_float(0, "default", GangsConfig[gdCfgDefault]);
-        
-        cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
-        cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
-        cache_get_value_name_float(0, "bot_health", GangsConfig[gdCfgBotHealth]);
-        cache_get_value_name_float(0, "flag_distance", GangsConfig[gdCfgFlagDistance]);
-        
-        cache_get_value_name_float(0, "per_cure", GangsConfig[gdCfgPerCure]);
-        cache_get_value_name_float(0, "per_kill", GangsConfig[gdCfgPerKill]);
-        cache_get_value_name_float(0, "per_evac", GangsConfig[gdCfgPerEvac]);
-        cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
-        cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
-        
-        printf("(2): Server gangs configuration loaded...");
+        printf("(5): Map configuration loaded...");
         return 1;
     }
     
-    printf("(2): Server gangs configuration failed");
+    printf("(5): Map configuration failed");
     return 0;
-}
-
-custom LoadServerConfiguration() {
-    if(cache_num_rows() > 0) {
-        new buff[256];
-        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
-        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
-        cache_get_value_name_int(0, "max_auth_timeout", ServerConfig[svCfgAuthTimeout]);
-        cache_get_value_name_int(0, "max_auth_tries", ServerConfig[svCfgAuthTries]);
-        
-        cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
-        
-        cache_get_value_name(0, "preview_bot_coords", buff);
-		sscanf(buff, "p<,>ffff", ServerConfig[svCfgPreviewBotPos][0],
-		ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2],
-		ServerConfig[svCfgPreviewBotPos][3]);
-		
-		cache_get_value_name(0, "preview_camera_coords", buff);
-		sscanf(buff, "p<,>ffffff", ServerConfig[svCfgPreviewCameraPos][0],
-		ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2],
-		ServerConfig[svCfgPreviewCameraPos][3], ServerConfig[svCfgPreviewCameraPos][4],
-		ServerConfig[svCfgPreviewCameraPos][5]);
-        
-        cache_get_value_name(0, "name", ServerConfig[svCfgName]);
-        cache_get_value_name(0, "mode", ServerConfig[svCfgMode]);
-        cache_get_value_name(0, "discord", ServerConfig[svCfgDiscord]);
-        cache_get_value_name(0, "site", ServerConfig[svCfgSite]);
-        cache_get_value_name(0, "language", ServerConfig[svCfgLanguage]);
-        
-        format(buff, sizeof(buff), "weburl %s", ServerConfig[svCfgSite]);
-        SendRconCommand(buff);
-        
-        format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
-        SendRconCommand(buff);
-        
-        printf("(1): Server configuration loaded...");
-        return 1;
-	}
-	
-	printf("(1): Server configuration failed");
-	return 0;
 }
 
 custom LoginOrRegister(const playerid) {
@@ -1017,42 +1036,42 @@ stock UnloadFilterScript(const filename[]) {
 stock SetMapName() {
     static const cmd[] = "mapname %s";
     new formated[sizeof(cmd) + MAX_MAP_NAME];
-	format(formated, sizeof(formated), cmd, MapConfig[mpName]);
+	format(formated, sizeof(formated), cmd, Map[mpName]);
 	SendRconCommand(formated);
 }
 
 stock CheckToStartMap() {
-    if(!MapConfig[mpIsStarted] && !MapConfig[mpPaused]) {
+    if(!Map[mpIsStarted] && !Map[mpPaused]) {
 		LoadNewMap();
 	}
 }
 
 stock ShowCheckpoint(const playerid) {
 	SetPlayerCheckpoint(playerid,
-		MapConfig[mpCheckpointCoords][0],
-		MapConfig[mpCheckpointCoords][1],
-		MapConfig[mpCheckpointCoords][2],
-		MapConfig[mpCheckpointSize]
+		Map[mpCheckpointCoords][0],
+		Map[mpCheckpointCoords][1],
+		Map[mpCheckpointCoords][2],
+		Map[mpCheckpointSize]
 	);
 }
 
 stock LoadNewMap() {
-	if((MapConfig[mpId]-1) > MapConfig[mpCount] || MapConfig[mpId] < 1) {
-		MapConfig[mpId] = 1;
+	if((Map[mpId]-1) > Map[mpCount] || Map[mpId] < 1) {
+		Map[mpId] = 1;
 	}
 	
 	static const loadMapQuery[] = LOAD_MAP_DATA_QUERY;
 	new formated[sizeof(loadMapQuery) + MAX_ID_LENGTH];
- 	mysql_format(Database, formated, sizeof(formated), loadMapQuery, MapConfig[mpId]);
+ 	mysql_format(Database, formated, sizeof(formated), loadMapQuery, Map[mpId]);
  	mysql_tquery(Database, formated, "LoadMap");
 }
 
 
 stock SetMapId() {
-    if(MapConfig[mpId] < MapConfig[mpCount]) {
-		MapConfig[mpId]++;
+    if(Map[mpId] < Map[mpCount]) {
+		Map[mpId]++;
 	} else {
-		MapConfig[mpId] = 1;
+		Map[mpId] = 1;
 	}
 }
 
@@ -1265,12 +1284,12 @@ stock InitializeDefaultValues() {
     }
     
     for( j = 0; j < MAX_MAP_GATES; j++ ) {
-	    MapConfig[mpGates][j] = INVALID_OBJECT_ID;
+	    Map[mpGates][j] = INVALID_OBJECT_ID;
 	}
 	
-	MapConfig[mpActor] = -1;
-	MapConfig[mpFlag] = -1;
-	MapConfig[mpFlagText] = Text3D:-1;
+	Map[mpActor] = -1;
+	Map[mpFlag] = -1;
+	Map[mpFlagText] = Text3D:-1;
 }
 
 stock DestroyPlayersScreenTextures() {
@@ -1310,12 +1329,12 @@ stock ClearPlayerRoundData(const playerid) {
 	
 	for( i = 0; i < MAX_MAP_SPAWNS; i++ ) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
-		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, "{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here", 0xFF0000FF, MapConfig[mpZombieSpawnX][i], MapConfig[mpZombieSpawnY][i], MapConfig[mpZombieSpawnZ][i], 50.0);
+		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, "{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here", 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], 50.0);
 	}
 }
 
 stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
-	if(RoundSession[playerid][rsdTeam] != GetPlayerTeamEx(playerid) || RoundSession[playerid][rsdMapId] != MapConfig[mpId]) {
+	if(RoundSession[playerid][rsdTeam] != GetPlayerTeamEx(playerid) || RoundSession[playerid][rsdMapId] != Map[mpId]) {
 	    return false;
 	}
 
@@ -1333,19 +1352,19 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 stock GivePointsForRound(const playerid) {
 	Player[playerid][pPoints] +=
 	float(
-		clamp(floatround(RoundSession[playerid][rsdSurvival], floatround_tozero), 0, 25) +
-		clamp(floatround(RoundSession[playerid][rsdKilling], floatround_tozero), 0, 25) +
-		clamp(floatround(RoundSession[playerid][rsdCare], floatround_tozero), 0, 25) +
-		clamp(floatround(RoundSession[playerid][rsdMobility], floatround_tozero), 0, 25) +
-		clamp(floatround(RoundSession[playerid][rsdSkillfulness], floatround_tozero), 0, 25) +
-		clamp(floatround(RoundSession[playerid][rsdBrutality], floatround_tozero), 0, 25) +
-		clamp(floatround(RoundSession[playerid][rsdDeaths], floatround_tozero), 0, 25)
+		clamp(floatround(RoundSession[playerid][rsdSurvival], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		clamp(floatround(RoundSession[playerid][rsdKilling], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		clamp(floatround(RoundSession[playerid][rsdCare], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		clamp(floatround(RoundSession[playerid][rsdMobility], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		clamp(floatround(RoundSession[playerid][rsdSkillfulness], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		clamp(floatround(RoundSession[playerid][rsdBrutality], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		clamp(floatround(RoundSession[playerid][rsdDeaths], floatround_tozero), 0, RoundConfig[rdCfgCap])
 	);
 }
 
 
 stock ResetRoundSessionOnMapStart(const playerid) {
-    RoundSession[playerid][rsdMapId] = MapConfig[mpId];
+    RoundSession[playerid][rsdMapId] = Map[mpId];
     RoundSession[playerid][rsdTeam] = GetPlayerTeamEx(playerid);
     RoundSession[playerid][rsdSurvival] = 0.0;
     RoundSession[playerid][rsdKilling] = 0.0;
@@ -1378,17 +1397,17 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	if(old != teamid) {
 	    switch(teamid) {
 	    	case TEAM_ZOMBIE: {
-				MapConfig[mpTeamCount][0]++;
+				Map[mpTeamCount][0]++;
 
 				if(old == TEAM_HUMAN) {
-					MapConfig[mpTeamCount][1]--;
+					Map[mpTeamCount][1]--;
 				}
 			}
 	    	case TEAM_HUMAN: {
-				MapConfig[mpTeamCount][1]++;
+				Map[mpTeamCount][1]++;
 
 				if(old == TEAM_ZOMBIE) {
-					MapConfig[mpTeamCount][0]--;
+					Map[mpTeamCount][0]--;
 				}
         	}
 		}
@@ -1420,14 +1439,14 @@ stock SetByCurrentClass(const playerid) {
 	switch(GetPlayerTeamEx(playerid)) {
 	    case TEAM_ZOMBIE: {
 			SetZombie(playerid, current);
-			SetPlayerPos(playerid, 	MapConfig[mpZombieSpawnX][point] + distance, MapConfig[mpZombieSpawnY][point] + distance, MapConfig[mpZombieSpawnZ][point]);
-			SetPlayerFacingAngle(playerid, MapConfig[mpZombieSpawnA][point]);
+			SetPlayerPos(playerid, 	Map[mpZombieSpawnX][point] + distance, Map[mpZombieSpawnY][point] + distance, Map[mpZombieSpawnZ][point]);
+			SetPlayerFacingAngle(playerid, Map[mpZombieSpawnA][point]);
 			SetCameraBehindPlayer(playerid);
 		}
 	    case TEAM_HUMAN: {
 			SetHuman(playerid, current);
-			SetPlayerPos(playerid, 	MapConfig[mpHumanSpawnX][point] + distance, MapConfig[mpHumanSpawnY][point] + distance, MapConfig[mpHumanSpawnZ][point]);
-			SetPlayerFacingAngle(playerid, MapConfig[mpHumanSpawnA][point]);
+			SetPlayerPos(playerid, 	Map[mpHumanSpawnX][point] + distance, Map[mpHumanSpawnY][point] + distance, Map[mpHumanSpawnZ][point]);
+			SetPlayerFacingAngle(playerid, Map[mpHumanSpawnA][point]);
 			SetCameraBehindPlayer(playerid);
   		}
 	}
@@ -1515,7 +1534,7 @@ stock CreatePickupEx(const pickupid, const type, const Float:x, const Float:y, c
     if(id >= 0 && pickupid <= MAX_PICKUPS) {
 	 	Pickups[id][pcd_id] = id;
 	 	Pickups[id][pcd_model] = pickupid;
-	 	Pickups[id][pcd_protection_till] = gettime() + 30;
+	 	Pickups[id][pcd_protection_till] = gettime() + ServerConfig[svCfgPickupProtection];
 	 	Pickups[id][pcd_for_player] = playerid;
 	 	Pickups[id][is_active] = true;
 	}
