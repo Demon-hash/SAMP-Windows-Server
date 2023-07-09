@@ -14,10 +14,13 @@
 #define LOAD_ROUND_CFG_QUERY "SELECT * FROM round_config WHERE 1;"
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`='0';"
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
+#define LOAD_PLAYER_WEAPONS_QUERY "SELECT *, COUNT(`weapon_id`) AS amount FROM `weapons` WHERE `account_id`=%d AND `time` > %d GROUP BY `weapon_id` ORDER BY `time` DESC LIMIT %d;"
+#define CREATE_PLAYER_WEAPON_QUERY "INSERT INTO `weapons` (account_id, weapon_id, time, set_as_default) VALUES (%d, %d, %d, 1);"
+#define REFRESH_PLAYER_WEAPONS_QUERY "DELETE FROM `weapons` WHERE `time` < %d;"
 #define LOAD_GANGS_CFG_QUERY "SELECT * FROM gangs_config WHERE 1;"
 #define LOAD_EVAC_CFG_QUERY "SELECT * FROM evac_config WHERE 1;"
 #define LOAD_MAP_CFG_QUERY "SELECT * FROM map_config WHERE 1;"
-
+#define LOAD_WEAPONS_CFG_QUERY "SELECT * FROM weapons_config WHERE 1;"
 
 #define CHECK_USER_QUERY "\
 	SELECT \n\

@@ -45,3 +45,9 @@ stock DestroyActorEx(&id) {
 	
 	id = -1;
 }
+
+stock swap(&a, &b) {
+	new temp = b;
+	b = a;
+	a = temp;
+}

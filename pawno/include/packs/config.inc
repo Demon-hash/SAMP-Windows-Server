@@ -17,4 +17,5 @@ enum CONFIG_DATA {
 	Float:svCfgInfectionDamage,
 	svCfgAuthTries,
 	svCfgAuthTimeout,
+	svCfgCurrentOnline,
 };

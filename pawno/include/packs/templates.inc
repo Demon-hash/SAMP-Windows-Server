@@ -241,16 +241,16 @@
 	CREATE TABLE IF NOT EXISTS gangs_config (\
 	`id` int(11) unsigned NOT NULL,\
 	`capacity` int(3) unsigned NOT NULL default '10',\
-	`required` DECIMAL(6,3) unsigned NOT NULL default '25000',\
-	`default` DECIMAL(6,3) unsigned NOT NULL default '100000',\
-	`multiply` DECIMAL(6,3) unsigned NOT NULL default '2',\
-	`armour_per_level` DECIMAL(6,3) unsigned NOT NULL default '10',\
-	`bot_health` DECIMAL(6,3) unsigned NOT NULL default '50000',\
-	`flag_distance` DECIMAL(6,3) unsigned NOT NULL default '100',\
-	`per_cure` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`per_kill` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`per_evac` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`per_ability` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`required` DECIMAL(6,1) unsigned NOT NULL default '25000.0',\
+	`default` DECIMAL(6,1) unsigned NOT NULL default '5000.0',\
+	`multiply` DECIMAL(6,1) unsigned NOT NULL default '2.0',\
+	`armour_per_level` DECIMAL(6,3) unsigned NOT NULL default '10.0',\
+	`bot_health` DECIMAL(8,3) unsigned NOT NULL default '50000.0',\
+	`flag_distance` DECIMAL(6,3) unsigned NOT NULL default '100.0',\
+	`per_cure` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`per_kill` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`per_evac` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`per_ability` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
 	`per_assist` DECIMAL(6,3) unsigned NOT NULL default '0.25',\
 	`flag_id` int(11) unsigned NOT NULL default '11245',\
 	PRIMARY KEY (`id`)\
@@ -285,16 +285,6 @@
 	PRIMARY KEY (`id`)\
 );"
 
-#define WEAPONS_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS weapons (\
-	`id` int(11) unsigned NOT NULL,\
-	`type` int(3) unsigned NOT NULL default '0',\
-	`min` int(4) unsigned NOT NULL default '0',\
-	`max` int(4) unsigned NOT NULL default '1',\
-	`pick` int(4) unsigned NOT NULL default '0',\
-	PRIMARY KEY (`id`)\
-);"
-
 #define LANGUAGES_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS english (\
 	`id` int(11) unsigned NOT NULL,\
@@ -308,8 +298,8 @@
 	`name` varchar(255) NOT NULL default '',\
 	`description` varchar(255) NOT NULL default '',\
 	`team` int(3) unsigned NOT NULL default '0',\
-	`health` DECIMAL(6,3) unsigned NOT NULL default '100',\
-	`armour` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`health` DECIMAL(6,3) unsigned NOT NULL default '100.0',\
+	`armour` DECIMAL(6,3) unsigned NOT NULL default '0.0',\
     	`level` int(3) unsigned NOT NULL default '0',\
     	`ability` int(3) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
@@ -326,10 +316,10 @@
 	CREATE TABLE IF NOT EXISTS config (\
 	`id` int(11) unsigned NOT NULL,\
 	`pickup_protection` int(4) unsigned NOT NULL default '30',\
-	`kills` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '15',\
-	`cure` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`ability` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`kills` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '15.0',\
+	`cure` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`ability` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
 	`infection_damage` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
 	`fists_damage` DECIMAL(6,3) unsigned NOT NULL default '5.0',\
 	`infection_drunk` int(6) unsigned NOT NULL default '50000',\
@@ -413,14 +403,14 @@
 	CREATE TABLE IF NOT EXISTS round_config (\
 	`id` int(11) unsigned NOT NULL,\
 	`survival_per` int(11) unsigned NOT NULL default '30',\
-	`evac` DECIMAL(6,3) unsigned NOT NULL default '15',\
+	`evac` DECIMAL(6,3) unsigned NOT NULL default '15.0',\
 	`survival` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`killing` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
 	`care` DECIMAL(6,3) unsigned NOT NULL default '2.5',\
 	`mobility` DECIMAL(6,6) unsigned NOT NULL default '0.0125',\
 	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
-	`brutality` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`undead` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`brutality` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`undead` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
 	`cap` int(3) unsigned NOT NULL default '25',\
    	PRIMARY KEY (`id`)\
 );"
@@ -445,6 +435,27 @@
    	PRIMARY KEY (`id`)\
 );"
 
+#define WEAPONS_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS weapons_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`type` int(3) unsigned NOT NULL,\
+	`chance` int(3) unsigned NOT NULL default '0',\
+	`default` int(4) unsigned NOT NULL default '0',\
+	`pick` int(4) unsigned NOT NULL default '0',\
+	`time` int(11) unsigned NOT NULL default '1209600',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define WEAPONS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS weapons (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`weapon_id` int(3) unsigned NOT NULL,\
+	`time` int(6) unsigned NOT NULL default '1209600',\
+	`set_as_default` int(1) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
 #define PREDIFINED_CONFIG "INSERT IGNORE INTO config (id) VALUES (1);"
 #define PREDIFINED_ANTICHEAT "INSERT IGNORE INTO anticheat (id) VALUES (1);"
@@ -455,7 +466,7 @@
 #define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
 	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `npc_coords`, `npc_skin`, `flag_coords`, `flag_coords_text`, `disabled`) \
 	VALUES \
-	(1, 'The Village', 'village', 0, 0, 12, '15.000', '', '1.000', 12, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,16.1849,1.0143', 158, '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', 0);\
+	(1, 'The Village', 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', 158, '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', 0);\
 "
 
 #define PREDIFINED_CIVILIAN "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (1, \"Civilian|Гражданский\", \"No abilities|Без способностей\", 2, 0, 0, 0, 37, 0);"
@@ -476,19 +487,21 @@
 #define PREDIFINED_RUNNER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (15, \"Runner Zombie|Быстрый Зомби\", \"Fast Run|Быстрый Бег\", 1, 21, 0, 0, 0, 0);"
 #define PREDIFINED_SEEKER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (16, \"Seeker Zombie|Охотник Зомби\", \"Can Teleport|Может Телепортироватся\", 1, 24, 11, 45, 142, 0);"
 
-#define PREDIFINED_SILINCED "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (1, 23, 50, 150, 10);"
-#define PREDIFINED_COLT45 "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (2, 22, 50, 150, 10);"
-#define PREDIFINED_DEAGLE "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (3, 24, 50, 100, 10);"
-#define PREDIFINED_UZI "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (4, 28, 150, 400, 50);"
-#define PREDIFINED_TEC9 "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (5, 32, 150, 300, 50);"
-#define PREDIFINED_MP5 "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (6, 29, 150, 300, 35);"
-#define PREDIFINED_AK47 "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (7, 30, 300, 500, 30);"
-#define PREDIFINED_M4 "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (8, 31, 300, 500, 30);"
-#define PREDIFINED_RIFLE "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (9, 33, 15, 30, 3);"
-#define PREDIFINED_SNIPER "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (10, 34, 50, 50, 3);"
-#define PREDIFINED_FLAMETHOWER "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (11, 37, 500, 500, 150);"
-#define PREDIFINED_GRENADE "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (12, 16, 3, 15, 1);"
-#define PREDIFINED_SPAS "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (13, 27, 50, 50, 3);"
+#define PREDIFINED_SILINCED "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (1, 23, 100, 50, 10);"
+#define PREDIFINED_COLT45 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (2, 22, 100, 50, 10);"
+#define PREDIFINED_DEAGLE "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (3, 24, 75, 50, 10);"
+#define PREDIFINED_SPAS "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (4, 27, 5, 50, 3);"
+#define PREDIFINED_UZI "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (5, 28, 12, 150, 50);"
+#define PREDIFINED_MP5 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (6, 29, 5, 300, 35);"
+#define PREDIFINED_AK47 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (7, 30, 9, 300, 30);"
+#define PREDIFINED_M4 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (8, 31, 5, 300, 30);"
+#define PREDIFINED_TEC9 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (9, 32, 9, 150, 50);"
+#define PREDIFINED_RIFLE "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (10, 33, 20, 15, 3);"
+#define PREDIFINED_SNIPER "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (11, 34, 20, 50, 3);"
+#define PREDIFINED_RPG "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (12, 35, 1, 5, 1);"
+#define PREDIFINED_HEATSEEKER "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (13, 36, 1, 5, 1);"
+#define PREDIFINED_FLAMETHOWER "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (11, 37, 1, 500, 150);"
+#define PREDIFINED_C4 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (12, 39, 10, 20, 2);"
 
 #define PRD_LD_DG_LOGIN_TITLE "INSERT IGNORE INTO english (id, text) VALUES (1, 'Login');"
 #define PRD_LD_DG_LOGIN_DEFAULT "INSERT IGNORE INTO english (id, text) VALUES (2, 'Welcome back, your account is already registered\nEnter your password below to login');"
