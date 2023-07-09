@@ -21,12 +21,20 @@
 #include <packs/dialogs>
 #include <packs/language>
 #include <packs/maps>
+#include <packs/utils>
+#include <packs/evacuation>
 
 #include <dependencies/foreach>
 #include <dependencies/sscanf2>
 #include <dependencies/dc_cmd>
 #include <dependencies/a_mysql>
 #include <dependencies/indirection>
+#include <dependencies/date>
+
+#pragma warning disable 208
+#pragma warning disable 239
+
+#define SERVER_TIMESTAMP 3
 
 #undef MAX_PLAYERS
 #define MAX_PLAYERS 50

@@ -1,9 +1,6 @@
 #include <packs/core>
 #include <packs/developer>
 
-#pragma warning disable 208
-#pragma warning disable 239
-
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
 	GANGS_TEMPLATE, GANGS_USERS_TEMPLATE, GANGS_REQUESTS_TEMPLATE,
@@ -13,10 +10,10 @@ static const sqlTemplates[][] = {
 	NAMELOG_TEMPLATE, LOGINLOG_TEMPLATE, PAYLOG_TEMPLATE,
 	AUCTIONLOG_TEMPLATE, WARNSLOG_TEMPLATE, MUTESLOG_TEMPLATE,
 	MUTESLOG_TEMPLATE, JAILSLOG_TEMPLATE, GANGPAYLOG_TEMPLATE,
-	GANGDEPOSITLOG_TEMPLATE, AUCTION_TEMPLATE,
-	AUCTION_CASHBACK_TEMPLATE, ACHIEVEMENTS_TEMPLATE,
-	CONFIG_TEMPLATE, STATS_TEMPLATE, ANTICHEAT_TEMPLATE,
-	ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE
+	AUCTION_TEMPLATE, AUCTION_CASHBACK_TEMPLATE,
+	ACHIEVEMENTS_TEMPLATE, CONFIG_TEMPLATE, STATS_TEMPLATE,
+	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
+	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -32,7 +29,7 @@ static const sqlPredifinedValues[][] = {
     PREDIFINED_M4, PREDIFINED_RIFLE, PREDIFINED_SNIPER,
     PREDIFINED_FLAMETHOWER, PREDIFINED_GRENADE, PREDIFINED_SPAS,
     PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
-    PREDIFINED_MAP_VILLAGE
+    PREDIFINED_MAP_VILLAGE, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG
 };
 
 static const sqlPredifinedLocalization[][] = {
@@ -42,18 +39,24 @@ static const sqlPredifinedLocalization[][] = {
 };
 
 static Player[MAX_PLAYERS][PLAYER_DATA];
-static Round[MAX_PLAYERS][ROUND_DATA];
 static Misc[MAX_PLAYERS][MISC_DATA];
 static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
-static Pickups[MAX_PICKUPS][PICKUP_DATA];
+
+static Round[MAX_PLAYERS][ROUND_DATA];
+static RoundSession[MAX_PLAYERS][ROUND_SESSION_DATA];
+
 static Gangs[MAX_GANGS][GANG_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
+static Pickups[MAX_PICKUPS][PICKUP_DATA];
 
 static MapConfig[MAP_DATA];
+static RoundConfig[ROUND_DATA_CONFIG];
+
 static AchievementsConfig[1];
 static AnticheatConfig[1];
 static GangsConfig[GANGS_CONFIG_DATA];
+static EvacuationConfig[EVACUATION_CONFIG_DATA];
 static ServerConfig[CONFIG_DATA];
 
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
@@ -74,125 +77,19 @@ static
 // CreatePlayer3DTextLabel
 // OnPlayerGiveDamageActor
 
-/*
-	1.1 Account
-	    * We have the right to collect this information: IPs, Machine IDs, (un)bans, (gang) payments / deposits, names, mutes, warns, jails
-	
-	- The purchase of game values for real money between players is allowed, however, the administration and the founder of the project are not responsible for the transactions made
-		* In case of cheating, we can ban the cheater
-*/
+#define GANG_CONTROL_TEXT "{FFFFFF}%s\n\
+		 {FFF000}Controlled by {FFFFFF}%s\n\
+		 {FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n\
+		 {FFF000}This gang has killed the defender or scored a large number of points to capture the map\n\
+		 {FFF000}The gang members get extra points for the following actions:\n\n\
+		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n\
+		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n\
+		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n\
+		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n\
+		 {FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist\
+		 "
 
-/*
- - General Changes To Gameplay:
- - Zombies don't have chainsaw anymore, use your fists to deal damage (5 HP)
- - Classes unlocks abilities, but not weapons, you can set your own weapons
- - All classes can be infected
- - Points is gained from the quality of the round you played:
-    * Survival (5 for evacuation)
-    * Infect / Ability / Cure (3)
-    * Kill (1)
-    * Camping (0.3)
-    
- - Gangs:
-    - Capacity is 10 members only,
-    - Create a gang required 25,000 points
- 	- Quests (5):
-		* Reach a total of 100,000 points (Reward: 10 Armour)
-		* Reach a total of 200,000 points (Reward: 20 Armour)
-		* Reach a total of 300,000 points (Reward: 30 Armour)
-		* Reach a total of 400,000 points (Reward: 40 Armour)
-		* Reach a total of 500,000 points (Reward: 50 Armour)
-	 - How to capture:
-    	* At the end of the round, gang players will receive weapons and must inflict the maximum possible damage on the spawned bot
-		* The map will be captured by the gang that deals the most damage
- - Maps:
-    * Captured map gives more points for killing (+2)
-    * The gang holding the map receives additional experience points for actions:
-    	* Infect / Ability / Cure (0.1%)
-    	* Evac (0.5%)
-*/
 
-/*
-	General Weekly Quests:
- 	- Kill 300 zombies (Skins Chest) (one per week)
- 	- Kill 300 humans (Skins Chest) (one per week)
- 	
-	- Infect 300 humans (Accessory Chest) (one per week)
- 	- Cure 300 humans (Accessory Chest) (one per week)
-*/
-
-/*
-	    "%sTrainee\t%sUse your class ability 1 time (0.2 EXP){FFFFFF} [%d/1]\n",
-	    "%sSemi experienced\t%sUse your class ability 500 times (0.5 EXP){FFFFFF} [%d/500]\n",
-	    "%sExperienced\t%sUse your class ability 1000 times (1 EXP){FFFFFF} [%d/1000]\n",
-	    "%sJogging\t%sRun 10,000 kilometers (5 EXP){FFFFFF} [%.3f/10,000]\n",
-	    "%sRunner\t%sRun 50,000 kilometers (15 EXP){FFFFFF} [%.3f/50,000]\n",
-	    "%sOlympic champion\t%sRun 200,000 kilometers (20 EXP){FFFFFF} [%.3f/200,000]\n",
-	    "%sLucky\t%sSurvive with a health of 1, 3 times (3 EXP){FFFFFF} [%d/3]\n",
-	    "%sInviolable\t%sSurvive with a health of 1, 10 times (8 EXP){FFFFFF} [%d/10]\n",
-	    "%sCheat death\t%sSurvive with a health of 1, 20 times (15 EXP){FFFFFF} [%d/20]\n",
-	    "%sManiac\t%sKill 10 humans (1 EXP){FFFFFF} [%d/20]\n",
-	    "%sSerial maniac\t%sKill 100 humans (5 EXP){FFFFFF} [%d/100]\n",
-	    "%sJack the ripper\t%sKill 1000 humans (8 EXP){FFFFFF} [%d/1000]\n",
-	    "%sConductor\t%sKill 10 zombies (20 EXP){FFFFFF} [%d/20]\n",
-     	"%sUndead slayer\t%sKill 100 zombies (300 EXP){FFFFFF} [%d/100]\n",
-     	"%sSaint\t%sKill 1000 zombies (2000 EXP){FFFFFF} [%d/1000]\n\n",
-     	"%sTerrorist\t%sKill 10000 players (10000 EXP){FFFFFF} [%d/10000]\n",
-     	"%sCollector\t%sCollect 100 Meats (200 EXP){FFFFFF} [%d/100]\n",
-     	"%sButcher\t%sCollect 1000 Meats (1000 EXP){FFFFFF} [%d/1000]\n",
-     	"%sMadman\t%sCollect 5000 Meats (3000 EXP){FFFFFF} [%d/5000]\n",
-     	"%sBlood lover\t%sAchieve 5 killstreaks (10 EXP){FFFFFF} [%d/5]\n",
-     	"%sMeat lover\t%sAchieve 50 killstreaks (4000 EXP){FFFFFF} [%d/50]\n",
-     	"%sThe Killer Machine\t%sAchieve 100 killstreaks (10000 EXP){FFFFFF} [%d/100]\n",
-     	"%sNurse\t%s/cure 1 human (10 EXP){FFFFFF} [%d/1]\n",
-     	"%sMedic\t%s/cure 50 humans (150 EXP){FFFFFF} [%d/50]\n", 
-     	"%sDoctor\t%s/cure 100 humans (400 EXP){FFFFFF} [%d/100]\n",
-     	"%sRisen from the grave\t%sDie 10 times (10 EXP){FFFFFF} [%d/10]\n",
-     	"%sDead Rising Army\t%sDie 100 times (100 EXP){FFFFFF} [%d/100]\n",
-     	"%sDo Not Even Try\t%sDie 1000 times (1000 EXP){FFFFFF} [%d/1000]\n",
-
-		 "%sCollection Point\t%sEvac 5 times (2000 EXP){FFFFFF} [%d/1]\n",
-		 "%sSafe Place\t%sEvac 100 times (2000 EXP){FFFFFF} [%d/1]\n",
-		 "%sSafe Zone\t%sEvac 300 times (2000 EXP){FFFFFF} [%d/1]\n",
-     	
-     	"%sTrust but check\t%s/report 10 cheaters (100 EXP){FFFFFF} [%d/10]\n",
-     	"%sExemplary\t%s/report 50 cheaters (500 EXP){FFFFFF} [%d/50]\n",
-     	"%sLaw-abiding\t%s/report 100 cheaters (2000 EXP){FFFFFF} [%d/100]\n",
-     	
-     	"%sAmateur\t%sMake 50 purchases in /shop (200 EXP){FFFFFF} [%d/50]\n",
-     	"%sShopaholic\t%sMake 100 purchases in /shop (1000 EXP){FFFFFF} [%d/100]\n",
-     	"%sMoney in nowhere\t%sMake 200 purchases in /shop (5000 EXP){FFFFFF} [%d/200]\n",
-     	
-     	"%sIn cash\t%sGet a total of 100,000 points (5000 EXP){FFFFFF} [%d/200]\n",
-     	"%sBusinessman\t%sGet a total of 500,000 points (5000 EXP){FFFFFF} [%d/200]\n",
-     	"%sMillionaire\t%sGet a total of 1,000,000 points (5000 EXP){FFFFFF} [%d/200]\n",
-
-        "%sUnknown virus\t%sInfect 50 humans (20 EXP){FFFFFF} [%d/1000]\n",
-        "%sDisease\t%sInfect 300 humans (20 EXP){FFFFFF} [%d/1000]\n",
-		"%sMass infection\t%sInfect 1000 humans (20 EXP){FFFFFF} [%d/1000]\n",
-        
-        "%sFan\t%sPlay for one week in total (50 EXP){FFFFFF} [%d/168]\n",
-        "%sGamer\t%sPlay for half a year in total (200 EXP){FFFFFF} [%d/4380]\n",
-        "%sExanimate\t%sPlay for 1 year in total (500 EXP){FFFFFF} [%d/8760]\n",
-        "%sJumper\t%sJump 100 times (200 EXP){FFFFFF} [%d/100]\n", // 66
-        "%sToad paws\t%sJump 300 times (700 EXP){FFFFFF} [%d/300]\n", // 67
-        "%sPilot\t%sJump 700 times (1500 EXP){FFFFFF} [%d/700]\n", // 68
-
-        "%sParable\t%sComplete 1 gang quests (5000 EXP)\n", // 77
-        "%sTales\t%sComplete 2 gang quests (5000 EXP)\n", // 77
-        "%sStory\t%sComplete 3 gang quests (5000 EXP)\n", // 77
-        "%sHistory\t%sComplete 4 gang quests (25000 EXP)\n", // 78
-        "%sLegend\t%sComplete 5 gang quests (100000 EXP)\n", // 79
-*/
-
-enum {
-	ACH_TIME_VICTIM,
-	ACH_PARABLE,
-	ACH_TALES,
-	ACH_STORY,
-	ACH_HISTORY,
-	ACH_LEGEND,
-};
 
 main() {
 }
@@ -228,6 +125,9 @@ public OnGameModeInit() {
 	
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
 	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsConfiguration");
+	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundDataConfiguration");
+	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacDataConfiguration");
+	
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
 	
  	mysql_log(SQL_LOG_LEVEL);
@@ -250,19 +150,44 @@ public OnGameModeExit() {
 public OnPlayerConnect(playerid) {
     ClearAllPlayerData(playerid);
     CheckForAccount(playerid);
+    
+    new formated[64];
+    foreach(Player, i) {
+        format(formated, sizeof(formated), "%s (ID: %d) has joined the server", Misc[playerid][mdPlayerName], playerid);
+        SendClientMessage(i, 0xC0C0C0FF, formated);
+    }
     return 1;
 }
 
+public OnPlayerDisconnect(playerid, reason) {
+	static const reasons[] = { "Timeout", "Leave", "Kick" };
+	
+    new formated[64];
+    foreach(Player, i) {
+        format(formated, sizeof(formated), "*** %s has left the server [%s]", Misc[playerid][mdPlayerName], reasons[reason]);
+        SendClientMessage(i, 0xC0C0C0FF, formated);
+    }
+	return 1;
+}
+
 public OnPlayerRequestClass(playerid, classid) {
+    SetPlayerVirtualWorld(playerid, 1000 + playerid);
+
+    SetSpawnInfo(
+		playerid, TEAM_ZOMBIE, ServerConfig[svCfgPreviewBot],
+		MapConfig[mpZombieSpawnX][0], MapConfig[mpZombieSpawnY][0], MapConfig[mpZombieSpawnZ][0],
+		0.0, 0, 0, 0, 0, 0, 0
+	);
+
     SetPlayerPos(playerid, ServerConfig[svCfgPreviewBotPos][0],
 	ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2]);
 	SetPlayerFacingAngle(playerid, ServerConfig[svCfgPreviewBotPos][3]);
-	
+
 	SetPlayerCameraPos(playerid, ServerConfig[svCfgPreviewCameraPos][0],
 	ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2]);
 	SetPlayerCameraLookAt(playerid, ServerConfig[svCfgPreviewCameraPos][3],
 	ServerConfig[svCfgPreviewCameraPos][4], ServerConfig[svCfgPreviewCameraPos][5]);
-	
+
 	SetPlayerSkin(playerid, ServerConfig[svCfgPreviewBot]);
 	return 1;
 }
@@ -274,27 +199,26 @@ public OnPlayerRequestSpawn(playerid) {
 	return 1;
 }
 
-public OnPlayerDisconnect(playerid, reason) {
-	return 1;
-}
-
 public OnPlayerSpawn(playerid) {
 	if(!Misc[playerid][mdIsLogged]) {
 	    return 0;
 	}
-	
-    SetByCurrentClass(playerid);
-    
+
     CheckToStartMap();
-    
+    SetByCurrentClass(playerid);
+    SetPlayerVirtualWorld(playerid, 0);
     SetPlayerWeather(playerid, MapConfig[mpWeather]);
 	SetPlayerTime(playerid, MapConfig[mpTime], 0);
 	return 1;
 }
 
 public OnPlayerUpdate(playerid) {
-	if(GetPlayerSpeed(playerid) >= 10) {
-	    Achievements[playerid][achRan] += 0.0125; // 0.125 for humans
+	if(GetPlayerSpeed(playerid) >= 10 && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) {
+	    Achievements[playerid][achRan] += 0.00001;
+
+		if(IsAbleToGivePointsInCategory(playerid, SESSION_RUN_POINTS)) {
+			RoundSession[playerid][rsdMobility] += RoundConfig[rdCfgMobility];
+		}
 	}
 	SetPlayerScore(playerid, Achievements[playerid][achRank]);
 	return 1;
@@ -307,6 +231,16 @@ public OnPlayerDeath(playerid, killerid, reason) {
 
     reason = clamp(reason, WEAPON_FISTS, WEAPON_COLLISION);
 	SendDeathMessage(killerid, playerid, reason);
+	
+	if(IsPlayerConnected(killerid)) {
+	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
+	        RoundSession[killerid][rsdKilling] += RoundConfig[rdCfgKilling];
+	    }
+	}
+	
+	if(IsAbleToGivePointsInCategory(playerid, SESSION_UNDEAD_POINTS)) {
+	    RoundSession[playerid][rsdDeaths] += RoundConfig[rdCfgDeaths];
+	}
 
  	ClearPlayerRoundData(playerid);
 	CreateDropOnDeath(playerid, killerid);
@@ -347,7 +281,33 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 }
 
 public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart) {
+	if(IsAbleToGivePointsInCategory(issuerid, SESSION_HIT_POINTS) && weaponid == 0) {
+        RoundSession[playerid][rsdBrutality] += RoundConfig[rdCfgBrutality];
+	}
+
     ShowDamageTaken(playerid, amount);
+	return 1;
+}
+
+public OnPlayerEnterCheckpoint(playerid) {
+	if(GetPlayerTeamEx(playerid) != TEAM_HUMAN || Round[playerid][rdIsEvacuated]) {
+	    return 1;
+	}
+	
+ 	if(IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS)) {
+  		RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgEvac];
+  	}
+
+	PlayerPlaySound(playerid, EvacuationConfig[ecdCfgSound], 0.0, 0.0, 0.0);
+	SetPlayerPos(playerid, EvacuationConfig[ecdCfgPosition][0], EvacuationConfig[ecdCfgPosition][1], EvacuationConfig[ecdCfgPosition][2]);
+	SetPlayerFacingAngle(playerid, EvacuationConfig[ecdCfgPosition][3]);
+	SetCameraBehindPlayer(playerid);
+	SetPlayerInterior(playerid, EvacuationConfig[ecdCfgInterior]);
+	
+	DisablePlayerCheckpoint(playerid);
+	SetPlayerColor(playerid,COLOR_EVACUATED);
+	CurePlayer(playerid);
+	Round[playerid][rdIsEvacuated] = true;
 	return 1;
 }
 
@@ -389,6 +349,14 @@ public OnPlayerCommandPerformed(playerid, cmdtext[], success) {
 		return 0;
 	}
 	return 1;
+}
+
+public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
+    if(KEY(KEY_WALK)) {
+        if(IsAbleToGivePointsInCategory(playerid, SESSION_ABILITY_POINTS)) {
+            RoundSession[playerid][rsdSkillfulness] += RoundConfig[rdCfgSkillfulness];
+        }
+	}
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
@@ -498,11 +466,15 @@ custom Update() {
 	        	SetPlayerDrunkLevel(playerid, 50000);
     		}
     		
-    		format(formated, sizeof(formated),"%d", Player[playerid][pPoints]);
+    		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
     		TextDrawSetString(PointsTexture[playerid], formated);
     		
     		format(formated, sizeof(formated), "~w~humans: %d~n~~r~zombies: %d", MapConfig[mpTeamCount][1], MapConfig[mpTeamCount][0]);
             TextDrawSetString(AliveInfoTexture[playerid], formated);
+            
+            if(!MapConfig[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (MapConfig[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
+                RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgSurvival];
+            }
 	    }
 	}
 	
@@ -512,17 +484,20 @@ custom Update() {
 }
 
 custom LoadMapsCount() {
-     if(cache_num_rows()) {
+	if(cache_num_rows()) {
         cache_get_value_name_int(0, "maps", MapConfig[mpCount]);
-        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        printf("%d maps are loaded!", MapConfig[mpCount]);
-        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        printf("(4) Load maps... (%d)", MapConfig[mpCount]);
+        return 1;
     }
+    
+	printf("(4) Load maps failed");
+	return 0;
 }
 
 custom LoadMap() {
     if(cache_num_rows() > 0) {
-        new buff[256];
+        static buff[256];
+		static year, mounth, day, hours, minutes, seconds;
         
         strmid(MapConfig[mpAuthor], "", 0, MAX_PLAYER_NAME);
         
@@ -532,6 +507,7 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "gang", MapConfig[mpGang]);
 	    cache_get_value_name_int(0, "water", MapConfig[mpWaterAllowed]);
 	    cache_get_value_name_int(0, "npc_skin", MapConfig[mpGangNPCSkin]);
+	    cache_get_value_name_int(0, "flag_date", MapConfig[mpFlagDate]);
     	
     	cache_get_value_name(0, "login", MapConfig[mpAuthor]);
         cache_get_value_name(0, "name", MapConfig[mpName]);
@@ -631,27 +607,42 @@ custom LoadMap() {
     	
     	LoadFilterScript(MapConfig[mpFilename]);
     	
-		DestroyActor(MapConfig[mpActor]);
+		DestroyActorEx(MapConfig[mpActor]);
 		DestroyObjectEx(MapConfig[mpFlag]);
 		Delete3DTextLabelEx(MapConfig[mpFlagText]);
+		
+		if(MapConfig[mpGang]) {
+            TimestampToDate(MapConfig[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+			MapConfig[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
+			   	MapConfig[mpFlagCoords][0], MapConfig[mpFlagCoords][1],
+	     		MapConfig[mpFlagCoords][2], MapConfig[mpFlagCoords][3],
+	     		MapConfig[mpFlagCoords][4], MapConfig[mpFlagCoords][5], 50.0
+			);
+
+			new text[768];
+			format(text, sizeof(text), GANG_CONTROL_TEXT,
+		  		MapConfig[mpName],
+				Gangs[MapConfig[mpGang]][gdName],
+				hours, minutes,
+				day, mounth, year,
+			 	GangsConfig[gdCfgPerEvac],
+				GangsConfig[gdCfgPerCure],
+				GangsConfig[gdCfgPerAbility],
+				GangsConfig[gdCfgPerKill],
+				GangsConfig[gdCfgPerAssist]
+			);
+			
+			MapConfig[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, MapConfig[mpFlagTextCoords][0], MapConfig[mpFlagTextCoords][1], MapConfig[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+		}
 		
     	MapConfig[mpActor] = CreateActor(MapConfig[mpGangNPCSkin],
 			MapConfig[mpGangNPCSpawn][0], MapConfig[mpGangNPCSpawn][1],
      		MapConfig[mpGangNPCSpawn][2], MapConfig[mpGangNPCSpawn][3]
    		);
-
-		SetActorInvulnerable(MapConfig[mpActor], false);
+   		
+   		SetActorInvulnerable(MapConfig[mpActor], false);
 		SetActorHealth(MapConfig[mpActor], GangsConfig[gdCfgBotHealth]);
 
-		MapConfig[mpFlag] = CreateObject(11245,
-		   	MapConfig[mpFlagCoords][0], MapConfig[mpFlagCoords][1],
-     		MapConfig[mpFlagCoords][2], MapConfig[mpFlagCoords][3],
-     		MapConfig[mpFlagCoords][4], MapConfig[mpFlagCoords][5], 50.0
-		);
-		
-		new text[512];
-		format(text, sizeof(text), "{FFFFFF}%s\n{FFF000}Controlled by {FFFFFF}Testing Gang\n{FFF000}Captured at {FFFFFF}18:06 {FFF000}on {FFFFFF}08/07/2023\n{FFF000}This gang has killed the defender or scored a large number of points to capture the map\n{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+2{FFF000} points for curing humans\n{FFFFFF}+2{FFF000} points for infecting humans\n{FFFFFF}+1{FFF000} points for killing players", MapConfig[mpName]);
-		MapConfig[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, MapConfig[mpFlagTextCoords][0], MapConfig[mpFlagTextCoords][1], MapConfig[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 	 }
 }
 
@@ -673,8 +664,6 @@ custom StartMap() {
 	
 	foreach(Player, i) {
 	    ClearPlayerRoundData(i);
-
-     	SetPlayerTeamAC(i, TEAM_HUMAN);
     	DisablePlayerCheckpoint(i);
     	
     	if(IsPlayerInAnyVehicle(i)) {
@@ -700,11 +689,12 @@ custom StartMap() {
 			SendClientMessage(i, 0xFFF000FF, "Creating objects...");
 		}
 		
+		SetToZombieOrHuman(i);
 		SpawnPlayer(i);
 		SetCameraBehindPlayer(i);
+		ResetRoundSessionOnMapStart(i);
 	}
 	
-	// SetZombies();
 
     InitializePickups();
 	
@@ -793,6 +783,8 @@ custom EndMap() {
     	
 		SendClientMessage(i, 0xFFFFFFFF, "Beginning new a round...");
 		GameTextForPlayer(i, "~r~ROUND OVER~n~~w~STARTING NEW ROUND...", 5000, 5);
+		
+		GivePointsForRound(i);
 	}
 	
 	MapConfig[mpTimeoutIgnoreTick] = 1;
@@ -842,17 +834,71 @@ custom KickForAuthTimeout(const playerid) {
     Kick(playerid);
 }
 
+custom LoadRoundDataConfiguration() {
+    if(cache_num_rows() > 0) {
+        cache_get_value_name_int(0, "survival_per", RoundConfig[rdCfgSurvivalPer]);
+        cache_get_value_name_float(0, "evac", RoundConfig[rdCfgEvac]);
+        cache_get_value_name_float(0, "survival", RoundConfig[rdCfgSurvival]);
+        cache_get_value_name_float(0, "killing", RoundConfig[rdCfgKilling]);
+        cache_get_value_name_float(0, "care", RoundConfig[rdCfgCare]);
+        cache_get_value_name_float(0, "mobility", RoundConfig[rdCfgMobility]);
+        cache_get_value_name_float(0, "skillfulness", RoundConfig[rdCfgSkillfulness]);
+        cache_get_value_name_float(0, "brutality", RoundConfig[rdCfgBrutality]);
+        cache_get_value_name_float(0, "undead", RoundConfig[rdCfgDeaths]);
+        
+        printf("(3): Round configuration loaded...");
+        return 1;
+    }
+    
+    printf("(3): Round configuration failed");
+    return 0;
+}
+
+custom LoadEvacDataConfiguration() {
+    if(cache_num_rows() > 0) {
+        new buff[256];
+        cache_get_value_name_int(0, "interior", EvacuationConfig[ecdCfgInterior]);
+        cache_get_value_name_int(0, "sound", EvacuationConfig[ecdCfgSound]);
+        cache_get_value_name(0, "position", buff);
+        
+        sscanf(buff, "<,>ffff",
+			EvacuationConfig[ecdCfgPosition][0], EvacuationConfig[ecdCfgPosition][1],
+			EvacuationConfig[ecdCfgPosition][2],  EvacuationConfig[ecdCfgPosition][3]
+		);
+
+        printf("(4): Evacuation configuration loaded...");
+        return 1;
+    }
+
+    printf("(4): Evacuation configuration failed");
+    return 0;
+}
+
 custom LoadGangsConfiguration() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
-        cache_get_value_name_int(0, "required", GangsConfig[gdCfgRequired]);
-        cache_get_value_name_int(0, "default", GangsConfig[gdCfgDefault]);
+        cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
+        
+        cache_get_value_name_float(0, "required", GangsConfig[gdCfgRequired]);
+        cache_get_value_name_float(0, "default", GangsConfig[gdCfgDefault]);
         
         cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
         cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
         cache_get_value_name_float(0, "bot_health", GangsConfig[gdCfgBotHealth]);
         cache_get_value_name_float(0, "flag_distance", GangsConfig[gdCfgFlagDistance]);
+        
+        cache_get_value_name_float(0, "per_cure", GangsConfig[gdCfgPerCure]);
+        cache_get_value_name_float(0, "per_kill", GangsConfig[gdCfgPerKill]);
+        cache_get_value_name_float(0, "per_evac", GangsConfig[gdCfgPerEvac]);
+        cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
+        cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
+        
+        printf("(2): Server gangs configuration loaded...");
+        return 1;
     }
+    
+    printf("(2): Server gangs configuration failed");
+    return 0;
 }
 
 custom LoadServerConfiguration() {
@@ -887,7 +933,13 @@ custom LoadServerConfiguration() {
         
         format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
         SendRconCommand(buff);
+        
+        printf("(1): Server configuration loaded...");
+        return 1;
 	}
+	
+	printf("(1): Server configuration failed");
+	return 0;
 }
 
 custom LoginOrRegister(const playerid) {
@@ -897,7 +949,6 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
         cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
         cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
-        cache_get_value_name_int(0, "points", Player[playerid][pPoints]);
         cache_get_value_name_int(0, "rank", Achievements[playerid][achRank]);
         cache_get_value_name_int(0, "kills", Achievements[playerid][achKills]);
         cache_get_value_name_int(0, "deaths", Achievements[playerid][achDeaths]);
@@ -913,17 +964,19 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_int(0, "reported", Achievements[playerid][achReported]);
         cache_get_value_name_int(0, "purchase", Achievements[playerid][achPurchase]);
         cache_get_value_name_int(0, "jumps", Achievements[playerid][achJumps]);
-        cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
         cache_get_value_name_int(0, "hours", Achievements[playerid][achHours]);
         cache_get_value_name_int(0, "minutes", Achievements[playerid][achMinutes]);
         cache_get_value_name_int(0, "seconds", Achievements[playerid][achSeconds]);
-        cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
         cache_get_value_name_int(0, "admin", Privileges[playerid][prsAdmin]);
         cache_get_value_name_int(0, "vip", Privileges[playerid][prsVip]);
         cache_get_value_name_int(0, "vip_till", Privileges[playerid][prsVipTill]);
         cache_get_value_name_int(0, "gang_id", Misc[playerid][mdGang]);
         cache_get_value_name_int(0, "gang_rank", Misc[playerid][mdGangRank]);
         cache_get_value_name_int(0, "gang_warns", Misc[playerid][mdGangWarns]);
+        
+        cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
+        cache_get_value_name_float(0, "total_points", Achievements[playerid][achTotalPoints]);
+        cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
         
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
         return 1;
@@ -1063,13 +1116,12 @@ stock InitializeClassesData() {
 }
 
 stock ClearAllPlayerData(const playerid) {
-	SetPlayerVirtualWorld(playerid, 1000 + playerid);
-	
     ClearPlayerData(playerid);
     ClearPlayerPrevilegesData(playerid);
     ClearPlayerMiscData(playerid);
     ClearPlayerAchievementsData(playerid);
     ClearPlayerRoundData(playerid);
+    ClearPlayerRoundSession(playerid);
     ResetWeapons(playerid);
     
     SetPlayerHealthAC(playerid, 100.0);
@@ -1079,7 +1131,7 @@ stock ClearAllPlayerData(const playerid) {
 stock ClearPlayerData(const playerid) {
     Player[playerid][pAccountId] = 0;
     Player[playerid][pLanguage] = 0;
-    Player[playerid][pPoints] = 0;
+    Player[playerid][pPoints] = 0.0;
 }
 
 stock ClearPlayerAchievementsData(const playerid) {
@@ -1178,7 +1230,7 @@ stock InitializePlayersScreenTextures() {
 		TextDrawFont(UntilEvacTextTexture[i], 1);
 		TextDrawSetProportional(UntilEvacTextTexture[i], 1);
 
-	    AliveInfoTexture[i] = TextDrawCreate(21.500000, 220.000000, "~b~humans: 0~n~~g~zombies: 0");
+	    AliveInfoTexture[i] = TextDrawCreate(21.500000, 220.000000, "~w~humans: 0~n~~r~zombies: 0");
 		TextDrawLetterSize(AliveInfoTexture[i], 0.511498, 1.477498);
 		TextDrawAlignment(AliveInfoTexture[i], 1);
 		TextDrawColor(AliveInfoTexture[i], -16776961);
@@ -1262,6 +1314,60 @@ stock ClearPlayerRoundData(const playerid) {
 	}
 }
 
+stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
+	if(RoundSession[playerid][rsdTeam] != GetPlayerTeamEx(playerid) || RoundSession[playerid][rsdMapId] != MapConfig[mpId]) {
+	    return false;
+	}
+
+	switch(type) {
+	    case SESSION_SURVIVAL_POINTS, SESSION_KILL_POINTS, SESSION_CARE_POINTS:
+			return GetPlayerTeamEx(playerid) == TEAM_HUMAN;
+		case SESSION_ABILITY_POINTS, SESSION_HIT_POINTS, SESSION_UNDEAD_POINTS:
+		    return GetPlayerTeamEx(playerid) == TEAM_ZOMBIE;
+	    case SESSION_RUN_POINTS:
+	        return true;
+	}
+	return false;
+}
+
+stock GivePointsForRound(const playerid) {
+	Player[playerid][pPoints] +=
+	float(
+		clamp(floatround(RoundSession[playerid][rsdSurvival], floatround_tozero), 0, 25) +
+		clamp(floatround(RoundSession[playerid][rsdKilling], floatround_tozero), 0, 25) +
+		clamp(floatround(RoundSession[playerid][rsdCare], floatround_tozero), 0, 25) +
+		clamp(floatround(RoundSession[playerid][rsdMobility], floatround_tozero), 0, 25) +
+		clamp(floatround(RoundSession[playerid][rsdSkillfulness], floatround_tozero), 0, 25) +
+		clamp(floatround(RoundSession[playerid][rsdBrutality], floatround_tozero), 0, 25) +
+		clamp(floatround(RoundSession[playerid][rsdDeaths], floatround_tozero), 0, 25)
+	);
+}
+
+
+stock ResetRoundSessionOnMapStart(const playerid) {
+    RoundSession[playerid][rsdMapId] = MapConfig[mpId];
+    RoundSession[playerid][rsdTeam] = GetPlayerTeamEx(playerid);
+    RoundSession[playerid][rsdSurvival] = 0.0;
+    RoundSession[playerid][rsdKilling] = 0.0;
+    RoundSession[playerid][rsdCare] = 0.0;
+    RoundSession[playerid][rsdMobility] = 0.0;
+    RoundSession[playerid][rsdSkillfulness] = 0.0;
+    RoundSession[playerid][rsdBrutality] = 0.0;
+    RoundSession[playerid][rsdDeaths] = 0.0;
+}
+
+stock ClearPlayerRoundSession(const playerid) {
+    RoundSession[playerid][rsdMapId] = -1;
+    RoundSession[playerid][rsdTeam] = TEAM_UNKNOWN;
+    RoundSession[playerid][rsdSurvival] = 0.0;
+    RoundSession[playerid][rsdKilling] = 0.0;
+    RoundSession[playerid][rsdCare] = 0.0;
+    RoundSession[playerid][rsdMobility] = 0.0;
+    RoundSession[playerid][rsdSkillfulness] = 0.0;
+    RoundSession[playerid][rsdBrutality] = 0.0;
+    RoundSession[playerid][rsdDeaths] = 0.0;
+}
+
 stock GetPlayerTeamEx(const playerid) {
 	return Misc[playerid][mdPlayerTeam];
 }
@@ -1339,6 +1445,18 @@ stock InfectPlayer(const playerid, const targetId) {
 	}
     
     Round[playerid][rdIsInfected] = true;
+    return 1;
+}
+
+stock CurePlayer(const playerid) {
+    if(!Round[playerid][rdIsInfected]) {
+	    return 0;
+	}
+	
+    Round[playerid][rdIsInfected] = false;
+    SetPlayerDrunkLevel(playerid, 0);
+    TextDrawHideForPlayer(playerid, InfectedTexture);
+    return 1;
 }
 
 Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
@@ -1510,38 +1628,24 @@ stock EmptyMessage(const string[]) {
 
 stock SetZombie(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_ZOMBIE);
-    SetPlayerVirtualWorld(playerid, 0);
 }
 
 stock SetHuman(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_HUMAN);
-    SetPlayerVirtualWorld(playerid, 0);
 }
 
-stock GetPlayerSpeed(const playerid) {
-    new Float:st[4];
-    GetPlayerVelocity(playerid,st[0],st[1],st[2]);
-    st[3] = floatsqroot(floatpower(floatabs(st[0]), 2.0) + floatpower(floatabs(st[1]), 2.0) + floatpower(floatabs(st[2]), 2.0)) * 150.0;
-    return floatround(st[3]);
-}
-
-stock DestroyObjectEx(&objectid) {
-	if(objectid != INVALID_OBJECT_ID) {
-		DestroyObject(objectid);
+stock SetToZombieOrHuman(playerid) {
+	if(random(2) == 0) {
+		SetPlayerTeamAC(playerid, TEAM_HUMAN);
+	} else {
+	    SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
 	}
-	objectid = INVALID_OBJECT_ID;
 }
 
-stock DeletePlayer3DTextLabelEx(playerid, &id) {
-	if(id > -1) {
-	    DeletePlayer3DTextLabel(playerid, PlayerText3D:id);
+CMD:cure(const playerid, const targetid) {
+	if(playerid != targetid && IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
+	    RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
 	}
-	id = -1;
-}
 
-stock Delete3DTextLabelEx(&id) {
-	if(id > -1) {
-	    Delete3DTextLabel(Text3D:id);
-	}
-	id = -1;
+	return 1;
 }

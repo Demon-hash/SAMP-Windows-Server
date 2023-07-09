@@ -4,11 +4,12 @@
 #define _achievements_pack_included
 
 enum ACHIEVEMENTS_DATA {
+	Float:achRan,
+	Float:achTotalPoints,
 	achRank,
 	achKills,
 	achDeaths,
 	achAbility,
-	Float:achRan,
 	achLuck,
 	achHumans,
 	achZombies,
@@ -20,7 +21,6 @@ enum ACHIEVEMENTS_DATA {
 	achReported,
 	achPurchase,
 	achJumps,
-	achTotalPoints,
 	achHours,
 	achMinutes,
 	achSeconds,

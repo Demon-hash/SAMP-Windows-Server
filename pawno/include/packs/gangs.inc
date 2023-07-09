@@ -20,10 +20,16 @@ enum GANG_DATA {
 
 enum GANGS_CONFIG_DATA {
 	gdCfgCapacity,
-	gdCfgRequired,
-	gdCfgDefault,
+	gdCfgFlagId,
+	Float:gdCfgRequired,
+	Float:gdCfgDefault,
 	Float:gdCfgMultiply,
 	Float:gdCfgArmourPerLevel,
 	Float:gdCfgBotHealth,
 	Float:gdCfgFlagDistance,
+	Float:gdCfgPerCure,
+	Float:gdCfgPerKill,
+	Float:gdCfgPerEvac,
+	Float:gdCfgPerAbility,
+	Float:gdCfgPerAssist,
 };

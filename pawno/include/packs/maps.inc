@@ -38,6 +38,7 @@ enum MAP_DATA {
 	mpWaterAllowed,
 	mpActor,
 	mpFlag,
+	mpFlagDate,
 	Text3D:mpFlagText,
 	bool:mpIsStarted,
 	bool:mpPaused,

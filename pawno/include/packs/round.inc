@@ -11,3 +11,37 @@ enum ROUND_DATA {
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
 };
+
+enum ROUND_SESSION_DATA {
+	rsdMapId,
+	rsdTeam,
+	Float:rsdSurvival,
+	Float:rsdKilling,
+	Float:rsdCare,
+	Float:rsdMobility,
+	Float:rsdSkillfulness,
+	Float:rsdBrutality,
+	Float:rsdDeaths,
+};
+
+enum ROUND_DATA_CONFIG {
+	rdCfgSurvivalPer,
+	Float:rdCfgEvac,
+	Float:rdCfgSurvival,
+	Float:rdCfgKilling,
+	Float:rdCfgCare,
+	Float:rdCfgMobility,
+	Float:rdCfgSkillfulness,
+	Float:rdCfgBrutality,
+	Float:rdCfgDeaths,
+};
+
+enum {
+	SESSION_SURVIVAL_POINTS,
+	SESSION_KILL_POINTS,
+	SESSION_CARE_POINTS,
+	SESSION_RUN_POINTS,
+	SESSION_ABILITY_POINTS,
+	SESSION_HIT_POINTS,
+	SESSION_UNDEAD_POINTS,
+}

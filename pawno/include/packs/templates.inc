@@ -11,7 +11,7 @@
 	`login` varchar(24) NOT NULL,\
 	`password` varchar(32) NOT NULL,\
 	`language` int(2) unsigned NOT NULL default '0',\
-	`points` int(11) unsigned NOT NULL default '0',\
+	`points` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -34,7 +34,7 @@
 	`reported` int(6) unsigned NOT NULL default '0',\
 	`purchase` int(6) unsigned NOT NULL default '0',\
 	`jumps` int(6) unsigned NOT NULL default '0',\
-	`total_points` int(11) unsigned NOT NULL default '0',\
+	`total_points` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`hours` int(6) unsigned NOT NULL default '0',\
 	`minutes` int(2) unsigned NOT NULL default '0',\
 	`seconds` int(2) unsigned NOT NULL default '0',\
@@ -46,7 +46,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`name` varchar(255) NOT NULL default '',\
 	`description` varchar(255) NOT NULL default '',\
-	`reward` int(6) unsigned NOT NULL default '0',\
+	`reward` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`type` int(3) unsigned NOT NULL default '0',\
 	`required` int(6) unsigned NOT NULL default '1',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
@@ -112,7 +112,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`target_id` int(11) unsigned NOT NULL,\
 	`issued_id` int(11) unsigned NOT NULL,\
-	`amount` int(11) unsigned NOT NULL,\
+	`amount` DECIMAL(6,3) unsigned NOT NULL,\
 	`target_ip` varchar(16) NOT NULL,\
 	`issued_ip` varchar(16) NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
@@ -124,7 +124,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
 	`from_id` int(11) unsigned NOT NULL,\
-	`amount` int(11) unsigned NOT NULL,\
+	`amount` DECIMAL(6,3) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`ip` varchar(16) NOT NULL,\
    	PRIMARY KEY (`id`)\
@@ -173,18 +173,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
 	`gang_id` int(11) unsigned NOT NULL,\
-	`amount` int(11) unsigned NOT NULL,\
-	`date` int(11) unsigned NOT NULL,\
-	`ip` varchar(16) NOT NULL,\
-	PRIMARY KEY (`id`)\
-);"
-
-#define GANGDEPOSITLOG_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS gang_deposit_log (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`account_id` int(11) unsigned NOT NULL,\
-	`gang_id` int(11) unsigned NOT NULL,\
-	`amount` int(11) unsigned NOT NULL,\
+	`amount` DECIMAL(6,3) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`ip` varchar(16) NOT NULL,\
 	PRIMARY KEY (`id`)\
@@ -199,7 +188,7 @@
 	`name` varchar(32) NOT NULL default '',\
 	`tag` varchar(6) NOT NULL default '',\
 	`level` int(3) unsigned NOT NULL default '0',\
-	`points` int(6) unsigned NOT NULL default '0',\
+	`points` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`house` int(1) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
@@ -252,12 +241,18 @@
 	CREATE TABLE IF NOT EXISTS gangs_config (\
 	`id` int(11) unsigned NOT NULL,\
 	`capacity` int(3) unsigned NOT NULL default '10',\
-	`required` int(6) unsigned NOT NULL default '25000',\
-	`default` int(6) unsigned NOT NULL default '100000',\
+	`required` DECIMAL(6,3) unsigned NOT NULL default '25000',\
+	`default` DECIMAL(6,3) unsigned NOT NULL default '100000',\
 	`multiply` DECIMAL(6,3) unsigned NOT NULL default '2',\
 	`armour_per_level` DECIMAL(6,3) unsigned NOT NULL default '10',\
 	`bot_health` DECIMAL(6,3) unsigned NOT NULL default '50000',\
 	`flag_distance` DECIMAL(6,3) unsigned NOT NULL default '100',\
+	`per_cure` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`per_kill` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`per_evac` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`per_ability` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`per_assist` DECIMAL(6,3) unsigned NOT NULL default '0.25',\
+	`flag_id` int(11) unsigned NOT NULL default '11245',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -274,7 +269,7 @@
 	`gates_speed` DECIMAL(6,3) NOT NULL default '1.0',\
 	`time` int(2) unsigned NOT NULL default '12',\
 	`gang` int(3) unsigned NOT NULL default '0',\
-	`water` int(11) unsigned NOT NULL default '1',\
+	`water` int(1) unsigned NOT NULL default '1',\
 	`humans_coords` TEXT NOT NULL default '',\
 	`zombies_coords` TEXT NOT NULL default '',\
 	`camera_coords` TEXT NOT NULL default '',\
@@ -313,8 +308,8 @@
 	`name` varchar(255) NOT NULL default '',\
 	`description` varchar(255) NOT NULL default '',\
 	`team` int(3) unsigned NOT NULL default '0',\
-	`health` int(3) unsigned NOT NULL default '100',\
-	`armour` int(3) unsigned NOT NULL default '0',\
+	`health` DECIMAL(6,3) unsigned NOT NULL default '100',\
+	`armour` DECIMAL(6,3) unsigned NOT NULL default '0',\
     	`level` int(3) unsigned NOT NULL default '0',\
     	`ability` int(3) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
@@ -330,11 +325,10 @@
 #define CONFIG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS config (\
 	`id` int(11) unsigned NOT NULL,\
-	`kills` int(3) unsigned NOT NULL default '1',\
-	`evacuation` int(3) unsigned NOT NULL default '15',\
-	`cure` int(3) unsigned NOT NULL default '1',\
-	`infect` int(3) unsigned NOT NULL default '1',\
-	`ability` int(3) unsigned NOT NULL default '1',\
+	`kills` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '15',\
+	`cure` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`ability` DECIMAL(6,3) unsigned NOT NULL default '1',\
 	`infection_damage` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
 	`fists_damage` DECIMAL(6,3) unsigned NOT NULL default '5.0',\
 	`max_auth_timeout` int(3) unsigned NOT NULL default '2',\
@@ -358,6 +352,7 @@
 	`health` int(1) unsigned NOT NULL default '1',\
 	`armour` int(1) unsigned NOT NULL default '1',\
 	`fakekill` int(1) unsigned NOT NULL default '1',\
+	`parkour` int(1) unsigned NOT NULL default '1',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -383,7 +378,7 @@
 	`seller_id` int(11) unsigned NOT NULL,\
 	`type` int(4) unsigned NOT NULL,\	
 	`count` int(11) unsigned NOT NULL,\
-	`points` int(11) unsigned NOT NULL,\
+	`points` DECIMAL(6,3) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
@@ -392,7 +387,7 @@
 	CREATE TABLE IF NOT EXISTS auction_cashback (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
-	`points` int(11) unsigned NOT NULL,\
+	`points` DECIMAL(6,3) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -402,15 +397,45 @@
 	`account_id` int(11) unsigned NOT NULL,\
 	`map_id` int(11) unsigned NOT NULL,\
 	`team` int(3) unsigned NOT NULL,\
-	`survival` int(2) unsigned NOT NULL default '0',\
+	`survival` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`killing` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`care` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`mobility_as_human` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`mobility_as_zombie` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`mobility` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '0',\
 	`brutality` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`undead` DECIMAL(6,3) unsigned NOT NULL default '0',\
    	PRIMARY KEY (`id`)\
 );"
+
+#define ROUND_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS round_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`survival_per` int(11) unsigned NOT NULL default '30',\
+	`evac` DECIMAL(6,3) unsigned NOT NULL default '15',\
+	`survival` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`killing` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
+	`care` DECIMAL(6,3) unsigned NOT NULL default '2.5',\
+	`mobility` DECIMAL(6,6) unsigned NOT NULL default '0.0125',\
+	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
+	`brutality` DECIMAL(6,3) unsigned NOT NULL default '1',\
+	`undead` DECIMAL(6,3) unsigned NOT NULL default '1',\
+   	PRIMARY KEY (`id`)\
+);"
+
+#define EVAC_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS evac_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`interior` int(4) unsigned NOT NULL default '3',\
+	`sound` int(5) unsigned NOT NULL default '5448',\
+	`position` varchar(255) unsigned NOT NULL default '960.3299,-52.5693,1001.1172,0.0',\
+   	PRIMARY KEY (`id`)\
+);"
+
+#define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
+#define PREDIFINED_CONFIG "INSERT IGNORE INTO config (id) VALUES (1);"
+#define PREDIFINED_ANTICHEAT "INSERT IGNORE INTO anticheat (id) VALUES (1);"
+#define PREDIFINED_ROUND_CONFIG "INSERT IGNORE INTO round_config (id) VALUES (1);"
+#define PREDIFINED_EVAC_CONFIG "INSERT IGNORE INTO evac_config (id) VALUES (1);"
 
 #define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
 	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `npc_coords`, `npc_skin`, `flag_coords`, `flag_coords_text`, `disabled`) \
@@ -449,10 +474,6 @@
 #define PREDIFINED_FLAMETHOWER "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (11, 37, 500, 500, 150);"
 #define PREDIFINED_GRENADE "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (12, 16, 3, 15, 1);"
 #define PREDIFINED_SPAS "INSERT IGNORE INTO weapons (id, type, min, max, pick) VALUES (13, 27, 50, 50, 3);"
-
-#define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (NULL);"
-#define PREDIFINED_CONFIG "INSERT IGNORE INTO config (id) VALUES (NULL);"
-#define PREDIFINED_ANTICHEAT "INSERT IGNORE INTO anticheat (id) VALUES (NULL);"
 
 #define PRD_LD_DG_LOGIN_TITLE "INSERT IGNORE INTO english (id, text) VALUES (1, 'Login');"
 #define PRD_LD_DG_LOGIN_DEFAULT "INSERT IGNORE INTO english (id, text) VALUES (2, 'Welcome back, your account is already registered\nEnter your password below to login');"
