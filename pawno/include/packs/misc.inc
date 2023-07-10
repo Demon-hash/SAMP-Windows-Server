@@ -32,4 +32,5 @@ enum MISC_DATA {
 	mdKickForAuthTimeout,
 	mdKickForAuthTries,
 	PlayerText3D:mdSpawnPoints[3],
+	PlayerText3D:mdFlagText,
 };

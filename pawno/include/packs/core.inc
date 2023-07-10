@@ -46,7 +46,8 @@
 
 #define MAX_ID_LENGTH 12
 
-#define SQL_CHARSET "cp1251"
+#define GLOBAL_CHARSET "utf8"
+#define LOCAL_CHARSET "cp1251"
 #define SQL_HOST "db3.myarena.ru"
 #define SQL_USER "u9764_taxa"
 #define SQL_PASS "d@u87Ud!KA87Rj"

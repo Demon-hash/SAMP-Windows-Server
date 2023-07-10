@@ -560,7 +560,7 @@
 	(15, 39, 10, 20, 2);\
 "
 
-#define PREDIFINED_LOCALIZATION "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+#define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
 	(1, 'Login', 'Логин'),\
 	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Добро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
 	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Неверный пароль, осталось %d / 3 попыток\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
@@ -570,5 +570,38 @@
 	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
 	(8, 'Register', 'Регистрация'),\
 	(9, 'Login', 'Логин'),\
-	(10, 'Quit', 'Выйти');\
+	(10, 'Quit', 'Выйти'),\
+	(11, '*** %s (ID: %d) has joined the server', '*** Игрок %s (ИД: %d) подключился к серверу'),\
+	(12, '*** %s has left the server [%s]', '*** Игрок %s вышел с сервера [%s]'),\
+	(13, 'Timeout', 'Разрыв соединения'),\
+	(14, 'Leave', 'Выход'),\
+	(15, 'Kick', 'Кикнут'),\
+	(16, 'Unknown', 'Неизвестно');\
+"
+
+#define PREDIFINED_LOCALIZATION_2 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(17, 'Restarting', 'Перезагрузка'),\
+	(18, '>> %s has made to the evacuation point!', '>> Игрок %s эвакуировался!'),\
+	(19, '>> ALL SURVIVORS EVACUATED!', '>> Все выжившие добрались до пункта эвакуации!'),\
+	(20, '>> Under protection {FFFFFF}%d{FF0000} seconds left!', '>> Под защитой, до снятия {FFFFFF}%d{FF0000} секунд'),\
+	(21, '(by %s)', '(автор %s)'),\
+	(22, '(captured by %s)', '(под контролем у %s)'),\
+	(23, '>> Entering The Map #%d (%s) %s %s', '>> Запускаем карту #%d (%s) %s %s'),\
+	(24, '>> Creating objects...', '>> Создание объектов...'),\
+	(25, '>> ZOMBIES WIN!', '>> ЗОМБИ ПОБЕДИЛИ!'),\
+	(26, '>> An evacuation has arrived for humans!', '>> Эвакуация прибыла для людей!'),\
+	(27, '>> Humans get to the checkpoint within a minute!', '>> Выжившие, доберитесь до чекпоинта за минуту!'),\
+	(28, '>> Beginning new a round...', '>> Начинается новый раунд!'),\
+	(29, '~r~ROUND OVER~n~~w~STARTING NEW ROUND...', '~r~КОНЕЦ РАУНДА~n~~w~НАЧИНАЕМ НОВЫЙ...'),\
+	(30, '>> Gang members, a crystal stone has appeared, deal as much damage as possible!', 'Участники банд, появился защитный кристал, нанесите как можно больше урона!'),\
+	(31, '~w~humans: %d~n~~r~zombies: %d', '~w~ЛЮДИ: %d~n~~r~ЗОМБИ: %d');\
+"
+
+#define PREDIFINED_LOCALIZATION_3 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(32, '{FFFFFF}%s\n{FFF000}Controlled by {FFFFFF}%s\n{FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n', '{FFFFFF}%s\n{FFF000}Под контролем у {FFFFFF}%s\n{FFF000}Захвачено в {FFFFFF}%02d:%02d {FFF000}, дата {FFFFFF}%02d/%02d/%d\n'),\ 
+	(33, '{FFF000}This gang dealt the most damage to crystal to capture the map\n', '{FFF000}Эта банда внесла наибольшее количество урона по кристаллу, чтобы захватить карту\n'),\
+	(34, '{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n', '{FFF000}Участники банды получают дополнительные очки за следующие действия:\n\n{FFFFFF}+%.0f{FFF000} очков в казну клана за эвакуацию\n'),\ 
+	(35, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n', '{FFFFFF}+%.0f{FFF000} очков в казну клана за лечение людей\n{FFFFFF}+%.0f{FFF000} очков в казну клана за использование активных способностей\n'),\
+	(36, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n{FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist', '{FFFFFF}+%.0f{FFF000} очков в казну клана за убийство игроков\n{FFFFFF}+%.2f{FFF000} очков в казну клана за помощь в убийстве зомби'),\
+	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\nне{FF0000} убивайте / стреляйте{FFFFFF} здесь');\
 "

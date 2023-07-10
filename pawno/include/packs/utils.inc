@@ -22,20 +22,20 @@ stock DestroyObjectEx(&objectid) {
 	objectid = INVALID_OBJECT_ID;
 }
 
-stock DeletePlayer3DTextLabelEx(playerid, &id) {
-	if(id > -1) {
-	    DeletePlayer3DTextLabel(playerid, PlayerText3D:id);
+stock DeletePlayer3DTextLabelEx(playerid, &PlayerText3D:id) {
+	if(id > PlayerText3D:-1) {
+	    DeletePlayer3DTextLabel(playerid, id);
 	}
 	
-	id = -1;
+	id = PlayerText3D:-1;
 }
 
-stock Delete3DTextLabelEx(&id) {
-	if(id > -1) {
-	    Delete3DTextLabel(Text3D:id);
+stock Delete3DTextLabelEx(&Text3D:id) {
+	if(id > Text3D:-1) {
+	    Delete3DTextLabel(id);
 	}
 	
-	id = -1;
+	id = Text3D:-1;
 }
 
 stock DestroyActorEx(&id) {

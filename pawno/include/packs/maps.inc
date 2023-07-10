@@ -37,7 +37,6 @@ enum MAP_DATA {
 	Float:mpCrystalHealth,
 	mpFlag,
 	mpFlagDate,
-	Text3D:mpFlagText,
 	bool:mpIsStarted,
 	bool:mpPaused,
 	Float:mpGateSpeed,

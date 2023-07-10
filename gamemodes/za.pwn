@@ -25,10 +25,6 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_MAP_CONFIG, PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES
 };
 
-static const sqlPredifinedLocalization[][] = {
-    PREDIFINED_LOCALIZATION
-};
-
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
 static AchievementsConfig[1];
 
@@ -136,12 +132,16 @@ public OnGameModeInit() {
 	AllowInteriorWeapons(1);
 	
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
-	mysql_set_charset(SQL_CHARSET);
-	
+    mysql_set_charset(GLOBAL_CHARSET);
 	new i, year, mounth, day, hours, minutes, seconds;
 	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
 	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
-	for(i = 0; i < sizeof(sqlPredifinedLocalization); i++ ) mysql_tquery(Database, sqlPredifinedLocalization[i]);
+
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
+
+    mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
 	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsConfiguration");
 	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundConfiguration");
@@ -173,7 +173,8 @@ public OnPlayerConnect(playerid) {
     
     new formated[64];
     foreach(Player, i) {
-        format(formated, sizeof(formated), "*** %s (ID: %d) has joined the server", Misc[playerid][mdPlayerName], playerid);
+        if(i == playerid) continue;
+        format(formated, sizeof(formated), Localization[i][LD_MSG_CONNECT], Misc[playerid][mdPlayerName], playerid);
         SendClientMessage(i, 0xC0C0C0FF, formated);
     }
     return 1;
@@ -182,12 +183,10 @@ public OnPlayerConnect(playerid) {
 public OnPlayerDisconnect(playerid, reason) {
     ResetMapValuesOnDeath(playerid);
     ResetValuesOnDisconnect(playerid);
-    
-	static const reasons[] = { "Timeout", "Leave", "Kick" };
 	
     new formated[64];
     foreach(Player, i) {
-        format(formated, sizeof(formated), "*** %s has left the server [%s]", Misc[playerid][mdPlayerName], reasons[reason]);
+        format(formated, sizeof(formated), Localization[i][LD_MSG_DISCONNECT], Misc[playerid][mdPlayerName], Localization[i][LD_MSG_TIMEOUT + LOCALIZATION_DATA:reason]);
         SendClientMessage(i, 0xC0C0C0FF, formated);
     }
 	return 1;
@@ -307,7 +306,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 				return 0;
             }
 	    }
-	    case BULLET_HIT_TYPE_OBJECT: {
+	    /*case BULLET_HIT_TYPE_OBJECT: {
 	        if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
 	            Map[mpCrystalHealth] -= float(max(1, Achievements[playerid][achRank]));
 	            
@@ -315,7 +314,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 				format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
 				Update3DTextLabelText(Map[mpFlagText], 0xFFF000FF, text);
 	        }
-	    }
+	    }*/
 	}
 	
 	return 1;
@@ -354,11 +353,11 @@ public OnPlayerEnterCheckpoint(playerid) {
 	
 	new formated[64];
 	foreach(Player, i) {
- 		format(formated, sizeof(formated), ">> %s has made to the evacuation point!", Misc[playerid][mdPlayerName]);
+ 		format(formated, sizeof(formated), Localization[i][LD_MSG_EVACUATED], Misc[playerid][mdPlayerName]);
  		SendClientMessage(i, 0xFFF000FF, formated);
 
 		if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1]) {
-            SendClientMessage(i, 0xFFF000FF, ">> ALL SURVIVORS EVACUATED!");
+            SendClientMessage(i, 0xFFF000FF, Localization[i][LD_MSG_ALL_EVACUATED]);
  		}
  	}
 	
@@ -478,7 +477,7 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
      	DestroyPickupEx(pickupid);
 	} else if(IsValidPickupEx(pickupid)) {
 	    new tip[64];
-	    format(tip, sizeof(tip), ">> Protection {FFFFFF}%d{FF0000} seconds left!", max(0, Pickups[pickupid][pcd_protection_till] - gettime()));
+	    format(tip, sizeof(tip), Localization[playerid][LD_MSG_PICKUP_PROTECTION], max(0, Pickups[pickupid][pcd_protection_till] - gettime()));
  		SendClientMessage(playerid, 0xFF0000FF, tip);
 	}
 	return 1;
@@ -518,7 +517,7 @@ custom Update() {
     		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
-    		format(formated, sizeof(formated), "~w~humans: %d~n~~r~zombies: %d", Map[mpTeamCount][1], Map[mpTeamCount][0]);
+    		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
             if(!Map[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (Map[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
@@ -652,7 +651,7 @@ custom LoadMap() {
 		
 		DestroyObjectEx(Map[mpCrystal]);
 		DestroyObjectEx(Map[mpFlag]);
-		Delete3DTextLabelEx(Map[mpFlagText]);
+		// Delete3DTextLabelEx(Map[mpFlagText]);
 		
 		if(Map[mpGang]) {
             TimestampToDate(Map[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
@@ -662,7 +661,7 @@ custom LoadMap() {
 	     		Map[mpFlagCoords][4], Map[mpFlagCoords][5], 50.0
 			);
 
-			new text[768];
+			/*new text[768];
 			format(text, sizeof(text), GANG_CONTROL_TEXT,
 		  		Map[mpName],
 				Gangs[Map[mpGang]][gdName],
@@ -676,6 +675,7 @@ custom LoadMap() {
 			);
 			
 			Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+			*/
 		}
 	 }
 }
@@ -705,18 +705,18 @@ custom StartMap() {
 		}
 		
 		if(strlen(Map[mpAuthor])) {
-    		format(author, sizeof(author), "(by %s)", Map[mpName]);
+    		format(author, sizeof(author), Localization[i][LD_MSG_MAP_AUTHOR], Map[mpAuthor]);
  		}
 
  		if(Map[mpGang]) {
- 	    	format(controlled, sizeof(controlled), "(captured by %s)", Gangs[Map[mpGang]][gdName]);
+ 	    	format(controlled, sizeof(controlled), Localization[i][LD_MSG_MAP_GANG], Gangs[Map[mpGang]][gdName]);
  		}
     	
-    	format(formated, sizeof(formated), ">> Entering The Map #%d (%s) %s %s", Map[mpId], Map[mpName], author, controlled);
+    	format(formated, sizeof(formated), Localization[i][LD_MSG_MAP_ENTERING], Map[mpId], Map[mpName], author, controlled);
 	    SendClientMessage(i, 0xE48800FF, formated);
     	
     	if(Map[mpInterior] <= 0) {
-			SendClientMessage(i, 0xFFF000FF, ">> Creating objects...");
+			SendClientMessage(i, 0xFFF000FF, Localization[i][LD_MSG_MAP_CREATE_OBJECTS]);
 		}
 	}
 	
@@ -756,8 +756,7 @@ custom OnMapUpdate() {
 	
 	if(ServerConfig[svCfgCurrentOnline] >= 2 && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
 	    foreach(Player, i) {
-			SendClientMessage(i, 0xf21822FF, ">> The world ceased to exist, all humans died");
-			SendClientMessage(i, 0xf21822FF, ">> Zombies have won");
+			SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_ZOMBIES_WIN]);
  		}
  		
 	    Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgUpdate];
@@ -802,8 +801,8 @@ custom OnMapUpdate() {
 			}
 
 			foreach(Player, i) {
-		    	SendClientMessage(i, 0xf21822FF, ">> An evacuation has arrived for humans!");
-				SendClientMessage(i, 0xf21822FF, ">> Humans get to the checkpoint within a minute!");
+		    	SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_EVAC_ARRIVED]);
+				SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_EVAC_GETTO]);
 				ShowCheckpoint(i);
 			}
 			
@@ -826,8 +825,8 @@ custom EndMap() {
    			SetPlayerCameraLookAt(i, Map[mpCameraLookAt][0], Map[mpCameraLookAt][1], Map[mpCameraLookAt][2]);
         }
     	
-		SendClientMessage(i, 0xFFFFFFFF, ">> Beginning new a round...");
-		GameTextForPlayer(i, "~r~ROUND OVER~n~~w~STARTING NEW ROUND...", 5000, 5);
+		SendClientMessage(i, 0xFFFFFFFF, Localization[i][LD_MSG_MAP_BEGINNING]);
+		GameTextForPlayer(i, RusToGame(Localization[i][LD_MSG_MAP_ROUND_OVER]), 5000, 5);
 		
 		GivePointsForRound(i);
 	}
@@ -1418,7 +1417,7 @@ stock InitializeDefaultValues() {
 	
 	Map[mpCrystal] = -1;
 	Map[mpFlag] = -1;
-	Map[mpFlagText] = Text3D:-1;
+	//Map[mpFlagText] = Text3D:-1;
 	ServerConfig[svCfgCurrentOnline] = 0;
 }
 
@@ -1436,7 +1435,7 @@ stock ClearPlayerRoundData(const playerid) {
 	
 	for( i = 0; i < MAX_MAP_SPAWNS; i++ ) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
-		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, "{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here", 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], 50.0);
+		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], 50.0);
 	}
 }
 
@@ -1831,11 +1830,11 @@ stock SpawnCrystalOnMapEnd() {
 
 		new text[256];
 		format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
-		Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1], Map[mpGangCrystalSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+	//	Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1], Map[mpGangCrystalSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 
 		foreach(Player, i) {
+		    SendClientMessage(i, 0xb823b3FF, Localization[i][LD_MSG_MAP_CRYSTAL_DAMAGE]);
 		    if(Misc[i][mdGangRank]) {
-		        SendClientMessage(i, 0xb823b3FF, ">> A crystal stone has appeared, deal as much damage as possible!");
                 SetPlayerInterior(i, 0);
 				DisablePlayerCheckpoint(i);
 				SetPlayerPos(i, Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1], Map[mpGangNearCrystalSpawn][2]);
@@ -1876,6 +1875,82 @@ stock CreateTextureFromConfig(&Text:texid, const buffer) {
 		TextDrawBoxColor(texid, ServerTexturesConfig[buffer][svTxCfgTextureBoxColor]);
 		TextDrawTextSize(texid, ServerTexturesConfig[buffer][svTxCfgTextureTextSize][0], ServerTexturesConfig[buffer][svTxCfgTextureTextSize][1]);
 	}
+}
+
+stock RusToGame(const string[]) {
+    new result[128];
+    for( new i; i < 128; i++ ) {
+    	switch(string[i]) {
+      		case 'à':result[i] = 'a';
+      		case 'À':result[i] = 'A';
+      		case 'á':result[i] = '—';
+	      	case 'Á':result[i] = '€';
+	      	case 'â':result[i] = '¢';
+	      	case 'Â':result[i] = '‹';
+	      	case 'ã':result[i] = '™';
+	      	case 'Ã':result[i] = '‚';
+	      	case 'ä':result[i] = 'š';
+	      	case 'Ä':result[i] = 'ƒ';
+	      	case 'å':result[i] = 'e';
+	      	case 'Å':result[i] = 'E';
+	      	case '¸':result[i] = 'e';
+	      	case '¨':result[i] = 'E';
+	      	case 'æ':result[i] = '›';
+	      	case 'Æ':result[i] = '„';
+	      	case 'ç':result[i] = 'Ÿ';
+	      	case 'Ç':result[i] = 'ˆ';
+	      	case 'è':result[i] = 'œ';
+	      	case 'È':result[i] = '…';
+	      	case 'é':result[i] = '';
+	      	case 'É':result[i] = '…';
+	      	case 'ê':result[i] = 'k';
+	      	case 'Ê':result[i] = 'K';
+	      	case 'ë':result[i] = 'ž';
+	      	case 'Ë':result[i] = '‡';
+	      	case 'ì':result[i] = '¯';
+	      	case 'Ì':result[i] = 'M';
+	      	case 'í':result[i] = '®';
+	      	case 'Í':result[i] = 'H';
+	      	case 'î':result[i] = 'o';
+	      	case 'Î':result[i] = 'O';
+	      	case 'ï':result[i] = '£';
+	      	case 'Ï':result[i] = 'Œ';
+	      	case 'ð':result[i] = 'p';
+	      	case 'Ð':result[i] = 'P';
+	      	case 'ñ':result[i] = 'c';
+	      	case 'Ñ':result[i] = 'C';
+	      	case 'ò':result[i] = '¦';
+	      	case 'Ò':result[i] = '';
+	      	case 'ó':result[i] = 'y';
+	      	case 'Ó':result[i] = 'Y';
+	      	case 'ô':result[i] = '?';
+	      	case 'Ô':result[i] = '';
+	      	case 'õ':result[i] = 'x';
+	      	case 'Õ':result[i] = 'X';
+	      	case 'ö':result[i] = '$';
+	      	case 'Ö':result[i] = '‰';
+	      	case '÷':result[i] = '¤';
+	      	case '×':result[i] = '';
+	      	case 'ø':result[i] = '¥';
+	      	case 'Ø':result[i] = 'Ž';
+	      	case 'ù':result[i] = '¡';
+	      	case 'Ù':result[i] = 'Š';
+	      	case 'ü':result[i] = '©';
+	      	case 'Ü':result[i] = '’';
+	      	case 'ú':result[i] = '';
+	      	case 'Ú':result[i] = '§';
+	      	case 'û':result[i] = '¨';
+	      	case 'Û':result[i] = '‘';
+	      	case 'ý':result[i] = 'ª';
+	      	case 'Ý':result[i] = '“';
+	      	case 'þ':result[i] = '«';
+	      	case 'Þ':result[i] = '”';
+	      	case 'ÿ':result[i] = '¬';
+	      	case 'ß':result[i] = '•';
+   			default:result[i]=string[i];
+     	}
+	}
+    return result;
 }
 
 stock GetRequiredZombiesCount() {
