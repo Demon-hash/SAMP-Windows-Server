@@ -272,7 +272,6 @@
 #define MAPS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS maps (\
 	`id` int(11) unsigned NOT NULL,\
-	`name` varchar(64) NOT NULL,\
 	`filename` varchar(64) NOT NULL,\
 	`author` int(11) unsigned NOT NULL default '0',\
 	`interior` int(3) unsigned NOT NULL default '0',\
@@ -296,6 +295,14 @@
 	`flag_coords_text` TEXT NOT NULL default '',\
 	`flag_date` int(11) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define MAPS_LOCALIZATION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS maps_localization (\
+	`id` int(11) unsigned NOT NULL,\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -323,6 +330,16 @@
 	`animation_time` int(4) unsigned NOT NULL default '0',\
     	`disabled` int(1) unsigned NOT NULL default '1',\
    	PRIMARY KEY (`id`)\
+);"
+
+#define CLASSES_LOCALIZATION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS classes_localization (\
+	`id` int(11) unsigned NOT NULL,\
+	`english_title` TEXT NOT NULL default '',\
+	`russian_title` TEXT NOT NULL default '',\
+	`english_desc` TEXT NOT NULL default '',\
+	`russian_desc` TEXT NOT NULL default '',\
+	PRIMARY KEY (`id`)\
 );"
 
 #define CONFIG_TEMPLATE "\
@@ -506,9 +523,67 @@
 #define PREDIFINED_BALANCE_CONFIG "INSERT IGNORE INTO balance_config (id) VALUES (1);"
 
 #define PREDIFINED_MAPS "INSERT IGNORE INTO \
-	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
+	`maps` (`id`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
 	VALUES \
-	(1, 'The Village', 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
+	(1, 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
+"
+
+#define PREDIFINED_LOCAL_MAPS "INSERT IGNORE INTO maps_localization (id, english, russian) VALUES \
+	(1, 'The Village', 'Деревня');\
+"
+
+#define PREDIFINED_LOCALE_CLASSES_10 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
+	(1, 'Civillian', 'Гражданский', 'Silinced Pistol, Shotgun', 'Тихий пистолет, Дробовик'),\
+	(2, 'Policeman', 'Полицейский', 'Deagle, Shotgun, Armour', 'Дигл, Дробовик, Броня'),\
+	(3, 'Farmer', 'Фермер', 'Rifle', 'Винтовка'),\
+	(4, 'Medic', 'Медик', 'Can cure humans', 'Может лечить людей'),\
+	(5, 'Scout', 'Скаут', 'Sniper', 'Снайперская винтовка'),\
+	(6, 'Warm Human', 'Человек в шубе', 'Can not be freezed', 'Не может замерзнуть'),\
+	(7, 'Mi7', 'Mi7', 'M4, Deagle, Armour', 'M4, Дигл, Броня'),\
+	(8, 'Pyromaniac', 'Пироманьяк', 'Flamethower, Shotgun, Radioactive Field Immunity', 'Огнемет, Дробовик, Иммунитет от Радиоактивного Поля'),\
+	(9, 'Engineer', 'Инжинер', 'Can build 6 boxes', 'Может создать 6 коробок'),\
+	(10, 'Sharpshooter', 'Меткий стрелок', 'Sniper, Immunity', 'Снайперская винтовка, Иммунитет');\
+"
+
+#define PREDIFINED_LOCALE_CLASSES_20 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
+	(11, 'Toughie', 'Крепкий орешек', 'Stomper immunity', 'Защита от топтуна'),\
+	(12, 'Rocketman', 'Техник', 'Rocketboots', 'Реактивные ботинки'),\
+	(13, 'S.W.A.T', 'Спецназовец', 'MP5, Deagle, Armour, Full Immunity', 'MP5, Дигл, Броня, Полный Иммунитет'),\
+	(14, 'Sheriff', 'Шериф', 'Taser, Immunity, Stealer Immunity', 'Электрошокер, Иммунитет, Иммунитет От Вора'),\
+	(15, 'Runner', 'Бегун', 'Fast run', 'Быстрый бег'),\
+	(16, 'Terrorist', 'Террорист', 'C4', 'C4'),\
+	(17, 'Priest', 'Священник', 'Curse Immunity', 'Защита от проклятья'),\
+	(18, 'Mimic', 'Мимик', 'Mimicry, Immunity', 'Мимикрия, Иммунитет'),\
+	(19, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
+	(20, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
+	(21, 'Human Queen', 'Королева', 'M4, Deagle, Armour, Long Jumps, Immunity', 'M4, Дигл, Броня, Длиные прыжки');\
+"
+
+#define PREDIFINED_LOCALE_CLASSES_30 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
+	(22, 'Standard Zombie', 'Обычный Зомби', 'Can Infect', 'Может Заразить'),\
+	(23, 'Flesher Zombie', 'Токсичный Зомби', 'Infected Meat', 'Зараженное Мясо'),\
+	(24, 'Stealer Zombie', 'Вор Зомби', 'Can Steal Armour', 'Может Украсть Броню'),\
+	(25, 'Boomer Zombie', 'Взрывающийся Зомби', 'Explodes And Infects On Death', 'Взрывается И Заражает При Смерти'),\
+	(26, 'Jumper Zombie', 'Зомби Прыгун', 'High Jump', 'Высокий Прыжок'),\
+	(27, 'Stomper Zombie', 'Топтун Зомби', 'Can Stomp Humans', 'Может Отбрасывать Людей'),\
+	(28, 'Spacebreaker Zombie', 'Зомби Крушащий Пространство', 'Space Traveling', 'Путишествие в пространстве'),\
+	(29, 'Kamikaze Zombie', 'Камикадзе Зомби', 'Explodes On Request', 'Взрывается по желанию'),\
+	(30, 'Mimic Zombie', 'Мимик Зомби', 'Mimicry', 'Мимикрия'),\
+	(31, 'Regenerator Zombie', 'Регенератор Зомби', 'Can Regenerate HP', 'Может Восстанавливать ХП'),\
+	(32, 'Support Zombie', 'Зомби Поддержка', 'Heals In A Range', 'Восстанавливает ХП В Радиусе');\
+"
+
+#define PREDIFINED_LOCALE_CLASSES_40 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
+	(33, 'Freezer Zombie', 'Холодный Зомби', 'Can Freeze', 'Может Заморозить'),\
+	(34, 'Radioactive Zombie', 'Радиоактивный Зомби', 'Radioactive Field', 'Радиоактивное Поле'),\
+	(35, 'Spitter Zombie', 'Плюющийся Зомби', 'Can Infect In A Range', 'Может Заразить С Расстояния'),\
+	(36, 'Mutated Zombie', 'Мутированный Зомби', 'Airborne Infection', 'Воздушно-капельная Инфекция'),\
+	(39, 'Spore Zombie', 'Споровой Зомби', 'Can Infect By Spores', 'Заражает спорами'),\
+	(37, 'Fast Zombie', 'Быстрый Зомби', 'Fast Run', 'Быстрый бег'),\
+	(38, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Protection against most calibers', 'Защита от большинства калибров'),\
+	(40, 'Witch Zombie', 'Зомби Ведьма', 'Can curse', 'Может проклясть'),\
+	(41, 'Mirror Zombie', 'Отражающий Зомби', 'Reflect Damage', 'Отражает урон'),\
+	(42, 'Juggernaut Zombie', 'Джагернаут Зомби', 'Armour, Remove Weapons', '300 ХП, убирает оружие');\
 "
 
 #define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, cooldown, skin, disabled) VALUES \
@@ -603,5 +678,10 @@
 	(34, '{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n', '{FFF000}Участники банды получают дополнительные очки за следующие действия:\n\n{FFFFFF}+%.0f{FFF000} очков в казну клана за эвакуацию\n'),\ 
 	(35, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n', '{FFFFFF}+%.0f{FFF000} очков в казну клана за лечение людей\n{FFFFFF}+%.0f{FFF000} очков в казну клана за использование активных способностей\n'),\
 	(36, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n{FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist', '{FFFFFF}+%.0f{FFF000} очков в казну клана за убийство игроков\n{FFFFFF}+%.2f{FFF000} очков в казну клана за помощь в убийстве зомби'),\
-	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\nне{FF0000} убивайте / стреляйте{FFFFFF} здесь');\
+	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
+	(38, 'UNUSED', 'UNUSED'),\
+	(39, 'Classes', 'Классы'),\
+	(40, 'Люди\nЗомби', 'Humans\nZombies'),\
+	(41, 'Select', 'Выбрать'),\
+	(42, 'Close', 'Закрыть');\
 "

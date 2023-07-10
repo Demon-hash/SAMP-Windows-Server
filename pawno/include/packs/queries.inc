@@ -15,6 +15,7 @@
 #define LOAD_ROUND_CFG_QUERY "SELECT * FROM round_config WHERE 1 LIMIT 1;"
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`='0';"
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
+#define LOAD_MAP_NAME_QUERY "SELECT COALESCE(m.%e, '') as name FROM `maps_localization` m WHERE m.id = %d;"
 #define REFRESH_PLAYER_WEAPONS_QUERY "DELETE FROM `weapons` WHERE `time` < %d;"
 #define LOAD_GANGS_CFG_QUERY "SELECT * FROM gangs_config WHERE 1 LIMIT 1;"
 #define LOAD_EVAC_CFG_QUERY "SELECT * FROM evac_config WHERE 1 LIMIT 1;"
@@ -22,6 +23,7 @@
 #define LOAD_WEAPONS_CFG_QUERY "SELECT * FROM weapons_config WHERE 1;"
 #define LOAD_BALANCE_CFG_QUERY "SELECT * FROM balance_config WHERE 1 LIMIT 1;"
 #define LOAD_TEXTURES_CFG_QUERY "SELECT * FROM textures_config WHERE 1;"
+#define LOAD_CLASSES_QUERY "SELECT c.*, COALESCE(l.%e, '') FROM `classes` c LEFT JOIN `classes_localization` l ON l.id = c.id WHERE c.disabled = 0 AND c.team = %d ORDER BY c.points;"
 
 #define CHECK_USER_QUERY "\
 	SELECT \n\

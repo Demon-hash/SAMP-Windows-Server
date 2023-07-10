@@ -14,15 +14,22 @@ static const sqlTemplates[][] = {
 	ACHIEVEMENTS_TEMPLATE, CONFIG_TEMPLATE, STATS_TEMPLATE,
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
-	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE,
-	TEXTURES_CONFIG_TEMPLATE
+	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
+	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
+    PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
+    PREDIFINED_MAPS, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG,
+	PREDIFINED_MAP_CONFIG, PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES,
 	PREDIFINED_HUMANS, PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS,
-	PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
-	PREDIFINED_MAPS, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG,
-	PREDIFINED_MAP_CONFIG, PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES
+	PREDIFINED_LOCAL_MAPS, PREDIFINED_LOCALE_CLASSES_10,
+	PREDIFINED_LOCALE_CLASSES_20, PREDIFINED_LOCALE_CLASSES_30,
+	PREDIFINED_LOCALE_CLASSES_40
+};
+
+static const LOCALIZATION_TABLES[][] = {
+    ENGLISH_LOCALE, RUSSIAN_LOCALE
 };
 
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
@@ -47,7 +54,10 @@ static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static ServerTextures[TEXTURES_DATA];
 static ServerTexturesConfig[MAX_SERVER_TEXTURES][TEXTURES_CONFIG_DATA];
 
+static Class[MAX_PLAYERS][CLASSES_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
+
+
 static Pickups[MAX_PICKUPS][PICKUP_DATA];
 
 static AnticheatConfig[1];
@@ -305,6 +315,14 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
             	SetPlayerChatBubble(hitid, "MISS", BUBBLE_COLOR, 20.0, 1000);
 				return 0;
             }
+            
+            if(GetPlayerTeamEx(hitid) == TEAM_ZOMBIE) {
+                for( new j = 0; j < sizeof(Map[mpZombieSpawnX]); j++ ) {
+					if(IsPlayerInRangeOfPoint(hitid, 15.0, Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j])) {
+					    return 0;
+					}
+				}
+            }
 	    }
 	    /*case BULLET_HIT_TYPE_OBJECT: {
 	        if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
@@ -466,6 +484,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 			
 	        return 1;
 	    }
+	    case DIALOG_CLASSES: {
+	        if(!response) {
+	            return 1;
+	        }
+	        
+	        ShowClassSelectionDialog(playerid, listitem);
+	        return 1;
+	    }
 	}
 	
 	return 1;
@@ -558,7 +584,6 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
     	
     	cache_get_value_name(0, "login", Map[mpAuthor]);
-        cache_get_value_name(0, "name", Map[mpName]);
         cache_get_value_name(0, "filename", Map[mpFilename]);
         
         cache_get_value_name_float(0, "gates_speed", Map[mpGateSpeed]);
@@ -645,7 +670,6 @@ custom LoadMap() {
     	
     	SetMapId();
     	StartMap();
-    	SetMapName();
     	
     	LoadFilterScript(Map[mpFilename]);
 		
@@ -712,7 +736,7 @@ custom StartMap() {
  	    	format(controlled, sizeof(controlled), Localization[i][LD_MSG_MAP_GANG], Gangs[Map[mpGang]][gdName]);
  		}
     	
-    	format(formated, sizeof(formated), Localization[i][LD_MSG_MAP_ENTERING], Map[mpId], Map[mpName], author, controlled);
+    	format(formated, sizeof(formated), Localization[i][LD_MSG_MAP_ENTERING], Map[mpId], Localization[i][LD_MAP_NAME], author, controlled);
 	    SendClientMessage(i, 0xE48800FF, formated);
     	
     	if(Map[mpInterior] <= 0) {
@@ -838,10 +862,8 @@ custom EndMap() {
 
 custom LoadLocalization(const playerid, const type) {
     static const query[] = LOAD_LOCALIZATION_QUERY;
-	static const locale[][] = { ENGLISH_LOCALE, RUSSIAN_LOCALE };
-    
 	new formated[sizeof(query) + LOCALIZATION_SIZE], index = Player[playerid][pLanguage];
-    mysql_format(Database, formated, sizeof(formated), query, locale[index]);
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index]);
 	mysql_tquery(Database, formated, "InitializeLocation", "ii", playerid, type);
 }
 
@@ -1116,7 +1138,8 @@ custom LoginOrRegister(const playerid) {
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
         return 1;
     }
-
+   	
+	PredictPreferedLocalization(playerid);
 	LoadLocalization(playerid, AUTH_REG_TYPE);
     return 0;
 }
@@ -1135,6 +1158,10 @@ custom InitializeLocation(const playerid, const type) {
     }
 }
 
+stock ShowClassSelectionDialog(const playerid, const selection) {
+	// static const loadClassesQuery[] = LOAD_CLASSES_QUERY;
+}
+
 stock LoadFilterScript(const filename[]) {
 	static const cmd[] = "loadfs %s";
 	new formated[sizeof(cmd) + MAX_MAP_FILENAME];
@@ -1146,13 +1173,6 @@ stock UnloadFilterScript(const filename[]) {
 	static const cmd[] = "unloadfs %s";
 	new formated[sizeof(cmd) + MAX_MAP_FILENAME];
 	format(formated, sizeof(formated), cmd, filename);
-	SendRconCommand(formated);
-}
-
-stock SetMapName() {
-    static const cmd[] = "mapname %s";
-    new formated[sizeof(cmd) + MAX_MAP_NAME];
-	format(formated, sizeof(formated), cmd, Map[mpName]);
 	SendRconCommand(formated);
 }
 
@@ -1175,13 +1195,26 @@ stock LoadNewMap() {
 	if((Map[mpId]-1) > Map[mpCount] || Map[mpId] < 1) {
 		Map[mpId] = 1;
 	}
-	
-	static const loadMapQuery[] = LOAD_MAP_DATA_QUERY;
+    
+    static const loadMapNameQuery[] = LOAD_MAP_NAME_QUERY;
+    new formatedLoadMapNameQuery[sizeof(loadMapNameQuery) + LOCALIZATION_SIZE], index;
+    foreach(Player, i) {
+        index = Player[i][pLanguage];
+    	mysql_format(Database, formatedLoadMapNameQuery, sizeof(formatedLoadMapNameQuery), loadMapNameQuery, LOCALIZATION_TABLES[index], Map[mpId]);
+        mysql_tquery(Database, formatedLoadMapNameQuery, "GetLocalizedMapName", "i", i);
+    }
+    
+   	static const loadMapQuery[] = LOAD_MAP_DATA_QUERY;
 	new formated[sizeof(loadMapQuery) + MAX_ID_LENGTH];
  	mysql_format(Database, formated, sizeof(formated), loadMapQuery, Map[mpId]);
  	mysql_tquery(Database, formated, "LoadMap");
 }
 
+custom GetLocalizedMapName(const playerid) {
+	if(cache_num_rows()) {
+        cache_get_value_name(0, "name", Localization[playerid][LD_MAP_NAME]);
+	}
+}
 
 stock SetMapId() {
     if(Map[mpId] < Map[mpCount]) {
@@ -1545,6 +1578,7 @@ stock SetByCurrentClass(const playerid) {
 			SetZombie(playerid, current);
 			SetPlayerPos(playerid, 	Map[mpZombieSpawnX][point] + distance, Map[mpZombieSpawnY][point] + distance, Map[mpZombieSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpZombieSpawnA][point]);
+			Misc[playerid][mdSpawnProtection] = gettime() + 15;
 		}
 	    case TEAM_HUMAN: {
 			SetHuman(playerid, current);
@@ -1877,6 +1911,16 @@ stock CreateTextureFromConfig(&Text:texid, const buffer) {
 	}
 }
 
+stock PredictPreferedLocalization(const playerid) {
+    new symbolPos = strfind(Misc[playerid][mdPlayerName], "_", true);
+	if(symbolPos != -1 && symbolPos + 1 < strlen(Misc[playerid][mdPlayerName])) {
+	    switch(Misc[playerid][mdPlayerName][symbolPos + 1]) {
+	        case 'a'..'z', 'A'..'Z': Player[playerid][pLanguage] = 1;
+	        default: Player[playerid][pLanguage] = 0;
+	    }
+	}
+}
+
 stock RusToGame(const string[]) {
     new result[128];
     for( new i; i < 128; i++ ) {
@@ -1994,7 +2038,14 @@ stock SetTeams() {
     }
 }
 
-CMD:weapons(const playerid) {
+CMD:class(const playerid) {
+    ShowPlayerDialogAC(
+		playerid, DIALOG_CLASSES, DIALOG_STYLE_LIST,
+		Localization[playerid][LD_DG_CLASSES_TITLE],
+		Localization[playerid][LD_DG_CLASSES_LIST],
+		Localization[playerid][LD_BTN_SELECT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
 	return 1;
 }
 
