@@ -3,7 +3,7 @@
 #endif
 #define _textures_pack_included
 
-#define MAX_SERVER_TEXTURES 10
+#define MAX_SERVER_TEXTURES 6
 
 enum {
 	TIMELEFT_TEXTURE_ID,

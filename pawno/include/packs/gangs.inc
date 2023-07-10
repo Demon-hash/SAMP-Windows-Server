@@ -25,7 +25,7 @@ enum GANGS_CONFIG_DATA {
 	Float:gdCfgDefault,
 	Float:gdCfgMultiply,
 	Float:gdCfgArmourPerLevel,
-	Float:gdCfgBotHealth,
+	Float:gdCfgCrystalHealth,
 	Float:gdCfgFlagDistance,
 	Float:gdCfgPerCure,
 	Float:gdCfgPerKill,

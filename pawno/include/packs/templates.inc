@@ -11,7 +11,7 @@
 	`login` varchar(24) NOT NULL,\
 	`password` varchar(32) NOT NULL,\
 	`language` int(2) unsigned NOT NULL default '0',\
-	`points` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -37,7 +37,7 @@
 	`kills` int(6) unsigned NOT NULL default '0',\
 	`deaths` int(6) unsigned NOT NULL default '0',\
 	`ability` int(6) unsigned NOT NULL default '0',\
-	`ran` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`ran` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`luck` int(6) unsigned NOT NULL default '0',\
 	`humans` int(6) unsigned NOT NULL default '0',\
 	`zombies` int(6) unsigned NOT NULL default '0',\
@@ -49,7 +49,7 @@
 	`reported` int(6) unsigned NOT NULL default '0',\
 	`purchase` int(6) unsigned NOT NULL default '0',\
 	`jumps` int(6) unsigned NOT NULL default '0',\
-	`total_points` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`total_points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`hours` int(6) unsigned NOT NULL default '0',\
 	`minutes` int(2) unsigned NOT NULL default '0',\
 	`seconds` int(2) unsigned NOT NULL default '0',\
@@ -61,7 +61,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`name` varchar(255) NOT NULL default '',\
 	`description` varchar(255) NOT NULL default '',\
-	`reward` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`reward` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`type` int(3) unsigned NOT NULL default '0',\
 	`required` int(6) unsigned NOT NULL default '1',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
@@ -127,7 +127,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`target_id` int(11) unsigned NOT NULL,\
 	`issued_id` int(11) unsigned NOT NULL,\
-	`amount` DECIMAL(6,3) unsigned NOT NULL,\
+	`amount` DECIMAL(9,2) unsigned NOT NULL,\
 	`target_ip` varchar(16) NOT NULL,\
 	`issued_ip` varchar(16) NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
@@ -139,7 +139,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
 	`from_id` int(11) unsigned NOT NULL,\
-	`amount` DECIMAL(6,3) unsigned NOT NULL,\
+	`amount` DECIMAL(9,2) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`ip` varchar(16) NOT NULL,\
    	PRIMARY KEY (`id`)\
@@ -188,7 +188,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
 	`gang_id` int(11) unsigned NOT NULL,\
-	`amount` DECIMAL(6,3) unsigned NOT NULL,\
+	`amount` DECIMAL(9,2) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`ip` varchar(16) NOT NULL,\
 	PRIMARY KEY (`id`)\
@@ -203,7 +203,7 @@
 	`name` varchar(32) NOT NULL default '',\
 	`tag` varchar(6) NOT NULL default '',\
 	`level` int(3) unsigned NOT NULL default '0',\
-	`points` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`house` int(1) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
@@ -256,17 +256,17 @@
 	CREATE TABLE IF NOT EXISTS gangs_config (\
 	`id` int(11) unsigned NOT NULL,\
 	`capacity` int(3) unsigned NOT NULL default '10',\
-	`required` DECIMAL(6,1) unsigned NOT NULL default '25000.0',\
-	`default` DECIMAL(6,1) unsigned NOT NULL default '5000.0',\
-	`multiply` DECIMAL(6,1) unsigned NOT NULL default '2.0',\
-	`armour_per_level` DECIMAL(6,3) unsigned NOT NULL default '10.0',\
-	`bot_health` DECIMAL(8,3) unsigned NOT NULL default '50000.0',\
-	`flag_distance` DECIMAL(6,3) unsigned NOT NULL default '100.0',\
-	`per_cure` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`per_kill` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`per_evac` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`per_ability` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`per_assist` DECIMAL(6,3) unsigned NOT NULL default '0.25',\
+	`required` DECIMAL(9,2) unsigned NOT NULL default '25000.0',\
+	`default` DECIMAL(9,2) unsigned NOT NULL default '5000.0',\
+	`multiply` DECIMAL(9,2) unsigned NOT NULL default '2.0',\
+	`armour_per_level` DECIMAL(9,2) unsigned NOT NULL default '10.0',\
+	`crystal_health` DECIMAL(9,2) unsigned NOT NULL default '50000.0',\
+	`flag_distance` DECIMAL(9,2) unsigned NOT NULL default '100.0',\
+	`per_cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`per_kill` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`per_evac` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`per_ability` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`per_assist` DECIMAL(9,2) unsigned NOT NULL default '0.25',\
 	`flag_id` int(11) unsigned NOT NULL default '11245',\
 	PRIMARY KEY (`id`)\
 );"
@@ -279,9 +279,9 @@
 	`author` int(11) unsigned NOT NULL default '0',\
 	`interior` int(3) unsigned NOT NULL default '0',\
 	`weather` int(3) unsigned NOT NULL default '0',\
-	`checkpoint_size` DECIMAL(6,3) NOT NULL default '1.0',\
+	`checkpoint_size` DECIMAL(9,2) NOT NULL default '1.0',\
 	`gates_ids` varchar(24) NOT NULL default '',\
-	`gates_speed` DECIMAL(6,3) NOT NULL default '1.0',\
+	`gates_speed` DECIMAL(9,2) NOT NULL default '1.0',\
 	`time` int(2) unsigned NOT NULL default '12',\
 	`gang` int(3) unsigned NOT NULL default '0',\
 	`water` int(1) unsigned NOT NULL default '1',\
@@ -302,26 +302,25 @@
 );"
 
 #define LANGUAGES_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS english (\
+	CREATE TABLE IF NOT EXISTS localization (\
 	`id` int(11) unsigned NOT NULL,\
-	`text` TEXT NOT NULL default '',\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
    	PRIMARY KEY (`id`)\
 );"
 
 #define CLASSES_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS classes (\
 	`id` int(11) unsigned NOT NULL,\
-	`name` varchar(255) NOT NULL default '',\
-	`description` varchar(255) NOT NULL default '',\
 	`team` int(3) unsigned NOT NULL default '0',\
-	`health` DECIMAL(6,3) unsigned NOT NULL default '100.0',\
-	`armour` DECIMAL(6,3) unsigned NOT NULL default '0.0',\
-    	`level` int(3) unsigned NOT NULL default '0',\
+	`health` DECIMAL(9,2) unsigned NOT NULL default '100.0',\
+	`armour` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
+    	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
     	`ability` int(3) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
     	`skin` int(3) unsigned NOT NULL default '181',\
 	`immunity` int(1) unsigned NOT NULL default '0',\
-	`distance` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`distance` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`animation` int(5) unsigned NOT NULL default '0',\
 	`animation_time` int(4) unsigned NOT NULL default '0',\
     	`disabled` int(1) unsigned NOT NULL default '1',\
@@ -332,12 +331,12 @@
 	CREATE TABLE IF NOT EXISTS config (\
 	`id` int(11) unsigned NOT NULL,\
 	`pickup_protection` int(4) unsigned NOT NULL default '30',\
-	`kills` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`evacuation` DECIMAL(6,3) unsigned NOT NULL default '15.0',\
-	`cure` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`ability` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`infection_damage` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`fists_damage` DECIMAL(6,3) unsigned NOT NULL default '5.0',\
+	`kills` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`evacuation` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
+	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`ability` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`infection_damage` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`fists_damage` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`infection_drunk` int(6) unsigned NOT NULL default '50000',\
 	`max_auth_timeout` int(3) unsigned NOT NULL default '2',\
 	`max_auth_tries` int(3) unsigned NOT NULL default '3',\
@@ -386,7 +385,7 @@
 	`seller_id` int(11) unsigned NOT NULL,\
 	`type` int(4) unsigned NOT NULL,\	
 	`count` int(11) unsigned NOT NULL,\
-	`points` DECIMAL(6,3) unsigned NOT NULL,\
+	`points` DECIMAL(9,2) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
@@ -395,7 +394,7 @@
 	CREATE TABLE IF NOT EXISTS auction_cashback (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
-	`points` DECIMAL(6,3) unsigned NOT NULL,\
+	`points` DECIMAL(9,2) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -405,13 +404,13 @@
 	`account_id` int(11) unsigned NOT NULL,\
 	`map_id` int(11) unsigned NOT NULL,\
 	`team` int(3) unsigned NOT NULL,\
-	`survival` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`killing` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`care` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`mobility` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`brutality` DECIMAL(6,3) unsigned NOT NULL default '0',\
-	`undead` DECIMAL(6,3) unsigned NOT NULL default '0',\
+	`survival` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`killing` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`care` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`mobility` DECIMAL(6,4) unsigned NOT NULL default '0',\
+	`skillfulness` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`brutality` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`undead` DECIMAL(9,2) unsigned NOT NULL default '0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -419,14 +418,14 @@
 	CREATE TABLE IF NOT EXISTS round_config (\
 	`id` int(11) unsigned NOT NULL,\
 	`survival_per` int(11) unsigned NOT NULL default '30',\
-	`evac` DECIMAL(6,3) unsigned NOT NULL default '15.0',\
-	`survival` DECIMAL(6,3) unsigned NOT NULL default '1',\
-	`killing` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
-	`care` DECIMAL(6,3) unsigned NOT NULL default '2.5',\
-	`mobility` DECIMAL(6,6) unsigned NOT NULL default '0.0125',\
-	`skillfulness` DECIMAL(6,3) unsigned NOT NULL default '1.25',\
-	`brutality` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
-	`undead` DECIMAL(6,3) unsigned NOT NULL default '1.0',\
+	`evac` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
+	`survival` DECIMAL(9,2) unsigned NOT NULL default '1',\
+	`killing` DECIMAL(9,2) unsigned NOT NULL default '1.25',\
+	`care` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
+	`mobility` DECIMAL(6,4) unsigned NOT NULL default '0.0125',\
+	`skillfulness` DECIMAL(9,2) unsigned NOT NULL default '1.25',\
+	`brutality` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`undead` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`cap` int(3) unsigned NOT NULL default '25',\
    	PRIMARY KEY (`id`)\
 );"
@@ -458,7 +457,6 @@
 	`chance` int(3) unsigned NOT NULL default '0',\
 	`default` int(4) unsigned NOT NULL default '0',\
 	`pick` int(4) unsigned NOT NULL default '0',\
-	`time` int(11) unsigned NOT NULL default '1209600',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -475,10 +473,10 @@
 #define BALANCE_CONFIG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS balance_config (\
 	`id` int(11) unsigned NOT NULL,\
-	`min` DECIMAL(6,3) unsigned NOT NULL default '2.0',\
-	`medium` DECIMAL(6,3) unsigned NOT NULL default '3.0',\
-	`max` DECIMAL(6,3) unsigned NOT NULL default '4.0',\
-	`by_default` DECIMAL(6,3) unsigned NOT NULL default '2.0',\
+	`min` DECIMAL(9,2) unsigned NOT NULL default '2.0',\
+	`medium` DECIMAL(9,2) unsigned NOT NULL default '3.0',\
+	`max` DECIMAL(9,2) unsigned NOT NULL default '4.0',\
+	`by_default` DECIMAL(9,2) unsigned NOT NULL default '2.0',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -509,41 +507,44 @@
 #define PREDIFINED_MAP_CONFIG "INSERT IGNORE INTO map_config (id) VALUES (1);"
 #define PREDIFINED_BALANCE_CONFIG "INSERT IGNORE INTO balance_config (id) VALUES (1);"
 
-#define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
+#define PREDIFINED_MAPS "INSERT IGNORE INTO \
 	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
 	VALUES \
 	(1, 'The Village', 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
 "
 
-#define PREDIFINED_CIVILIAN "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (1, \"Civilian|Гражданский\", \"No abilities|Без способностей\", 2, 0, 0, 0, 37, 0);"
-#define PREDIFINED_NURSE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (2, \"Nurse|Медсестра\", \"Can Cure|Может Лечить\", 2, 0, 1, 5, 308, 0);"
-#define PREDIFINED_ENGINEER "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (3, \"Engineer|Инжинер\", \"Can Build Boxes|Может Строить Коробки\", 2, 9, 2, 0, 153, 0);"
-#define PREDIFINED_JUMPER "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (4, \"Jumper|Прыгун\", \"Can Use High Jump|Может Высоко Подпрыгнуть\", 2, 12, 3, 15, 210, 0);"
-#define PREDIFINED_FAKE_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (5, \"Fake Zombie|Подделный зомби\", \"Invisible|Невидимость\", 2, 15, 4, 0, 181, 0);"
-#define PREDIFINED_RUNNER "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (6, \"Runner|Бегун\", \"Fast Run|Быстрый Бег\", 2, 18, 0, 0, 0, 0);"
-#define PREDIFINED_DOCTOR "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (7, \"Doctor|Доктор\", \"Can Heal|Может Лечить\", 2, 21, 5, 10, 70, 0);"
+#define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, cooldown, skin, disabled) VALUES \
+	(1, 2, 0, 0, 0, 37, 0),\
+	(2, 2, 0, 1, 5, 308, 0),\
+	(3, 2, 9, 2, 0, 153, 0),\
+	(4, 2, 12, 3, 15, 210, 0),\
+	(5, 2, 15, 4, 0, 181, 0),\
+	(6, 2, 18, 0, 0, 0, 0),\
+	(7, 2, 21, 5, 10, 70, 0);\
+"
 
-#define PREDIFINED_STANDARD_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (8, \"Standard Zombie|Обычный Зомби\", \"Can Infect|Может Заразить\", 1, 0, 6, 5, 181, 0);"
-#define PREDIFINED_ROGUE_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (9, \"Rogue Zombie|Поддельный Человек\", \"Invisible|Невидимость\", 1, 3, 4, 0, 135, 0);"
-#define PREDIFINED_FAST_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (10, \"Fast Zombie|Прыгающий Зомби\", \"Can Use High Jump|Может Высоко Подпрыгнуть\", 1, 6, 3, 15, 162, 0);"
-#define PREDIFINED_STOMPER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (11, \"Stomper Zombie|Подбрасывающий Зомби\", \"Can Stomp Humans|Может Подбросить Людей\", 1, 9, 7, 15, 78, 0);"
-#define PREDIFINED_RADIOACTIVE_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (12, \"Radioactive Zombie|Радиоактивный Зомби\", \"Radioactive Field|Радиоактивное Поле\", 1, 12, 8, 0, 146, 0);"
-#define PREDIFINED_SLOW_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (13, \"Slow Zombie|Замедляющий Зомби\", \"Can Infect|Может Заразить\", 1, 15, 9, 15, 160, 0);"
-#define PREDIFINED_BOOMER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (14, \"Boomer Zombie|Взрывающийся Зомби\", \"Huge Explode On Death|Большой Взрыв При Смерти\", 1, 18, 10, 0, 264, 0);"
-#define PREDIFINED_RUNNER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (15, \"Runner Zombie|Быстрый Зомби\", \"Fast Run|Быстрый Бег\", 1, 21, 0, 0, 0, 0);"
-#define PREDIFINED_SEEKER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (16, \"Seeker Zombie|Охотник Зомби\", \"Can Teleport|Может Телепортироватся\", 1, 24, 11, 45, 142, 0);"
+#define PREDIFINED_ZOMBIES "INSERT IGNORE INTO classes (id, team, points, ability, cooldown, skin, disabled) VALUES \
+	(8, 1, 0, 6, 5, 181, 0),\
+	(9, 1, 3, 4, 0, 135, 0),\
+	(10, 1, 6, 3, 15, 162, 0),\
+	(11, 1, 9, 7, 15, 78, 0),\
+	(12, 1, 12, 8, 0, 146, 0),\
+	(13, 1, 15, 9, 15, 160, 0),\
+	(14, 1, 18, 10, 0, 264, 0),\
+	(15, 1, 21, 0, 0, 0, 0),\
+	(16, 1, 24, 11, 45, 142, 0);\
+"
 
-#define PREDIFINED_TEXTURES "\
-	INSERT IGNORE INTO `textures_config` (`id`, `position`, `letter_size`, `text_size`, `default_value`, `background_color`, `texture_font`, `texture_draw_color`, `texture_outline`, `texture_proportional`, `texture_shadow`, `texture_use_box`, `texture_box_color`, `texture_alignment`) VALUES \
+#define PREDIFINED_TEXTURES "INSERT IGNORE INTO `textures_config` (`id`, `position`, `letter_size`, `text_size`, `default_value`, `background_color`, `texture_font`, `texture_draw_color`, `texture_outline`, `texture_proportional`, `texture_shadow`, `texture_use_box`, `texture_box_color`, `texture_alignment`) VALUES \
 	(1, '22.000000, 251.000000', '1.770000, 3.499999', '0.0,0.0', '300', '255', 3, 'FFFFFF', 1, 1, 1, 0, '0', 0),\
 	(2, '655.500000, 1.500000', '0.000000, 50.262496', '-2.000000, 0.000000', 'usebox', '255', 0, '0', 0, 1, 1, 1, '0xFF0000BB', 0),\
 	(3, '14.000000, 283.937500', '0.000000, 0.000000', '119.500000, 21.437500', 'LD_SPAC:white', '0x000000FF', 4, '0x000000FF', 0, 0, 0, 0, '0', 1),\
 	(4, '18.500000, 285.250000', '0.562500, 1.984999', '0.0,0.0', 'UNTIL EVAC', '0x000000FF', 1, '0xFF0000FF', 1, 1, 0, 0, '0', 1),\
 	(5, '21.500000, 220.000000', '0.511498, 1.477498', '0.0,0.0', '~w~humans: 0~n~~r~zombies: 0', '0x000000FF', 2, '0xFFFFFFFF', 0, 1, 1, 0, '0', 1),\
-	(6, '546.000000, 35.000000', '0.270000, 1.000000', '0.0,0.0', '0', '0x000000FF', 2, '0x0d8adeFF', 0, 1, 1, 0, '0', 0);"
+	(6, '546.000000, 35.000000', '0.270000, 1.000000', '0.0,0.0', '0', '0x000000FF', 2, '0x0d8adeFF', 0, 1, 1, 0, '0', 0);\
+"
 
-#define PREDIFINED_WEAPONS "\
-	INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES \
+#define PREDIFINED_WEAPONS "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES \
 	(1, 23, 100, 50, 10),\
 	(2, 22, 100, 50, 10),\
 	(3, 24, 75, 50, 10),\
@@ -561,16 +562,15 @@
 	(15, 39, 10, 20, 2);\
 "
 
-#define PREDIFINED_LOCALIZATION "\
-	INSERT IGNORE INTO english (id, text) VALUES \
-	(1, 'Login'),\
-	(2, 'Welcome back, your account is already registered\nEnter your password below to login'),\
-	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login'),\
-	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login'),\				
-	(5, 'Register'),\
-	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration'),\
-	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration'),\
-	(8, 'Register'),\
-	(9, 'Login'),\
-	(10, 'Quit');\
+#define PREDIFINED_LOCALIZATION "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(1, 'Login', ''),\
+	(2, 'Welcome back, your account is already registered\nEnter your password below to login', ''),\
+	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', ''),\
+	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', ''),\				
+	(5, 'Register', ''),\
+	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', ''),\
+	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', ''),\
+	(8, 'Register', ''),\
+	(9, 'Login', ''),\
+	(10, 'Quit', '');\
 "

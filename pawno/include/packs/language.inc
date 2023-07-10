@@ -8,8 +8,8 @@
 
 #define LOCALIZATION_SIZE 8
 #define LOCALIZATION_LINE_SIZE 256
-#define RUSSIAN_LOCALE "`russian`"
-#define ENGLISH_LOCALE "`english`"
+#define RUSSIAN_LOCALE "russian"
+#define ENGLISH_LOCALE "english"
 
 enum LOCALIZATION_DATA {
 	LD_DG_LOGIN_TITLE,

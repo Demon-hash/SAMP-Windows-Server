@@ -14,22 +14,15 @@ static const sqlTemplates[][] = {
 	ACHIEVEMENTS_TEMPLATE, CONFIG_TEMPLATE, STATS_TEMPLATE,
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
-	WEAPONS_TEMPLATE, SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE,
+	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE,
 	TEXTURES_CONFIG_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
-	PREDIFINED_CIVILIAN, PREDIFINED_NURSE,PREDIFINED_ENGINEER,
-	PREDIFINED_JUMPER, PREDIFINED_FAKE_ZOMBIE, PREDIFINED_RUNNER,
-	PREDIFINED_DOCTOR, PREDIFINED_STANDARD_ZOMBIE,
-	PREDIFINED_ROGUE_ZOMBIE, PREDIFINED_FAST_ZOMBIE,
-	PREDIFINED_STOMPER_ZOMBIE, PREDIFINED_RADIOACTIVE_ZOMBIE,
-	PREDIFINED_SLOW_ZOMBIE, PREDIFINED_BOOMER_ZOMBIE,
-	PREDIFINED_RUNNER_ZOMBIE, PREDIFINED_SEEKER_ZOMBIE,
-	PREDIFINED_WEAPONS, PREDIFINED_CONFIG,
-	PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT, PREDIFINED_MAP_VILLAGE,
-	PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG,
-	PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES
+	PREDIFINED_HUMANS, PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS,
+	PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
+	PREDIFINED_MAPS, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG,
+	PREDIFINED_MAP_CONFIG, PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES
 };
 
 static const sqlPredifinedLocalization[][] = {
@@ -53,7 +46,6 @@ static Misc[MAX_PLAYERS][MISC_DATA];
 static Player[MAX_PLAYERS][PLAYER_DATA];
 static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
 
-static Weapons[MAX_PLAYERS][MAX_WEAPONS][WEAPONS_DATA];
 static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 
 static ServerTextures[TEXTURES_DATA];
@@ -73,9 +65,8 @@ static MySQL:Database, updateTimerId;
 
 /*
 	MAIN
-	- Weapons
-	- Gangs
 	- Classes
+	- Gangs
 	- Abilities
 	- Shop
 	- Attachements
@@ -741,7 +732,7 @@ custom StartMap() {
     Map[mpTimeout] = MapConfig[mpCfgTotal];
     Map[mpTimeoutBeforeEnd] = -MapConfig[mpCfgUpdate];
     Map[mpTimeoutBeforeStart] = -MapConfig[mpCfgUpdate];
-    Map[mpCrystalHealth] = GangsConfig[gdCfgBotHealth];
+    Map[mpCrystalHealth] = GangsConfig[gdCfgCrystalHealth];
 	return 1;
 }
 
@@ -862,26 +853,6 @@ custom CheckForAccount(const playerid) {
 	mysql_tquery(Database, formated, "LoginOrRegister", "i", playerid);
 }
 
-custom GetUserCollectedWeapons(const playerid) {
-	if(cache_num_rows() > 0) {
-		new i, len = clamp(cache_num_rows(), 0, MAX_WEAPONS);
-		for( i = 0; i < len; i++ ) {
-			cache_get_value_name_int(i, "weapon_id", Weapons[playerid][i][wdId]);
-		    cache_get_value_name_int(i, "time", Weapons[playerid][i][wdTime]);
-		    cache_get_value_name_int(i, "amount", Weapons[playerid][i][wdCount]);
-		    cache_get_value_name_int(i, "set_as_default", Weapons[playerid][i][wdAsDefault]);
-		}
-		
-		for( i = 0; i < MAX_WEAPONS; i++ ) {
-	        if(Weapons[playerid][i][wdAsDefault] && gettime() < Weapons[playerid][i][wdTime]) {
-	            new index = GetWeaponFromConfigById(Weapons[playerid][i][wdId]);
-	            new amount = (index > -1) ? WeaponsConfig[index][wdCfgDefault] : 1;
-				GivePlayerWeaponAC(playerid, Weapons[playerid][i][wdId], amount);
-	        }
-    	}
-	}
-}
-
 custom GetUserAccountId(const playerid) {
     Player[playerid][pAccountId] = cache_insert_id();
 
@@ -944,11 +915,11 @@ custom LoadServerConfiguration() {
         format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
         SendRconCommand(buff);
 
-        printf("(1): Server configuration loaded...");
+        printf("(1): Server configuration LOADED");
         return 1;
 	}
 
-	printf("(1): Server configuration failed");
+	printf("(1): Server configuration FAILED");
 	return 0;
 }
 
@@ -962,7 +933,7 @@ custom LoadGangsConfiguration() {
 
         cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
         cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
-        cache_get_value_name_float(0, "bot_health", GangsConfig[gdCfgBotHealth]);
+        cache_get_value_name_float(0, "crystal_health", GangsConfig[gdCfgCrystalHealth]);
         cache_get_value_name_float(0, "flag_distance", GangsConfig[gdCfgFlagDistance]);
 
         cache_get_value_name_float(0, "per_cure", GangsConfig[gdCfgPerCure]);
@@ -971,11 +942,11 @@ custom LoadGangsConfiguration() {
         cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
         cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
 
-        printf("(2): Server gangs configuration loaded...");
+        printf("(2): Server gangs configuration LOADED");
         return 1;
     }
 
-    printf("(2): Server gangs configuration failed");
+    printf("(2): Server gangs configuration FAILED");
     return 0;
 }
 
@@ -992,11 +963,11 @@ custom LoadRoundConfiguration() {
         cache_get_value_name_float(0, "brutality", RoundConfig[rdCfgBrutality]);
         cache_get_value_name_float(0, "undead", RoundConfig[rdCfgDeaths]);
         
-        printf("(3): Round configuration loaded...");
+        printf("(3): Round configuration LOADED");
         return 1;
     }
     
-    printf("(3): Round configuration failed");
+    printf("(3): Round configuration FAILED");
     return 0;
 }
 
@@ -1012,11 +983,11 @@ custom LoadEvacConfiguration() {
 			EvacuationConfig[ecdCfgPosition][3]
 		);
 
-        printf("(4): Evacuation configuration loaded...");
+        printf("(4): Evacuation configuration LOADED");
         return 1;
     }
 
-    printf("(4): Evacuation configuration failed");
+    printf("(4): Evacuation configuration FAILED");
     return 0;
 }
 
@@ -1028,11 +999,11 @@ custom LoadMapConfiguration() {
         cache_get_value_name_int(0, "end", MapConfig[mpCfgEnd]);
         cache_get_value_name_int(0, "restart", MapConfig[mpCfgRestart]);
         
-        printf("(5): Map configuration loaded...");
+        printf("(5): Map configuration LOADED");
         return 1;
     }
     
-    printf("(5): Map configuration failed");
+    printf("(5): Map configuration FAILED");
     return 0;
 }
 
@@ -1044,13 +1015,12 @@ custom LoadWeaponsConfiguration() {
         	cache_get_value_name_int(i, "chance", WeaponsConfig[i][wdCfgChance]);
         	cache_get_value_name_int(i, "default", WeaponsConfig[i][wdCfgDefault]);
         	cache_get_value_name_int(i, "pick", WeaponsConfig[i][wdCfgPick]);
-        	cache_get_value_name_int(i, "time", WeaponsConfig[i][wdCfgTime]);
         }
-        
-        printf("(6): Weapons configuration loaded... (%d)", len);
+
+        printf("(6): Weapons configuration LOADED (%d / %d)", len, MAX_WEAPONS);
         return 1;
     }
-    printf("(6): Weapons configuration failed");
+    printf("(6): Weapons configuration FAILED");
 	return 0;
 }
 
@@ -1061,10 +1031,10 @@ custom LoadBalanceConfiguration() {
     	cache_get_value_name_float(0, "max", ServerBalance[svbMaxZombies]);
     	cache_get_value_name_float(0, "by_default", ServerBalance[svbDefaultZombies]);
 
-        printf("(7): Balance configuration loaded...");
+        printf("(7): Balance configuration LOADED");
         return 1;
     }
-    printf("(7): Balance configuration failed");
+    printf("(7): Balance configuration FAILED");
 	return 0;
 }
 
@@ -1099,12 +1069,12 @@ custom LoadTexturesConfiguration() {
 			cache_get_value_name_int(i, "texture_alignment", ServerTexturesConfig[i][svTxCfgTextureAlignment]);
         }
 
-        printf("(8): Textures configuration loaded...");
+        printf("(8): Textures configuration LOADED (%d / %d)", len, MAX_SERVER_TEXTURES);
         InitializeScreenTextures();
         
         return 1;
     }
-    printf("(8): Textures configuration failed");
+    printf("(8): Textures configuration FAILED");
 	return 0;
 }
 
@@ -1335,15 +1305,7 @@ stock IncreaseWeaponSkillLevel(const playerid, const weaponid) {
 }
 
 stock ClearPlayerWeaponsData(const playerid) {
-	new i;
-    for( i = 0; i < MAX_WEAPONS; i++ ) {
-        Weapons[playerid][i][wdId] = 0;
-        Weapons[playerid][i][wdTime] = 0;
-        Weapons[playerid][i][wdAsDefault] = 0;
-        Weapons[playerid][i][wdCount] = 0;
-    }
-    
-    for( i = 0; i < MAX_WEAPONS_SKILL; i++ ) {
+    for( new i = 0; i < MAX_WEAPONS_SKILL; i++ ) {
         Misc[playerid][mdWeaponSkill][i] = 0;
         SetPlayerSkillLevel(playerid, i, Misc[playerid][mdWeaponSkill][i]);
     }
@@ -1804,12 +1766,10 @@ stock SetZombie(const playerid, const classid) {
 
 stock SetHuman(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_HUMAN);
-    LoadPlayerWeaponsOnStart(playerid);
 }
 
 stock SetUnknown(const playerid) {
 	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
-    LoadPlayerWeaponsOnStart(playerid);
 }
 
 stock SetToZombieOrHuman(playerid) {
@@ -1889,25 +1849,6 @@ stock SpawnCrystalOnMapEnd() {
 	}
 	
 	return 0;
-}
-
-stock LoadPlayerWeaponsOnStart(const playerid) {
-    static const weaponsQuery[] = LOAD_PLAYER_WEAPONS_QUERY;
-	new formatedWeaponsQuery[sizeof(weaponsQuery) + MAX_ID_LENGTH + MAX_ID_LENGTH + MAX_ID_LENGTH];
-	mysql_format(Database, formatedWeaponsQuery, sizeof(formatedWeaponsQuery), weaponsQuery, Player[playerid][pAccountId], gettime(), MAX_WEAPONS);
- 	mysql_tquery(Database, formatedWeaponsQuery, "GetUserCollectedWeapons", "i", playerid);
- 	
- 	static const deleteOldWeaponsQuery[] = REFRESH_PLAYER_WEAPONS_QUERY;
- 	new formatedDeleteOldWeaponsQuery[sizeof(deleteOldWeaponsQuery) + MAX_ID_LENGTH];
- 	mysql_format(Database, formatedDeleteOldWeaponsQuery, sizeof(formatedDeleteOldWeaponsQuery), deleteOldWeaponsQuery, gettime());
- 	mysql_tquery(Database, formatedDeleteOldWeaponsQuery);
-}
-
-stock SavePlayerWeaponToDatabase(const playerid, const weaponid, const index) {
-	static const insertWeaponQuery[] = CREATE_PLAYER_WEAPON_QUERY;
-    new formatedInsertWeaponQuery[sizeof(insertWeaponQuery) + MAX_ID_LENGTH + MAX_ID_LENGTH + MAX_ID_LENGTH];
-    mysql_format(Database, formatedInsertWeaponQuery, sizeof(formatedInsertWeaponQuery), insertWeaponQuery, Player[playerid][pAccountId], weaponid, gettime() + WeaponsConfig[index][wdCfgTime]);
- 	mysql_tquery(Database, formatedInsertWeaponQuery);
 }
 
 stock CreateTextureFromConfig(&Text:texid, const buffer) {
@@ -2011,7 +1952,6 @@ CMD:test(playerid) {
 	new slot = GetWeaponByChance(weapon, random(100), index);
 	if(slot > -1) {
 	    GivePlayerWeaponAC(playerid, weapon, WeaponsConfig[index][wdCfgDefault]);
-	    SavePlayerWeaponToDatabase(playerid, weapon, index);
 	}
 	return 0;
 }
