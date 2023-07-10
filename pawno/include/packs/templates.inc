@@ -3,8 +3,6 @@
 #endif
 #define _templates_pack_included
 
-#define SQL_CHARSET "utf8"
-
 #define USERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS users (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -563,14 +561,14 @@
 "
 
 #define PREDIFINED_LOCALIZATION "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(1, 'Login', ''),\
-	(2, 'Welcome back, your account is already registered\nEnter your password below to login', ''),\
-	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', ''),\
-	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', ''),\				
-	(5, 'Register', ''),\
-	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', ''),\
-	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', ''),\
-	(8, 'Register', ''),\
-	(9, 'Login', ''),\
-	(10, 'Quit', '');\
+	(1, 'Login', 'Логин'),\
+	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Добро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
+	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Неверный пароль, осталось %d / 3 попыток\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
+	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\				
+	(5, 'Register', 'Регистрация'),\
+	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', 'Добро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
+	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
+	(8, 'Register', 'Регистрация'),\
+	(9, 'Login', 'Логин'),\
+	(10, 'Quit', 'Выйти');\
 "
