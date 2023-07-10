@@ -54,10 +54,7 @@ static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static ServerTextures[TEXTURES_DATA];
 static ServerTexturesConfig[MAX_SERVER_TEXTURES][TEXTURES_CONFIG_DATA];
 
-static Class[MAX_PLAYERS][CLASSES_DATA];
 static Classes[MAX_CLASSES][CLASSES_DATA];
-
-
 static Pickups[MAX_PICKUPS][PICKUP_DATA];
 
 static AnticheatConfig[1];
@@ -1158,8 +1155,52 @@ custom InitializeLocation(const playerid, const type) {
     }
 }
 
+custom ShowClassesSelection(const playerid) {
+    if(cache_num_rows() > 0) {
+        static const disabledTitlesColors[] = { 0xEC3013, 0xFF4D55 };
+        static const enabledTitlesColors[] = { 0x009900, 0x75F0B0 };
+        static const descriptionColors[] = { 0xFFFFFF, 0xA7A5A5 };
+    
+        new i, id, len = cache_num_rows(), Float:points;
+        new list[1024], formated[256], title[48], description[96], color;
+        
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name(i, "title", title);
+            cache_get_value_name(i, "description", description);
+            cache_get_value_float(i, "points", points);
+            cache_get_value_name_int(i, "id", id);
+            
+            color = (Player[playerid][pPoints] < points) ? disabledTitlesColors[i % 2] : enabledTitlesColors[i % 2];
+            format(formated, sizeof(formated), "{%06x}%s{%06x} - %s - %s%.0f %s\n",
+				color, title, descriptionColors[i % 2],
+				description,
+				(Player[playerid][pPoints] < points) ? "{FF0000}" : "",
+				points,
+				Localization[playerid][LD_CLASSES_TIP_EXP]
+			);
+            strcat(list, formated);
+        }
+        
+        ShowPlayerDialogAC(
+			playerid, DIALOG_SELECTION, DIALOG_STYLE_LIST,
+			Localization[playerid][LD_DG_CLASSES_TITLE],
+			list,
+			Localization[playerid][LD_BTN_SELECT],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+        return 1;
+    }
+    
+	return 1;
+}
+
 stock ShowClassSelectionDialog(const playerid, const selection) {
-	// static const loadClassesQuery[] = LOAD_CLASSES_QUERY;
+	static const loadClassesQuery[] = LOAD_CLASSES_QUERY;
+	new team = (selection == 0) ? TEAM_HUMAN : TEAM_ZOMBIE, index = Player[playerid][pLanguage];
+    new formatedLoadClassesQuery[sizeof(loadClassesQuery) + LOCALIZATION_SIZE + LOCALIZATION_SIZE + MAX_TEAMS_LEN];
+
+    mysql_format(Database, formatedLoadClassesQuery, sizeof(formatedLoadClassesQuery), loadClassesQuery, LOCALIZATION_TABLES[index], LOCALIZATION_TABLES[index], team);
+    mysql_tquery(Database, formatedLoadClassesQuery, "ShowClassesSelection", "i", playerid);
 }
 
 stock LoadFilterScript(const filename[]) {

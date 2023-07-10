@@ -3,6 +3,8 @@
 #endif
 #define _teams_pack_included
 
+#define MAX_TEAMS_LEN 3
+
 enum {
 	TEAM_UNKNOWN,
 	TEAM_ZOMBIE,

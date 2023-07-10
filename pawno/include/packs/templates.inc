@@ -681,7 +681,8 @@
 	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
 	(38, 'UNUSED', 'UNUSED'),\
 	(39, 'Classes', 'Классы'),\
-	(40, 'Люди\nЗомби', 'Humans\nZombies'),\
+	(40, 'Humans\nZombies', 'Люди\nЗомби'),\
 	(41, 'Select', 'Выбрать'),\
-	(42, 'Close', 'Закрыть');\
+	(42, 'Close', 'Закрыть'),\
+	(43, 'POINTS', 'ОЧКОВ');\
 "
