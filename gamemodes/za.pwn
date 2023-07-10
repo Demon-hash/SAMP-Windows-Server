@@ -14,7 +14,8 @@ static const sqlTemplates[][] = {
 	ACHIEVEMENTS_TEMPLATE, CONFIG_TEMPLATE, STATS_TEMPLATE,
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
-	WEAPONS_TEMPLATE
+	WEAPONS_TEMPLATE, SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE,
+	TEXTURES_CONFIG_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -25,19 +26,14 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_STOMPER_ZOMBIE, PREDIFINED_RADIOACTIVE_ZOMBIE,
 	PREDIFINED_SLOW_ZOMBIE, PREDIFINED_BOOMER_ZOMBIE,
 	PREDIFINED_RUNNER_ZOMBIE, PREDIFINED_SEEKER_ZOMBIE,
-	PREDIFINED_SILINCED, PREDIFINED_COLT45, PREDIFINED_DEAGLE,
-	PREDIFINED_UZI, PREDIFINED_TEC9, PREDIFINED_MP5, PREDIFINED_AK47,
-    PREDIFINED_M4, PREDIFINED_RIFLE, PREDIFINED_SNIPER,
-    PREDIFINED_FLAMETHOWER, PREDIFINED_SPAS, PREDIFINED_RPG,
-	PREDIFINED_HEATSEEKER, PREDIFINED_C4, PREDIFINED_CONFIG,
+	PREDIFINED_WEAPONS, PREDIFINED_CONFIG,
 	PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT, PREDIFINED_MAP_VILLAGE,
-	PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG
+	PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG,
+	PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES
 };
 
 static const sqlPredifinedLocalization[][] = {
-    PRD_LD_DG_LOGIN_TITLE, PRD_LD_DG_LOGIN_DEFAULT, PRD_LD_DG_LOGIN_TRIES,
-    PRD_LD_DG_LOGIN_SPACES, PRD_LD_DG_REG_TITLE, PRD_LD_DG_REG_DEFAULT,
-    PRD_LD_DG_REG_SPACES, PRD_LD_BTN_REG, PRD_LD_BTN_LOGIN, PRD_LD_BTN_QUIT
+    PREDIFINED_LOCALIZATION
 };
 
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
@@ -60,31 +56,29 @@ static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
 static Weapons[MAX_PLAYERS][MAX_WEAPONS][WEAPONS_DATA];
 static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 
+static ServerTextures[TEXTURES_DATA];
+static ServerTexturesConfig[MAX_SERVER_TEXTURES][TEXTURES_CONFIG_DATA];
+
 static Classes[MAX_CLASSES][CLASSES_DATA];
 static Pickups[MAX_PICKUPS][PICKUP_DATA];
 
 static AnticheatConfig[1];
 static EvacuationConfig[EVACUATION_CONFIG_DATA];
 static ServerConfig[CONFIG_DATA];
+static ServerBalance[BALANCE_DATA];
 
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 
-static
-	MySQL:Database,
-	updateTimerId,
-	Text:TimeLeftTexture,
-	Text:InfectedTexture,
-	Text:UntillEvacRectangleTexture,
-	Text:UntilEvacTextTexture[MAX_PLAYERS],
-	Text:AliveInfoTexture[MAX_PLAYERS],
-	Text:PointsTexture[MAX_PLAYERS];
+static MySQL:Database, updateTimerId;
 
 /*
 	MAIN
 	- Weapons
+	- Gangs
 	- Classes
 	- Abilities
 	- Shop
+	- Attachements
 	- SaveUserData
 	- Commands
 	- Anticheat
@@ -127,7 +121,8 @@ static
 		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n\
 		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n\
 		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n\
-		 {FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist\
+		 {FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist\n\n\
+		 >> All zombies have 200 HP <<\
 		 "
 		 
 #define CRYSTAL_STONE_TEXT "CRYSTAL STONE\n{FFFFFF}>> %.0f <<{FFF000}\nDestroy this crystal to capture the map, only gang members can deal damage\nDamage dealt depends on rank"
@@ -139,7 +134,6 @@ public OnGameModeInit() {
 	InitializePickups();
 	InitializeClassesData();
 	InitializeWeaponsData();
-	InitializePlayersScreenTextures();
 	InitializeDefaultValues();
 	
 	SetGameModeText("Zombies");
@@ -153,33 +147,23 @@ public OnGameModeInit() {
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
 	mysql_set_charset(SQL_CHARSET);
 	
-	new i;
-	for(i = 0; i < sizeof(sqlTemplates); i++) {
-		mysql_tquery(Database, sqlTemplates[i]);
-	}
-	
-	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) {
-		mysql_tquery(Database, sqlPredifinedValues[i]);
-	}
-	
-	for(i = 0; i < sizeof(sqlPredifinedLocalization); i++ ) {
-	    mysql_tquery(Database, sqlPredifinedLocalization[i]);
-	}
-	
+	new i, year, mounth, day, hours, minutes, seconds;
+	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
+	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
+	for(i = 0; i < sizeof(sqlPredifinedLocalization); i++ ) mysql_tquery(Database, sqlPredifinedLocalization[i]);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
 	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsConfiguration");
 	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundConfiguration");
 	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacConfiguration");
 	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapConfiguration");
 	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsConfiguration");
+	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceConfiguration");
+	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesConfiguration");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
  	mysql_log(SQL_LOG_LEVEL);
  	
- 	new year, mounth, day, hours, minutes, seconds;
 	TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-	printf("Started at %02d:%02d:%02d on %02d/%02d/%d... (%d)", hours, minutes, seconds, day, mounth, year, gettime());
-	printf("Started with status of %d", mysql_errno(Database));
-	
+	printf("Started at %02d:%02d:%02d on %02d/%02d/%d... | Status: %d", hours, minutes, seconds, day, mounth, year, mysql_errno(Database));
 	updateTimerId = SetTimer("Update", 1000, true);
 	return 1;
 }
@@ -188,7 +172,7 @@ public OnGameModeExit() {
     mysql_close(Database);
 	KillTimer(updateTimerId);
 	UnloadFilterScript(Map[mpFilename]);
-	DestroyPlayersScreenTextures();
+	DestroyScreenTextures();
 	return 1;
 }
 
@@ -222,7 +206,7 @@ public OnPlayerRequestClass(playerid, classid) {
     SetPlayerVirtualWorld(playerid, 1000 + playerid);
 
     SetSpawnInfo(
-		playerid, TEAM_ZOMBIE, ServerConfig[svCfgPreviewBot],
+		playerid, TEAM_UNKNOWN, ServerConfig[svCfgPreviewBot],
 		Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0],
 		0.0, 0, 0, 0, 0, 0, 0
 	);
@@ -284,6 +268,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	SendDeathMessage(killerid, playerid, reason);
 	
 	if(IsPlayerConnected(killerid)) {
+	    IncreaseWeaponSkillLevel(killerid, reason);
 	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
 	        RoundSession[killerid][rsdKilling] += RoundConfig[rdCfgKilling];
 	    }
@@ -534,16 +519,16 @@ custom Update() {
 	    if(Misc[playerid][mdIsLogged]) {
 	    	if(Round[playerid][rdIsInfected]) {
 	        	SetPlayerColor(playerid, COLOR_INFECTED);
-	        	TextDrawShowForPlayer(playerid, InfectedTexture);
+	        	TextDrawShowForPlayer(playerid, ServerTextures[infectedTexture]);
 	        	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
 	        	SetPlayerDrunkLevel(playerid, ServerConfig[svCfgInfectionDrunkLevel]);
     		}
     		
     		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
-    		TextDrawSetString(PointsTexture[playerid], formated);
+    		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
     		format(formated, sizeof(formated), "~w~humans: %d~n~~r~zombies: %d", Map[mpTeamCount][1], Map[mpTeamCount][0]);
-            TextDrawSetString(AliveInfoTexture[playerid], formated);
+            TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
             if(!Map[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (Map[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
                 RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgSurvival];
@@ -705,14 +690,10 @@ custom LoadMap() {
 }
 
 custom StartMap() {
-	/*if(!Map[mpIsStarted]) {
-	    return 0;
-	}*/
-	
-	static j;
-	static author[64] = "";
-	static controlled[96] = "";
-	static formated[256];
+	new j;
+	new author[64] = "";
+	new controlled[96] = "";
+	new formated[256];
 
 	UnloadFilterScript(Map[mpPrevFilename]);
 	
@@ -806,10 +787,10 @@ custom OnMapUpdate() {
 	    
 	    static tm[4];
 		format(tm,sizeof(tm), "%d", Map[mpTimeout]);
-		TextDrawSetString(TimeLeftTexture, tm);
+		TextDrawSetString(ServerTextures[timeLeftTexture], tm);
 	    
         if(Map[mpTimeout] == 0) {
-			TextDrawSetString(TimeLeftTexture, "...");
+			TextDrawSetString(ServerTextures[timeLeftTexture], "...");
 
 			if(Map[mpGates][0]) {
 				MoveObject(
@@ -918,6 +899,7 @@ custom GetUserAccountId(const playerid) {
     mysql_tquery(Database, REG_PRIVILEGES_QUERY);
     mysql_tquery(Database, REG_ACHIEVEMENTS_QUERY);
     mysql_tquery(Database, REG_GANG_ACCCOUNT_QUERY);
+    mysql_tquery(Database, REG_SKILLS_QUERY);
     
     AfterAuthorization(playerid);
     return 1;
@@ -1069,6 +1051,60 @@ custom LoadWeaponsConfiguration() {
         return 1;
     }
     printf("(6): Weapons configuration failed");
+	return 0;
+}
+
+custom LoadBalanceConfiguration() {
+    if(cache_num_rows() > 0) {
+        cache_get_value_name_float(0, "min", ServerBalance[svbMinZombies]);
+    	cache_get_value_name_float(0, "medium", ServerBalance[svbMediumZombies]);
+    	cache_get_value_name_float(0, "max", ServerBalance[svbMaxZombies]);
+    	cache_get_value_name_float(0, "by_default", ServerBalance[svbDefaultZombies]);
+
+        printf("(7): Balance configuration loaded...");
+        return 1;
+    }
+    printf("(7): Balance configuration failed");
+	return 0;
+}
+
+custom LoadTexturesConfiguration() {
+    if(cache_num_rows() > 0) {
+        new buff[128], i, len = clamp(cache_num_rows(), 0, MAX_SERVER_TEXTURES);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name(i, "position", buff);
+            sscanf(buff, "p<,>ff", ServerTexturesConfig[i][svTxCfgTexturePosition][0], ServerTexturesConfig[i][svTxCfgTexturePosition][1]);
+            
+            cache_get_value_name(i, "letter_size", buff);
+            sscanf(buff, "p<,>ff", ServerTexturesConfig[i][svTxCfgTextureLetterSize][0], ServerTexturesConfig[i][svTxCfgTextureLetterSize][1]);
+            
+            cache_get_value_name(i, "text_size", buff);
+            sscanf(buff, "p<,>ff", ServerTexturesConfig[i][svTxCfgTextureTextSize][0], ServerTexturesConfig[i][svTxCfgTextureTextSize][1]);
+            
+            cache_get_value_name(i, "texture_box_color", buff);
+			sscanf(buff, "x", ServerTexturesConfig[i][svTxCfgTextureBoxColor]);
+			
+			cache_get_value_name(i, "background_color", buff);
+			sscanf(buff, "x", ServerTexturesConfig[i][svTxCfgTextureBackgroundColor]);
+			
+			cache_get_value_name(i, "texture_draw_color", buff);
+            sscanf(buff, "x", ServerTexturesConfig[i][svTxCfgTextureDrawColor]);
+            
+            cache_get_value_name(i, "default_value", ServerTexturesConfig[i][svTxCfgTextureDefaultValue]);
+            cache_get_value_name_int(i, "texture_font", ServerTexturesConfig[i][svTxCfgTextureFont]);
+            cache_get_value_name_int(i, "texture_outline", ServerTexturesConfig[i][svTxCfgTextureOutline]);
+            cache_get_value_name_int(i, "texture_proportional", ServerTexturesConfig[i][svTxCfgTextureProportional]);
+            cache_get_value_name_int(i, "texture_shadow", ServerTexturesConfig[i][svTxCfgTextureShadow]);
+			cache_get_value_name_int(i, "texture_use_box", ServerTexturesConfig[i][svTxCfgTextureUseBox]);
+			cache_get_value_name_int(i, "texture_alignment", ServerTexturesConfig[i][svTxCfgTextureAlignment]);
+        }
+
+        printf("(8): Textures configuration loaded...");
+        InitializeScreenTextures();
+        
+        return 1;
+    }
+    printf("(8): Textures configuration failed");
 	return 0;
 }
 
@@ -1275,23 +1311,42 @@ stock ClearPlayerData(const playerid) {
     Player[playerid][pPoints] = 0.0;
 }
 
+stock IncreaseWeaponSkillLevel(const playerid, const weaponid) {
+	new index = -1;
+	
+	switch(weaponid) {
+	    case 22: index = WEAPONSKILL_PISTOL;
+	    case 23: index = WEAPONSKILL_PISTOL_SILENCED;
+	    case 24: index = WEAPONSKILL_DESERT_EAGLE;
+	    case 25: index = WEAPONSKILL_SHOTGUN;
+	    case 26: index = WEAPONSKILL_SAWNOFF_SHOTGUN;
+	    case 27: index = WEAPONSKILL_SPAS12_SHOTGUN;
+	    case 28, 32: index = WEAPONSKILL_MICRO_UZI;
+	    case 29: index = WEAPONSKILL_MP5;
+	    case 30: index = WEAPONSKILL_AK47;
+	    case 31: index = WEAPONSKILL_M4;
+	    case 33,34: index = WEAPONSKILL_SNIPERRIFLE;
+	}
+	
+	if(index > -1) {
+		Misc[playerid][mdWeaponSkill][index]++;
+    	SetPlayerSkillLevel(playerid, index, Misc[playerid][mdWeaponSkill][index]);
+    }
+}
+
 stock ClearPlayerWeaponsData(const playerid) {
-    for( new i; i < MAX_WEAPONS; i++ ) {
+	new i;
+    for( i = 0; i < MAX_WEAPONS; i++ ) {
         Weapons[playerid][i][wdId] = 0;
         Weapons[playerid][i][wdTime] = 0;
         Weapons[playerid][i][wdAsDefault] = 0;
         Weapons[playerid][i][wdCount] = 0;
     }
-
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, 40);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, 500);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_SAWNOFF_SHOTGUN, 200);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_SPAS12_SHOTGUN, 200);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, 50);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_MP5, 250);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, 200);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, 200);
-    SetPlayerSkillLevel(playerid, WEAPONSKILL_SNIPERRIFLE, 300);
+    
+    for( i = 0; i < MAX_WEAPONS_SKILL; i++ ) {
+        Misc[playerid][mdWeaponSkill][i] = 0;
+        SetPlayerSkillLevel(playerid, i, Misc[playerid][mdWeaponSkill][i]);
+    }
 }
 
 stock ClearPlayerAchievementsData(const playerid) {
@@ -1347,68 +1402,39 @@ stock ClearPlayerMiscData(const playerid) {
     strmid(Misc[playerid][mdPassword], "", 0, MAX_PLAYER_PASSWORD);
 }
 
-stock InitializePlayersScreenTextures() {
-	TimeLeftTexture = TextDrawCreate(22.000000, 251.000000, "300");
-	TextDrawBackgroundColor(TimeLeftTexture, 255);
-	TextDrawFont(TimeLeftTexture, 3);
-	TextDrawLetterSize(TimeLeftTexture, 1.770000, 3.499999);
-	TextDrawColor(TimeLeftTexture, 16777215);
-	TextDrawSetOutline(TimeLeftTexture, 0);
-	TextDrawSetProportional(TimeLeftTexture, 1);
-	TextDrawSetShadow(TimeLeftTexture, 1);
-	
-	InfectedTexture = TextDrawCreate(655.500000, 1.500000, "usebox");
- 	TextDrawBackgroundColor(InfectedTexture, 255);
-  	TextDrawFont(InfectedTexture, 0);
-	TextDrawLetterSize(InfectedTexture, 0.000000, 50.262496);
-	TextDrawColor(InfectedTexture, 0);
-	TextDrawSetOutline(InfectedTexture, 0);
-	TextDrawSetProportional(InfectedTexture, 1);
-	TextDrawSetShadow(InfectedTexture, 1);
-	TextDrawUseBox(InfectedTexture, true);
-	TextDrawBoxColor(InfectedTexture, 0xFF0000BB);
-	TextDrawTextSize(InfectedTexture, -2.000000, 0.000000);
-	
-	UntillEvacRectangleTexture = TextDrawCreate(14.000000, 283.937500, "LD_SPAC:white");
-	TextDrawLetterSize(UntillEvacRectangleTexture, 0.000000, 0.000000);
-	TextDrawTextSize(UntillEvacRectangleTexture, 119.500000, 21.437500);
-	TextDrawAlignment(UntillEvacRectangleTexture, 1);
-	TextDrawColor(UntillEvacRectangleTexture, 255);
-	TextDrawSetShadow(UntillEvacRectangleTexture, 0);
-	TextDrawSetOutline(UntillEvacRectangleTexture, 0);
-	TextDrawBackgroundColor(UntillEvacRectangleTexture, 255);
-	TextDrawFont(UntillEvacRectangleTexture, 4);
+stock InitializeScreenTextures() {
+	CreateTextureFromConfig(ServerTextures[timeLeftTexture], TIMELEFT_TEXTURE_ID);
+	CreateTextureFromConfig(ServerTextures[infectedTexture], INFECTED_TEXTURE_ID);
+	CreateTextureFromConfig(ServerTextures[untillEvacRectangleTexture], UNTILEVAC_RECTANGLE_TEXTURE_ID);
 
 	for( new i; i < MAX_PLAYERS; i++ ) {
-        UntilEvacTextTexture[i] = TextDrawCreate(18.500000, 285.250000, "UNTIL EVAC");
-		TextDrawLetterSize(UntilEvacTextTexture[i], 0.562500, 1.984999);
-		TextDrawAlignment(UntilEvacTextTexture[i], 1);
-		TextDrawColor(UntilEvacTextTexture[i], 0xFF0000FF);
-		TextDrawSetShadow(UntilEvacTextTexture[i], 0);
-		TextDrawSetOutline(UntilEvacTextTexture[i], 1);
-		TextDrawBackgroundColor(UntilEvacTextTexture[i], 51);
-		TextDrawFont(UntilEvacTextTexture[i], 1);
-		TextDrawSetProportional(UntilEvacTextTexture[i], 1);
-
-	    AliveInfoTexture[i] = TextDrawCreate(21.500000, 220.000000, "~w~humans: 0~n~~r~zombies: 0");
-		TextDrawLetterSize(AliveInfoTexture[i], 0.511498, 1.477498);
-		TextDrawAlignment(AliveInfoTexture[i], 1);
-		TextDrawColor(AliveInfoTexture[i], -16776961);
-		TextDrawSetShadow(AliveInfoTexture[i], 1);
-		TextDrawSetOutline(AliveInfoTexture[i], 0);
-		TextDrawBackgroundColor(AliveInfoTexture[i], 255);
-		TextDrawFont(AliveInfoTexture[i], 2);
-		TextDrawSetProportional(AliveInfoTexture[i], 1);
-		
-		PointsTexture[i] = TextDrawCreate(546.000000, 35.000000, "0");
-	    TextDrawBackgroundColor(PointsTexture[i], 255);
-	    TextDrawFont(PointsTexture[i], 2);
-	    TextDrawLetterSize(PointsTexture[i], 0.270000, 1.000000);
-	    TextDrawColor(PointsTexture[i], 16777215);
-	    TextDrawSetOutline(PointsTexture[i], 0);
-	    TextDrawSetProportional(PointsTexture[i], 1);
-	    TextDrawSetShadow(PointsTexture[i], 1);
+	    CreateTextureFromConfig(ServerTextures[untilEvacTextTexture][i], UNTILEVAC_TEXT_TEXTURE_ID);
+		CreateTextureFromConfig(ServerTextures[aliveInfoTexture][i], ALIVE_INFO_TEXTURE_ID);
+		CreateTextureFromConfig(ServerTextures[pointsTexture][i], POINTS_TEXTURE_ID);
 	}
+}
+
+stock DestroyScreenTextures() {
+    for( new i; i < MAX_PLAYERS; i++ ) {
+        if(IsPlayerConnected(i)) {
+            TextDrawHideForPlayer(i, ServerTextures[untilEvacTextTexture][i]);
+            TextDrawHideForPlayer(i, ServerTextures[aliveInfoTexture][i]);
+            TextDrawHideForPlayer(i, ServerTextures[pointsTexture][i]);
+        }
+
+        TextDrawDestroy(ServerTextures[untilEvacTextTexture][i]);
+        TextDrawDestroy(ServerTextures[aliveInfoTexture][i]);
+        TextDrawDestroy(ServerTextures[pointsTexture][i]);
+	}
+
+	TextDrawHideForAll(ServerTextures[untillEvacRectangleTexture]);
+	TextDrawDestroy(ServerTextures[untillEvacRectangleTexture]);
+
+	TextDrawHideForAll(ServerTextures[infectedTexture]);
+	TextDrawDestroy(ServerTextures[infectedTexture]);
+
+	TextDrawHideForAll(ServerTextures[timeLeftTexture]);
+	TextDrawDestroy(ServerTextures[timeLeftTexture]);
 }
 
 stock InitializeDefaultValues() {
@@ -1434,34 +1460,11 @@ stock InitializeDefaultValues() {
 	ServerConfig[svCfgCurrentOnline] = 0;
 }
 
-stock DestroyPlayersScreenTextures() {
-    for( new i; i < MAX_PLAYERS; i++ ) {
-        if(IsPlayerConnected(i)) {
-            TextDrawHideForPlayer(i, UntilEvacTextTexture[i]);
-            TextDrawHideForPlayer(i, AliveInfoTexture[i]);
-            TextDrawHideForPlayer(i, PointsTexture[i]);
-        }
-        
-        TextDrawDestroy(UntilEvacTextTexture[i]);
-        TextDrawDestroy(AliveInfoTexture[i]);
-        TextDrawDestroy(PointsTexture[i]);
-	}
-	
-	TextDrawHideForAll(UntillEvacRectangleTexture);
-	TextDrawDestroy(UntillEvacRectangleTexture);
-	
-	TextDrawHideForAll(InfectedTexture);
-	TextDrawDestroy(InfectedTexture);
-	
-	TextDrawHideForAll(TimeLeftTexture);
-	TextDrawDestroy(TimeLeftTexture);
-}
-
 stock ClearPlayerRoundData(const playerid) {
     Round[playerid][rdIsEvacuated] = false;
     Round[playerid][rdIsInfected] = false;
     SetPlayerDrunkLevel(playerid, 0);
-    TextDrawHideForPlayer(playerid, InfectedTexture);
+    TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
 
     new i;
     for( i = 0; i < MAX_ROUND_BOXES; i++ ) {
@@ -1590,11 +1593,11 @@ stock SetByCurrentClass(const playerid) {
 	}
 	
 	SetCameraBehindPlayer(playerid);
-	TextDrawShowForPlayer(playerid, TimeLeftTexture);
-	TextDrawShowForPlayer(playerid, UntillEvacRectangleTexture);
-	TextDrawShowForPlayer(playerid, UntilEvacTextTexture[playerid]);
- 	TextDrawShowForPlayer(playerid, AliveInfoTexture[playerid]);
-  	TextDrawShowForPlayer(playerid, PointsTexture[playerid]);
+	TextDrawShowForPlayer(playerid, ServerTextures[timeLeftTexture]);
+	TextDrawShowForPlayer(playerid, ServerTextures[untillEvacRectangleTexture]);
+	TextDrawShowForPlayer(playerid, ServerTextures[untilEvacTextTexture][playerid]);
+ 	TextDrawShowForPlayer(playerid, ServerTextures[aliveInfoTexture][playerid]);
+  	TextDrawShowForPlayer(playerid, ServerTextures[pointsTexture][playerid]);
 }
 
 stock InfectPlayer(const playerid, const targetId) {
@@ -1613,7 +1616,7 @@ stock CurePlayer(const playerid) {
 	
     Round[playerid][rdIsInfected] = false;
     SetPlayerDrunkLevel(playerid, 0);
-    TextDrawHideForPlayer(playerid, InfectedTexture);
+    TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
     return 1;
 }
 
@@ -1907,17 +1910,44 @@ stock SavePlayerWeaponToDatabase(const playerid, const weaponid, const index) {
  	mysql_tquery(Database, formatedInsertWeaponQuery);
 }
 
+stock CreateTextureFromConfig(&Text:texid, const buffer) {
+	texid = TextDrawCreate(
+		ServerTexturesConfig[buffer][svTxCfgTexturePosition][0],
+		ServerTexturesConfig[buffer][svTxCfgTexturePosition][1],
+		ServerTexturesConfig[buffer][svTxCfgTextureDefaultValue]
+	);
+
+	TextDrawLetterSize(texid, ServerTexturesConfig[buffer][svTxCfgTextureLetterSize][0], ServerTexturesConfig[buffer][svTxCfgTextureLetterSize][1]);
+    TextDrawBackgroundColor(texid, ServerTexturesConfig[buffer][svTxCfgTextureBackgroundColor]);
+    TextDrawFont(texid, ServerTexturesConfig[buffer][svTxCfgTextureFont]);
+    TextDrawColor(texid, ServerTexturesConfig[buffer][svTxCfgTextureDrawColor]);
+    TextDrawSetOutline(texid, ServerTexturesConfig[buffer][svTxCfgTextureOutline]);
+    TextDrawSetProportional(texid, ServerTexturesConfig[buffer][svTxCfgTextureProportional]);
+    TextDrawSetShadow(texid, ServerTexturesConfig[buffer][svTxCfgTextureShadow]);
+    TextDrawAlignment(texid, ServerTexturesConfig[buffer][svTxCfgTextureAlignment]);
+
+    if(ServerTexturesConfig[buffer][svTxCfgTextureTextSize][0] > 0.0 || ServerTexturesConfig[buffer][svTxCfgTextureTextSize][1] > 0.0) {
+    	TextDrawTextSize(texid, ServerTexturesConfig[buffer][svTxCfgTextureTextSize][0], ServerTexturesConfig[buffer][svTxCfgTextureTextSize][1]);
+    }
+
+    if(ServerTexturesConfig[buffer][svTxCfgTextureUseBox]) {
+		TextDrawUseBox(texid, ServerTexturesConfig[buffer][svTxCfgTextureUseBox]);
+		TextDrawBoxColor(texid, ServerTexturesConfig[buffer][svTxCfgTextureBoxColor]);
+		TextDrawTextSize(texid, ServerTexturesConfig[buffer][svTxCfgTextureTextSize][0], ServerTexturesConfig[buffer][svTxCfgTextureTextSize][1]);
+	}
+}
+
 stock GetRequiredZombiesCount() {
     switch(ServerConfig[svCfgCurrentOnline]) {
         case 0..3:
-            return floatround(ServerConfig[svCfgCurrentOnline] / 2, floatround_tozero);
+            return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbMinZombies], floatround_tozero);
 		case 4..7:
-			return floatround(ServerConfig[svCfgCurrentOnline] / 3, floatround_tozero);
+			return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbMediumZombies], floatround_tozero);
 		default:
-		    return floatround(ServerConfig[svCfgCurrentOnline] / 4, floatround_tozero);
+		    return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbMaxZombies], floatround_tozero);
     }
 
-    return floatround(ServerConfig[svCfgCurrentOnline] / 2, floatround_tozero);
+    return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbDefaultZombies], floatround_tozero);
 }
 
 stock SetTeams() {
@@ -1961,8 +1991,14 @@ CMD:cure(const playerid, const targetid) {
 }
 
 CMD:test(playerid) {
+	if(Player[playerid][pAccountId] != 1) {
+	    return 0;
+	}
+	
 	SetPlayerTeamAC(playerid, TEAM_HUMAN);
 	SetByCurrentClass(playerid);
+
+    InfectPlayer(playerid, playerid);
 
 	new index = random(MAX_WEAPONS);
 	new weapon = WeaponsConfig[index][wdCfgType];
@@ -1979,4 +2015,3 @@ CMD:test(playerid) {
 	}
 	return 0;
 }
-

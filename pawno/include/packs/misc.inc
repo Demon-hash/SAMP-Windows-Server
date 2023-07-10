@@ -9,6 +9,8 @@
 #define GPCI_LENGTH 41
 #define MAX_MAP_SPAWN 3 
 
+#define MAX_WEAPONS_SKILL 10
+
 enum MISC_DATA {
 	mdPlayerName[MAX_PLAYER_NAME],
 	mdCurrentClass[3],
@@ -25,6 +27,7 @@ enum MISC_DATA {
 	mdPassword[MAX_PLAYER_PASSWORD],
 	mdIp[MAX_PLAYER_IP],
 	mdSerial[GPCI_LENGTH],
+	mdWeaponSkill[MAX_WEAPONS_SKILL],
 	mdDialogId,
 	mdKickForAuthTimeout,
 	mdKickForAuthTries,

@@ -15,6 +15,21 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define SKILLS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS skills (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`pistol` int(11) unsigned NOT NULL default '0',\
+	`silinced` int(11) unsigned NOT NULL default '0',\
+	`shotgun` int(11) unsigned NOT NULL default '0',\
+	`spas` int(11) unsigned NOT NULL default '0',\
+	`uzi` int(11) unsigned NOT NULL default '0',\
+	`mp5` int(11) unsigned NOT NULL default '0',\
+	`ak47` int(11) unsigned NOT NULL default '0',\
+	`m4` int(11) unsigned NOT NULL default '0',\
+	`rifle` int(11) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
 #define ACHIEVEMENTS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS achievements (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -457,12 +472,42 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define BALANCE_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS balance_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`min` DECIMAL(6,3) unsigned NOT NULL default '2.0',\
+	`medium` DECIMAL(6,3) unsigned NOT NULL default '3.0',\
+	`max` DECIMAL(6,3) unsigned NOT NULL default '4.0',\
+	`by_default` DECIMAL(6,3) unsigned NOT NULL default '2.0',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define TEXTURES_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS `textures_config` (\
+  	`id` int(11) unsigned NOT NULL,\
+  	`position` varchar(255) NOT NULL DEFAULT '',\
+  	`letter_size` varchar(255) NOT NULL DEFAULT '',\
+  	`text_size` varchar(255) NOT NULL DEFAULT '',\
+  	`default_value` varchar(255) NOT NULL DEFAULT '',\
+  	`background_color` varchar(32) NOT NULL DEFAULT '',\
+  	`texture_font` int(1) unsigned NOT NULL DEFAULT '0',\
+  	`texture_draw_color` varchar(32) NOT NULL DEFAULT '',\
+  	`texture_outline` int(1) unsigned NOT NULL DEFAULT '0',\
+  	`texture_proportional` int(1) unsigned NOT NULL DEFAULT '0',\
+  	`texture_shadow` int(1) unsigned NOT NULL DEFAULT '0',\
+  	`texture_use_box` int(1) unsigned NOT NULL DEFAULT '0',\
+  	`texture_box_color` varchar(32) NOT NULL DEFAULT '0',\
+  	`texture_alignment` int(1) unsigned NOT NULL DEFAULT '0',\
+  	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
 #define PREDIFINED_CONFIG "INSERT IGNORE INTO config (id) VALUES (1);"
 #define PREDIFINED_ANTICHEAT "INSERT IGNORE INTO anticheat (id) VALUES (1);"
 #define PREDIFINED_ROUND_CONFIG "INSERT IGNORE INTO round_config (id) VALUES (1);"
 #define PREDIFINED_EVAC_CONFIG "INSERT IGNORE INTO evac_config (id) VALUES (1);"
 #define PREDIFINED_MAP_CONFIG "INSERT IGNORE INTO map_config (id) VALUES (1);"
+#define PREDIFINED_BALANCE_CONFIG "INSERT IGNORE INTO balance_config (id) VALUES (1);"
 
 #define PREDIFINED_MAP_VILLAGE "INSERT IGNORE INTO \
 	`maps` (`id`, `name`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
@@ -488,29 +533,44 @@
 #define PREDIFINED_RUNNER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (15, \"Runner Zombie|Быстрый Зомби\", \"Fast Run|Быстрый Бег\", 1, 21, 0, 0, 0, 0);"
 #define PREDIFINED_SEEKER_ZOMBIE "INSERT IGNORE INTO classes (id, name, description, team, level, ability, cooldown, skin, disabled) VALUES (16, \"Seeker Zombie|Охотник Зомби\", \"Can Teleport|Может Телепортироватся\", 1, 24, 11, 45, 142, 0);"
 
-#define PREDIFINED_SILINCED "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (1, 23, 100, 50, 10);"
-#define PREDIFINED_COLT45 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (2, 22, 100, 50, 10);"
-#define PREDIFINED_DEAGLE "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (3, 24, 75, 50, 10);"
-#define PREDIFINED_SPAS "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (4, 27, 5, 50, 3);"
-#define PREDIFINED_UZI "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (5, 28, 12, 150, 50);"
-#define PREDIFINED_MP5 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (6, 29, 5, 300, 35);"
-#define PREDIFINED_AK47 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (7, 30, 9, 300, 30);"
-#define PREDIFINED_M4 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (8, 31, 5, 300, 30);"
-#define PREDIFINED_TEC9 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (9, 32, 9, 150, 50);"
-#define PREDIFINED_RIFLE "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (10, 33, 20, 15, 3);"
-#define PREDIFINED_SNIPER "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (11, 34, 20, 50, 3);"
-#define PREDIFINED_RPG "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (12, 35, 1, 5, 1);"
-#define PREDIFINED_HEATSEEKER "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (13, 36, 1, 5, 1);"
-#define PREDIFINED_FLAMETHOWER "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (11, 37, 1, 500, 150);"
-#define PREDIFINED_C4 "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES (12, 39, 10, 20, 2);"
+#define PREDIFINED_TEXTURES "\
+	INSERT IGNORE INTO `textures_config` (`id`, `position`, `letter_size`, `text_size`, `default_value`, `background_color`, `texture_font`, `texture_draw_color`, `texture_outline`, `texture_proportional`, `texture_shadow`, `texture_use_box`, `texture_box_color`, `texture_alignment`) VALUES \
+	(1, '22.000000, 251.000000', '1.770000, 3.499999', '0.0,0.0', '300', '255', 3, 'FFFFFF', 1, 1, 1, 0, '0', 0),\
+	(2, '655.500000, 1.500000', '0.000000, 50.262496', '-2.000000, 0.000000', 'usebox', '255', 0, '0', 0, 1, 1, 1, '0xFF0000BB', 0),\
+	(3, '14.000000, 283.937500', '0.000000, 0.000000', '119.500000, 21.437500', 'LD_SPAC:white', '0x000000FF', 4, '0x000000FF', 0, 0, 0, 0, '0', 1),\
+	(4, '18.500000, 285.250000', '0.562500, 1.984999', '0.0,0.0', 'UNTIL EVAC', '0x000000FF', 1, '0xFF0000FF', 1, 1, 0, 0, '0', 1),\
+	(5, '21.500000, 220.000000', '0.511498, 1.477498', '0.0,0.0', '~w~humans: 0~n~~r~zombies: 0', '0x000000FF', 2, '0xFFFFFFFF', 0, 1, 1, 0, '0', 1),\
+	(6, '546.000000, 35.000000', '0.270000, 1.000000', '0.0,0.0', '0', '0x000000FF', 2, '0x0d8adeFF', 0, 1, 1, 0, '0', 0);"
 
-#define PRD_LD_DG_LOGIN_TITLE "INSERT IGNORE INTO english (id, text) VALUES (1, 'Login');"
-#define PRD_LD_DG_LOGIN_DEFAULT "INSERT IGNORE INTO english (id, text) VALUES (2, 'Welcome back, your account is already registered\nEnter your password below to login');"
-#define PRD_LD_DG_LOGIN_TRIES "INSERT IGNORE INTO english (id, text) VALUES (3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login');"
-#define PRD_LD_DG_LOGIN_SPACES "INSERT IGNORE INTO english (id, text) VALUES (4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login');"
-#define PRD_LD_DG_REG_TITLE "INSERT IGNORE INTO english (id, text) VALUES (5, 'Register');"
-#define PRD_LD_DG_REG_DEFAULT "INSERT IGNORE INTO english (id, text) VALUES (6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration');"
-#define PRD_LD_DG_REG_SPACES "INSERT IGNORE INTO english (id, text) VALUES (7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration');"
-#define PRD_LD_BTN_REG "INSERT IGNORE INTO english (id, text) VALUES (8, 'Register');"
-#define PRD_LD_BTN_LOGIN "INSERT IGNORE INTO english (id, text) VALUES (9, 'Login');"
-#define PRD_LD_BTN_QUIT "INSERT IGNORE INTO english (id, text) VALUES (10, 'Quit');"
+#define PREDIFINED_WEAPONS "\
+	INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES \
+	(1, 23, 100, 50, 10),\
+	(2, 22, 100, 50, 10),\
+	(3, 24, 75, 50, 10),\
+	(4, 27, 5, 50, 3),\
+	(5, 28, 12, 150, 50),\
+	(6, 29, 5, 300, 35),\
+	(7, 30, 9, 300, 30),\
+	(8, 31, 5, 300, 30),\
+	(9, 32, 9, 150, 50),\
+	(10, 33, 20, 15, 3),\
+	(11, 34, 20, 50, 3),\
+	(12, 35, 1, 5, 1),\
+	(13, 36, 1, 5, 1),\
+	(14, 37, 1, 500, 150),\
+	(15, 39, 10, 20, 2);\
+"
+
+#define PREDIFINED_LOCALIZATION "\
+	INSERT IGNORE INTO english (id, text) VALUES \
+	(1, 'Login'),\
+	(2, 'Welcome back, your account is already registered\nEnter your password below to login'),\
+	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login'),\
+	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login'),\				
+	(5, 'Register'),\
+	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration'),\
+	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration'),\
+	(8, 'Register'),\
+	(9, 'Login'),\
+	(10, 'Quit');\
+"

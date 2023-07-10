@@ -23,6 +23,8 @@
 #include <packs/maps>
 #include <packs/utils>
 #include <packs/evacuation>
+#include <packs/textures>
+#include <packs/balance>
 
 #include <dependencies/foreach>
 #include <dependencies/sscanf2>
