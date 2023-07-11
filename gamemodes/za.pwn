@@ -265,31 +265,34 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	if(!IsPlayerConnected(playerid)) {
 	    return 0;
 	}
-	
-	/*
-	LD_MSG_HUMAN_HERO_KILLED,
-		LD_MSG_ZOMBIE_BOSS_KILLED,
-		LD_MSG_FIRST_BLOOD
-
-		LD_MSG_KILLED_THE_LAST
-
-
-	(56, '>> Player %s has killed the Human Hero / Queen!', '>> Игрок %s убил Героя(иню)!'),
-	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),
-	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),
-	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!');
-	
-	RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgHumanHeroPoints];
-		RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgZombieBossPoints];
-		RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgFirstBlood];
-		RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgKillLast];
-	*/
 
     reason = clamp(reason, WEAPON_FISTS, WEAPON_COLLISION);
 	SendDeathMessage(killerid, playerid, reason);
 	
 	if(IsPlayerConnected(killerid)) {
 	    IncreaseWeaponSkillLevel(killerid, reason);
+	    
+	    if(!Map[mpFirstBlood]) {
+	        RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgFirstBlood];
+	        Map[mpFirstBlood] = true;
+	        
+		 	new formated[128];
+		 	foreach(Player, i) {
+		 		format(formated, sizeof(formated), Localization[i][LD_MSG_FIRST_BLOOD], Misc[killerid][mdPlayerName], Localization[i][LD_MSG_POINTS_MULTIPLE]);
+		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 	}
+	    }
+	    
+    	if(Map[mpKillTheLast] && GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
+    	    RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgKillLast];
+    	    
+    	    new formated[128];
+		 	foreach(Player, i) {
+		 		format(formated, sizeof(formated), Localization[i][LD_MSG_KILLED_THE_LAST], Misc[killerid][mdPlayerName], Localization[i][LD_MSG_POINTS_MULTIPLE]);
+		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 	}
+    	}
+	    
 	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
 	        RoundSession[killerid][rsdKilling] += RoundConfig[rdCfgKilling];
 	    }
@@ -297,10 +300,30 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	
 	if(Round[playerid][rdIsHumanHero]) {
 	    Round[playerid][rdIsHumanHero] = false;
+	    
+	    if(IsPlayerConnected(killerid)) {
+	    	RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgHumanHeroPoints];
+	    	
+	    	new formated[96];
+		 	foreach(Player, i) {
+		 		format(formated, sizeof(formated), Localization[i][LD_MSG_HUMAN_HERO_KILLED], Misc[killerid][mdPlayerName]);
+		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 	}
+		}
 	}
 	
 	if(Round[playerid][rdIsZombieBoss]) {
 	    Round[playerid][rdIsZombieBoss] = false;
+	    
+	    if(IsPlayerConnected(killerid)) {
+	        RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgZombieBossPoints];
+	        
+	        new formated[96];
+		 	foreach(Player, i) {
+		 		format(formated, sizeof(formated), Localization[i][LD_MSG_ZOMBIE_BOSS_KILLED], Misc[killerid][mdPlayerName]);
+		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 	}
+	    }
 	}
 	
 	if(IsAbleToGivePointsInCategory(playerid, SESSION_UNDEAD_POINTS)) {
@@ -350,6 +373,15 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 					if(IsPlayerInRangeOfPoint(hitid, ServerConfig[svCfgSpawnRange], Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j])) {
 					    return 0;
 					}
+				}
+				
+				if(GetPlayerArmourEx(hitid) > 0.0) {
+				    switch(weaponid) {
+				        case 24, 33, 34: return 1;
+				    }
+				    
+				    SetPlayerChatBubble(hitid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
+				    return 0;
 				}
             }
 	    }
@@ -1136,6 +1168,10 @@ custom LoadMapConfiguration() {
         cache_get_value_name_float(0, "kill_last", MapConfig[mpCfgKillLast]);
         cache_get_value_name_float(0, "last_evacuated", MapConfig[mpCfgLastEvacuated]);
         
+        cache_get_value_name(0, "hero_weapons", MapConfig[mpCfgHumanHeroWeapons]);
+        cache_get_value_name_float(0, "hero_armour", MapConfig[mpCfgHumanHeroArmour]);
+        cache_get_value_name_float(0, "zombie_armour", MapConfig[mpCfgZombieBossArmour]);
+        
         printf("(5): Map configuration LOADED");
         return 1;
     }
@@ -1733,7 +1769,6 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 		case ABILITY_SPITTER:
 		case ABILITY_MUTATED:
 		case ABILITY_SPORE:
-		case ABILITY_ENFORCER:
 		case ABILITY_WITCH:
 		case ABILITY_MIRROR:
 		
@@ -2104,11 +2139,25 @@ stock ClassSetup(const playerid, const classid) {
 stock SetZombie(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_ZOMBIE);
     ClassSetup(playerid, classid);
+    
+    if(Round[playerid][rdIsZombieBoss]) {
+        SetPlayerArmourAC(playerid, MapConfig[mpCfgZombieBossArmour]);
+        SetPlayerColor(playerid, COLOR_ZOMBIE_BOSS);
+    }
 }
 
 stock SetHuman(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_HUMAN);
     ClassSetup(playerid, classid);
+    
+    if(Round[playerid][rdIsHumanHero]) {
+        new weapons[2];
+        sscanf(MapConfig[mpCfgHumanHeroWeapons], "p<,>ii", weapons[0], weapons[1]);
+        GivePlayerWeaponAC(playerid, weapons[0], floatround(ServerConfig[svCfgMaxWeaponAmmo] / 2, floatround_tozero));
+        GivePlayerWeaponAC(playerid, weapons[1], floatround(ServerConfig[svCfgMaxWeaponAmmo] / 2, floatround_tozero));
+        SetPlayerArmourAC(playerid, MapConfig[mpCfgHumanHeroArmour]);
+        SetPlayerColor(playerid, COLOR_HUMAN_HERO);
+    }
 }
 
 stock SetUnknown(const playerid) {

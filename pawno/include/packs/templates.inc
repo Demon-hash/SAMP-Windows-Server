@@ -471,6 +471,9 @@
 	`restart` int(6) unsigned NOT NULL default '10',\
 	`great_period` int(6) unsigned NOT NULL default '30',\
 	`spawn_protection_time` int(6) unsigned NOT NULL default '15',\
+	`zombie_armour` DECIMAL(9,2) unsigned NOT NULL default '200.0',\
+	`hero_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
+	`hero_weapons` varchar(24) NOT NULL default '31, 24',\
 	`spawn_text_range` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
 	`human_hero_kill` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
 	`zombie_boss_kill` DECIMAL(9,2) unsigned NOT NULL default '15.0',\

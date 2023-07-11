@@ -70,10 +70,13 @@ enum MAP_CONFIG_DATA {
 	mpCfgRestart,
 	mpCfgGreatTime,
 	mpCfgSpawnProtectionTime,
+	mpCfgHumanHeroWeapons[24],
 	Float:mpCfgSpawnTextRange,
 	Float:mpCfgHumanHeroPoints,
 	Float:mpCfgZombieBossPoints,
 	Float:mpCfgFirstBlood,
 	Float:mpCfgKillLast,
 	Float:mpCfgLastEvacuated,
+	Float:mpCfgHumanHeroArmour,
+	Float:mpCfgZombieBossArmour,
 };
