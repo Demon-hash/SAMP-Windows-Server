@@ -55,6 +55,8 @@ static ServerTextures[TEXTURES_DATA];
 static ServerTexturesConfig[MAX_SERVER_TEXTURES][TEXTURES_CONFIG_DATA];
 
 static Classes[MAX_CLASSES][CLASSES_DATA];
+static ClassesSelection[MAX_PLAYERS][MAX_CLASSES][CLASSES_SELECTION_DATA];
+
 static Pickups[MAX_PICKUPS][PICKUP_DATA];
 
 static AnticheatConfig[1];
@@ -126,7 +128,7 @@ main() {
 
 public OnGameModeInit() {
 	InitializePickups();
-	InitializeClassesData();
+ 	InitializeClassesData();
 	InitializeWeaponsData();
 	InitializeDefaultValues();
 	
@@ -157,6 +159,8 @@ public OnGameModeInit() {
 	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsConfiguration");
 	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceConfiguration");
 	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesConfiguration");
+	
+	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
  	mysql_log(SQL_LOG_LEVEL);
  	
@@ -486,7 +490,25 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	            return 1;
 	        }
 	        
-	        ShowClassSelectionDialog(playerid, listitem);
+	        ProceedClassSelection(playerid, listitem, 1);
+	        return 1;
+	    }
+	    case DIALOG_SELECTION: {
+	        if(!response || Misc[playerid][mdSelectionTeam] == -1) {
+	            Misc[playerid][mdSelectionTeam] = -1;
+	            cmd::class(playerid);
+	            return 1;
+	        }
+	        
+	        for(new i = 0; i < MAX_CLASSES; i++ ) {
+	            if(Classes[i][cldId] == ClassesSelection[playerid][listitem][csdId]) {
+	                ProocedClassChange(playerid, i, Misc[playerid][mdSelectionTeam], listitem);
+	                return 1;
+	            }
+	        }
+	        
+	        Misc[playerid][mdSelectionTeam] = -1;
+         	cmd::class(playerid);
 	        return 1;
 	    }
 	}
@@ -557,11 +579,42 @@ custom Update() {
 custom LoadMapsCount() {
 	if(cache_num_rows()) {
         cache_get_value_name_int(0, "maps", Map[mpCount]);
-        printf("Loaded %d maps in total", Map[mpCount]);
+        printf("(8): Loaded %d maps in total", Map[mpCount]);
         return 1;
     }
     
-	printf("Loading maps failed");
+	printf("(8): Loading maps failed");
+	return 0;
+}
+
+custom LoadClasses() {
+    if(cache_num_rows()) {
+        new i, len = clamp(cache_num_rows(), 0, MAX_CLASSES);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name_int(i, "id", Classes[i][cldId]);
+			cache_get_value_name_int(i, "team", Classes[i][cldTeam]);
+			cache_get_value_name_int(i, "skin", Classes[i][cldSkin]);
+			cache_get_value_name_int(i, "cooldown", Classes[i][cldCooldown]);
+            cache_get_value_float(i, "points", Classes[i][cldPoints]);
+
+            cache_get_value_name(i, "ability", Classes[i][cldAbility]);
+			cache_get_value_name(i, "immunity", Classes[i][cldImmunity]);
+			cache_get_value_name(i, "weapons", Classes[i][cldWeapons]);
+
+			cache_get_value_name_float(i, "health", Classes[i][cldHealth]);
+			cache_get_value_name_float(i, "armour", Classes[i][cldArmour]);
+			cache_get_value_name_float(i, "distance", Classes[i][cldDistance]);
+			cache_get_value_name_float(i, "points", Classes[i][cldPoints]);
+
+			cache_get_value_name_int(i, "animation", Classes[i][cldAnimation]);
+			cache_get_value_name_int(i, "animation_time", Classes[i][cldAnimationTime]);
+		}
+		
+		printf("(8): Classes loaded (%d / %d)", i, len);
+        return 1;
+    }
+    
+    printf("(8): Loading classes failed");
 	return 0;
 }
 
@@ -1131,12 +1184,14 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
         cache_get_value_name_float(0, "total_points", Achievements[playerid][achTotalPoints]);
         cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
-        
+
+        PreloadDefaultLocalizedTitles(playerid);
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
         return 1;
     }
    	
 	PredictPreferedLocalization(playerid);
+	PreloadDefaultLocalizedTitles(playerid);
 	LoadLocalization(playerid, AUTH_REG_TYPE);
     return 0;
 }
@@ -1155,52 +1210,94 @@ custom InitializeLocation(const playerid, const type) {
     }
 }
 
-custom ShowClassesSelection(const playerid) {
+custom LoadFirstClassesTitles(const playerid) {
+    if(cache_num_rows() > 0) {
+        cache_get_value_name(0, "title", Misc[playerid][mdZombieSelectionName]);
+       	cache_get_value_name(1, "title", Misc[playerid][mdHumanSelectionName]);
+       	
+       	strmid(Misc[playerid][mdHumanNextSelectionName], Misc[playerid][mdHumanSelectionName], 0, MAX_CLASS_NAME);
+		strmid(Misc[playerid][mdZombieNextSelectionName], Misc[playerid][mdZombieSelectionName], 0, MAX_CLASS_NAME);
+    }
+}
+
+
+custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
     if(cache_num_rows() > 0) {
         static const disabledTitlesColors[] = { 0xEC3013, 0xFF4D55 };
         static const enabledTitlesColors[] = { 0x009900, 0x75F0B0 };
         static const descriptionColors[] = { 0xFFFFFF, 0xA7A5A5 };
-    
-        new i, id, len = cache_num_rows(), Float:points;
-        new list[1024], formated[256], title[48], description[96], color;
+
+        new i, len = clamp(cache_num_rows(), 0, MAX_CLASSES), Float:points;
+        new list[2048], formated[256], description[MAX_CLASS_DESC], color;
         
         for( i = 0; i < len; i++ ) {
-            cache_get_value_name(i, "title", title);
+            cache_get_value_name_int(i, "id", ClassesSelection[playerid][i][csdId]);
+            cache_get_value_name(i, "title", ClassesSelection[playerid][i][csdName]);
             cache_get_value_name(i, "description", description);
             cache_get_value_float(i, "points", points);
-            cache_get_value_name_int(i, "id", id);
-            
+
+			if(!showDialog) continue;
             color = (Player[playerid][pPoints] < points) ? disabledTitlesColors[i % 2] : enabledTitlesColors[i % 2];
             format(formated, sizeof(formated), "{%06x}%s{%06x} - %s - %s%.0f %s\n",
-				color, title, descriptionColors[i % 2],
-				description,
+				color,
+				ClassesSelection[playerid][i][csdName],
+				descriptionColors[i % 2],
+                description,
 				(Player[playerid][pPoints] < points) ? "{FF0000}" : "",
 				points,
 				Localization[playerid][LD_CLASSES_TIP_EXP]
 			);
+			
             strcat(list, formated);
         }
+
+        Misc[playerid][mdSelectionTeam] = teamId;
         
-        ShowPlayerDialogAC(
-			playerid, DIALOG_SELECTION, DIALOG_STYLE_LIST,
-			Localization[playerid][LD_DG_CLASSES_TITLE],
-			list,
-			Localization[playerid][LD_BTN_SELECT],
-			Localization[playerid][LD_BTN_CLOSE]
-		);
+        if(showDialog) {
+	        ShowPlayerDialogAC(
+				playerid, DIALOG_SELECTION, DIALOG_STYLE_LIST,
+				Localization[playerid][LD_DG_CLASSES_TITLE],
+				list,
+				Localization[playerid][LD_BTN_SELECT],
+				Localization[playerid][LD_BTN_CLOSE]
+			);
+		}
         return 1;
     }
-    
-	return 1;
+
+ 	return 1;
 }
 
-stock ShowClassSelectionDialog(const playerid, const selection) {
-	static const loadClassesQuery[] = LOAD_CLASSES_QUERY;
+stock ProceedClassSelection(const playerid, const selection, const showDialog) {
+ 	static const loadClassesQuery[] = LOAD_CLASSES_QUERY;
 	new team = (selection == 0) ? TEAM_HUMAN : TEAM_ZOMBIE, index = Player[playerid][pLanguage];
     new formatedLoadClassesQuery[sizeof(loadClassesQuery) + LOCALIZATION_SIZE + LOCALIZATION_SIZE + MAX_TEAMS_LEN];
 
     mysql_format(Database, formatedLoadClassesQuery, sizeof(formatedLoadClassesQuery), loadClassesQuery, LOCALIZATION_TABLES[index], LOCALIZATION_TABLES[index], team);
-    mysql_tquery(Database, formatedLoadClassesQuery, "ShowClassesSelection", "i", playerid);
+    mysql_tquery(Database, formatedLoadClassesQuery, "ShowClassesSelection", "iii", playerid, team, showDialog);
+}
+
+stock ProocedClassChange(const playerid, const classid, const team, const fromSelection) {
+	if(Map[mpTimeout] >= 270) {
+	    Misc[playerid][mdCurrentClass][team] = classid;
+	    switch(team) {
+     		case TEAM_HUMAN: strmid(Misc[playerid][mdHumanSelectionName], ClassesSelection[playerid][fromSelection][csdName], 0, MAX_CLASS_NAME);
+       		case TEAM_ZOMBIE: strmid(Misc[playerid][mdZombieSelectionName], ClassesSelection[playerid][fromSelection][csdName], 0, MAX_CLASS_NAME);
+		}
+		
+		SendClientMessage(playerid, 0xFFF000FF, Localization[playerid][LD_CLASS_GREAT_PERIOD]);
+		SetByCurrentClass(playerid);
+		return 1;
+	}
+	
+	switch(team) {
+		case TEAM_HUMAN: strmid(Misc[playerid][mdHumanNextSelectionName], ClassesSelection[playerid][fromSelection][csdName], 0, MAX_CLASS_NAME);
+		case TEAM_ZOMBIE: strmid(Misc[playerid][mdZombieNextSelectionName], ClassesSelection[playerid][fromSelection][csdName], 0, MAX_CLASS_NAME);
+	}
+	
+	Misc[playerid][mdNextClass][team] = classid;
+	SendClientMessage(playerid, 0xFFF000FF, Localization[playerid][LD_CLASS_SET_AFTER]);
+ 	return 1;
 }
 
 stock LoadFilterScript(const filename[]) {
@@ -1317,21 +1414,27 @@ stock InitializeClassesData() {
 	for( new i; i < MAX_CLASSES; i++ ) {
 	    Classes[i][cldId] = -1;
 	    Classes[i][cldTeam] = TEAM_UNKNOWN;
-	    Classes[i][cldAbility] = -1;
-	    Classes[i][cldLevel] = 0;
-	    Classes[i][cldHealth] = 100;
-	    Classes[i][cldArmour] = 0;
+	    Classes[i][cldPoints] = 0;
+	    Classes[i][cldHealth] = 100.0;
+	    Classes[i][cldArmour] = 0.0;
 	    Classes[i][cldCooldown] = 0;
         Classes[i][cldSkin] = 1;
 	    Classes[i][cldDisabled] = 1;
-	    Classes[i][cldImmunity] = 0;
 	    Classes[i][cldDistance] = 0.0;
 	    Classes[i][cldAnimation] = 0;
 		Classes[i][cldAnimationTime] = 0;
-	    
-		strmid(Classes[i][cldName], "", 0, MAX_CLASS_NAME);
-		strmid(Classes[i][cldDesc], "", 0, MAX_CLASS_DESC);
+
+		strmid(Classes[i][cldAbility], "", 0, MAX_CLASSDATA_STR_LEN);
+		strmid(Classes[i][cldImmunity], "", 0, MAX_CLASSDATA_STR_LEN);
+		strmid(Classes[i][cldWeapons], "", 0, MAX_CLASSDATA_STR_LEN);
 	}
+}
+
+stock ClearLocalizedClassesData(const playerid) {
+    for( new i; i < MAX_CLASSES; i++ ) {
+        ClassesSelection[playerid][i][csdId] = 0;
+        strmid(ClassesSelection[playerid][i][csdName], "", 0, MAX_CLASS_NAME);
+    }
 }
 
 stock ClearAllPlayerData(const playerid) {
@@ -1342,6 +1445,9 @@ stock ClearAllPlayerData(const playerid) {
     ClearPlayerRoundData(playerid);
     ClearPlayerRoundSession(playerid);
     ClearPlayerWeaponsData(playerid);
+    ClearLocalizedClassesData(playerid);
+    
+    ProceedClassSelection(playerid, 0, 0);
     ResetWeapons(playerid);
     
     SetPlayerHealthAC(playerid, 100.0);
@@ -1425,6 +1531,9 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdDialogId] = -1;
+	Misc[playerid][mdSelectionTeam] = -1;
+	strmid(Misc[playerid][mdHumanSelectionName], "", 0, MAX_CLASS_NAME);
+	strmid(Misc[playerid][mdZombieSelectionName], "", 0, MAX_CLASS_NAME);
     Misc[playerid][mdIsLogged] = false;
     Misc[playerid][mdKickForAuthTimeout] = -1;
     Misc[playerid][mdKickForAuthTries] = ServerConfig[svCfgAuthTries];
@@ -1529,6 +1638,12 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 	return false;
 }
 
+stock ProceedClassAbility(const playerid, const abilityid) {
+	switch(abilityid) {
+	
+	}
+}
+
 stock GivePointsForRound(const playerid) {
 	Player[playerid][pPoints] +=
 	float(
@@ -1611,6 +1726,9 @@ stock SetByCurrentClass(const playerid) {
 	    current = next;
 		Misc[playerid][mdCurrentClass][team] = next;
 	    Misc[playerid][mdNextClass][team] = -1;
+	    
+	    strmid(Misc[playerid][mdHumanSelectionName], Misc[playerid][mdHumanNextSelectionName], 0, MAX_CLASS_NAME);
+		strmid(Misc[playerid][mdZombieSelectionName], Misc[playerid][mdZombieNextSelectionName], 0, MAX_CLASS_NAME);
 	    next = -1;
 	}
 	
@@ -1620,11 +1738,19 @@ stock SetByCurrentClass(const playerid) {
 			SetPlayerPos(playerid, 	Map[mpZombieSpawnX][point] + distance, Map[mpZombieSpawnY][point] + distance, Map[mpZombieSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpZombieSpawnA][point]);
 			Misc[playerid][mdSpawnProtection] = gettime() + 15;
+			
+			new formated[64];
+			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdZombieSelectionName]);
+			SendClientMessage(playerid, 0xFFF000FF, formated);
 		}
 	    case TEAM_HUMAN: {
 			SetHuman(playerid, current);
 			SetPlayerPos(playerid, 	Map[mpHumanSpawnX][point] + distance, Map[mpHumanSpawnY][point] + distance, Map[mpHumanSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpHumanSpawnA][point]);
+			
+			new formated[64];
+			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdHumanSelectionName]);
+			SendClientMessage(playerid, 0xFFF000FF, formated);
   		}
 	}
 	
@@ -1840,6 +1966,21 @@ stock SetZombie(const playerid, const classid) {
 
 stock SetHuman(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_HUMAN);
+    
+    new i, weapons[9];
+    SetPlayerSkin(playerid, Classes[classid][cldSkin]);
+    SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
+    SetPlayerArmourAC(playerid, Classes[classid][cldArmour]);
+    
+    sscanf(Classes[classid][cldWeapons], "p<,>iiiiiiiii", weapons[0],
+		weapons[1], weapons[2], weapons[3], weapons[4], weapons[5],
+		weapons[6], weapons[7], weapons[8]
+	);
+	
+	for( i = 0; i < sizeof(weapons); i++ ) {
+	    if(!weapons[i]) continue;
+	    GivePlayerWeaponAC(playerid, weapons[i], 100);
+	}
 }
 
 stock SetUnknown(const playerid) {
@@ -2038,6 +2179,13 @@ stock RusToGame(const string[]) {
     return result;
 }
 
+stock PreloadDefaultLocalizedTitles(const playerid) {
+	static const preloadTitles[] = PRELOAD_CLASSES_TITLES;
+    new formated[sizeof(preloadTitles) + LOCALIZATION_SIZE + MAX_TEAMS_LEN + LOCALIZATION_SIZE + MAX_TEAMS_LEN], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), preloadTitles, LOCALIZATION_TABLES[index], TEAM_ZOMBIE, LOCALIZATION_TABLES[index], TEAM_HUMAN);
+    mysql_tquery(Database, formated, "LoadFirstClassesTitles", "i", playerid);
+}
+
 stock GetRequiredZombiesCount() {
     switch(ServerConfig[svCfgCurrentOnline]) {
         case 0..3:
@@ -2106,19 +2254,16 @@ CMD:test(playerid) {
 	SetPlayerTeamAC(playerid, TEAM_HUMAN);
 	SetByCurrentClass(playerid);
 
-    InfectPlayer(playerid, playerid);
-
-	new index = random(MAX_WEAPONS);
+	/*new index = random(MAX_WEAPONS);
 	new weapon = WeaponsConfig[index][wdCfgType];
 	if(weapon == WEAPON_SILENCED) {
 	    weapon = WEAPON_COLT45;
 	}
 	
-	Map[mpTimeout] = 10;
 
 	new slot = GetWeaponByChance(weapon, random(100), index);
 	if(slot > -1) {
 	    GivePlayerWeaponAC(playerid, weapon, WeaponsConfig[index][wdCfgDefault]);
-	}
+	}*/
 	return 0;
 }

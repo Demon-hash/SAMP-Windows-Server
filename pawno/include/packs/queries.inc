@@ -24,6 +24,26 @@
 #define LOAD_BALANCE_CFG_QUERY "SELECT * FROM balance_config WHERE 1 LIMIT 1;"
 #define LOAD_TEXTURES_CFG_QUERY "SELECT * FROM textures_config WHERE 1;"
 #define LOAD_CLASSES_QUERY "SELECT c.id, c.points, COALESCE(l.%e_title, '') as title, COALESCE(l.%e_desc, '') as description FROM `classes` c LEFT JOIN `classes_localization` l ON l.id = c.id WHERE c.disabled = 0 AND c.team = %d ORDER BY c.points ASC;"
+#define LOAD_CLASSES_CFG_QUERY "SELECT * FROM `classes` WHERE 1;"
+
+#define PRELOAD_CLASSES_TITLES "\
+	SELECT COALESCE(l.%e_title, '') AS title \
+	FROM `classes` c \
+	LEFT JOIN `classes_localization` l ON l.id = c.id \
+	WHERE c.disabled = 0 \
+	AND c.team = %d \
+	LIMIT 1 \
+	UNION (\
+		SELECT COALESCE(l.%e_title, '') \
+		FROM `classes` c \
+		LEFT JOIN `classes_localization` l ON l.id = c.id \
+		WHERE c.disabled = 0 \
+		AND c.team = %d \
+		ORDER BY c.points ASC \
+		LIMIT 1 \
+	) \
+	LIMIT 2\
+"
 
 #define CHECK_USER_QUERY "\
 	SELECT \n\

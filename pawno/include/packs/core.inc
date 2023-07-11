@@ -8,13 +8,13 @@
 #include <packs/player>
 #include <packs/privileges>
 #include <packs/achievements>
+#include <packs/classes>
 #include <packs/misc>
 #include <packs/round>
 #include <packs/teams>
 #include <packs/gangs>
 #include <packs/pickups>
 #include <packs/weapons>
-#include <packs/classes>
 #include <packs/templates>
 #include <packs/config>
 #include <packs/queries>

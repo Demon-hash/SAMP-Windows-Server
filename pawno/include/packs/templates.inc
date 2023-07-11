@@ -321,10 +321,11 @@
 	`health` DECIMAL(9,2) unsigned NOT NULL default '100.0',\
 	`armour` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
     	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
-    	`ability` int(3) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
     	`skin` int(3) unsigned NOT NULL default '181',\
-	`immunity` int(1) unsigned NOT NULL default '0',\
+	`ability` varchar(24) NOT NULL default '',\
+	`immunity` varchar(24) NOT NULL default '',\
+	`weapons` varchar(24) NOT NULL default '',\
 	`distance` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`animation` int(5) unsigned NOT NULL default '0',\
 	`animation_time` int(4) unsigned NOT NULL default '0',\
@@ -534,78 +535,116 @@
 
 #define PREDIFINED_LOCALE_CLASSES_10 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
 	(1, 'Civillian', 'Гражданский', 'Silinced Pistol, Shotgun', 'Тихий пистолет, Дробовик'),\
-	(2, 'Policeman', 'Полицейский', 'Deagle, Shotgun, Armour', 'Дигл, Дробовик, Броня'),\
+	(2, 'Policeman', 'Полицейский', 'Deagle, Shotgun', 'Дигл, Дробовик'),\
 	(3, 'Farmer', 'Фермер', 'Rifle', 'Винтовка'),\
 	(4, 'Medic', 'Медик', 'Can cure humans', 'Может лечить людей'),\
 	(5, 'Scout', 'Скаут', 'Sniper', 'Снайперская винтовка'),\
-	(6, 'Warm Human', 'Человек в шубе', 'Can not be freezed', 'Не может замерзнуть'),\
-	(7, 'Mi7', 'Mi7', 'M4, Deagle, Armour', 'M4, Дигл, Броня'),\
-	(8, 'Pyromaniac', 'Пироманьяк', 'Flamethower, Shotgun, Radioactive Field Immunity', 'Огнемет, Дробовик, Иммунитет от Радиоактивного Поля'),\
-	(9, 'Engineer', 'Инжинер', 'Can build 6 boxes', 'Может создать 6 коробок'),\
-	(10, 'Sharpshooter', 'Меткий стрелок', 'Sniper, Immunity', 'Снайперская винтовка, Иммунитет');\
+	(6, 'Warm Person', 'Человек в шубе', 'Can not be freezed', 'Не может замерзнуть'),\
+	(7, 'Mi7', 'Mi7', 'M4, Deagle', 'M4, Дигл'),\
+	(8, 'Toughie', 'Крепкий орешек', 'Anti-Stomper', 'Анти-Топтун'),\
+	(9, 'Pyromaniac', 'Пироманьяк', 'Anti-Radioactive Field', 'Анти-Радиоактивное Поле'),\
+	(10, 'Engineer', 'Инжинер', 'Can build 6 boxes', 'Может создать 6 коробок'),\
+	(11, 'Sharpshooter', 'Меткий стрелок', 'Sniper, Immunity', 'Снайперская винтовка, Иммунитет');\
 "
 
-#define PREDIFINED_LOCALE_CLASSES_20 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
-	(11, 'Toughie', 'Крепкий орешек', 'Stomper immunity', 'Защита от топтуна'),\
-	(12, 'Rocketman', 'Техник', 'Rocketboots', 'Реактивные ботинки'),\
-	(13, 'S.W.A.T', 'Спецназовец', 'MP5, Deagle, Armour, Full Immunity', 'MP5, Дигл, Броня, Полный Иммунитет'),\
-	(14, 'Sheriff', 'Шериф', 'Taser, Immunity, Stealer Immunity', 'Электрошокер, Иммунитет, Иммунитет От Вора'),\
-	(15, 'Runner', 'Бегун', 'Fast run', 'Быстрый бег'),\
-	(16, 'Terrorist', 'Террорист', 'C4', 'C4'),\
-	(17, 'Priest', 'Священник', 'Curse Immunity', 'Защита от проклятья'),\
-	(18, 'Mimic', 'Мимик', 'Mimicry, Immunity', 'Мимикрия, Иммунитет'),\
-	(19, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
-	(20, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
-	(21, 'Human Queen', 'Королева', 'M4, Deagle, Armour, Long Jumps, Immunity', 'M4, Дигл, Броня, Длиные прыжки');\
+#define PREDIFINED_LOCALE_CLASSES_20 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \	
+	(12, 'Terrorist', 'Террорист', 'C4', 'C4'),\	
+	(13, 'Runner', 'Бегун', 'Fast run', 'Быстрый бег'),\
+	(14, 'S.W.A.T', 'Спецназовец', 'M4, Deagle, Immunity', 'M4, Дигл, Иммунитет'),\
+	(15, 'Rocketman', 'Техник', 'Rocketboots', 'Реактивные ботинки'),\
+	(16, 'Mimic', 'Мимик', 'Mimicry, Immunity', 'Мимикрия, Иммунитет'),\
+	(17, 'Sheriff', 'Шериф', 'Taser', 'Электрошокер'),\
+	(18, 'Priest', 'Священник', 'Anti-Curse Field', 'Защитное Поле От Проклятья'),\
+	(19, 'Athlete', 'Атлет', 'Long Jumps', 'Длинные прыжки'),\
+	(20, 'Nurse', 'Медсестра', 'Anti-Infection Field, Anti-Radioactive Field', 'Защитное Поле От Инфекции И Радиации'),\
+	(21, 'Iron Man', 'Железный Человек', 'Fast Run, High Jumps, Immunity', 'Быстрый бег, Высокие прыжки, Иммунитет'),\
+	(22, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
+	(23, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
+	(24, 'Human Queen', 'Королева', 'Long Jumps, Immunity', 'Длиные прыжки, Иммунитет');\
 "
 
 #define PREDIFINED_LOCALE_CLASSES_30 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
-	(22, 'Standard Zombie', 'Обычный Зомби', 'Can Infect', 'Может Заразить'),\
-	(23, 'Flesher Zombie', 'Токсичный Зомби', 'Infected Meat', 'Зараженное Мясо'),\
-	(24, 'Stealer Zombie', 'Вор Зомби', 'Can Steal Armour', 'Может Украсть Броню'),\
-	(25, 'Boomer Zombie', 'Взрывающийся Зомби', 'Explodes And Infects On Death', 'Взрывается И Заражает При Смерти'),\
-	(26, 'Jumper Zombie', 'Зомби Прыгун', 'High Jump', 'Высокий Прыжок'),\
-	(27, 'Stomper Zombie', 'Топтун Зомби', 'Can Stomp Humans', 'Может Отбрасывать Людей'),\
-	(28, 'Spacebreaker Zombie', 'Зомби Крушащий Пространство', 'Space Traveling', 'Путишествие в пространстве'),\
-	(29, 'Kamikaze Zombie', 'Камикадзе Зомби', 'Explodes On Request', 'Взрывается по желанию'),\
-	(30, 'Mimic Zombie', 'Мимик Зомби', 'Mimicry', 'Мимикрия'),\
-	(31, 'Regenerator Zombie', 'Регенератор Зомби', 'Can Regenerate HP', 'Может Восстанавливать ХП'),\
-	(32, 'Support Zombie', 'Зомби Поддержка', 'Heals In A Range', 'Восстанавливает ХП В Радиусе');\
+	(25, 'Standard Zombie', 'Обычный Зомби', 'Can Infect', 'Может Заразить'),\
+	(26, 'Flesher Zombie', 'Токсичный Зомби', 'Infected Meat', 'Зараженное Мясо'),\
+	(27, 'Regenerator Zombie', 'Регенератор Зомби', 'Can Regenerate HP', 'Может Восстанавливать ХП'),\
+	(28, 'Support Zombie', 'Зомби Поддержка', 'Heals In A Range', 'Восстанавливает ХП В Радиусе'),\
+	(29, 'Stealer Zombie', 'Вор Зомби', 'Can Steal Armour', 'Может Украсть Броню'),\
+	(30, 'Boomer Zombie', 'Взрывающийся Зомби', 'Explodes And Infects On Death', 'Взрывается И Заражает При Смерти'),\
+	(31, 'Jumper Zombie', 'Зомби Прыгун', 'High Jump', 'Высокий Прыжок'),\
+	(32, 'Jumper Boomer Zombie', 'Взрывающийся Зомби Прыгун', 'High Jump, Explodes On Death', 'Высокий Прыжок, Взрывается при смерти'),\
+	(33, 'Mega Jumper Zombie', 'Мега Зомби Прыгун', 'High Jumps', 'Высокие Прыжки'),\
+	(34, 'Stomper Zombie', 'Топтун Зомби', 'Can Stomp Humans', 'Может Отбрасывать Людей'),\
+	(35, 'Kamikaze Zombie', 'Камикадзе Зомби', 'Explodes On Request', 'Взрывается по желанию'),\
+	(36, 'Spacebreaker Zombie', 'Зомби Крушащий Пространство', 'Space Traveling', 'Путишествие в пространстве'),\
+	(37, 'Mimic Zombie', 'Мимик Зомби', 'Mimicry', 'Мимикрия');\
 "
 
 #define PREDIFINED_LOCALE_CLASSES_40 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
-	(33, 'Freezer Zombie', 'Холодный Зомби', 'Can Freeze', 'Может Заморозить'),\
-	(34, 'Radioactive Zombie', 'Радиоактивный Зомби', 'Radioactive Field', 'Радиоактивное Поле'),\
-	(35, 'Spitter Zombie', 'Плюющийся Зомби', 'Can Infect In A Range', 'Может Заразить С Расстояния'),\
-	(36, 'Mutated Zombie', 'Мутированный Зомби', 'Airborne Infection', 'Воздушно-капельная Инфекция'),\
-	(39, 'Spore Zombie', 'Споровой Зомби', 'Can Infect By Spores', 'Заражает спорами'),\
-	(37, 'Fast Zombie', 'Быстрый Зомби', 'Fast Run', 'Быстрый бег'),\
-	(38, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Protection against most calibers', 'Защита от большинства калибров'),\
-	(40, 'Witch Zombie', 'Зомби Ведьма', 'Can curse', 'Может проклясть'),\
-	(41, 'Mirror Zombie', 'Отражающий Зомби', 'Reflect Damage', 'Отражает урон'),\
-	(42, 'Juggernaut Zombie', 'Джагернаут Зомби', 'Armour, Remove Weapons', '300 ХП, убирает оружие');\
+	(38, 'Freezer Zombie', 'Холодный Зомби', 'Can Freeze', 'Может Заморозить'),\
+	(39, 'Radioactive Zombie', 'Радиоактивный Зомби', 'Radioactive Field', 'Радиоактивное Поле'),\
+	(40, 'Flash Zombie', 'Невероятно Быстрый Зомби', 'Lighting Attack', 'Мгновенная атака'),\
+	(41, 'Spitter Zombie', 'Плюющийся Зомби', 'Can Infect In A Range', 'Может Заразить С Расстояния'),\
+	(42, 'Mutated Zombie', 'Мутированный Зомби', 'Airborne Infection', 'Воздушно-капельная Инфекция'),\
+	(43, 'Spore Zombie', 'Споровой Зомби', 'Can Infect By Spores', 'Заражает спорами'),\
+	(44, 'Fast Zombie', 'Быстрый Зомби', 'Fast Run', 'Быстрый бег'),\
+	(45, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Protection against most calibers', 'Защита от большинства калибров'),\
+	(46, 'Witch Zombie', 'Зомби Ведьма', 'Can curse', 'Может проклясть'),\
+	(47, 'Mirror Zombie', 'Отражающий Зомби', 'Reflect Damage', 'Отражает урон'),\
+	(48, 'Juggernaut Zombie', 'Джагернаут Зомби', 'Armour, Remove Weapons', '300 ХП, убирает оружие');\
 "
 
-#define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, cooldown, skin, disabled) VALUES \
-	(1, 2, 0, 0, 0, 37, 0),\
-	(2, 2, 0, 1, 5, 308, 0),\
-	(3, 2, 9, 2, 0, 153, 0),\
-	(4, 2, 12, 3, 15, 210, 0),\
-	(5, 2, 15, 4, 0, 181, 0),\
-	(6, 2, 18, 0, 0, 0, 0),\
-	(7, 2, 21, 5, 10, 70, 0);\
+#define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, immunity, weapons, cooldown, skin, disabled) VALUES \
+	(1, 2, 0, '', '', '23, 25', 0, 121, 0),\
+	(2, 2, 500, '', '', '24, 25', 0, 280, 0),\
+	(3, 2, 1500, '', '', '33, 24', 0, 158, 0),\
+	(4, 2, 3000, 'MEDIC', '', '24, 25', 0, 275, 0),\
+	(5, 2, 5000, '', '', '23, 34', 0, 294, 0),\
+	(6, 2, 10000, 'WARM PERSON', '', '24, 25', 0, 249, 0),\
+	(7, 2, 15000, '', '', '24, 31', 0, 164, 0),\
+	(8, 2, 15000, 'TOUGHIE', '', '31, 25', 0, 109, 0),\
+	(9, 2, 20000, 'PYRIMANIAC', '', '37, 25', 0, 277, 0),\
+	(10, 2, 35000, 'ENGINEER', '', '24, 30, 33', 0, 27, 0),\
+	(11, 2, 50000, 'SHARPSHOOTER', '', '23, 34', 0, 286, 0),\
+	(12, 2, 70000, '', '', '39, 41', 0, 228, 0),\
+	(13, 2, 90000, '', '', '24, 31', 0, 0, 0),\
+	(14, 2, 125000, 'SWAT', '', '24, 31', 0, 285, 0),\
+	(15, 2, 180000, 'Rocketman', '', '24, 31, 33', 0, 50, 0),\
+	(16, 2, 225000, 'Mimic', '', '24, 31', 0, 181, 0),\
+	(17, 2, 250000, 'Sheriff', '', '24, 25', 0, 281, 0),\
+	(18, 2, 300000, 'Priest', '', '24, 31', 0, 68, 0),\
+	(19, 2, 300000, 'Athlete', '', '24, 32', 0, 170, 0),\
+	(20, 2, 400000, 'Nurse', '', '24, 25, 31, 33', 0, 308, 0),\
+	(21, 2, 600000, 'Iron Man', '', '24, 25, 33', 0, 0, 0),\
+	(22, 2, 850000, 'Architect', '', '24, 25, 34', 0, 153, 0),\
+	(23, 2, 1000000, 'Doctor', '', '24, 25, 31', 0, 70, 0),\
+	(24, 2, 1500000, 'Queen', '', '24, 25, 31, 34', 0, 92, 0);\
 "
 
-#define PREDIFINED_ZOMBIES "INSERT IGNORE INTO classes (id, team, points, ability, cooldown, skin, disabled) VALUES \
-	(8, 1, 0, 6, 5, 181, 0),\
-	(9, 1, 3, 4, 0, 135, 0),\
-	(10, 1, 6, 3, 15, 162, 0),\
-	(11, 1, 9, 7, 15, 78, 0),\
-	(12, 1, 12, 8, 0, 146, 0),\
-	(13, 1, 15, 9, 15, 160, 0),\
-	(14, 1, 18, 10, 0, 264, 0),\
-	(15, 1, 21, 0, 0, 0, 0),\
-	(16, 1, 24, 11, 45, 142, 0);\
+#define PREDIFINED_ZOMBIES "INSERT IGNORE INTO classes (id, team, points, ability, immunity, weapons, cooldown, skin, disabled) VALUES \
+	(25, 1, 0, 'Standard', '', '', 0, 181, 0),\
+	(26, 1, 0, 'Flesher', '', '', 0, 77, 0),\
+	(27, 1, 0, 'Regenerator', '', '', 0, 70, 0),\
+	(28, 1, 0, 'Support', '', '', 0, 75, 0),\
+	(29, 1, 0, 'Stealer', '', '', 0, 209, 0),\
+	(30, 1, 0, 'Boomer', '', '', 0, 264, 0),\
+	(31, 1, 0, 'Jumper', '', '', 0, 162, 0),\
+	(32, 1, 0, 'Jumper Boomer', '', '', 0, 162, 0),\
+	(33, 1, 0, 'Mega Jumper', '', '', 0, 162, 0),\
+	(34, 1, 0, 'Stomper', '', '', 0, 78, 0),\
+	(35, 1, 0, 'Kamikaze', '', '', 0, 241, 0),\
+	(36, 1, 0, 'Space Breaker', '', '', 0, 79, 0),\
+	(37, 1, 0, 'Mimic', '', '', 0, 121, 0),\
+	(38, 1, 0, 'Freezer', '', '', 0, 137, 0),\
+	(39, 1, 0, 'Radioactive', '', '', 0, 146, 0),\
+	(40, 1, 0, 'Flash', '', '', 0, 230, 0),\
+	(41, 1, 0, 'Spitter', '', '', 0, 212, 0),\
+	(42, 1, 0, 'Mutated', '', '', 0, 200, 0),\
+	(43, 1, 0, 'Spore', '', '', 0, 136, 0),\
+	(44, 1, 0, 'Fast', '', '', 0, 0, 0),\
+	(45, 1, 0, 'Enforcer', '', '', 0, 285, 0),\
+	(46, 1, 0, 'Witch', '', '', 0, 129, 0),\
+	(47, 1, 0, 'Mirror', '', '', 0, 135, 0),\
+	(48, 1, 0, 'Juggernaut', '', '', 0, 285, 0);\
 "
 
 #define PREDIFINED_TEXTURES "INSERT IGNORE INTO `textures_config` (`id`, `position`, `letter_size`, `text_size`, `default_value`, `background_color`, `texture_font`, `texture_draw_color`, `texture_outline`, `texture_proportional`, `texture_shadow`, `texture_use_box`, `texture_box_color`, `texture_alignment`) VALUES \
@@ -681,8 +720,11 @@
 	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
 	(38, 'UNUSED', 'UNUSED'),\
 	(39, 'Classes', 'Классы'),\
-	(40, 'Humans\nZombies', 'Люди\nЗомби'),\
+	(40, 'Human Classes\nZombie Classes', 'Классы Людей\nКлассы Зомби'),\
 	(41, 'Select', 'Выбрать'),\
 	(42, 'Close', 'Закрыть'),\
-	(43, 'POINTS', 'ОЧКОВ');\
+	(43, 'POINTS', 'ОЧКОВ'),\
+	(44, '>> You have been spawned as a(n) %s', '>> Ваш текущий класс %s'),\
+	(45, '>> You have changed your class in a great period and was respawned!', '>> Вы успели сменить свой класс в подходящее время!'),\
+	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!');\
 "
