@@ -15,7 +15,8 @@ static const sqlTemplates[][] = {
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
 	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
-	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE
+	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
+	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -403,6 +404,9 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
 	if(IsAbleToGivePointsInCategory(issuerid, SESSION_HIT_POINTS) && weaponid == RoundConfig[rdCfgBrutalityWeapon]) {
         RoundSession[playerid][rsdBrutality] += RoundConfig[rdCfgBrutality];
 	}
+	
+	ProceedClassAbility(playerid, ABILITY_SPORE, issuerid);
+	ProceedClassAbility(playerid, ABILITY_MIRROR, issuerid);
 
     ShowDamageTaken(playerid, amount);
 	return 1;
@@ -1741,11 +1745,11 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 	return false;
 }
 
-/*stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1, const pickupid = -1) {
+stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1, const pickupid = -1) {
 	new team = GetPlayerTeamEx(playerid);
     new classid = Misc[playerid][mdCurrentClass][team];
     
-	if(Abilities[abilityid] > gettime()) {
+	/*if(Abilities[abilityid] > gettime()) {
 	    return 1;
 	}
     
@@ -1755,9 +1759,7 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 		case ABILITY_REGENERATOR: RegenerateHealth(playerid);
 		case ABILITY_SUPPORT: RegenerateHealth(targetid);
 		case ABILITY_STEALER:
-		case ABILITY_BOOMER:
 		case ABILITY_JUMPER:
-		case ABILITY_BOOMER_JUMPER:
 		case ABILITY_MEGA_JUMPER:
 		case ABILITY_STOMPER:
 		case ABILITY_KAMIKAZE:
@@ -1768,9 +1770,8 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 		case ABILITY_FLASH:
 		case ABILITY_SPITTER:
 		case ABILITY_MUTATED:
-		case ABILITY_SPORE:
+		
 		case ABILITY_WITCH:
-		case ABILITY_MIRROR:
 		
 		case ABILITY_CURE: CurePlayer(targetid, playerid);
 		case ABILITY_BUILD: BuildBox(playerid);
@@ -1779,10 +1780,15 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 		case ABILITY_LONG_JUMPS:
 		case ABILITY_NURSE:
 		case ABILITY_DOCTOR:
-		    
+
+        case ABILITY_BOOMER:
+        case ABILITY_BOOMER_JUMPER:
+        case ABILITY_SPORE:
+        case ABILITY_MIRROR:
+        
 		Abilities[abilityid] = gettime() + Classes[classid][cldCooldown];
-	}
-}*/
+	}*/
+}
 
 stock GivePointsForRound(const playerid) {
 	new Float: amount = float(
@@ -1981,6 +1987,9 @@ stock CreateDropOnDeath(const playerid, const killerid) {
 	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
   	CreatePickupEx(type[index], STATIC_PICKUP_TYPE, pos[0], pos[1], pos[2], GetPlayerVirtualWorld(playerid), IsPlayerConnected(killerid) ? killerid : -1);
   	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
+  	
+  	ProceedClassAbility(playerid, ABILITY_BOOMER);
+  	ProceedClassAbility(playerid, ABILITY_BOOMER_JUMPER);
 	return 1;
 }
 

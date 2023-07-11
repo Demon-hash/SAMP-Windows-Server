@@ -109,6 +109,30 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define BANIP_LOG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS banip_log (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`issued_id` int(11) unsigned NOT NULL,\
+	`date` int(11) unsigned NOT NULL,\
+	`reason` varchar(128) NOT NULL,\
+	`issued_ip` varchar(16) NOT NULL,\
+	`target_ip` varchar(16) NOT NULL,\
+	PRIMARY KEY (`id`)\
+);"
+
+#define VOTEKICK_LOG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS votekick_log (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`target_id` int(11) unsigned NOT NULL,\
+	`date` int(11) unsigned NOT NULL,\
+	`reason` varchar(128) NOT NULL,\
+	`ip` varchar(16) NOT NULL,\
+	`target_ip` varchar(16) NOT NULL,\
+	PRIMARY KEY (`id`)\
+);"
+
 #define NAMELOG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS name_log (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
