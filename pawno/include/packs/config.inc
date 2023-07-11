@@ -5,10 +5,13 @@
 
 enum CONFIG_DATA {
 	svCfgPreviewBot,
+	svCfgMaxWeaponAmmo,
 	svCfgInfectionDrunkLevel,
 	svCfgPickupProtection,
 	Float:svCfgPreviewBotPos[4],
 	Float:svCfgPreviewCameraPos[6],
+	Float:svCfgVehicleDamage,
+	Float:svCfgSpawnRange,
 	svCfgName[64],
 	svCfgMode[64],
 	svCfgDiscord[64],
@@ -16,6 +19,7 @@ enum CONFIG_DATA {
 	svCfgLanguage[64],
 	Float:svCfgInfectionDamage,
 	svCfgAuthTries,
+	svCfgMinZombiesToWin,
 	svCfgAuthTimeout,
 	svCfgCurrentOnline,
 };

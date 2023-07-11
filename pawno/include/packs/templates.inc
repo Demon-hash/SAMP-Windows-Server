@@ -359,6 +359,10 @@
 	`preview_bot` int(3) unsigned NOT NULL default '181',\
 	`preview_bot_coords` varchar(255) NOT NULL default '2415.5414,-50.4586,28.1535, 1.4218',\
 	`preview_camera_coords` varchar(255) NOT NULL default '2415.7615, -45.1561, 28.8247, 2415.7559, -46.1539, 28.6447',\
+	`spawn_range` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
+	`vehicle_damage` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
+	`min_zombies_to_win` int(3) unsigned NOT NULL default '2',\
+	`max_weapon_ammo` int(5) unsigned NOT NULL default '1000',\
 	`name` varchar(64) NOT NULL default '',\
 	`mode` varchar(64) NOT NULL default '',\
 	`discord` varchar(64) NOT NULL default '',\
@@ -427,6 +431,7 @@
 	`skillfulness` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`brutality` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`undead` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`additional` DECIMAL(9,2) unsigned NOT NULL default '0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -443,6 +448,7 @@
 	`brutality` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`undead` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`cap` int(3) unsigned NOT NULL default '25',\
+	`brutality_weapon` int(2) unsigned NOT NULL default '0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -463,6 +469,14 @@
 	`balance` int(6) unsigned NOT NULL default '30',\
 	`end` int(6) unsigned NOT NULL default '60',\
 	`restart` int(6) unsigned NOT NULL default '10',\
+	`great_period` int(6) unsigned NOT NULL default '30',\
+	`spawn_protection_time` int(6) unsigned NOT NULL default '15',\
+	`spawn_text_range` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
+	`human_hero_kill` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
+	`zombie_boss_kill` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
+	`first_blood` DECIMAL(9,2) unsigned NOT NULL default '20.0',\
+	`kill_last` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
+	`last_evacuated` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -596,7 +610,7 @@
 #define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, immunity, weapons, cooldown, skin, disabled) VALUES \
 	(1, 2, 0, '', '', '23, 25', 0, 121, 0),\
 	(2, 2, 500, '', '', '24, 25', 0, 280, 0),\
-	(3, 2, 1500, '', '', '33, 24', 0, 158, 0),\
+	(3, 2, 1500, '', '', '33, 25', 0, 158, 0),\
 	(4, 2, 3000, 'MEDIC', '', '24, 25', 0, 275, 0),\
 	(5, 2, 5000, '', '', '23, 34', 0, 294, 0),\
 	(6, 2, 10000, 'WARM PERSON', '', '24, 25', 0, 249, 0),\
@@ -604,7 +618,7 @@
 	(8, 2, 15000, 'TOUGHIE', '', '31, 25', 0, 109, 0),\
 	(9, 2, 20000, 'PYRIMANIAC', '', '37, 25', 0, 277, 0),\
 	(10, 2, 35000, 'ENGINEER', '', '24, 30, 33', 0, 27, 0),\
-	(11, 2, 50000, 'SHARPSHOOTER', '', '23, 34', 0, 286, 0),\
+	(11, 2, 50000, 'SHARPSHOOTER', '', '34', 0, 286, 0),\
 	(12, 2, 70000, '', '', '39, 41', 0, 228, 0),\
 	(13, 2, 90000, '', '', '24, 31', 0, 0, 0),\
 	(14, 2, 125000, 'SWAT', '', '24, 31', 0, 285, 0),\
@@ -657,21 +671,22 @@
 "
 
 #define PREDIFINED_WEAPONS "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES \
-	(1, 23, 100, 50, 10),\
-	(2, 22, 100, 50, 10),\
+	(1, 22, 100, 50, 10),\
+	(2, 23, 100, 50, 10),\
 	(3, 24, 75, 50, 10),\
-	(4, 27, 5, 50, 3),\
-	(5, 28, 12, 150, 50),\
-	(6, 29, 5, 300, 35),\
-	(7, 30, 9, 300, 30),\
-	(8, 31, 5, 300, 30),\
-	(9, 32, 9, 150, 50),\
-	(10, 33, 20, 15, 3),\
-	(11, 34, 20, 50, 3),\
-	(12, 35, 1, 5, 1),\
-	(13, 36, 1, 5, 1),\
-	(14, 37, 1, 500, 150),\
-	(15, 39, 10, 20, 2);\
+	(4, 25, 75, 50, 10),\
+	(5, 27, 5, 50, 3),\
+	(6, 28, 12, 150, 50),\
+	(7, 29, 5, 300, 35),\
+	(8, 30, 9, 300, 30),\
+	(9, 31, 5, 300, 30),\
+	(10, 32, 9, 150, 50),\
+	(11, 33, 20, 15, 3),\
+	(12, 34, 20, 50, 3),\
+	(13, 35, 1, 5, 1),\
+	(14, 36, 1, 5, 1),\
+	(15, 37, 1, 500, 150),\
+	(16, 39, 10, 20, 2);\
 "
 
 #define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
@@ -726,5 +741,23 @@
 	(43, 'POINTS', 'ОЧКОВ'),\
 	(44, '>> You have been spawned as a(n) %s', '>> Ваш текущий класс %s'),\
 	(45, '>> You have changed your class in a great period and was respawned!', '>> Вы успели сменить свой класс в подходящее время!'),\
-	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!');\
+	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!'),\
+	(47, 'points', 'очков'),\
+	(48, '>> You need %.0f %s to use this class!', '>> Вам нужно %.0f %s чтобы использовать этот класс!'),\
+	(49, 'MISS', 'ПРОМАХ'),\
+	(50, '~g~Found:~w~ %d ammo', '~g~Поднято:~w~ %d патрон(ов)');\
+"
+
+#define PREDIFINED_LOCALIZATION_4 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(51, '>> You were chosen as a zombie go and kill all the humans!', '>> Вы были выбраны как зомби, убейте всех людей!'),\	
+	(52, '>> Use your abilities to make it faster (LEFT ALT)', '>> Используйте свои способности, чтобы ускорить это (Левый Альт)'),\
+	(53, '~r~TRY TO STAY~n~~w~ALIVE', '~r~ПОПЫТАЙТЕСЬ ~w~ВЫЖИТЬ'),\
+	(54, 'points', 'очки'),\
+	(55, '>> Player %s was chosen to be the Human Hero / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Герой(иня). Убейте его(ее) и получите дополнительные %s!'),\
+	(56, '>> Player %s has killed the Human Hero / Queen!', '>> Игрок %s убил Героя(иню)!'),\
+	(57, '>> Player %s was chosen to be the Zombie Boss / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Зомби Босс / Королева. Убейте его(ее) и получите дополнительные %s!'),\
+	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),\
+	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),\
+	(60, '>> Kill the last human and receive extra %s!', '>> Убейте последнего выжевшего и получите дополнительные %s!'),\
+	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!');\
 "

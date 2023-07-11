@@ -7,6 +7,8 @@
 
 enum ROUND_DATA {
 	bool:rdIsEvacuated,
+	bool:rdIsHumanHero,
+	bool:rdIsZombieBoss,
 	bool:rdIsInfected,
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
@@ -22,11 +24,13 @@ enum ROUND_SESSION_DATA {
 	Float:rsdSkillfulness,
 	Float:rsdBrutality,
 	Float:rsdDeaths,
+	Float:rdAdditionalPoints,
 };
 
 enum ROUND_DATA_CONFIG {
 	rdCfgSurvivalPer,
 	rdCfgCap,
+	rdCfgBrutalityWeapon,
 	Float:rdCfgEvac,
 	Float:rdCfgSurvival,
 	Float:rdCfgKilling,

@@ -149,6 +149,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_4);
 
     mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
@@ -264,6 +265,25 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	if(!IsPlayerConnected(playerid)) {
 	    return 0;
 	}
+	
+	/*
+	LD_MSG_HUMAN_HERO_KILLED,
+		LD_MSG_ZOMBIE_BOSS_KILLED,
+		LD_MSG_FIRST_BLOOD
+
+		LD_MSG_KILLED_THE_LAST
+
+
+	(56, '>> Player %s has killed the Human Hero / Queen!', '>> Игрок %s убил Героя(иню)!'),
+	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),
+	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),
+	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!');
+	
+	RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgHumanHeroPoints];
+		RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgZombieBossPoints];
+		RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgFirstBlood];
+		RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgKillLast];
+	*/
 
     reason = clamp(reason, WEAPON_FISTS, WEAPON_COLLISION);
 	SendDeathMessage(killerid, playerid, reason);
@@ -273,6 +293,14 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
 	        RoundSession[killerid][rsdKilling] += RoundConfig[rdCfgKilling];
 	    }
+	}
+	
+	if(Round[playerid][rdIsHumanHero]) {
+	    Round[playerid][rdIsHumanHero] = false;
+	}
+	
+	if(Round[playerid][rdIsZombieBoss]) {
+	    Round[playerid][rdIsZombieBoss] = false;
 	}
 	
 	if(IsAbleToGivePointsInCategory(playerid, SESSION_UNDEAD_POINTS)) {
@@ -305,7 +333,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 			
 			new Float:hp;
 			GetVehicleHealth(hitid, hp);
-			SetVehicleHealth(hitid, hp - 50.0);
+			SetVehicleHealth(hitid, hp - ServerConfig[svCfgVehicleDamage]);
 	    }
 	    case BULLET_HIT_TYPE_PLAYER: {
             if(!IsPlayerConnected(hitid)) {
@@ -313,13 +341,13 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 			}
 			
             if(gettime() < Misc[hitid][mdSpawnProtection]) {
-            	SetPlayerChatBubble(hitid, "MISS", BUBBLE_COLOR, 20.0, 1000);
+            	SetPlayerChatBubble(hitid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
 				return 0;
             }
             
             if(GetPlayerTeamEx(hitid) == TEAM_ZOMBIE) {
                 for( new j = 0; j < sizeof(Map[mpZombieSpawnX]); j++ ) {
-					if(IsPlayerInRangeOfPoint(hitid, 15.0, Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j])) {
+					if(IsPlayerInRangeOfPoint(hitid, ServerConfig[svCfgSpawnRange], Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j], Map[mpZombieSpawnX][j])) {
 					    return 0;
 					}
 				}
@@ -340,7 +368,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 }
 
 public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart) {
-	if(IsAbleToGivePointsInCategory(issuerid, SESSION_HIT_POINTS) && weaponid == 0) {
+	if(IsAbleToGivePointsInCategory(issuerid, SESSION_HIT_POINTS) && weaponid == RoundConfig[rdCfgBrutalityWeapon]) {
         RoundSession[playerid][rsdBrutality] += RoundConfig[rdCfgBrutality];
 	}
 
@@ -378,6 +406,10 @@ public OnPlayerEnterCheckpoint(playerid) {
 		if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1]) {
             SendClientMessage(i, 0xFFF000FF, Localization[i][LD_MSG_ALL_EVACUATED]);
  		}
+ 	}
+ 	
+ 	if(Map[mpTeamCount][1] == 1) {
+ 		RoundSession[playerid][rdAdditionalPoints] += MapConfig[mpCfgLastEvacuated];
  	}
 	
 	if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1] && Map[mpIsStarted]) {
@@ -428,10 +460,20 @@ public OnPlayerCommandPerformed(playerid, cmdtext[], success) {
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
     if(KEY(KEY_WALK)) {
+    
+        // ProceedClassAbility();
+    
         if(IsAbleToGivePointsInCategory(playerid, SESSION_ABILITY_POINTS)) {
             RoundSession[playerid][rsdSkillfulness] += RoundConfig[rdCfgSkillfulness];
         }
 	}
+	
+	// ProceedClassAbility
+
+	/*if(playerid != targetid && IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
+	    RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
+	}*/
+
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
@@ -500,8 +542,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	            return 1;
 	        }
 	        
-	        for(new i = 0; i < MAX_CLASSES; i++ ) {
+	        new formated[64], i;
+	        for( i = 0; i < MAX_CLASSES; i++ ) {
 	            if(Classes[i][cldId] == ClassesSelection[playerid][listitem][csdId]) {
+	                if(Achievements[playerid][achTotalPoints] < Classes[i][cldPoints]) {
+	                    format(formated, sizeof(formated), Localization[playerid][LD_MSG_NOT_ENOUGH_FOR_CLASS], Classes[i][cldPoints], Localization[playerid][LD_MSG_POINTS]);
+	                    SendClientMessage(playerid, 0xFF0000FF, formated);
+	                    return 1;
+	                }
+	                
 	                ProocedClassChange(playerid, i, Misc[playerid][mdSelectionTeam], listitem);
 	                return 1;
 	            }
@@ -518,7 +567,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 
 public OnPlayerPickUpPickup(playerid, pickupid) {
     if(IsAbleToPickup(playerid, pickupid)) {
-    	ProcedPickupAction(playerid, pickupid);
+    	ProceedPickupAction(playerid, pickupid);
      	DestroyPickupEx(pickupid);
 	} else if(IsValidPickupEx(pickupid)) {
 	    new tip[64];
@@ -800,6 +849,8 @@ custom StartMap() {
     Map[mpIsStarted] = true;
     Map[mpPaused] = false;
     Map[mpTimeoutBeforeCrystal] = false;
+    Map[mpFirstBlood] = false;
+    Map[mpKillTheLast] = false;
     
     Map[mpTimeoutIgnoreTick] = 0;
     Map[mpEvacuatedHumans] = 0;
@@ -828,7 +879,7 @@ custom OnMapUpdate() {
 	    }
 	}
 	
-	if(ServerConfig[svCfgCurrentOnline] >= 2 && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
+	if(ServerConfig[svCfgCurrentOnline] >= ServerConfig[svCfgMinZombiesToWin] && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
 	    foreach(Player, i) {
 			SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_ZOMBIES_WIN]);
  		}
@@ -960,8 +1011,12 @@ custom LoadServerConfiguration() {
         cache_get_value_name_int(0, "max_auth_tries", ServerConfig[svCfgAuthTries]);
         cache_get_value_name_int(0, "infection_drunk", ServerConfig[svCfgInfectionDrunkLevel]);
         cache_get_value_name_int(0, "pickup_protection", ServerConfig[svCfgPickupProtection]);
+        cache_get_value_name_int(0, "min_zombies_to_win", ServerConfig[svCfgMinZombiesToWin]);
+        cache_get_value_name_int(0, "max_weapon_ammo", ServerConfig[svCfgMaxWeaponAmmo]);
 
         cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
+        cache_get_value_name_float(0, "vehicle_damage", ServerConfig[svCfgVehicleDamage]);
+        cache_get_value_name_float(0, "spawn_range", ServerConfig[svCfgSpawnRange]);
 
         cache_get_value_name(0, "preview_bot_coords", buff);
 		sscanf(buff, "p<,>ffff", ServerConfig[svCfgPreviewBotPos][0],
@@ -1025,6 +1080,8 @@ custom LoadRoundConfiguration() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "survival_per", RoundConfig[rdCfgSurvivalPer]);
         cache_get_value_name_int(0, "cap", RoundConfig[rdCfgCap]);
+        cache_get_value_name_int(0, "brutality_weapon", RoundConfig[rdCfgBrutalityWeapon]);
+        
         cache_get_value_name_float(0, "evac", RoundConfig[rdCfgEvac]);
         cache_get_value_name_float(0, "survival", RoundConfig[rdCfgSurvival]);
         cache_get_value_name_float(0, "killing", RoundConfig[rdCfgKilling]);
@@ -1069,6 +1126,15 @@ custom LoadMapConfiguration() {
         cache_get_value_name_int(0, "balance", MapConfig[mpCfgBalance]);
         cache_get_value_name_int(0, "end", MapConfig[mpCfgEnd]);
         cache_get_value_name_int(0, "restart", MapConfig[mpCfgRestart]);
+        cache_get_value_name_int(0, "great_period", MapConfig[mpCfgGreatTime]);
+        cache_get_value_name_int(0, "spawn_protection_time", MapConfig[mpCfgSpawnProtectionTime]);
+        
+        cache_get_value_name_float(0, "spawn_text_range", MapConfig[mpCfgSpawnTextRange]);
+        cache_get_value_name_float(0, "human_hero_kill", MapConfig[mpCfgHumanHeroPoints]);
+        cache_get_value_name_float(0, "zombie_boss_kill", MapConfig[mpCfgZombieBossPoints]);
+		cache_get_value_name_float(0, "first_blood", MapConfig[mpCfgFirstBlood]);
+        cache_get_value_name_float(0, "kill_last", MapConfig[mpCfgKillLast]);
+        cache_get_value_name_float(0, "last_evacuated", MapConfig[mpCfgLastEvacuated]);
         
         printf("(5): Map configuration LOADED");
         return 1;
@@ -1237,13 +1303,13 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
             cache_get_value_float(i, "points", points);
 
 			if(!showDialog) continue;
-            color = (Player[playerid][pPoints] < points) ? disabledTitlesColors[i % 2] : enabledTitlesColors[i % 2];
+            color = (Achievements[playerid][achTotalPoints] < points) ? disabledTitlesColors[i % 2] : enabledTitlesColors[i % 2];
             format(formated, sizeof(formated), "{%06x}%s{%06x} - %s - %s%.0f %s\n",
 				color,
 				ClassesSelection[playerid][i][csdName],
 				descriptionColors[i % 2],
                 description,
-				(Player[playerid][pPoints] < points) ? "{FF0000}" : "",
+				(Achievements[playerid][achTotalPoints] < points) ? "{FF0000}" : "",
 				points,
 				Localization[playerid][LD_CLASSES_TIP_EXP]
 			);
@@ -1278,13 +1344,13 @@ stock ProceedClassSelection(const playerid, const selection, const showDialog) {
 }
 
 stock ProocedClassChange(const playerid, const classid, const team, const fromSelection) {
-	if(Map[mpTimeout] >= 270) {
-	    Misc[playerid][mdCurrentClass][team] = classid;
+	if(Map[mpTimeout] >= (MapConfig[mpCfgTotal] - MapConfig[mpCfgGreatTime]) && team == GetPlayerTeamEx(playerid)) {
 	    switch(team) {
      		case TEAM_HUMAN: strmid(Misc[playerid][mdHumanSelectionName], ClassesSelection[playerid][fromSelection][csdName], 0, MAX_CLASS_NAME);
        		case TEAM_ZOMBIE: strmid(Misc[playerid][mdZombieSelectionName], ClassesSelection[playerid][fromSelection][csdName], 0, MAX_CLASS_NAME);
 		}
 		
+		Misc[playerid][mdCurrentClass][team] = classid;
 		SendClientMessage(playerid, 0xFFF000FF, Localization[playerid][LD_CLASS_GREAT_PERIOD]);
 		SetByCurrentClass(playerid);
 		return 1;
@@ -1447,7 +1513,6 @@ stock ClearAllPlayerData(const playerid) {
     ClearPlayerWeaponsData(playerid);
     ClearLocalizedClassesData(playerid);
     
-    ProceedClassSelection(playerid, 0, 0);
     ResetWeapons(playerid);
     
     SetPlayerHealthAC(playerid, 100.0);
@@ -1607,6 +1672,7 @@ stock InitializeDefaultValues() {
 stock ClearPlayerRoundData(const playerid) {
     Round[playerid][rdIsEvacuated] = false;
     Round[playerid][rdIsInfected] = false;
+    
     SetPlayerDrunkLevel(playerid, 0);
     TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
 
@@ -1618,7 +1684,7 @@ stock ClearPlayerRoundData(const playerid) {
 	
 	for( i = 0; i < MAX_MAP_SPAWNS; i++ ) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
-		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], 50.0);
+		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], MapConfig[mpCfgSpawnTextRange]);
 	}
 }
 
@@ -1635,26 +1701,68 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 	    case SESSION_RUN_POINTS:
 	        return true;
 	}
+	
 	return false;
 }
 
-stock ProceedClassAbility(const playerid, const abilityid) {
-	switch(abilityid) {
-	
+/*stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1, const pickupid = -1) {
+	new team = GetPlayerTeamEx(playerid);
+    new classid = Misc[playerid][mdCurrentClass][team];
+    
+	if(Abilities[abilityid] > gettime()) {
+	    return 1;
 	}
-}
+    
+	switch(abilityid) {
+		case ABILITY_INFECT: InfectPlayer(targetid, playerid);
+		case ABILITY_FLESHER: InfectPlayer(targetid, playerid, pickupid);
+		case ABILITY_REGENERATOR: RegenerateHealth(playerid);
+		case ABILITY_SUPPORT: RegenerateHealth(targetid);
+		case ABILITY_STEALER:
+		case ABILITY_BOOMER:
+		case ABILITY_JUMPER:
+		case ABILITY_BOOMER_JUMPER:
+		case ABILITY_MEGA_JUMPER:
+		case ABILITY_STOMPER:
+		case ABILITY_KAMIKAZE:
+		case ABILITY_SPACEBREAKER:
+		case ABILITY_MIMICRY:
+		case ABILITY_FREEZER:
+		case ABILITY_RADIOACTIVE:
+		case ABILITY_FLASH:
+		case ABILITY_SPITTER:
+		case ABILITY_MUTATED:
+		case ABILITY_SPORE:
+		case ABILITY_ENFORCER:
+		case ABILITY_WITCH:
+		case ABILITY_MIRROR:
+		
+		case ABILITY_CURE: CurePlayer(targetid, playerid);
+		case ABILITY_BUILD: BuildBox(playerid);
+		case ABILITY_ROCKETBOOTS: UseRocketboots(playerid);
+		case ABILITY_TASER:
+		case ABILITY_LONG_JUMPS:
+		case ABILITY_NURSE:
+		case ABILITY_DOCTOR:
+		    
+		Abilities[abilityid] = gettime() + Classes[classid][cldCooldown];
+	}
+}*/
 
 stock GivePointsForRound(const playerid) {
-	Player[playerid][pPoints] +=
-	float(
+	new Float: amount = float(
 		clamp(floatround(RoundSession[playerid][rsdSurvival], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdKilling], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdCare], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdMobility], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdSkillfulness], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdBrutality], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
-		clamp(floatround(RoundSession[playerid][rsdDeaths], floatround_tozero), 0, RoundConfig[rdCfgCap])
+		clamp(floatround(RoundSession[playerid][rsdDeaths], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
+		floatround(RoundSession[playerid][rdAdditionalPoints], floatround_tozero)
 	);
+	
+	Achievements[playerid][achTotalPoints] += amount;
+	Player[playerid][pPoints] += amount;
 }
 
 
@@ -1668,6 +1776,7 @@ stock ResetRoundSessionOnMapStart(const playerid) {
     RoundSession[playerid][rsdSkillfulness] = 0.0;
     RoundSession[playerid][rsdBrutality] = 0.0;
     RoundSession[playerid][rsdDeaths] = 0.0;
+    RoundSession[playerid][rdAdditionalPoints] = 0.0;
 }
 
 stock ClearPlayerRoundSession(const playerid) {
@@ -1680,6 +1789,7 @@ stock ClearPlayerRoundSession(const playerid) {
     RoundSession[playerid][rsdSkillfulness] = 0.0;
     RoundSession[playerid][rsdBrutality] = 0.0;
     RoundSession[playerid][rsdDeaths] = 0.0;
+    RoundSession[playerid][rdAdditionalPoints] = 0.0;
 }
 
 stock GetPlayerTeamEx(const playerid) {
@@ -1698,6 +1808,17 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	    	case TEAM_ZOMBIE: {
 				Map[mpTeamCount][0]++;
 				if(old == TEAM_HUMAN) Map[mpTeamCount][1]--;
+				
+				if(Map[mpTeamCount][1] == 1 && !Map[mpKillTheLast]) {
+				    Map[mpKillTheLast] = true;
+				    
+				    new formated[64];
+				    foreach(Player, i) {
+				        format(formated, sizeof(formated), Localization[i][LD_MSG_KILL_THE_LAST], Localization[i][LD_MSG_POINTS_MULTIPLE]);
+                        SendClientMessage(i, 0x59E4B5FF, formated);
+				    }
+				}
+				
 			}
 	    	case TEAM_HUMAN: {
 				Map[mpTeamCount][1]++;
@@ -1737,7 +1858,7 @@ stock SetByCurrentClass(const playerid) {
 			SetZombie(playerid, current);
 			SetPlayerPos(playerid, 	Map[mpZombieSpawnX][point] + distance, Map[mpZombieSpawnY][point] + distance, Map[mpZombieSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpZombieSpawnA][point]);
-			Misc[playerid][mdSpawnProtection] = gettime() + 15;
+			Misc[playerid][mdSpawnProtection] = gettime() + MapConfig[mpCfgSpawnProtectionTime];
 			
 			new formated[64];
 			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdZombieSelectionName]);
@@ -1793,22 +1914,23 @@ Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
 	return a;
 }
 
-stock ProcedPickupAction(const playerid, const pickupid) {
+stock ProceedPickupAction(const playerid, const pickupid) {
 	if(GetPlayerTeamEx(playerid) == TEAM_HUMAN && Pickups[pickupid][pcd_model] == BULLETS_PICKUP) {
 	    new weapon = GetPlayerWeapon(playerid);
 	    new index = GetWeaponFromConfigById(weapon);
-	    new amount = (index > -1) ? WeaponsConfig[index][wdCfgPick] : 1;
+	    new amount = (index > -1) ? 1 + random(WeaponsConfig[index][wdCfgPick]) : 1;
 	    new formated[32];
 	    
 	    GivePlayerWeapon(playerid, weapon, amount);
-	    format(formated, sizeof(formated), "~w~%d~g~ ammo", amount);
+	    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_ANY_AMMO_PICKUP]), amount);
 	    GameTextForPlayer(playerid, formated, 2000, 5);
 	    return 1;
 	}
 	
 	if(Pickups[pickupid][pcd_model] == MEAT_PICKUP) {
 	    if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
-	        SetPlayerHealthAC(playerid, 100.0);
+	        new classid = Misc[playerid][mdCurrentClass][TEAM_ZOMBIE];
+	        SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
 	        return 1;
 	    }
 	}
@@ -1818,7 +1940,7 @@ stock ProcedPickupAction(const playerid, const pickupid) {
 
 stock CreateDropOnDeath(const playerid, const killerid) {
 	new Float:pos[3];
-	new type[4] = { -1, BULLETS_PICKUP, MEAT_PICKUP, -1 };
+	new type[2] = { BULLETS_PICKUP, MEAT_PICKUP };
  	new index = random(sizeof(type));
 
 	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
@@ -1884,7 +2006,7 @@ stock ResetWeapons(const playerid) {
 }
 
 stock GivePlayerWeaponAC(const playerid, const weapid, const ammo) {
-    new gunname[32], stack = min(1000, GetPVarInt(playerid, gunname) + ammo);
+    new gunname[32], stack = min(ServerConfig[svCfgMaxWeaponAmmo], GetPVarInt(playerid, gunname) + ammo);
     GetWeaponName(weapid, gunname, sizeof(gunname));
     SetPVarInt(playerid, gunname, stack);
     GivePlayerWeapon(playerid, weapid, stack);
@@ -1960,39 +2082,37 @@ stock EmptyMessage(const string[]) {
     return 1;
 }
 
-stock SetZombie(const playerid, const classid) {
-    SetPlayerColor(playerid, COLOR_ZOMBIE);
-}
-
-stock SetHuman(const playerid, const classid) {
-    SetPlayerColor(playerid, COLOR_HUMAN);
-    
-    new i, weapons[9];
+stock ClassSetup(const playerid, const classid) {
+    new i, weapons[9], index, amount;
     SetPlayerSkin(playerid, Classes[classid][cldSkin]);
     SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
     SetPlayerArmourAC(playerid, Classes[classid][cldArmour]);
-    
+
     sscanf(Classes[classid][cldWeapons], "p<,>iiiiiiiii", weapons[0],
 		weapons[1], weapons[2], weapons[3], weapons[4], weapons[5],
 		weapons[6], weapons[7], weapons[8]
 	);
-	
+
 	for( i = 0; i < sizeof(weapons); i++ ) {
 	    if(!weapons[i]) continue;
-	    GivePlayerWeaponAC(playerid, weapons[i], 100);
+	    index = GetWeaponFromConfigById(weapons[i]);
+        amount = (index > -1) ? WeaponsConfig[index][wdCfgDefault] : 1;
+	    GivePlayerWeaponAC(playerid, weapons[i], amount);
 	}
+}
+
+stock SetZombie(const playerid, const classid) {
+    SetPlayerColor(playerid, COLOR_ZOMBIE);
+    ClassSetup(playerid, classid);
+}
+
+stock SetHuman(const playerid, const classid) {
+    SetPlayerColor(playerid, COLOR_HUMAN);
+    ClassSetup(playerid, classid);
 }
 
 stock SetUnknown(const playerid) {
 	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
-}
-
-stock SetToZombieOrHuman(playerid) {
-	if(random(2) == 0) {
-		SetPlayerTeamAC(playerid, TEAM_HUMAN);
-	} else {
-	    SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
-	}
 }
 
 stock ResetMapValuesOnDeath(const playerid) {
@@ -2013,15 +2133,9 @@ stock ResetValuesOnDisconnect(const playerid) {
     if(Map[mpTeamCount][1] >= 1 && GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
         Map[mpTeamCount][1]--;
     }
-}
-
-stock GetWeaponByChance(const index, const chance, const slot) {
-	switch(index) {
-		case 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39:
-			return chance <= WeaponsConfig[slot][wdCfgChance] ? slot : -1;
-		default: return -1;
-	}
-	return -1;
+    
+    Round[playerid][rdIsHumanHero] = false;
+	Round[playerid][rdIsZombieBoss] = false;
 }
 
 stock GetWeaponFromConfigById(const weaponid) {
@@ -2202,23 +2316,48 @@ stock GetRequiredZombiesCount() {
 stock SetTeams() {
 	new required = GetRequiredZombiesCount(), current, i, j;
     new players[MAX_PLAYERS] = { 1, 2, 3, ... }, playerid;
+	new bool: hero, bool:boss, formated[128];
 
     for( i = MAX_PLAYERS - 1; i > 0; i-- ) {
         j = random(i + 1);
         swap(players[i], players[j]);
-    }
+	}
 
     for ( i = 0; i < MAX_PLAYERS; i++ ) {
 	    playerid = players[i] - 1;
 	    if(!IsPlayerConnected(playerid) || !Misc[playerid][mdIsLogged]) {
 	    	continue;
 		}
-
+	
 	    if(current < required) {
+	        SendClientMessage(playerid, 0xFF0000FF, Localization[playerid][LD_MSG_CHOSEN_AS_ZOMBIE]);
+  			SendClientMessage(playerid, 0xFF0000FF, Localization[playerid][LD_MSG_CHOSEN_ZOMBIE_ABILITY]);
 	        SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
             ++current;
+            
+            if(!boss) {
+	    		Round[playerid][rdIsZombieBoss] = true;
+	    		boss = true;
+	    		
+	    		foreach(Player, p) {
+					format(formated, sizeof(formated), Localization[p][LD_MSG_ZOMBIE_BOSS], Misc[playerid][mdPlayerName], Localization[p][LD_MSG_POINTS_MULTIPLE]);
+					SendClientMessage(p, 0x59E4B5FF, formated);
+				}
+			}
+			
         } else {
+            GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_TRY_TO_SURVIVE]), 2000, 6);
             SetPlayerTeamAC(playerid, TEAM_HUMAN);
+            
+            if(!hero) {
+				Round[playerid][rdIsHumanHero] = true;
+				hero = true;
+				
+				foreach(Player, p) {
+					format(formated, sizeof(formated), Localization[p][LD_MSG_HUMAN_HERO], Misc[playerid][mdPlayerName], Localization[p][LD_MSG_POINTS_MULTIPLE]);
+					SendClientMessage(p, 0x59E4B5FF, formated);
+				}
+			}
         }
         
         ResetRoundSessionOnMapStart(playerid);
@@ -2235,14 +2374,6 @@ CMD:class(const playerid) {
 		Localization[playerid][LD_BTN_SELECT],
 		Localization[playerid][LD_BTN_CLOSE]
 	);
-	return 1;
-}
-
-CMD:cure(const playerid, const targetid) {
-	if(playerid != targetid && IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
-	    RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
-	}
-
 	return 1;
 }
 
