@@ -26,6 +26,7 @@
 #define LOAD_LOCALIZED_CLASSES_QUERY "SELECT c.id, c.points, COALESCE(l.%e_title, '') as title, COALESCE(l.%e_desc, '') as description FROM `classes` c LEFT JOIN `classes_localization` l ON l.id = c.id WHERE c.disabled = 0 AND c.team = %d ORDER BY c.points ASC;"
 #define LOAD_CLASSES_QUERY "SELECT * FROM `classes` WHERE 1;"
 #define LOAD_CLASSES_CFG_QUERY "SELECT * FROM `classes_config` WHERE 1 LIMIT 1;"
+#define GET_RANDOM_SKIN_QUERY "SELECT c.skin,c.health FROM `classes` c WHERE `disabled` = 0 AND `team` = %d ORDER BY RAND() LIMIT 1;"
 
 #define PRELOAD_CLASSES_TITLES "\
 	SELECT COALESCE(l.%e_title, '') AS title, c.id -1 AS id \

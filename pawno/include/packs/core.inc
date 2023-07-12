@@ -26,6 +26,7 @@
 #include <packs/textures>
 #include <packs/balance>
 
+#include <dependencies/jit>
 #include <dependencies/foreach>
 #include <dependencies/sscanf2>
 #include <dependencies/dc_cmd>

@@ -348,6 +348,7 @@
 	`radioactive` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`regeneration` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`support` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
+	`air_range` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`stomper_effect` varchar(64) NOT NULL default '18675,0.0,0.0,0.0,-1.2,1000',\
 	`flasher_effect` varchar(64) NOT NULL default '18693,10,2,15.0',\
    	PRIMARY KEY (`id`)\
@@ -810,7 +811,7 @@
 	(60, '>> Kill the last human and receive extra %s!', '>> Убейте последнего выжевшего и получите дополнительные %s!'),\
 	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!'),\
 	(62, '>> Player %s has been infected by standard zombie %s!', '>> Игрок %s был заражен обычным зомби %s!'),\
-	(63, '>> Player %s has been infected by %s! (by air)', '>> Игрок %s был заражен от %s! (по воздуху)'),\
+	(63, '>> Player %s has been infected by mutated zombie %s!', '>> Игрок %s был заражен от мутированного зомби %s!'),\
 	(64, '>> Player %s has been infected by flesher zombie %s! (by meat)', '>> Игрок %s был заражен гнилым зомби %s! (через мясо)'),\
 	(65, '>> Player %s has been infected by spore zombie %s!', '>> Игрок %s был заражен через споры от зомби %s!'),\
 	(66, '>> Player %s has been infected by spitter zombie %s!', '>> Игрок %s был заражен плевком от зомби %s!'),\
@@ -820,10 +821,21 @@
 	(70, '>> Player %s has been cured by cure field!', '>> Игрок %s был выличен лечящем полем!'),\
 	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)'),\
 	(72, '~r~~h~Regeneration', '~r~~h~Восстановление'),\
-	(73, '~g~~h~Radioactive Field', '~g~~h~Радиоактивное Поле'),\
+	(73, '~g~~h~Radioactive Field', '~g~~h~Радиоактивное_Поле'),\
 	(74, '~g~Antidote', '~g~Антидот'),\
 	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
 	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
 	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!'),\
-	(78, '~w~You_are_~g~Cursed~n~~r~Kill~w~_humans_to_survive', '~w~Вы_~g~прокляты~n~~r~Убивайте~w~_людей_чтобы_жить');\
+	(78, '~w~You are ~g~Cursed~n~~r~Kill~w~ humans to survive', '~w~Вы ~g~прокляты~n~~r~Убивайте~w~ людей чтобы жить');\
+"
+
+#define PREDIFINED_LOCALIZATION_5 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(79, '~r~This~w~ player is on your team', '~r~Этот~w~ игрок в вашей команде'),\
+	(80, '~r~OFF', '~r~ВЫКЛЮЧЕНО'),\
+	(81, '~g~ON', '~g~ВКЛЮЧЕНО'),\
+	(82, '~y~Radioactive Field is %s', '~y~Радиоактивное Поле %s'),\
+	(83, '~y~Cure Field is %s', '~y~Лечащие Поле %s'),\
+	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
+	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
+	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)');\
 "

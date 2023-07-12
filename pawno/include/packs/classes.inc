@@ -9,6 +9,8 @@
 #define MAX_CLASSES 48
 #define MAX_CLASSDATA_STR_LEN 24
 
+#define MAX_CLASS_ID_LEN 2
+
 enum CLASSES_DATA {
 	cldId,
 	cldTeam,
@@ -35,6 +37,7 @@ enum CLASSES_CONFIG_DATA {
 	clsCfgFlasherEffectId,
 	clsCfgFlasherEffectTime,
 	clsCfgFlasherExplosionType,
+	Float:clsCfgAirRange,
 	Float:clsCfgRadioactiveDamage,
 	Float:clsCfgRegenHealth,
 	Float:clsCfgSupportHealth,
