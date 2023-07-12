@@ -31,7 +31,6 @@
 #include <dependencies/sscanf2>
 #include <dependencies/dc_cmd>
 #include <dependencies/a_mysql>
-#include <dependencies/indirection>
 #include <dependencies/date>
 
 #pragma warning disable 208

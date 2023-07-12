@@ -146,7 +146,7 @@ static
 #define CLS_CFG_CONSOLE_LOG "(9): Classes configuration"
 
 main() {
-	printf("%d", ABILITY_CURE_FIELD);
+	printf("%d,%d", ABILITY_CURE_FIELD, ABILITY_SPACEBREAKER);
 }
 
 public OnGameModeInit() {
@@ -455,6 +455,10 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 }
 
 public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart) {
+	if(!IsPlayerConnected(playerid) || !IsPlayerConnected(issuerid)) {
+	    return 1;
+	}
+
 	if(GetPlayerTeamEx(playerid) == GetPlayerTeamEx(issuerid)) {
 	    if(Misc[playerid][mdMimicry][2] > -1) {
 	        GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISLPAY_FAKE_CLASS]), 1000, 5);
@@ -1965,45 +1969,67 @@ stock ProceedClassAbilityActivation(const playerid) {
             case ABILITY_SUPPORT: {
                 if(Iter_Contains(SupportPlayers, playerid)) {
 					Iter_Remove(SupportPlayers, playerid);
-     				format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_SPF_STATUS], Localization[playerid][LD_DISPLAY_OFF]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+     				format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_SPF_STATUS]), Localization[playerid][LD_DISPLAY_OFF]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				} else {
 				    Iter_Add(SupportPlayers, playerid);
-				    format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_SPF_STATUS], Localization[playerid][LD_DISPLAY_ON]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+				    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_SPF_STATUS]), Localization[playerid][LD_DISPLAY_ON]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				}
             }
             case ABILITY_RADIOACTIVE: {
                 if(Iter_Contains(RadioactivePlayers, playerid)) {
 					Iter_Remove(RadioactivePlayers, playerid);
-     				format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_RDF_STATUS], Localization[playerid][LD_DISPLAY_OFF]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+     				format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_RDF_STATUS]), Localization[playerid][LD_DISPLAY_OFF]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				} else {
 				    Iter_Add(RadioactivePlayers, playerid);
-				    format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_RDF_STATUS], Localization[playerid][LD_DISPLAY_ON]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+				    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_RDF_STATUS]), Localization[playerid][LD_DISPLAY_ON]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				}
             }
             case ABILITY_CURE_FIELD: {
                 if(Iter_Contains(NursePlayers, playerid)) {
 					Iter_Remove(NursePlayers, playerid);
-     				format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_CRF_STATUS], Localization[playerid][LD_DISPLAY_OFF]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+     				format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_CRF_STATUS]), Localization[playerid][LD_DISPLAY_OFF]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				} else {
 				    Iter_Add(NursePlayers, playerid);
-				    format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_CRF_STATUS], Localization[playerid][LD_DISPLAY_ON]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+				    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_CRF_STATUS]), Localization[playerid][LD_DISPLAY_ON]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				}
             }
             case ABILITY_HOLY_FIELD: {
                 if(Iter_Contains(PriestPlayers, playerid)) {
 					Iter_Remove(PriestPlayers, playerid);
-     				format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_HLF_STATUS], Localization[playerid][LD_DISPLAY_OFF]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+     				format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_HLF_STATUS]), Localization[playerid][LD_DISPLAY_OFF]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
 				} else {
 				    Iter_Add(PriestPlayers, playerid);
-				    format(formated, sizeof(formated), Localization[playerid][LD_DISPLAY_HLF_STATUS], Localization[playerid][LD_DISPLAY_ON]);
-                    GameTextForPlayer(playerid, RusToGame(formated), 1000, 5);
+				    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_HLF_STATUS]), Localization[playerid][LD_DISPLAY_ON]);
+                    GameTextForPlayer(playerid, formated, 1000, 5);
+				}
+            }
+            case ABILITY_JUMPER: {
+                new Float:pos[3];
+                GetPlayerVelocity(playerid, pos[0], pos[1], pos[2]);
+                SetPlayerVelocity(playerid, pos[0], pos[1], pos[2] + 10.0);
+            }
+            case ABILITY_LONG_JUMPS: {
+                new Float:pos[3];
+                GetPlayerCameraFrontVector(playerid, pos[0], pos[1], pos[2]);
+				SetPlayerVelocity(playerid, pos[0] / 1.2, pos[1] / 1.2, pos[2] + 0.8);
+            }
+            case ABILITY_SPACEBREAKER: {
+				new world = GetPlayerVirtualWorld(playerid);
+				if(world > 0) {
+				    SetPlayerVirtualWorld(playerid, 0);
+                    SetPlayerWeather(playerid, 1);
+					SetPlayerTime(playerid, 12, 0);
+				} else {
+				    SetPlayerVirtualWorld(playerid, 1);
+                    SetPlayerWeather(playerid, 101);
+					SetPlayerTime(playerid, 10, 0);
 				}
             }
         }
@@ -2011,13 +2037,10 @@ stock ProceedClassAbilityActivation(const playerid) {
 }
 
 /*
-	case ABILITY_JUMPER:
 	case ABILITY_SPACEBREAKER:
 	case ABILITY_BUILD: BuildBox(playerid);
 	case ABILITY_ROCKETBOOTS: UseRocketboots(playerid);
 	case ABILITY_LONG_JUMPS:
-	case ABILITY_DOCTOR:
-
 */
 
 stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1, const Float:amount = 0.0) {
@@ -2207,7 +2230,7 @@ stock bool:IsAbleToTakeRadioactiveDamage(const playerid) {
 
 stock bool:IsAbleToBeInfected(const playerid) {
     if( Round[playerid][rdIsInfected] || Round[playerid][rdIsAdvanceInfected] ||
-		GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
+		GetPlayerTeamEx(playerid) == TEAM_ZOMBIE || GetPlayerVirtualWorld(playerid) > 0) {
         return false;
     }
     
