@@ -6,6 +6,7 @@
 enum CONFIG_DATA {
 	svCfgPreviewBot,
 	svCfgMaxWeaponAmmo,
+	svCfgCuringWeapon,
 	svCfgInfectionDrunkLevel,
 	svCfgPickupProtection,
 	Float:svCfgPreviewBotPos[4],

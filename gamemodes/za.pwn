@@ -69,6 +69,14 @@ static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 
 static MySQL:Database, updateTimerId;
 
+static
+        Iterator:Humans<MAX_PLAYERS>,
+        Iterator:Zombies<MAX_PLAYERS>,
+		Iterator:MutatedPlayers<MAX_PLAYERS>,
+		Iterator:RadioactivePlayers<MAX_PLAYERS>,
+		Iterator:NursePlayers<MAX_PLAYERS>,
+		Iterator:SupportPlayers<MAX_PLAYERS>;
+
 /*
 	MAIN
 	- Classes
@@ -132,6 +140,13 @@ public OnGameModeInit() {
  	InitializeClassesData();
 	InitializeWeaponsData();
 	InitializeDefaultValues();
+	
+	Iter_Clear(MutatedPlayers);
+	Iter_Clear(RadioactivePlayers);
+	Iter_Clear(NursePlayers);
+	Iter_Clear(SupportPlayers);
+	Iter_Clear(Humans);
+	Iter_Clear(Zombies);
 	
 	SetGameModeText("Zombies");
 	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
@@ -385,6 +400,11 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 				    return 0;
 				}
             }
+            
+            if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE && GetPlayerTeamEx(hitid) == TEAM_HUMAN && weaponid >= WEAPON_COLT45) {
+                ProceedClassAbility(playerid, ABILITY_SPITTER, hitid);
+                return 0;
+			}
 	    }
 	    /*case BULLET_HIT_TYPE_OBJECT: {
 	        if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
@@ -401,12 +421,20 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 }
 
 public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart) {
+	if(GetPlayerTeamEx(playerid) == GetPlayerTeamEx(issuerid)) {
+	    return 1;
+	}
+
 	if(IsAbleToGivePointsInCategory(issuerid, SESSION_HIT_POINTS) && weaponid == RoundConfig[rdCfgBrutalityWeapon]) {
         RoundSession[playerid][rsdBrutality] += RoundConfig[rdCfgBrutality];
 	}
 	
 	ProceedClassAbility(playerid, ABILITY_SPORE, issuerid);
 	ProceedClassAbility(playerid, ABILITY_MIRROR, issuerid);
+	
+	if(weaponid == ServerConfig[svCfgCuringWeapon]) {
+		ProceedClassAbility(playerid, ABILITY_CURE, issuerid);
+	}
 
     ShowDamageTaken(playerid, amount);
 	return 1;
@@ -497,19 +525,18 @@ public OnPlayerCommandPerformed(playerid, cmdtext[], success) {
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
     if(KEY(KEY_WALK)) {
     
-        // ProceedClassAbility();
+        // ProceedClassAbility
+
+		/*
+		if(playerid != targetid && IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
+		    RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
+		}
+		*/
     
         if(IsAbleToGivePointsInCategory(playerid, SESSION_ABILITY_POINTS)) {
             RoundSession[playerid][rsdSkillfulness] += RoundConfig[rdCfgSkillfulness];
         }
 	}
-	
-	// ProceedClassAbility
-
-	/*if(playerid != targetid && IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
-	    RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
-	}*/
-
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
@@ -607,7 +634,7 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
      	DestroyPickupEx(pickupid);
 	} else if(IsValidPickupEx(pickupid)) {
 	    new tip[64];
-	    format(tip, sizeof(tip), Localization[playerid][LD_MSG_PICKUP_PROTECTION], max(0, Pickups[pickupid][pcd_protection_till] - gettime()));
+	    format(tip, sizeof(tip), Localization[playerid][LD_MSG_PICKUP_PROTECTION], max(0, Pickups[pickupid][pcdProtectionTill] - gettime()));
  		SendClientMessage(playerid, 0xFF0000FF, tip);
 	}
 	return 1;
@@ -637,7 +664,7 @@ custom Update() {
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
 	    if(Misc[playerid][mdIsLogged]) {
-	    	if(Round[playerid][rdIsInfected]) {
+	    	if(Round[playerid][rdIsInfected] || Round[playerid][rdIsAdvanceInfected]) {
 	        	SetPlayerColor(playerid, COLOR_INFECTED);
 	        	TextDrawShowForPlayer(playerid, ServerTextures[infectedTexture]);
 	        	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
@@ -649,6 +676,9 @@ custom Update() {
     		
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
+            
+            Round[playerid][rdIsInRadioactiveField] = false;
+            ProceedClassAbility(playerid, ABILITY_REGENERATOR);
             
             if(!Map[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (Map[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
                 RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgSurvival];
@@ -680,6 +710,7 @@ custom LoadClasses() {
 			cache_get_value_name_int(i, "team", Classes[i][cldTeam]);
 			cache_get_value_name_int(i, "skin", Classes[i][cldSkin]);
 			cache_get_value_name_int(i, "cooldown", Classes[i][cldCooldown]);
+			cache_get_value_name_int(i, "ability_time", Classes[i][cldAbilityTime]);
             cache_get_value_float(i, "points", Classes[i][cldPoints]);
 
             cache_get_value_name(i, "ability", Classes[i][cldAbility]);
@@ -690,9 +721,6 @@ custom LoadClasses() {
 			cache_get_value_name_float(i, "armour", Classes[i][cldArmour]);
 			cache_get_value_name_float(i, "distance", Classes[i][cldDistance]);
 			cache_get_value_name_float(i, "points", Classes[i][cldPoints]);
-
-			cache_get_value_name_int(i, "animation", Classes[i][cldAnimation]);
-			cache_get_value_name_int(i, "animation_time", Classes[i][cldAnimationTime]);
 		}
 		
 		printf("(8): Classes loaded (%d / %d)", i, len);
@@ -972,6 +1000,30 @@ custom OnMapUpdate() {
  		}
 	}
 	
+	foreach(NursePlayers, playerid) {
+	    foreach(Humans, targetid) {
+	        ProceedClassAbility(playerid, ABILITY_NURSE, targetid);
+	    }
+	}
+
+	foreach(RadioactivePlayers, playerid) {
+	    foreach(Humans, targetid) {
+	        ProceedClassAbility(playerid, ABILITY_RADIOACTIVE, targetid);
+	    }
+	}
+
+	foreach(MutatedPlayers, playerid) {
+	    foreach(Humans, targetid) {
+	        ProceedClassAbility(playerid, ABILITY_MUTATED, targetid);
+	    }
+	}
+	
+	foreach(SupportPlayers, playerid) {
+	    foreach(Zombies, targetid) {
+	        ProceedClassAbility(playerid, ABILITY_SUPPORT, targetid);
+	    }
+	}
+	
 	return 1;
 }
 
@@ -1049,6 +1101,7 @@ custom LoadServerConfiguration() {
         cache_get_value_name_int(0, "pickup_protection", ServerConfig[svCfgPickupProtection]);
         cache_get_value_name_int(0, "min_zombies_to_win", ServerConfig[svCfgMinZombiesToWin]);
         cache_get_value_name_int(0, "max_weapon_ammo", ServerConfig[svCfgMaxWeaponAmmo]);
+        cache_get_value_name_int(0, "curing_weapon", ServerConfig[svCfgCuringWeapon]);
 
         cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
         cache_get_value_name_float(0, "vehicle_damage", ServerConfig[svCfgVehicleDamage]);
@@ -1524,11 +1577,10 @@ stock InitializeClassesData() {
 	    Classes[i][cldHealth] = 100.0;
 	    Classes[i][cldArmour] = 0.0;
 	    Classes[i][cldCooldown] = 0;
+	    Classes[i][cldAbilityTime] = 0;
         Classes[i][cldSkin] = 1;
 	    Classes[i][cldDisabled] = 1;
 	    Classes[i][cldDistance] = 0.0;
-	    Classes[i][cldAnimation] = 0;
-		Classes[i][cldAnimationTime] = 0;
 
 		strmid(Classes[i][cldAbility], "", 0, MAX_CLASSDATA_STR_LEN);
 		strmid(Classes[i][cldImmunity], "", 0, MAX_CLASSDATA_STR_LEN);
@@ -1712,6 +1764,8 @@ stock InitializeDefaultValues() {
 stock ClearPlayerRoundData(const playerid) {
     Round[playerid][rdIsEvacuated] = false;
     Round[playerid][rdIsInfected] = false;
+    Round[playerid][rdIsAdvanceInfected] = false;
+	Round[playerid][rdIsInRadioactiveField] = false;
     
     SetPlayerDrunkLevel(playerid, 0);
     TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
@@ -1745,19 +1799,34 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 	return false;
 }
 
-stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1, const pickupid = -1) {
+stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1) {
 	new team = GetPlayerTeamEx(playerid);
     new classid = Misc[playerid][mdCurrentClass][team];
     
 	/*if(Abilities[abilityid] > gettime()) {
 	    return 1;
-	}
+	}*/
+	
+	/*if(Classes[i][cldAbilityTime] > gettime()) {
+	    Abilities[abilityid] = gettime() + Classes[classid][cldCooldown];
+	}*/
+    
+    // ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410); - Freeze / Stealer / Mimicry / Spore / Radioactive
+    // ApplyAnimation(playerid, "FIGHT_B", "FIGHTB_G", 4.1, true, false, false, false, 0, false); - Stomper
     
 	switch(abilityid) {
 		case ABILITY_INFECT: InfectPlayer(targetid, playerid);
-		case ABILITY_FLESHER: InfectPlayer(targetid, playerid, pickupid);
-		case ABILITY_REGENERATOR: RegenerateHealth(playerid);
-		case ABILITY_SUPPORT: RegenerateHealth(targetid);
+		case ABILITY_MUTATED: InfectPlayerAdvanced(targetid, playerid);
+		case ABILITY_FLESHER: InfectPlayerFlesher(targetid, playerid);
+        case ABILITY_SPORE: InfectPlayerSpore(targetid, playerid);
+        case ABILITY_SPITTER: InfectPlayerSpitter(targetid, playerid);
+        case ABILITY_NURSE: CurePlayerNurse(targetid, playerid);
+        case ABILITY_CURE: CurePlayerByShot(targetid, playerid);
+        case ABILITY_REGENERATOR: RegenerateHealth(playerid, 2.5);
+        case ABILITY_SUPPORT: RegenerateHealth(targetid, 5.0);
+        case ABILITY_BOOMER: InfectAndExplode(playerid);
+        
+		/*
 		case ABILITY_STEALER:
 		case ABILITY_JUMPER:
 		case ABILITY_MEGA_JUMPER:
@@ -1768,26 +1837,22 @@ stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1, 
 		case ABILITY_FREEZER:
 		case ABILITY_RADIOACTIVE:
 		case ABILITY_FLASH:
-		case ABILITY_SPITTER:
-		case ABILITY_MUTATED:
-		
 		case ABILITY_WITCH:
 		
-		case ABILITY_CURE: CurePlayer(targetid, playerid);
+		
 		case ABILITY_BUILD: BuildBox(playerid);
 		case ABILITY_ROCKETBOOTS: UseRocketboots(playerid);
 		case ABILITY_TASER:
 		case ABILITY_LONG_JUMPS:
-		case ABILITY_NURSE:
 		case ABILITY_DOCTOR:
 
-        case ABILITY_BOOMER:
-        case ABILITY_BOOMER_JUMPER:
-        case ABILITY_SPORE:
+        
         case ABILITY_MIRROR:
+        case ABILITY_FLESHER:
         
 		Abilities[abilityid] = gettime() + Classes[classid][cldCooldown];
-	}*/
+		*/
+	}
 }
 
 stock GivePointsForRound(const playerid) {
@@ -1843,12 +1908,25 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	if(old != teamid) {
 	    switch(teamid) {
 	        case TEAM_UNKNOWN: {
-	            if(old == TEAM_ZOMBIE) Map[mpTeamCount][0]--;
-                if(old == TEAM_HUMAN) Map[mpTeamCount][1]--;
+	            switch(old) {
+	                case TEAM_ZOMBIE: {
+                        Map[mpTeamCount][0]--;
+						Iter_Remove(Zombies, playerid);
+	                }
+	                case TEAM_HUMAN: {
+                        Map[mpTeamCount][1]--;
+                        Iter_Remove(Humans, playerid);
+	                }
+	            }
 	        }
 	    	case TEAM_ZOMBIE: {
+	    	    Iter_Add(Zombies, playerid);
 				Map[mpTeamCount][0]++;
-				if(old == TEAM_HUMAN) Map[mpTeamCount][1]--;
+
+				if(old == TEAM_HUMAN) {
+				    Iter_Remove(Humans, playerid);
+					Map[mpTeamCount][1]--;
+				}
 				
 				if(Map[mpTeamCount][1] == 1 && !Map[mpKillTheLast]) {
 				    Map[mpKillTheLast] = true;
@@ -1862,8 +1940,13 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 				
 			}
 	    	case TEAM_HUMAN: {
+	    	    Iter_Add(Humans, playerid);
 				Map[mpTeamCount][1]++;
-				if(old == TEAM_ZOMBIE) Map[mpTeamCount][0]--;
+				
+				if(old == TEAM_ZOMBIE) {
+				    Iter_Remove(Zombies, playerid);
+					Map[mpTeamCount][0]--;
+				}
         	}
 		}
 	}
@@ -1924,27 +2007,181 @@ stock SetByCurrentClass(const playerid) {
   	TextDrawShowForPlayer(playerid, ServerTextures[pointsTexture][playerid]);
 }
 
-stock InfectPlayer(const playerid, const targetId) {
-	if(Round[playerid][rdIsInfected]) {
+stock bool:CanBeInfected(const playerid) {
+    if( Round[playerid][rdIsInfected] || Round[playerid][rdIsAdvanceInfected] ||
+		GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
+        return false;
+    }
+    
+    return true;
+}
+
+stock bool:IsInfected(const playerid) {
+    if(Round[playerid][rdIsInfected] || Round[playerid][rdIsAdvanceInfected]) {
+	    return true;
+	}
+	
+	return false;
+}
+
+stock DefaultCure(const playerid) {
+    Round[playerid][rdIsInfected] = false;
+    Round[playerid][rdIsAdvanceInfected] = false;
+    SetPlayerDrunkLevel(playerid, 0);
+    TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
+}
+
+stock DefaultInfection(const playerid) {
+    Round[playerid][rdIsInfected] = true;
+}
+
+stock SendInfectionMessage(const LOCALIZATION_DATA:localeid, const targetid, const playerid) {
+    new formated[96];
+	foreach(Player, i) {
+		format(formated, sizeof(formated), Localization[i][localeid], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
+		SendClientMessage(i, 0x009900FF, formated);
+	}
+}
+
+stock AbilityUsed(const playerid) {
+
+}
+
+stock InfectPlayer(const targetid, const playerid) {
+	if(!CanBeInfected(targetid)) {
 	    return 0;
 	}
     
-    Round[playerid][rdIsInfected] = true;
+    DefaultInfection(targetid);
+    ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
+    SendInfectionMessage(LD_MSG_INFECTED_STANDARD, targetid, playerid);
+    AbilityUsed(playerid);
+    return 1;
+}
+
+stock InfectPlayerAdvanced(const targetid, const playerid) {
+    if(!CanBeInfected(targetid)) {
+	    return 0;
+	}
+
+    Round[targetid][rdIsAdvanceInfected] = true;
+    ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
+    SendInfectionMessage(LD_MSG_INFECTED_MUTATED, targetid, playerid);
+    AbilityUsed(playerid);
+    return 1;
+}
+
+stock InfectPlayerFlesher(const targetid, const pickupid) {
+	new playerid = Pickups[pickupid][pcdFromPlayer];
+	
+    if(!CanBeInfected(targetid) || !IsPlayerConnected(playerid) || GetPlayerTeamEx(playerid) != TEAM_ZOMBIE) {
+	    return 0;
+	}
+
+    DefaultInfection(targetid);
+    ApplyAnimation(targetid, "FOOD", "EAT_VOMIT_P", 4.1, 0, 0, 0, 0, 0);
+    SendInfectionMessage(LD_MSG_INFECTED_FLESHER, targetid, playerid);
+    AbilityUsed(playerid);
+    return 1;
+}
+
+stock InfectPlayerSpore(const targetid, const playerid) {
+    if(!CanBeInfected(targetid)) {
+	    return 0;
+	}
+
+    DefaultInfection(targetid);
+    SendInfectionMessage(LD_MSG_INFECTED_SPORE, targetid, playerid);
+    AbilityUsed(playerid);
+    return 1;
+}
+
+stock InfectPlayerSpitter(const targetid, const playerid) {
+    if(!CanBeInfected(targetid)) {
+	    return 0;
+	}
+
+    DefaultInfection(targetid);
+    SendInfectionMessage(LD_MSG_INFECTED_SPITTER, targetid, playerid);
+    AbilityUsed(playerid);
+    return 1;
+}
+
+stock InfectAndExplode(const playerid) {
+	new Float:pos[3], count, Float:range = 7.0;
+	
+	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+	CreateExplosion(pos[0], pos[1], pos[2], 0, range);
+
+	foreach(Player, i) {
+	    if(!CanBeInfected(i)) continue;
+	    
+		if(IsPlayerInRangeOfPoint(i, range, pos[0], pos[1], pos[2])) {
+		    SendInfectionMessage(LD_MSG_INFECTED_EXPLOSION, i, playerid);
+	        DefaultInfection(i);
+	        ++count;
+	    }
+	}
+	
+	if(count) {
+	    AbilityUsed(playerid);
+	    
+	    new formated[96], LOCALIZATION_DATA:type = (count >= 5) ? LD_MSG_EXPLODED_WHOPPING : LD_MSG_EXPLODED;
+	    foreach(Player, i) {
+	    	format(formated, sizeof(formated), Localization[i][type], Misc[playerid][mdPlayerName], count);
+			SendClientMessage(i, 0x009900FF, formated);
+		}
+	}
+}
+
+stock CurePlayerNurse(const targetid, const playerid) {
+    Round[targetid][rdIsInRadioactiveField] = false;
+    
+    if(!IsInfected(targetid)) {
+	    return 0;
+	}
+
+    DefaultCure(targetid);
+    AbilityUsed(playerid);
+    
+    new formated[96];
+   	foreach(Player, i) {
+   		format(formated, sizeof(formated), Localization[i][LD_MSG_CURE_NURSE_FIELD], Misc[playerid][mdPlayerName]);
+		SendClientMessage(i, 0xB2F558FF, formated);
+	}
+    return 1;
+}
+
+stock CurePlayerByShot(const targetid, const playerid) {
+	if(!IsInfected(targetid)) {
+	    return 0;
+	}
+
+    DefaultCure(targetid);
+    AbilityUsed(playerid);
+    
+    new formated[96];
+   	foreach(Player, i) {
+   		format(formated, sizeof(formated), Localization[i][LD_MSG_CURE_RIFLE], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
+		SendClientMessage(i, 0xB2F558FF, formated);
+	}
     return 1;
 }
 
 stock CurePlayer(const playerid) {
-    if(!Round[playerid][rdIsInfected]) {
+    if(!IsInfected(playerid)) {
 	    return 0;
 	}
 	
-    Round[playerid][rdIsInfected] = false;
-    SetPlayerDrunkLevel(playerid, 0);
-    TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
+    DefaultCure(playerid);
     return 1;
 }
 
-Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
+stock RegenerateHealth(const playerid, const Float:amount) {
+    AbilityUsed(playerid);
+}
+
+stock Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
 {
 	new Float:a;
 	GetPlayerPos(playerid, q, w, a);
@@ -1956,23 +2193,29 @@ Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
 }
 
 stock ProceedPickupAction(const playerid, const pickupid) {
-	if(GetPlayerTeamEx(playerid) == TEAM_HUMAN && Pickups[pickupid][pcd_model] == BULLETS_PICKUP) {
-	    new weapon = GetPlayerWeapon(playerid);
-	    new index = GetWeaponFromConfigById(weapon);
-	    new amount = (index > -1) ? 1 + random(WeaponsConfig[index][wdCfgPick]) : 1;
-	    new formated[32];
-	    
-	    GivePlayerWeapon(playerid, weapon, amount);
-	    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_ANY_AMMO_PICKUP]), amount);
-	    GameTextForPlayer(playerid, formated, 2000, 5);
-	    return 1;
-	}
-	
-	if(Pickups[pickupid][pcd_model] == MEAT_PICKUP) {
-	    if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
-	        new classid = Misc[playerid][mdCurrentClass][TEAM_ZOMBIE];
-	        SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
-	        return 1;
+	if(Pickups[pickupid][pcdModel] == MEAT_PICKUP) {
+	    switch(GetPlayerTeamEx(playerid)) {
+	        case TEAM_ZOMBIE: {
+                new classid = Misc[playerid][mdCurrentClass][TEAM_ZOMBIE];
+	        	SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
+	        	return 1;
+	        }
+	        case TEAM_HUMAN: {
+	            if(random(4) == 0) {
+		            new weapon = GetPlayerWeapon(playerid);
+				    new index = GetWeaponFromConfigById(weapon);
+				    new amount = (index > -1) ? 1 + random(WeaponsConfig[index][wdCfgPick]) : 1;
+				    new formated[32];
+
+				    GivePlayerWeapon(playerid, weapon, amount);
+				    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_ANY_AMMO_PICKUP]), amount);
+				    GameTextForPlayer(playerid, formated, 2000, 5);
+				    return 1;
+				}
+				
+                ProceedClassAbility(pickupid, ABILITY_FLESHER, playerid);
+                return 1;
+	        }
 	    }
 	}
 	
@@ -1981,20 +2224,16 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 
 stock CreateDropOnDeath(const playerid, const killerid) {
 	new Float:pos[3];
-	new type[2] = { BULLETS_PICKUP, MEAT_PICKUP };
- 	new index = random(sizeof(type));
-
 	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
-  	CreatePickupEx(type[index], STATIC_PICKUP_TYPE, pos[0], pos[1], pos[2], GetPlayerVirtualWorld(playerid), IsPlayerConnected(killerid) ? killerid : -1);
+  	CreatePickupEx(MEAT_PICKUP, STATIC_PICKUP_TYPE, pos[0], pos[1], pos[2], GetPlayerVirtualWorld(playerid), playerid, IsPlayerConnected(killerid) ? killerid : -1);
   	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
   	
   	ProceedClassAbility(playerid, ABILITY_BOOMER);
-  	ProceedClassAbility(playerid, ABILITY_BOOMER_JUMPER);
 	return 1;
 }
 
 bool:IsValidPickupEx(const pickupid) {
-	return (pickupid < 0 || pickupid >= (MAX_PICKUPS - 1)) ? false : Pickups[pickupid][is_active];
+	return (pickupid < 0 || pickupid >= (MAX_PICKUPS - 1)) ? false : Pickups[pickupid][pcdIsActive];
 }
 
 bool:IsAbleToPickup(const playerid, const pickupid) {
@@ -2002,33 +2241,35 @@ bool:IsAbleToPickup(const playerid, const pickupid) {
 	    return false;
 	}
 	
-	return Pickups[pickupid][pcd_for_player] == -1 || !IsPlayerConnected(playerid) ||
-	playerid == Pickups[pickupid][pcd_for_player] || gettime() >= Pickups[pickupid][pcd_protection_till];
+	return Pickups[pickupid][pcdForPlayer] == -1 || !IsPlayerConnected(playerid) ||
+	playerid == Pickups[pickupid][pcdForPlayer] || gettime() >= Pickups[pickupid][pcdProtectionTill];
 }
 
-stock CreatePickupEx(const pickupid, const type, const Float:x, const Float:y, const Float:z, const world, const playerid = -1) {
+stock CreatePickupEx(const pickupid, const type, const Float:x, const Float:y, const Float:z, const world, const playerid = -1, const killerid = -1) {
 	if(pickupid < 0) {
 	    return pickupid;
 	}
 
 	new id = CreatePickup(pickupid, type, x, y, z, world);
     if(id >= 0 && pickupid <= MAX_PICKUPS) {
-	 	Pickups[id][pcd_id] = id;
-	 	Pickups[id][pcd_model] = pickupid;
-	 	Pickups[id][pcd_protection_till] = gettime() + ServerConfig[svCfgPickupProtection];
-	 	Pickups[id][pcd_for_player] = playerid;
-	 	Pickups[id][is_active] = true;
+	 	Pickups[id][pcdId] = id;
+	 	Pickups[id][pcdModel] = pickupid;
+	 	Pickups[id][pcdProtectionTill] = gettime() + ServerConfig[svCfgPickupProtection];
+	 	Pickups[id][pcdFromPlayer] = playerid;
+	 	Pickups[id][pcdForPlayer] = killerid;
+	 	Pickups[id][pcdIsActive] = true;
 	}
 	return id;
 }
 
 stock DestroyPickupEx(const pickupid) {
     if(IsValidPickupEx(pickupid)) {
-        Pickups[pickupid][pcd_id] = -1;
-        Pickups[pickupid][pcd_model] = -1;
-	 	Pickups[pickupid][pcd_protection_till] = 0;
-	 	Pickups[pickupid][pcd_for_player] = -1;
-	 	Pickups[pickupid][is_active] = false;
+        Pickups[pickupid][pcdId] = -1;
+        Pickups[pickupid][pcdModel] = -1;
+	 	Pickups[pickupid][pcdProtectionTill] = 0;
+	 	Pickups[pickupid][pcdFromPlayer] = -1;
+	 	Pickups[pickupid][pcdForPlayer] = -1;
+	 	Pickups[pickupid][pcdIsActive] = false;
     }
     DestroyPickup(pickupid);
 }
@@ -2184,13 +2425,27 @@ stock ResetValuesOnDisconnect(const playerid) {
     	ServerConfig[svCfgCurrentOnline]--;
     }
     
-    if(Map[mpTeamCount][0] >= 1 && GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
-        Map[mpTeamCount][0]--;
+     switch(GetPlayerTeamEx(playerid)) {
+        case TEAM_ZOMBIE: {
+            if(Map[mpTeamCount][0] >= 1) {
+        		Map[mpTeamCount][0]--;
+    		}
+    		
+			Iter_Remove(Zombies, playerid);
+        }
+        case TEAM_HUMAN: {
+            if(Map[mpTeamCount][1] >= 1) {
+        		Map[mpTeamCount][1]--;
+    		}
+    		
+            Iter_Remove(Humans, playerid);
+        }
     }
     
-    if(Map[mpTeamCount][1] >= 1 && GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
-        Map[mpTeamCount][1]--;
-    }
+    Iter_Remove(MutatedPlayers, playerid);
+	Iter_Remove(RadioactivePlayers, playerid);
+	Iter_Remove(NursePlayers, playerid);
+	Iter_Remove(SupportPlayers, playerid);
     
     Round[playerid][rdIsHumanHero] = false;
 	Round[playerid][rdIsZombieBoss] = false;

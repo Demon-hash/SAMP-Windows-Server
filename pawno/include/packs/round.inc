@@ -10,6 +10,8 @@ enum ROUND_DATA {
 	bool:rdIsHumanHero,
 	bool:rdIsZombieBoss,
 	bool:rdIsInfected,
+	bool:rdIsAdvanceInfected,
+	bool:rdIsInRadioactiveField,
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
 };

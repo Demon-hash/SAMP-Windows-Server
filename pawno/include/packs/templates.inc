@@ -346,13 +346,12 @@
 	`armour` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
     	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
+	`ability_time` int(3) unsigned NOT NULL default '15',\
     	`skin` int(3) unsigned NOT NULL default '181',\
 	`ability` varchar(24) NOT NULL default '',\
 	`immunity` varchar(24) NOT NULL default '',\
 	`weapons` varchar(24) NOT NULL default '',\
 	`distance` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
-	`animation` int(5) unsigned NOT NULL default '0',\
-	`animation_time` int(4) unsigned NOT NULL default '0',\
     	`disabled` int(1) unsigned NOT NULL default '1',\
    	PRIMARY KEY (`id`)\
 );"
@@ -387,6 +386,7 @@
 	`vehicle_damage` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
 	`min_zombies_to_win` int(3) unsigned NOT NULL default '2',\
 	`max_weapon_ammo` int(5) unsigned NOT NULL default '1000',\
+	`curing_weapon` int(2) unsigned NOT NULL default '33',\
 	`name` varchar(64) NOT NULL default '',\
 	`mode` varchar(64) NOT NULL default '',\
 	`discord` varchar(64) NOT NULL default '',\
@@ -578,7 +578,7 @@
 	(1, 'Civillian', 'Гражданский', 'Silinced Pistol, Shotgun', 'Тихий пистолет, Дробовик'),\
 	(2, 'Policeman', 'Полицейский', 'Deagle, Shotgun', 'Дигл, Дробовик'),\
 	(3, 'Farmer', 'Фермер', 'Rifle', 'Винтовка'),\
-	(4, 'Medic', 'Медик', 'Can cure humans', 'Может лечить людей'),\
+	(4, 'Medic', 'Медик', 'Shooting From Rifle Cure Humans', 'Выстрел Из Винтовки Лечит Людей'),\
 	(5, 'Scout', 'Скаут', 'Sniper', 'Снайперская винтовка'),\
 	(6, 'Warm Person', 'Человек в шубе', 'Can not be freezed', 'Не может замерзнуть'),\
 	(7, 'Mi7', 'Mi7', 'M4, Deagle', 'M4, Дигл'),\
@@ -597,7 +597,7 @@
 	(17, 'Sheriff', 'Шериф', 'Taser', 'Электрошокер'),\
 	(18, 'Priest', 'Священник', 'Anti-Curse Field', 'Защитное Поле От Проклятья'),\
 	(19, 'Athlete', 'Атлет', 'Long Jumps', 'Длинные прыжки'),\
-	(20, 'Nurse', 'Медсестра', 'Anti-Infection Field, Anti-Radioactive Field', 'Защитное Поле От Инфекции И Радиации'),\
+	(20, 'Nurse', 'Медсестра', 'Cure Field, Anti-Radioactive Field', 'Лечащее Поле, Анти-Радиационное поле'),\
 	(21, 'Iron Man', 'Железный Человек', 'Fast Run, High Jumps, Immunity', 'Быстрый бег, Высокие прыжки, Иммунитет'),\
 	(22, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
 	(23, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
@@ -606,7 +606,7 @@
 
 #define PREDIFINED_LOCALE_CLASSES_30 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
 	(25, 'Standard Zombie', 'Обычный Зомби', 'Can Infect', 'Может Заразить'),\
-	(26, 'Flesher Zombie', 'Токсичный Зомби', 'Infected Meat', 'Зараженное Мясо'),\
+	(26, 'Flesher Zombie', 'Гнилой Зомби', 'Infected Meat', 'Зараженное Мясо'),\
 	(27, 'Regenerator Zombie', 'Регенератор Зомби', 'Can Regenerate HP', 'Может Восстанавливать ХП'),\
 	(28, 'Support Zombie', 'Зомби Поддержка', 'Heals In A Range', 'Восстанавливает ХП В Радиусе'),\
 	(29, 'Stealer Zombie', 'Вор Зомби', 'Can Steal Armour', 'Может Украсть Броню'),\
@@ -621,7 +621,7 @@
 "
 
 #define PREDIFINED_LOCALE_CLASSES_40 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
-	(38, 'Freezer Zombie', 'Холодный Зомби', 'Can Freeze', 'Может Заморозить'),\
+	(38, 'Freezer Zombie', 'Холодный Зомби', 'Freezes On Death', 'Может Заморозить При Смерти'),\
 	(39, 'Radioactive Zombie', 'Радиоактивный Зомби', 'Radioactive Field', 'Радиоактивное Поле'),\
 	(40, 'Flash Zombie', 'Невероятно Быстрый Зомби', 'Lighting Attack', 'Мгновенная атака'),\
 	(41, 'Spitter Zombie', 'Плюющийся Зомби', 'Can Infect In A Range', 'Может Заразить С Расстояния'),\
@@ -638,7 +638,7 @@
 	(1, 2, 0, '', '', '23, 25', 0, 121, 0),\
 	(2, 2, 500, '', '', '24, 25', 0, 280, 0),\
 	(3, 2, 1500, '', '', '33, 25', 0, 158, 0),\
-	(4, 2, 3000, 'MEDIC', '', '24, 25', 0, 275, 0),\
+	(4, 2, 3000, 'MEDIC', '', '24, 33', 0, 275, 0),\
 	(5, 2, 5000, '', '', '23, 34', 0, 294, 0),\
 	(6, 2, 10000, 'WARM PERSON', '', '24, 25', 0, 249, 0),\
 	(7, 2, 15000, '', '', '24, 31', 0, 164, 0),\
@@ -663,7 +663,7 @@
 
 #define PREDIFINED_ZOMBIES "INSERT IGNORE INTO classes (id, team, points, ability, immunity, weapons, cooldown, skin, disabled) VALUES \
 	(25, 1, 0, 'Standard', '', '', 0, 181, 0),\
-	(26, 1, 0, 'Flesher', '', '', 0, 77, 0),\
+	(26, 1, 0, 'Flesher', '', '', 0, 181, 0),\
 	(27, 1, 0, 'Regenerator', '', '', 0, 70, 0),\
 	(28, 1, 0, 'Support', '', '', 0, 75, 0),\
 	(29, 1, 0, 'Stealer', '', '', 0, 209, 0),\
@@ -737,7 +737,7 @@
 
 #define PREDIFINED_LOCALIZATION_2 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
 	(17, 'Restarting', 'Перезагрузка'),\
-	(18, '>> %s has made to the evacuation point!', '>> Игрок %s эвакуировался!'),\
+	(18, '>> %s has made it to the evacuation point!', '>> Игрок %s эвакуировался!'),\
 	(19, '>> ALL SURVIVORS EVACUATED!', '>> Все выжившие добрались до пункта эвакуации!'),\
 	(20, '>> Under protection {FFFFFF}%d{FF0000} seconds left!', '>> Под защитой, до снятия {FFFFFF}%d{FF0000} секунд'),\
 	(21, '(by %s)', '(автор %s)'),\
@@ -786,5 +786,15 @@
 	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),\
 	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),\
 	(60, '>> Kill the last human and receive extra %s!', '>> Убейте последнего выжевшего и получите дополнительные %s!'),\
-	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!');\
+	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!'),\
+	(62, '>> Player %s has been infected by standard zombie %s!', '>> Игрок %s был заражен обычным зомби %s!'),\
+	(63, '>> Player %s has been infected by %s! (by air)', '>> Игрок %s был заражен от %s! (по воздуху)'),\
+	(64, '>> Player %s has been infected by flesher zombie %s! (by meat)', '>> Игрок %s был заражен гнилым зомби %s! (через мясо)'),\
+	(65, '>> Player %s has been infected by spore zombie %s!', '>> Игрок %s был заражен через споры от зомби %s!'),\
+	(66, '>> Player %s has been infected by spitter zombie %s!', '>> Игрок %s был заражен плевком от зомби %s!'),\
+	(67, '>> Player %s has been infected by explosion from %s!', '>> Игрок %s был заражен взрывом от зомби %s!'),\
+	(68, '>> Player %s has blown up and infected{FFFFFF} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} %d человек(а)!'),\
+	(69, '>> Player %s has blown up and infected{FFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
+	(70, '>> Player %s has been cured by nurse field!', '>> Игрок %s был выличен полем медсестры!'),\
+	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)');\
 "

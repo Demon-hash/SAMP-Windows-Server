@@ -44,3 +44,181 @@ v0.3.7-R2, (C)2005-2015 SA-MP Team
 
 [19:38:55]   Loaded 1 filterscripts.
 
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[07:35:38] 
+[07:35:38] Server Plugins
+[07:35:38] --------------
+[07:35:38]  Loading plugin: mysql
+[07:35:38]  >> plugin.mysql: R41-4 successfully loaded.
+[07:35:38]   Loaded.
+[07:35:38]  Loading plugin: dc_cmd
+[07:35:38]   Daniel's CMD plugin v2.8
+[07:35:38]     (c) 2014 Daniel_Cortez
+[07:35:38] 	www.pro-pawn.ru
+[07:35:38]   Loaded.
+[07:35:38]  Loading plugin: sscanf
+[07:35:38] 
+[07:35:38]  ===============================
+[07:35:38] 
+[07:35:38]       sscanf plugin loaded.     
+[07:35:38] 
+[07:35:38]          Version: 2.13.8
+[07:35:38] 
+[07:35:38]    (c) 2022 Alex "Y_Less" Cole  
+[07:35:38] 
+[07:35:38]  ===============================
+[07:35:38] 
+[07:35:38]   Loaded.
+[07:35:38]  Loaded 3 plugins.
+
+[07:35:38] 
+[07:35:38] Filterscripts
+[07:35:38] ---------------
+[07:35:38]   Loading filterscript 'aview.amx'...
+[07:35:38] 
+         Animation Browser
+[07:35:38]               v1.0
+[07:35:38]              SoNik))
+
+[07:35:38]   Loaded 1 filterscripts.
+
+[07:35:47] Started at 07:35:47 on 12/07/2023... | Status: 0
+[07:35:47] Number of vehicle models: 0
+[07:35:47] weburl = "www.sa-mp.com"  (string)
+[07:35:47] language = "English"  (string)
+[07:35:47] (1): Server configuration LOADED
+[07:35:47] (2): Server gangs configuration LOADED
+[07:35:47] (3): Round configuration LOADED
+[07:35:47] (4): Evacuation configuration LOADED
+[07:35:47] (5): Map configuration LOADED
+[07:35:47] (6): Weapons configuration LOADED (16 / 16)
+[07:35:47] (7): Balance configuration LOADED
+[07:35:47] (8): Textures configuration LOADED (6 / 6)
+[07:35:47] (8): Classes loaded (48 / 48)
+[07:35:47] (8): Loaded 1 maps in total
+[07:35:58] [connection] 127.0.0.1:58486 requests connection cookie.
+[07:35:59] [connection] incoming connection: 127.0.0.1:58486 id: 0
+[07:35:59] [join] Taxa has joined the server (0:127.0.0.1)
+[07:36:03]   Filterscript 'village.amx' unload failed.
+[07:36:03]   Filterscript 'village.amx' loaded.
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[10:01:16] 
+[10:01:16] Server Plugins
+[10:01:16] --------------
+[10:01:16]  Loading plugin: mysql
+[10:01:16]  >> plugin.mysql: R41-4 successfully loaded.
+[10:01:16]   Loaded.
+[10:01:16]  Loading plugin: dc_cmd
+[10:01:16]   Daniel's CMD plugin v2.8
+[10:01:16]     (c) 2014 Daniel_Cortez
+[10:01:16] 	www.pro-pawn.ru
+[10:01:16]   Loaded.
+[10:01:16]  Loading plugin: sscanf
+[10:01:16] 
+[10:01:16]  ===============================
+[10:01:16] 
+[10:01:16]       sscanf plugin loaded.     
+[10:01:16] 
+[10:01:16]          Version: 2.13.8
+[10:01:16] 
+[10:01:16]    (c) 2022 Alex "Y_Less" Cole  
+[10:01:16] 
+[10:01:16]  ===============================
+[10:01:16] 
+[10:01:16]   Loaded.
+[10:01:16]  Loaded 3 plugins.
+
+[10:01:16] 
+[10:01:16] Filterscripts
+[10:01:16] ---------------
+[10:01:16]   Loading filterscript 'aview.amx'...
+[10:01:16] 
+         Animation Browser
+[10:01:16]               v1.0
+[10:01:16]              SoNik))
+
+[10:01:16]   Loaded 1 filterscripts.
+
+[10:01:25] Started at 10:01:25 on 12/07/2023... | Status: 0
+[10:01:25] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[10:01:55] 
+[10:01:55] Server Plugins
+[10:01:55] --------------
+[10:01:55]  Loading plugin: mysql
+[10:01:55]  >> plugin.mysql: R41-4 successfully loaded.
+[10:01:55]   Loaded.
+[10:01:55]  Loading plugin: dc_cmd
+[10:01:55]   Daniel's CMD plugin v2.8
+[10:01:55]     (c) 2014 Daniel_Cortez
+[10:01:55] 	www.pro-pawn.ru
+[10:01:55]   Loaded.
+[10:01:55]  Loading plugin: sscanf
+[10:01:55] 
+[10:01:55]  ===============================
+[10:01:55] 
+[10:01:55]       sscanf plugin loaded.     
+[10:01:55] 
+[10:01:55]          Version: 2.13.8
+[10:01:55] 
+[10:01:55]    (c) 2022 Alex "Y_Less" Cole  
+[10:01:55] 
+[10:01:55]  ===============================
+[10:01:55] 
+[10:01:55]   Loaded.
+[10:01:55]  Loaded 3 plugins.
+
+[10:01:55] 
+[10:01:55] Filterscripts
+[10:01:55] ---------------
+[10:01:55]   Loading filterscript 'aview.amx'...
+[10:01:56] 
+         Animation Browser
+[10:01:56]               v1.0
+[10:01:56]              SoNik))
+
+[10:01:56]   Loaded 1 filterscripts.
+
+[10:02:04] Started at 10:02:04 on 12/07/2023... | Status: 0
+[10:02:04] Number of vehicle models: 0
+[10:02:04] weburl = "www.sa-mp.com"  (string)
+[10:02:04] language = "English"  (string)
+[10:02:04] (1): Server configuration LOADED
+[10:02:04] (2): Server gangs configuration LOADED
+[10:02:04] (3): Round configuration LOADED
+[10:02:04] (4): Evacuation configuration LOADED
+[10:02:04] (5): Map configuration LOADED
+[10:02:04] (6): Weapons configuration LOADED (16 / 16)
+[10:02:04] (7): Balance configuration LOADED
+[10:02:04] (8): Textures configuration LOADED (6 / 6)
+[10:02:04] (8): Classes loaded (48 / 48)
+[10:02:04] (8): Loaded 1 maps in total
+[10:02:14] [connection] 127.0.0.1:52322 requests connection cookie.
+[10:02:15] [connection] incoming connection: 127.0.0.1:52322 id: 0
+[10:02:15] [join] Taxa has joined the server (0:127.0.0.1)
+[10:02:18]   Filterscript 'village.amx' unload failed.
+[10:02:18]   Filterscript 'village.amx' loaded.
