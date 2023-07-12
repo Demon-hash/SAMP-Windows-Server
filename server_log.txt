@@ -7,55 +7,55 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[16:27:21] 
-[16:27:21] Server Plugins
-[16:27:21] --------------
-[16:27:21]  Loading plugin: mysql
-[16:27:21]  >> plugin.mysql: R41-4 successfully loaded.
-[16:27:21]   Loaded.
-[16:27:21]  Loading plugin: dc_cmd
-[16:27:21]   Daniel's CMD plugin v2.8
-[16:27:21]     (c) 2014 Daniel_Cortez
-[16:27:21] 	www.pro-pawn.ru
-[16:27:21]   Loaded.
-[16:27:21]  Loading plugin: sscanf
-[16:27:21] 
-[16:27:21]  ===============================
-[16:27:21] 
-[16:27:21]       sscanf plugin loaded.     
-[16:27:21] 
-[16:27:21]          Version: 2.13.8
-[16:27:21] 
-[16:27:21]    (c) 2022 Alex "Y_Less" Cole  
-[16:27:21] 
-[16:27:21]  ===============================
-[16:27:21] 
-[16:27:21]   Loaded.
-[16:27:21]  Loaded 3 plugins.
+[18:27:37] 
+[18:27:37] Server Plugins
+[18:27:37] --------------
+[18:27:37]  Loading plugin: mysql
+[18:27:37]  >> plugin.mysql: R41-4 successfully loaded.
+[18:27:37]   Loaded.
+[18:27:37]  Loading plugin: dc_cmd
+[18:27:37]   Daniel's CMD plugin v2.8
+[18:27:37]     (c) 2014 Daniel_Cortez
+[18:27:37] 	www.pro-pawn.ru
+[18:27:37]   Loaded.
+[18:27:37]  Loading plugin: sscanf
+[18:27:37] 
+[18:27:37]  ===============================
+[18:27:37] 
+[18:27:37]       sscanf plugin loaded.     
+[18:27:37] 
+[18:27:37]          Version: 2.13.8
+[18:27:37] 
+[18:27:37]    (c) 2022 Alex "Y_Less" Cole  
+[18:27:37] 
+[18:27:37]  ===============================
+[18:27:37] 
+[18:27:37]   Loaded.
+[18:27:37]  Loaded 3 plugins.
 
-[16:27:21] 
-[16:27:21] Filterscripts
-[16:27:21] ---------------
-[16:27:21]   Loading filterscript 'aview.amx'...
-[16:27:21] 
+[18:27:37] 
+[18:27:37] Filterscripts
+[18:27:37] ---------------
+[18:27:37]   Loading filterscript 'aview.amx'...
+[18:27:37] 
          Animation Browser
-[16:27:21]               v1.0
-[16:27:21]              SoNik))
+[18:27:37]               v1.0
+[18:27:37]              SoNik))
 
-[16:27:21]   Loaded 1 filterscripts.
+[18:27:37]   Loaded 1 filterscripts.
 
-[16:27:29] Started at 16:27:29 on 12/07/2023... | Status: 0
-[16:27:29] Number of vehicle models: 0
-[16:27:29] weburl = "www.sa-mp.com"  (string)
-[16:27:29] language = "English"  (string)
-[16:27:29] (1): Server configuration LOADED
-[16:27:29] (2): Gangs configuration LOADED
-[16:27:29] (3): Round configuration LOADED
-[16:27:29] 4): Evacuation configuration LOADED
-[16:27:29] (5): Map configuration LOADED
-[16:27:29] (6): Weapons configuration LOADED (16 / 16)
-[16:27:29] (7): Balance configuration LOADED
-[16:27:29] (8): Textures configuration LOADED (6 / 6)
-[16:27:29] (9): Classes configuration LOADED
-[16:27:29] (8): Classes loaded (48 / 48)
-[16:27:29] (8): Loaded 1 maps in total
+[18:27:45] Started at 18:27:45 on 12/07/2023... | Status: 0
+[18:27:45] Number of vehicle models: 0
+[18:27:45] weburl = "www.sa-mp.com"  (string)
+[18:27:45] language = "English"  (string)
+[18:27:45] (1): Server configuration LOADED
+[18:27:45] (2): Gangs configuration LOADED
+[18:27:45] (3): Round configuration LOADED
+[18:27:45] (4): Evacuation configuration LOADED
+[18:27:45] (5): Map configuration LOADED
+[18:27:45] (6): Weapons configuration LOADED (16 / 16)
+[18:27:45] (7): Balance configuration LOADED
+[18:27:45] (8): Textures configuration LOADED (6 / 6)
+[18:27:45] (9): Classes configuration LOADED
+[18:27:45] (8): Classes loaded (48 / 48)
+[18:27:45] (8): Loaded 1 maps in total

@@ -32,16 +32,21 @@ enum CLASSES_SELECTION_DATA {
 
 enum CLASSES_CONFIG_DATA {
 	clsCfgWhoppingWhen,
+	clsCfgFlasherEffectId,
+	clsCfgFlasherEffectTime,
+	clsCfgFlasherExplosionType,
 	Float:clsCfgRadioactiveDamage,
 	Float:clsCfgRegenHealth,
 	Float:clsCfgSupportHealth,
 	Float:clsCfgStomp[3],
 	Float:clsCfgStomperEffectPos[3],
+	Float:clsCfgFlasherExplosionRange,
 	clsCfgStomperEffectId,
 	clsCfgStomperEffectTime,
 };
 
 enum {
+	ABILITY_NONE = 0,
 	ABILITY_INFECT,
 	ABILITY_FLESHER,
 	ABILITY_REGENERATOR,
@@ -49,7 +54,6 @@ enum {
 	ABILITY_STEALER,
 	ABILITY_BOOMER,
 	ABILITY_JUMPER,
-	ABILITY_BOOMER_JUMPER,
 	ABILITY_MEGA_JUMPER,
 	ABILITY_STOMPER,
 	ABILITY_KAMIKAZE,
@@ -61,7 +65,6 @@ enum {
 	ABILITY_SPITTER,
 	ABILITY_MUTATED,
 	ABILITY_SPORE,
-	ABILITY_FAST,
 	ABILITY_ENFORCER,
 	ABILITY_WITCH,
 	ABILITY_MIRROR,

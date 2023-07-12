@@ -349,6 +349,7 @@
 	`regeneration` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`support` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
 	`stomper_effect` varchar(64) NOT NULL default '18675,0.0,0.0,0.0,-1.2,1000',\
+	`flasher_effect` varchar(64) NOT NULL default '18693,10,2,15.0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -390,6 +391,7 @@
 	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`ability` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`infection_damage` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`curse_damage` DECIMAL(9,2) unsigned NOT NULL default '4.0',\
 	`fists_damage` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`infection_drunk` int(6) unsigned NOT NULL default '50000',\
 	`max_auth_timeout` int(3) unsigned NOT NULL default '2',\
@@ -697,7 +699,7 @@
 	(37, 1, 75000, 'Mimic', '', '', 0, 121, 0),\
 	(38, 1, 45000, 'Freezer', '', '', 0, 137, 0),\
 	(39, 1, 50000, 'Radioactive', '', '', 0, 146, 0),\
-	(40, 1, 175000, 'Flash', '', '', 0, 230, 0),\
+	(40, 1, 35000, 'Flash', '', '', 0, 230, 0),\
 	(41, 1, 125000, 'Spitter', '', '', 0, 212, 0),\
 	(42, 1, 150000, 'Mutated', '', '', 0, 200, 0),\
 	(43, 1, 250000, 'Spore', '', '', 0, 136, 0),\
@@ -822,5 +824,6 @@
 	(74, '~g~Antidote', '~g~Антидот'),\
 	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
 	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
-	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!');\
+	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!'),\
+	(78, '~w~You_are_~g~Cursed~n~~r~Kill~w~_humans_to_survive', '~w~Вы_~g~прокляты~n~~r~Убивайте~w~_людей_чтобы_жить');\
 "

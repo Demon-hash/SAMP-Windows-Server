@@ -73,6 +73,7 @@ static
 		Iterator:MutatedPlayers<MAX_PLAYERS>,
 		Iterator:RadioactivePlayers<MAX_PLAYERS>,
 		Iterator:NursePlayers<MAX_PLAYERS>,
+		Iterator:PriestPlayers<MAX_PLAYERS>,
 		Iterator:SupportPlayers<MAX_PLAYERS>;
 
 /*
@@ -88,6 +89,8 @@ static
 	- Anticheat
 	- Random messages
 	- Random questions
+	- Promo codes
+	- Custom tags
 */
 
 /*
@@ -135,7 +138,7 @@ static
 #define SV_CFG_CONSOLE_LOG "(1): Server configuration"
 #define GS_CFG_CONSOLE_LOG "(2): Gangs configuration"
 #define RD_CFG_CONSOLE_LOG "(3): Round configuration"
-#define EVC_CFG_CONSOLE_LOG "4): Evacuation configuration"
+#define EVC_CFG_CONSOLE_LOG "(4): Evacuation configuration"
 #define MAP_CFG_CONSOLE_LOG "(5): Map configuration"
 #define WPS_CFG_CONSOLE_LOG "(6): Weapons configuration"
 #define BLC_CFG_CONSOLE_LOG "(7): Balance configuration"
@@ -154,6 +157,7 @@ public OnGameModeInit() {
 	Iter_Clear(MutatedPlayers);
 	Iter_Clear(RadioactivePlayers);
 	Iter_Clear(NursePlayers);
+	Iter_Clear(PriestPlayers);
 	Iter_Clear(SupportPlayers);
 	Iter_Clear(Humans);
 	Iter_Clear(Zombies);
@@ -442,6 +446,11 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 
 public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart) {
 	if(GetPlayerTeamEx(playerid) == GetPlayerTeamEx(issuerid)) {
+	    if(IsCursed(issuerid)) {
+	        SetPlayerHealthAC(issuerid, GetPlayerHealthEx(issuerid) + amount);
+	        SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - amount);
+	    }
+	
 	    return 1;
 	}
 
@@ -695,6 +704,11 @@ custom Update() {
 	        	TextDrawShowForPlayer(playerid, ServerTextures[infectedTexture]);
 	        	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
 	        	SetPlayerDrunkLevel(playerid, ServerConfig[svCfgInfectionDrunkLevel]);
+    		}
+    		
+    		if(IsCursed(playerid)) {
+    		    GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISLPAY_CURSE]), 5000, 5);
+    		    SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgCurseDamage]);
     		}
     		
     		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
@@ -1030,6 +1044,12 @@ custom OnMapUpdate() {
 	        ProceedClassAbility(playerid, ABILITY_CURE_FIELD, targetid);
 	    }
 	}
+	
+	foreach(PriestPlayers, playerid) {
+	    foreach(Humans, targetid) {
+	        ProceedClassAbility(playerid, ABILITY_HOLY_FIELD, targetid);
+	    }
+	}
 
 	foreach(RadioactivePlayers, playerid) {
 	    foreach(Humans, targetid) {
@@ -1111,8 +1131,18 @@ custom GetUserAccountId(const playerid) {
     return 1;
 }
 
-custom DestroyObjectEffect(&objectid) {
-	DestroyObjectEx(objectid);
+custom DestroyObjectEffect(const objectid) {
+	DestroyObject(objectid);
+}
+
+custom DestroyObjectEffectAndExplosion(const objectid, const Float:x, const Float:y, const Float:z) {
+    DestroyObject(objectid);
+	CreateExplosion(x, y, z, ClassesConfig[clsCfgFlasherExplosionType], ClassesConfig[clsCfgFlasherExplosionRange]);
+}
+
+custom MovePlayerAfterEffect(const playerid, const Float:x, const Float:y, const Float:z) {
+	SetPlayerPos(playerid, x, y, z);
+	ClearAnimations(playerid);
 }
 
 custom KickForAuthTimeout(const playerid) {
@@ -1137,6 +1167,8 @@ custom LoadServerConfiguration() {
         cache_get_value_name_int(0, "antidote_chance", ServerConfig[svCfgAntidoteChance]);
 
         cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
+        cache_get_value_name_float(0, "curse_damage", ServerConfig[svCfgCurseDamage]);
+        
         cache_get_value_name_float(0, "vehicle_damage", ServerConfig[svCfgVehicleDamage]);
         cache_get_value_name_float(0, "spawn_range", ServerConfig[svCfgSpawnRange]);
         cache_get_value_name_float(0, "fists_damage", ServerConfig[svCfgZombieFistsDamage]);
@@ -1362,6 +1394,14 @@ custom LoadClassesConfiguration() {
 		sscanf(buff, "p<,>ifffi", ClassesConfig[clsCfgStomperEffectId],
 			ClassesConfig[clsCfgStomperEffectPos][0], ClassesConfig[clsCfgStomperEffectPos][1],
 			ClassesConfig[clsCfgStomperEffectPos][2], ClassesConfig[clsCfgStomperEffectTime]
+		);
+		
+		
+		cache_get_value_name(0, "flasher_effect", buff);
+		sscanf(buff, "p<,>iiif", ClassesConfig[clsCfgFlasherEffectId],
+			ClassesConfig[clsCfgFlasherEffectTime],
+			ClassesConfig[clsCfgFlasherExplosionType],
+			ClassesConfig[clsCfgFlasherExplosionRange]
 		);
 		
 		printf(""CLS_CFG_CONSOLE_LOG" LOADED");
@@ -1836,7 +1876,7 @@ stock ClearPlayerRoundData(const playerid) {
     Round[playerid][rdIsInfected] = false;
     Round[playerid][rdIsAdvanceInfected] = false;
 	Round[playerid][rdIsInRadioactiveField] = false;
-	Round[playerid][rdIsInHolyField] = false;
+	Round[playerid][rdIsCursed] = false;
     
     SetPlayerDrunkLevel(playerid, 0);
     TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
@@ -1894,9 +1934,8 @@ stock ProceedClassAbility(const playerid, const abilityid, const targetid = -1, 
 			case ABILITY_CURE_FIELD: CurePlayerInField(targetid, playerid);
 	        case ABILITY_REGENERATOR: RegenerateHealth(playerid, playerid, ClassesConfig[clsCfgSupportHealth]);
 	        case ABILITY_MIRROR: MirrorDamageBack(targetid, playerid, amount);
-	        
-	        
-			case ABILITY_HOLY_FIELD: HolyPlayerInField(targetid, playerid);
+			case ABILITY_HOLY_FIELD: PlayerInHolyField(targetid, playerid);
+			
 			case ABILITY_FREEZER: FreezeOnDeath(playerid, Classes[classid][cldDistance]);
 			
 			/*case ABILITY_JUMPER:
@@ -2116,11 +2155,15 @@ stock bool:IsAbleToBeStomped(const playerid) {
 }
 
 stock bool:IsAbleToBeCursed(const playerid) {
-	if(!Round[playerid][rdIsInHolyField]) {
+	if(!Round[playerid][rdIsCursed]) {
 	    return true;
 	}
 	
 	return false;
+}
+
+stock bool:IsCursed(const playerid) {
+    return Round[playerid][rdIsCursed];
 }
 
 stock bool:IsInfected(const playerid) {
@@ -2290,8 +2333,6 @@ stock StealArmour(const playerid, const classid) {
 	return 0;
 }
 
-/*	LD_MSG_ABSOLVE_SINS */
-
 stock StompHumans(const playerid, const classid) {
     new Float:pos[3], count, objectid;
     
@@ -2343,15 +2384,45 @@ stock CurseHuman(const playerid, const classid) {
 }
 
 stock FlashAttackOnHuman(const playerid) {
-
+     new targetid = Iter_Random(Humans);
+     if(IsPlayerConnected(targetid)) {
+        new Float:pos[3], Float:old[3], objectid;
+        GetPlayerPos(playerid, old[0], old[1], old[2]);
+        GetPlayerPos(targetid, pos[0], pos[1], pos[2]);
+        
+        SetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+        GetXYInFrontOfPlayer(playerid, pos[0], pos[1], 1.0);
+        
+        objectid = CreateObject(ClassesConfig[clsCfgFlasherEffectId], pos[0], pos[1], pos[2] - 2.0, 0.0, 0.0, 0.0);
+       	SetTimerEx("DestroyObjectEffectAndExplosion", (ClassesConfig[clsCfgFlasherEffectTime] * 1000), 0, "ifff", objectid, pos[0], pos[1], pos[2]);
+       	
+       	SetTimerEx("MovePlayerAfterEffect", 900, 0, "ifff", playerid, old[0], old[1], old[2]);
+        ApplyAnimation(playerid, "CARRY", "PUTDWN", 4.1, 0, 0, 0, 0, 850);
+        return 1;
+     }
+     
+     return 0;
 }
 
-stock HolyPlayerInField(targetid, playerid) {
-
-}
 
 stock FreezeOnDeath(playerid, Float:range) {
 
+}
+
+stock PlayerInHolyField(const targetid, const playerid) {
+	if(IsCursed(targetid)) {
+	    Round[targetid][rdIsCursed] = false;
+
+	    new formated[96];
+	    foreach(Player, i) {
+	    	format(formated, sizeof(formated), Localization[i][LD_MSG_ABSOLVE_SINS], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName]);
+			SendClientMessage(i, 0xB2F558FF, formated);
+		}
+		
+		AbilityUsed(playerid);
+	}
+	
+	return 1;
 }
 
 stock CurePlayerInField(const targetid, const playerid) {
@@ -2369,6 +2440,7 @@ stock CurePlayerInField(const targetid, const playerid) {
    		format(formated, sizeof(formated), Localization[i][LD_MSG_CURE_NURSE_FIELD], Misc[playerid][mdPlayerName]);
 		SendClientMessage(i, 0xB2F558FF, formated);
 	}
+	
     return 1;
 }
 
@@ -2417,6 +2489,18 @@ stock Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
 	q += (distance * floatsin(-a, degrees));
 	w += (distance * floatcos(-a, degrees));
 	return a;
+}
+
+stock CreateObjectsCircular(objectid, Float:px, Float:py, Float:pz, Float:rx, Float:ry, ammount, Float:radius, time, Float:angle = 360.0, bool:circleangles = true, Float:rz = 0.0) {
+	if(ammount <= 1 || 0.0 <= angle > 360.0 || radius <= 0.0) {
+		return 0;
+	}
+	
+	for(new i = 0; i <= ammount; i++) {
+		new obj = CreateObject(objectid, px+floatsin((angle/ammount)*i, degrees)*radius, py+floatcos((angle/ammount)*i, degrees)*radius, pz, rx, ry, circleangles ? ((-angle/ammount)*i) : (rz));
+        SetTimerEx("DestroyObjectEffect", time * 1000, 0, "i", obj);
+	}
+	return 1;
 }
 
 stock ProceedPickupAction(const playerid, const pickupid) {
@@ -2681,6 +2765,7 @@ stock ResetValuesOnDisconnect(const playerid) {
     Iter_Remove(MutatedPlayers, playerid);
 	Iter_Remove(RadioactivePlayers, playerid);
 	Iter_Remove(NursePlayers, playerid);
+	Iter_Remove(PriestPlayers, playerid);
 	Iter_Remove(SupportPlayers, playerid);
     
     Round[playerid][rdIsHumanHero] = false;
@@ -2930,6 +3015,8 @@ CMD:test(playerid) {
 	if(Player[playerid][pAccountId] != 1) {
 	    return 0;
 	}
+	
+	FlashAttackOnHuman(playerid);
 	
 	// SetPlayerTeamAC(playerid, TEAM_HUMAN);
 	// SetByCurrentClass(playerid);

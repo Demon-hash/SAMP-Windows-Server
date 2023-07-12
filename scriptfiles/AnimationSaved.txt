@@ -2,3 +2,4 @@
 ApplyAnimation(playerid, "FIGHT_B", "FIGHTB_G", 4.1, true, false, false, false, 0, false); // stomper
 ApplyAnimation(playerid, "MISC", "BMX_IDLELOOP_01", 4.1, true, false, false, false, 0, false); // zombie
 ApplyAnimation(playerid, "FOOD", "EAT_VOMIT_P", 4.1, false, false, false, false, 0, false); // flesher
+ApplyAnimation(playerid, "CARRY", "PUTDWN", 4.1, false, false, false, false, 0, false); // flasher

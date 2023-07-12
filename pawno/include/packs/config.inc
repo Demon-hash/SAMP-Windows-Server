@@ -18,6 +18,7 @@ enum CONFIG_DATA {
 	Float:svCfgVehicleDamage,
 	Float:svCfgSpawnRange,
 	Float:svCfgZombieFistsDamage,
+	Float:svCfgCurseDamage,
 	svCfgName[64],
 	svCfgMode[64],
 	svCfgDiscord[64],
