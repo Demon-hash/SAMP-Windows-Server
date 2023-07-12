@@ -3,7 +3,7 @@
 #endif
 #define _round_pack_included
 
-#define MAX_ROUND_BOXES 6
+#define MAX_ROUND_BOXES 9
 
 enum ROUND_DATA {
 	bool:rdIsEvacuated,
@@ -12,6 +12,7 @@ enum ROUND_DATA {
 	bool:rdIsInfected,
 	bool:rdIsAdvanceInfected,
 	bool:rdIsInRadioactiveField,
+	bool:rdIsInHolyField,
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
 };

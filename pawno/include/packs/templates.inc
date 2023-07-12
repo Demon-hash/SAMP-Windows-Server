@@ -338,6 +338,20 @@
    	PRIMARY KEY (`id`)\
 );"
 
+#define CLASSES_CONFIG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS classes_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`whopping_when` int(3) unsigned NOT NULL default '5',\
+	`stomp_xyz` varchar(24) NOT NULL default '10.0,10.0,8.0',\
+	`high_jump_xyz` varchar(24) NOT NULL default '10.0,10.0,8.0',\
+	`long_jump_xyz` varchar(24) NOT NULL default '10.0,10.0,8.0',\
+	`radioactive` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
+	`regeneration` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
+	`support` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
+	`stomper_effect` varchar(64) NOT NULL default '18675,0.0,0.0,0.0,-1.2,1000',\
+   	PRIMARY KEY (`id`)\
+);"
+
 #define CLASSES_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS classes (\
 	`id` int(11) unsigned NOT NULL,\
@@ -347,6 +361,7 @@
     	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
 	`ability_time` int(3) unsigned NOT NULL default '15',\
+	`ability_count` int(3) unsigned NOT NULL default '6',\
     	`skin` int(3) unsigned NOT NULL default '181',\
 	`ability` varchar(24) NOT NULL default '',\
 	`immunity` varchar(24) NOT NULL default '',\
@@ -387,6 +402,10 @@
 	`min_zombies_to_win` int(3) unsigned NOT NULL default '2',\
 	`max_weapon_ammo` int(5) unsigned NOT NULL default '1000',\
 	`curing_weapon` int(2) unsigned NOT NULL default '33',\
+	`excluded_mirror_part` int(2) unsigned NOT NULL default '9',\
+	`meat_pickup` int(6) unsigned NOT NULL default '2804',\
+	`ammo_chance` int(3) unsigned NOT NULL default '4',\
+	`antidote_chance` int(3) unsigned NOT NULL default '3',\
 	`name` varchar(64) NOT NULL default '',\
 	`mode` varchar(64) NOT NULL default '',\
 	`discord` varchar(64) NOT NULL default '',\
@@ -563,6 +582,7 @@
 #define PREDIFINED_EVAC_CONFIG "INSERT IGNORE INTO evac_config (id) VALUES (1);"
 #define PREDIFINED_MAP_CONFIG "INSERT IGNORE INTO map_config (id) VALUES (1);"
 #define PREDIFINED_BALANCE_CONFIG "INSERT IGNORE INTO balance_config (id) VALUES (1);"
+#define PREDIFINED_CLASSES_CONFIG "INSERT IGNORE INTO classes_config (id) VALUES (1);"
 
 #define PREDIFINED_MAPS "INSERT IGNORE INTO \
 	`maps` (`id`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
@@ -598,7 +618,7 @@
 	(18, 'Priest', 'Священник', 'Anti-Curse Field', 'Защитное Поле От Проклятья'),\
 	(19, 'Athlete', 'Атлет', 'Long Jumps', 'Длинные прыжки'),\
 	(20, 'Nurse', 'Медсестра', 'Cure Field, Anti-Radioactive Field', 'Лечащее Поле, Анти-Радиационное поле'),\
-	(21, 'Iron Man', 'Железный Человек', 'Fast Run, High Jumps, Immunity', 'Быстрый бег, Высокие прыжки, Иммунитет'),\
+	(21, 'Iron Man', 'Железный Человек', 'Fast Run, High Jumps', 'Быстрый бег, Высокие прыжки'),\
 	(22, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
 	(23, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
 	(24, 'Human Queen', 'Королева', 'Long Jumps, Immunity', 'Длиные прыжки, Иммунитет');\
@@ -628,17 +648,17 @@
 	(42, 'Mutated Zombie', 'Мутированный Зомби', 'Airborne Infection', 'Воздушно-капельная Инфекция'),\
 	(43, 'Spore Zombie', 'Споровой Зомби', 'Can Infect By Spores', 'Заражает спорами'),\
 	(44, 'Fast Zombie', 'Быстрый Зомби', 'Fast Run', 'Быстрый бег'),\
-	(45, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Protection against most calibers', 'Защита от большинства калибров'),\
+	(45, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Armour', 'Броня'),\
 	(46, 'Witch Zombie', 'Зомби Ведьма', 'Can curse', 'Может проклясть'),\
 	(47, 'Mirror Zombie', 'Отражающий Зомби', 'Reflect Damage', 'Отражает урон'),\
-	(48, 'Juggernaut Zombie', 'Джагернаут Зомби', 'Armour, Remove Weapons', '300 ХП, убирает оружие');\
+	(48, 'S.W.A.T Zombie', 'Зомби Спецназовец', 'Armour, Remove Weapons', 'Броня, Убирает оружие');\
 "
 
 #define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, immunity, weapons, cooldown, skin, disabled) VALUES \
 	(1, 2, 0, '', '', '23, 25', 0, 121, 0),\
 	(2, 2, 500, '', '', '24, 25', 0, 280, 0),\
 	(3, 2, 1500, '', '', '33, 25', 0, 158, 0),\
-	(4, 2, 3000, 'MEDIC', '', '24, 33', 0, 275, 0),\
+	(4, 2, 3000, 'MEDIC', '', '24, 25, 33', 0, 275, 0),\
 	(5, 2, 5000, '', '', '23, 34', 0, 294, 0),\
 	(6, 2, 10000, 'WARM PERSON', '', '24, 25', 0, 249, 0),\
 	(7, 2, 15000, '', '', '24, 31', 0, 164, 0),\
@@ -663,29 +683,29 @@
 
 #define PREDIFINED_ZOMBIES "INSERT IGNORE INTO classes (id, team, points, ability, immunity, weapons, cooldown, skin, disabled) VALUES \
 	(25, 1, 0, 'Standard', '', '', 0, 181, 0),\
-	(26, 1, 0, 'Flesher', '', '', 0, 181, 0),\
-	(27, 1, 0, 'Regenerator', '', '', 0, 70, 0),\
-	(28, 1, 0, 'Support', '', '', 0, 75, 0),\
-	(29, 1, 0, 'Stealer', '', '', 0, 209, 0),\
-	(30, 1, 0, 'Boomer', '', '', 0, 264, 0),\
-	(31, 1, 0, 'Jumper', '', '', 0, 162, 0),\
-	(32, 1, 0, 'Jumper Boomer', '', '', 0, 162, 0),\
-	(33, 1, 0, 'Mega Jumper', '', '', 0, 162, 0),\
-	(34, 1, 0, 'Stomper', '', '', 0, 78, 0),\
-	(35, 1, 0, 'Kamikaze', '', '', 0, 241, 0),\
-	(36, 1, 0, 'Space Breaker', '', '', 0, 79, 0),\
-	(37, 1, 0, 'Mimic', '', '', 0, 121, 0),\
-	(38, 1, 0, 'Freezer', '', '', 0, 137, 0),\
-	(39, 1, 0, 'Radioactive', '', '', 0, 146, 0),\
-	(40, 1, 0, 'Flash', '', '', 0, 230, 0),\
-	(41, 1, 0, 'Spitter', '', '', 0, 212, 0),\
-	(42, 1, 0, 'Mutated', '', '', 0, 200, 0),\
-	(43, 1, 0, 'Spore', '', '', 0, 136, 0),\
-	(44, 1, 0, 'Fast', '', '', 0, 0, 0),\
-	(45, 1, 0, 'Enforcer', '', '', 0, 285, 0),\
-	(46, 1, 0, 'Witch', '', '', 0, 129, 0),\
-	(47, 1, 0, 'Mirror', '', '', 0, 135, 0),\
-	(48, 1, 0, 'Juggernaut', '', '', 0, 285, 0);\
+	(26, 1, 2500, 'Flesher', '', '', 0, 181, 0),\
+	(27, 1, 5000, 'Regenerator', '', '', 0, 70, 0),\
+	(28, 1, 7500, 'Support', '', '', 0, 75, 0),\
+	(29, 1, 500000, 'Stealer', '', '', 0, 209, 0),\
+	(30, 1, 5000, 'Boomer', '', '', 0, 264, 0),\
+	(31, 1, 15000, 'Jumper', '', '', 0, 162, 0),\
+	(32, 1, 25000, 'Jumper Boomer', '', '', 0, 162, 0),\
+	(33, 1, 30000, 'Mega Jumper', '', '', 0, 162, 0),\
+	(34, 1, 35000, 'Stomper', '', '', 0, 78, 0),\
+	(35, 1, 10000, 'Kamikaze', '', '', 0, 241, 0),\
+	(36, 1, 250000, 'Space Breaker', '', '', 0, 79, 0),\
+	(37, 1, 75000, 'Mimic', '', '', 0, 121, 0),\
+	(38, 1, 45000, 'Freezer', '', '', 0, 137, 0),\
+	(39, 1, 50000, 'Radioactive', '', '', 0, 146, 0),\
+	(40, 1, 175000, 'Flash', '', '', 0, 230, 0),\
+	(41, 1, 125000, 'Spitter', '', '', 0, 212, 0),\
+	(42, 1, 150000, 'Mutated', '', '', 0, 200, 0),\
+	(43, 1, 250000, 'Spore', '', '', 0, 136, 0),\
+	(44, 1, 400000, 'Fast', '', '', 0, 0, 0),\
+	(45, 1, 850000, 'Enforcer', '', '', 0, 285, 0),\
+	(46, 1, 600000, 'Witch', '', '', 0, 129, 0),\
+	(47, 1, 700000, 'Mirror', '', '', 0, 135, 0),\
+	(48, 1, 1000000, 'Juggernaut', '', '', 0, 285, 0);\
 "
 
 #define PREDIFINED_TEXTURES "INSERT IGNORE INTO `textures_config` (`id`, `position`, `letter_size`, `text_size`, `default_value`, `background_color`, `texture_font`, `texture_draw_color`, `texture_outline`, `texture_proportional`, `texture_shadow`, `texture_use_box`, `texture_box_color`, `texture_alignment`) VALUES \
@@ -767,7 +787,7 @@
 	(42, 'Close', 'Закрыть'),\
 	(43, 'POINTS', 'ОЧКОВ'),\
 	(44, '>> You have been spawned as a(n) %s', '>> Ваш текущий класс %s'),\
-	(45, '>> You have changed your class in a great period and was respawned!', '>> Вы успели сменить свой класс в подходящее время!'),\
+	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
 	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!'),\
 	(47, 'points', 'очков'),\
 	(48, '>> You need %.0f %s to use this class!', '>> Вам нужно %.0f %s чтобы использовать этот класс!'),\
@@ -795,6 +815,12 @@
 	(67, '>> Player %s has been infected by explosion from %s!', '>> Игрок %s был заражен взрывом от зомби %s!'),\
 	(68, '>> Player %s has blown up and infected{FFFFFF} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} %d человек(а)!'),\
 	(69, '>> Player %s has blown up and infected{FFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
-	(70, '>> Player %s has been cured by nurse field!', '>> Игрок %s был выличен полем медсестры!'),\
-	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)');\
+	(70, '>> Player %s has been cured by cure field!', '>> Игрок %s был выличен лечящем полем!'),\
+	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)'),\
+	(72, '~r~~h~Regeneration', '~r~~h~Восстановление'),\
+	(73, '~g~~h~Radioactive Field', '~g~~h~Радиоактивное Поле'),\
+	(74, '~g~Antidote', '~g~Антидот'),\
+	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
+	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
+	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!');\
 "

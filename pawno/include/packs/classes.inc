@@ -30,6 +30,17 @@ enum CLASSES_SELECTION_DATA {
 	csdName[MAX_CLASS_NAME],
 };
 
+enum CLASSES_CONFIG_DATA {
+	clsCfgWhoppingWhen,
+	Float:clsCfgRadioactiveDamage,
+	Float:clsCfgRegenHealth,
+	Float:clsCfgSupportHealth,
+	Float:clsCfgStomp[3],
+	Float:clsCfgStomperEffectPos[3],
+	clsCfgStomperEffectId,
+	clsCfgStomperEffectTime,
+};
+
 enum {
 	ABILITY_INFECT,
 	ABILITY_FLESHER,
@@ -61,6 +72,7 @@ enum {
 	ABILITY_ROCKETBOOTS,
 	ABILITY_TASER,
 	ABILITY_LONG_JUMPS,
-	ABILITY_NURSE,
+	ABILITY_CURE_FIELD,
+	ABILITY_HOLY_FIELD,
 	ABILITY_DOCTOR,
 };
