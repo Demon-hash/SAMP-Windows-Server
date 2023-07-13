@@ -15,6 +15,7 @@ enum ROUND_DATA {
 	bool:rdIsCursed,
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
+	rdBoxCount,
 };
 
 enum ROUND_SESSION_DATA {

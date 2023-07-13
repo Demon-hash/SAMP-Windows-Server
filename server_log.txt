@@ -7,68 +7,68 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[00:04:59] 
-[00:04:59] Server Plugins
-[00:04:59] --------------
-[00:04:59]  Loading plugin: crashdetect
-[00:04:59]   CrashDetect plugin 4.19.4
-[00:04:59]   Loaded.
-[00:04:59]  Loading plugin: mysql
-[00:04:59]  >> plugin.mysql: R41-4 successfully loaded.
-[00:04:59]   Loaded.
-[00:04:59]  Loading plugin: dc_cmd
-[00:04:59]   Daniel's CMD plugin v2.8
-[00:04:59]     (c) 2014 Daniel_Cortez
-[00:04:59] 	www.pro-pawn.ru
-[00:04:59]   Loaded.
-[00:04:59]  Loading plugin: sscanf
-[00:04:59] 
-[00:04:59]  ===============================
-[00:04:59] 
-[00:04:59]       sscanf plugin loaded.     
-[00:04:59] 
-[00:04:59]          Version: 2.13.8
-[00:04:59] 
-[00:04:59]    (c) 2022 Alex "Y_Less" Cole  
-[00:04:59] 
-[00:04:59]  ===============================
-[00:04:59] 
-[00:04:59]   Loaded.
-[00:04:59]  Loading plugin: jit
-[00:04:59]   JIT plugin must be loaded before 'crashdetect.DLL'
-[00:04:59]   Failed.
-[00:04:59]  Loaded 4 plugins.
+[10:01:05] 
+[10:01:05] Server Plugins
+[10:01:05] --------------
+[10:01:05]  Loading plugin: crashdetect
+[10:01:05]   CrashDetect plugin 4.19.4
+[10:01:05]   Loaded.
+[10:01:05]  Loading plugin: mysql
+[10:01:05]  >> plugin.mysql: R41-4 successfully loaded.
+[10:01:05]   Loaded.
+[10:01:05]  Loading plugin: dc_cmd
+[10:01:05]   Daniel's CMD plugin v2.8
+[10:01:05]     (c) 2014 Daniel_Cortez
+[10:01:05] 	www.pro-pawn.ru
+[10:01:05]   Loaded.
+[10:01:05]  Loading plugin: sscanf
+[10:01:05] 
+[10:01:05]  ===============================
+[10:01:05] 
+[10:01:05]       sscanf plugin loaded.     
+[10:01:05] 
+[10:01:05]          Version: 2.13.8
+[10:01:05] 
+[10:01:05]    (c) 2022 Alex "Y_Less" Cole  
+[10:01:05] 
+[10:01:05]  ===============================
+[10:01:05] 
+[10:01:05]   Loaded.
+[10:01:05]  Loading plugin: jit
+[10:01:05]   JIT plugin must be loaded before 'crashdetect.DLL'
+[10:01:05]   Failed.
+[10:01:05]  Loaded 4 plugins.
 
-[00:04:59] 
-[00:04:59] Filterscripts
-[00:04:59] ---------------
-[00:04:59]   Loading filterscript 'aview.amx'...
-[00:04:59] 
+[10:01:05] 
+[10:01:05] Filterscripts
+[10:01:05] ---------------
+[10:01:05]   Loading filterscript 'aview.amx'...
+[10:01:05] 
          Animation Browser
-[00:04:59]               v1.0
-[00:04:59]              SoNik))
+[10:01:05]               v1.0
+[10:01:05]              SoNik))
 
-[00:04:59]   Loaded 1 filterscripts.
+[10:01:05]   Loaded 1 filterscripts.
 
-[00:05:02] [connection] 127.0.0.1:59747 requests connection cookie.
-[00:05:07] Started at 00:05:07 on 13/07/2023... | Status: 0
-[00:05:07] JIT is not present
-[00:05:07] 28,11
-[00:05:07] Number of vehicle models: 0
-[00:05:07] [connection] incoming connection: 127.0.0.1:59747 id: 0
-[00:05:07] [join] Taxa has joined the server (0:127.0.0.1)
-[00:05:07] weburl = "www.sa-mp.com"  (string)
-[00:05:07] language = "English"  (string)
-[00:05:07] (1): Server configuration LOADED
-[00:05:07] (2): Gangs configuration LOADED
-[00:05:07] (3): Round configuration LOADED
-[00:05:07] (4): Evacuation configuration LOADED
-[00:05:07] (5): Map configuration LOADED
-[00:05:07] (6): Weapons configuration LOADED (16 / 16)
-[00:05:07] (7): Balance configuration LOADED
-[00:05:07] (8): Textures configuration LOADED (6 / 6)
-[00:05:07] (9): Classes configuration LOADED
-[00:05:07] (8): Classes loaded (48 / 48)
-[00:05:07] (8): Loaded 1 maps in total
-[00:05:08]   Filterscript 'village.amx' unload failed.
-[00:05:08]   Filterscript 'village.amx' loaded.
+[10:01:14] Started at 10:01:14 on 13/07/2023... | Status: 0
+[10:01:14] JIT is not present
+[10:01:14] 22
+[10:01:14] Number of vehicle models: 0
+[10:01:14] weburl = "www.sa-mp.com"  (string)
+[10:01:14] language = "English"  (string)
+[10:01:14] (1): Server configuration LOADED
+[10:01:14] (2): Gangs configuration LOADED
+[10:01:14] (3): Round configuration LOADED
+[10:01:14] (4): Evacuation configuration LOADED
+[10:01:14] (5): Map configuration LOADED
+[10:01:14] (6): Weapons configuration LOADED (16 / 16)
+[10:01:14] (7): Balance configuration LOADED
+[10:01:14] (8): Textures configuration LOADED (6 / 6)
+[10:01:14] (9): Classes configuration LOADED
+[10:01:14] (8): Classes loaded (48 / 48)
+[10:01:14] (8): Loaded 1 maps in total
+[10:01:16] [connection] 127.0.0.1:56596 requests connection cookie.
+[10:01:17] [connection] incoming connection: 127.0.0.1:56596 id: 0
+[10:01:18] [join] Taxa has joined the server (0:127.0.0.1)
+[10:01:20]   Filterscript 'village.amx' unload failed.
+[10:01:20]   Filterscript 'village.amx' loaded.

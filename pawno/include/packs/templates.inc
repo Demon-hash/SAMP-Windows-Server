@@ -343,14 +343,15 @@
 	`id` int(11) unsigned NOT NULL,\
 	`whopping_when` int(3) unsigned NOT NULL default '5',\
 	`stomp_xyz` varchar(24) NOT NULL default '10.0,10.0,8.0',\
-	`high_jump_xyz` varchar(24) NOT NULL default '10.0,10.0,8.0',\
-	`long_jump_xyz` varchar(24) NOT NULL default '10.0,10.0,8.0',\
+	`high_jump_xyz` varchar(24) NOT NULL default '1.0,1.0,10.0',\
+	`long_jump_xyz` varchar(24) NOT NULL default '1.2,1.2,0.8',\
 	`radioactive` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`regeneration` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`support` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
 	`air_range` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`stomper_effect` varchar(64) NOT NULL default '18675,0.0,0.0,0.0,-1.2,1000',\
 	`flasher_effect` varchar(64) NOT NULL default '18693,10,2,15.0',\
+	`engineer_effect` varchar(64) NOT NULL default '923,1057,15.0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -362,8 +363,8 @@
 	`armour` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
     	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
-	`ability_time` int(3) unsigned NOT NULL default '15',\
-	`ability_count` int(3) unsigned NOT NULL default '6',\
+	`time` int(3) unsigned NOT NULL default '15',\
+	`count` int(3) unsigned NOT NULL default '3',\
     	`skin` int(3) unsigned NOT NULL default '181',\
 	`ability` varchar(24) NOT NULL default '',\
 	`immunity` varchar(24) NOT NULL default '',\
@@ -837,5 +838,6 @@
 	(83, '~y~Cure Field is %s', '~y~Лечащие Поле %s'),\
 	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
 	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
-	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)');\
+	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)'),\
+	(87, '>> Player %s moved into a distorted world!', '>> Игрок %s перешел в искаженный мир!');\
 "
