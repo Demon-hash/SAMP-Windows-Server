@@ -7,68 +7,66 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[10:01:05] 
-[10:01:05] Server Plugins
-[10:01:05] --------------
-[10:01:05]  Loading plugin: crashdetect
-[10:01:05]   CrashDetect plugin 4.19.4
-[10:01:05]   Loaded.
-[10:01:05]  Loading plugin: mysql
-[10:01:05]  >> plugin.mysql: R41-4 successfully loaded.
-[10:01:05]   Loaded.
-[10:01:05]  Loading plugin: dc_cmd
-[10:01:05]   Daniel's CMD plugin v2.8
-[10:01:05]     (c) 2014 Daniel_Cortez
-[10:01:05] 	www.pro-pawn.ru
-[10:01:05]   Loaded.
-[10:01:05]  Loading plugin: sscanf
-[10:01:05] 
-[10:01:05]  ===============================
-[10:01:05] 
-[10:01:05]       sscanf plugin loaded.     
-[10:01:05] 
-[10:01:05]          Version: 2.13.8
-[10:01:05] 
-[10:01:05]    (c) 2022 Alex "Y_Less" Cole  
-[10:01:05] 
-[10:01:05]  ===============================
-[10:01:05] 
-[10:01:05]   Loaded.
-[10:01:05]  Loading plugin: jit
-[10:01:05]   JIT plugin must be loaded before 'crashdetect.DLL'
-[10:01:05]   Failed.
-[10:01:05]  Loaded 4 plugins.
+[20:47:41] 
+[20:47:41] Server Plugins
+[20:47:41] --------------
+[20:47:41]  Loading plugin: mysql
+[20:47:41]  >> plugin.mysql: R41-4 successfully loaded.
+[20:47:41]   Loaded.
+[20:47:41]  Loading plugin: dc_cmd
+[20:47:41]   Daniel's CMD plugin v2.8
+[20:47:41]     (c) 2014 Daniel_Cortez
+[20:47:41] 	www.pro-pawn.ru
+[20:47:41]   Loaded.
+[20:47:41]  Loading plugin: sscanf
+[20:47:41] 
+[20:47:41]  ===============================
+[20:47:41] 
+[20:47:41]       sscanf plugin loaded.     
+[20:47:41] 
+[20:47:41]          Version: 2.13.8
+[20:47:41] 
+[20:47:41]    (c) 2022 Alex "Y_Less" Cole  
+[20:47:41] 
+[20:47:41]  ===============================
+[20:47:41] 
+[20:47:41]   Loaded.
+[20:47:41]  Loading plugin: jit
+[20:47:41]   JIT plugin 2.4.1
+[20:47:41]   Loaded.
+[20:47:41]  Loaded 4 plugins.
 
-[10:01:05] 
-[10:01:05] Filterscripts
-[10:01:05] ---------------
-[10:01:05]   Loading filterscript 'aview.amx'...
-[10:01:05] 
+[20:47:41] 
+[20:47:41] Filterscripts
+[20:47:41] ---------------
+[20:47:41]   Loading filterscript 'aview.amx'...
+[20:47:41] 
          Animation Browser
-[10:01:05]               v1.0
-[10:01:05]              SoNik))
+[20:47:41]               v1.0
+[20:47:41]              SoNik))
 
-[10:01:05]   Loaded 1 filterscripts.
+[20:47:41]   Loaded 1 filterscripts.
 
-[10:01:14] Started at 10:01:14 on 13/07/2023... | Status: 0
-[10:01:14] JIT is not present
-[10:01:14] 22
-[10:01:14] Number of vehicle models: 0
-[10:01:14] weburl = "www.sa-mp.com"  (string)
-[10:01:14] language = "English"  (string)
-[10:01:14] (1): Server configuration LOADED
-[10:01:14] (2): Gangs configuration LOADED
-[10:01:14] (3): Round configuration LOADED
-[10:01:14] (4): Evacuation configuration LOADED
-[10:01:14] (5): Map configuration LOADED
-[10:01:14] (6): Weapons configuration LOADED (16 / 16)
-[10:01:14] (7): Balance configuration LOADED
-[10:01:14] (8): Textures configuration LOADED (6 / 6)
-[10:01:14] (9): Classes configuration LOADED
-[10:01:14] (8): Classes loaded (48 / 48)
-[10:01:14] (8): Loaded 1 maps in total
-[10:01:16] [connection] 127.0.0.1:56596 requests connection cookie.
-[10:01:17] [connection] incoming connection: 127.0.0.1:56596 id: 0
-[10:01:18] [join] Taxa has joined the server (0:127.0.0.1)
-[10:01:20]   Filterscript 'village.amx' unload failed.
-[10:01:20]   Filterscript 'village.amx' loaded.
+[20:47:49] Started at 20:47:49 on 13/07/2023... | Status: 0
+[20:47:49] JIT is present
+[20:47:49] 22
+[20:47:49] Number of vehicle models: 0
+[20:47:49] weburl = "www.sa-mp.com"  (string)
+[20:47:49] language = "English"  (string)
+[20:47:49] (1): Server configuration LOADED
+[20:47:49] (2): Gangs configuration LOADED
+[20:47:49] (3): Round configuration LOADED
+[20:47:49] (4): Evacuation configuration LOADED
+[20:47:49] (5): Map configuration LOADED
+[20:47:49] (6): Weapons configuration LOADED (16 / 16)
+[20:47:49] (7): Balance configuration LOADED
+[20:47:49] (8): Textures configuration LOADED (6 / 6)
+[20:47:49] (9): Classes configuration LOADED
+[20:47:49] (8): Classes loaded (48 / 48)
+[20:47:49] (8): Loaded 1 maps in total
+[20:47:57] [connection] 127.0.0.1:58606 requests connection cookie.
+[20:47:58] [connection] incoming connection: 127.0.0.1:58606 id: 0
+[20:47:58] [join] Taxa has joined the server (0:127.0.0.1)
+[20:48:01]   Filterscript 'village.amx' unload failed.
+[20:48:01]   Filterscript 'village.amx' loaded.
+[20:50:20] [part] Taxa has left the server (0:1)

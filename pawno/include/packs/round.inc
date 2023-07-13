@@ -16,6 +16,7 @@ enum ROUND_DATA {
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
 	rdBoxCount,
+	rdCheckForOOM,
 };
 
 enum ROUND_SESSION_DATA {

@@ -298,6 +298,7 @@
 	`id` int(11) unsigned NOT NULL,\
 	`filename` varchar(64) NOT NULL,\
 	`author` int(11) unsigned NOT NULL default '0',\
+	`polygon` varchar(128) NOT NULL default '',\
 	`interior` int(3) unsigned NOT NULL default '0',\
 	`weather` int(3) unsigned NOT NULL default '0',\
 	`checkpoint_size` DECIMAL(9,2) NOT NULL default '1.0',\
@@ -518,7 +519,8 @@
 	`restart` int(6) unsigned NOT NULL default '10',\
 	`great_period` int(6) unsigned NOT NULL default '30',\
 	`spawn_protection_time` int(6) unsigned NOT NULL default '15',\
-	`zombie_armour` DECIMAL(9,2) unsigned NOT NULL default '200.0',\
+	`oom_check` int(6) unsigned NOT NULL default '2',\
+	`zombie_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
 	`hero_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
 	`hero_weapons` varchar(24) NOT NULL default '31, 24',\
 	`spawn_text_range` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
@@ -589,9 +591,9 @@
 #define PREDIFINED_CLASSES_CONFIG "INSERT IGNORE INTO classes_config (id) VALUES (1);"
 
 #define PREDIFINED_MAPS "INSERT IGNORE INTO \
-	`maps` (`id`, `filename`, `author`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
+	`maps` (`id`, `filename`, `author`, `polygon`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
 	VALUES \
-	(1, 'village', 0, 0, 6, '15.000', '', '1.000', 23, 0, 1, '744.0316,-550.7260,17.1647,358.7975,681.8290,-554.5507,16.1875,357.8575,641.3369,-557.3655,16.1875,359.1342', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
+	(1, 'village', 0, '584.1251, -648.7808, 584.3012, -392.5939, 838.9903, -392.6798, 839.0605, -675.1257', 0, 6, '15.000', '', '1.000', 23, 0, 1, '681.7961,-557.6867,16.1875,1.3275,655.5219,-546.1632,16.3359,357.2775,661.8522,-460.3403,16.3359,180.6026', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
 "
 
 #define PREDIFINED_LOCAL_MAPS "INSERT IGNORE INTO maps_localization (id, english, russian) VALUES \
@@ -839,5 +841,5 @@
 	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
 	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
 	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)'),\
-	(87, '>> Player %s moved into a distorted world!', '>> Игрок %s перешел в искаженный мир!');\
+	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> Игрок %s был возрожден как Зомби [Причина: Выход за карту]');\
 "

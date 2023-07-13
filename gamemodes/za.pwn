@@ -65,16 +65,12 @@ static EvacuationConfig[EVACUATION_CONFIG_DATA];
 static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 
-static MySQL:Database, updateTimerId;
-
 static
-        Iterator:Humans<MAX_PLAYERS>,
-        Iterator:Zombies<MAX_PLAYERS>,
-		Iterator:MutatedPlayers<MAX_PLAYERS>,
-		Iterator:RadioactivePlayers<MAX_PLAYERS>,
-		Iterator:NursePlayers<MAX_PLAYERS>,
-		Iterator:PriestPlayers<MAX_PLAYERS>,
-		Iterator:SupportPlayers<MAX_PLAYERS>;
+    	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
+		MySQL:Database, updateTimerId, Iterator:Humans<MAX_PLAYERS>,
+		Iterator:Zombies<MAX_PLAYERS>, Iterator:MutatedPlayers<MAX_PLAYERS>,
+		Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
+		Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>;
 
 /*
 	MAIN
@@ -247,7 +243,7 @@ public OnPlayerConnect(playerid) {
     ClearAllPlayerData(playerid);
     CheckForAccount(playerid);
     
-    new formated[64];
+    new formated[90];
     foreach(Player, i) {
         if(i == playerid) continue;
         format(formated, sizeof(formated), Localization[i][LD_MSG_CONNECT], Misc[playerid][mdPlayerName], playerid);
@@ -260,7 +256,7 @@ public OnPlayerDisconnect(playerid, reason) {
     ResetMapValuesOnDeath(playerid);
     ResetValuesOnDisconnect(playerid);
 	
-    new formated[64];
+    new formated[90];
     foreach(Player, i) {
         format(formated, sizeof(formated), Localization[i][LD_MSG_DISCONNECT], Misc[playerid][mdPlayerName], Localization[i][LD_MSG_TIMEOUT + LOCALIZATION_DATA:reason]);
         SendClientMessage(i, 0xC0C0C0FF, formated);
@@ -312,14 +308,6 @@ public OnPlayerSpawn(playerid) {
 	SetByCurrentClass(playerid);
 	return 1;
 }
-
-static Float:debug_pos[3], debug_time = 0;
-static const Float:polygon[RECTANGLE][POINT] = {
-	{ 584.1251, -648.7808 },
-	{ 584.3012, -392.5939 },
-	{ 838.9903, -392.6798 },
-	{ 839.0605, -675.1257 }
-};
 	
 public OnPlayerUpdate(playerid) {
 	if(GetPlayerSpeed(playerid) >= 10 && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) {
@@ -330,22 +318,7 @@ public OnPlayerUpdate(playerid) {
 		}
 	}
 	
-	if(gettime() > debug_time) {
-		GetPlayerPos(playerid, debug_pos[0], debug_pos[1], debug_pos[2]);
-		
-        new Float:point[POINT];
-        point[_ptX_] = debug_pos[0];
-		point[_ptY_] = debug_pos[1];
-		
-		debug_time = gettime() + 2;
-		
-		if(!IsPointInPolygon(point, polygon)) {
-		    SendClientMessage(playerid, -1, ">> Outside!");
-		} else {
-		    SendClientMessage(playerid, -1, ">> Inside!");
-		}
-	}
-	
+	CheckPlayerForOOM(playerid);
 	SetPlayerScore(playerid, Achievements[playerid][achRank]);
 	return 1;
 }
@@ -500,6 +473,16 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 	return 1;
 }
 
+public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger) {
+    if(Privileges[playerid][prsAdmin] < 1) {
+        new Float:pos[3];
+        ClearAnimations(playerid);
+        GetPlayerVelocity(playerid, pos[0], pos[1], pos[2]);
+		SetPlayerVelocity(playerid, pos[0], pos[1], pos[2] + 0.2);
+    }
+    return 1;
+}
+
 public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart) {
 	if(IsPlayerConnected(damagedid)) {
 	    Misc[damagedid][mdLastIssuedDamage] = playerid;
@@ -586,7 +569,7 @@ public OnPlayerEnterCheckpoint(playerid) {
 	
 	++Map[mpEvacuatedHumans];
 	
-	new formated[64];
+	new formated[90];
 	foreach(Player, i) {
  		format(formated, sizeof(formated), Localization[i][LD_MSG_EVACUATED], Misc[playerid][mdPlayerName]);
  		SendClientMessage(i, 0xFFF000FF, formated);
@@ -718,7 +701,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	            return 1;
 	        }
 	        
-	        new formated[64], i;
+	        new formated[90], i;
 	        for( i = 0; i < MAX_CLASSES; i++ ) {
 	            if(Classes[i][cldId] == ClassesSelection[playerid][listitem][csdId]) {
 	                if(Achievements[playerid][achTotalPoints] < Classes[i][cldPoints]) {
@@ -750,6 +733,7 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
 	    format(tip, sizeof(tip), Localization[playerid][LD_MSG_PICKUP_PROTECTION], max(0, Pickups[pickupid][pcdProtectionTill] - gettime()));
  		SendClientMessage(playerid, 0xFF0000FF, tip);
 	}
+	
 	return 1;
 }
 
@@ -761,7 +745,7 @@ public OnQueryError(errorid, const error[], const callback[], const query[], MyS
 custom Update() {
 	static Float:hp, Float:armour;
 	
-	static currentHour, currentMinute, currentSecond, formated[48];
+	static currentHour, currentMinute, currentSecond, formated[90];
 	gettime(currentHour, currentMinute, currentSecond);
 
 	foreach(Player, playerid) {
@@ -865,6 +849,14 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "water", Map[mpWaterAllowed]);
 	    cache_get_value_name_int(0, "crystal_id", Map[mpGangCrystalId]);
 	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
+	    
+	    cache_get_value_name(0, "polygon", buff);
+	 	sscanf(buff, "p<,>ffffffff",
+		 	Polygon[0][_ptX_], Polygon[0][_ptY_],
+		 	Polygon[1][_ptX_], Polygon[1][_ptY_],
+		 	Polygon[2][_ptX_], Polygon[2][_ptY_],
+		 	Polygon[3][_ptX_], Polygon[3][_ptY_]
+		);
     	
     	cache_get_value_name(0, "login", Map[mpAuthor]);
         cache_get_value_name(0, "filename", Map[mpFilename]);
@@ -1376,6 +1368,7 @@ custom LoadMapConfiguration() {
         cache_get_value_name_int(0, "restart", MapConfig[mpCfgRestart]);
         cache_get_value_name_int(0, "great_period", MapConfig[mpCfgGreatTime]);
         cache_get_value_name_int(0, "spawn_protection_time", MapConfig[mpCfgSpawnProtectionTime]);
+        cache_get_value_name_int(0, "oom_check", MapConfig[mpCfgOOMCheck]);
         
         cache_get_value_name_float(0, "spawn_text_range", MapConfig[mpCfgSpawnTextRange]);
         cache_get_value_name_float(0, "human_hero_kill", MapConfig[mpCfgHumanHeroPoints]);
@@ -1969,6 +1962,8 @@ stock InitializeDefaultValues() {
     for( i = 0; i < MAX_PLAYERS; i++ ) {
     
         Round[i][rdBoxCount] = -1;
+        Round[i][rdCheckForOOM] = 0;
+        
         for( j = 0; j < MAX_ROUND_BOXES; j++ ) {
 			Round[i][rdBox][j] = INVALID_OBJECT_ID;
 			Round[i][rdBoxText][j] = Text3D:-1;
@@ -1996,6 +1991,7 @@ stock ClearPlayerRoundData(const playerid) {
 	Round[playerid][rdIsInRadioactiveField] = false;
 	Round[playerid][rdIsCursed] = false;
     Round[playerid][rdBoxCount] = -1;
+    Round[playerid][rdCheckForOOM] = 0;
     
 	Misc[playerid][mdMimicry][2] = -1;
 	Misc[playerid][mdMimicryStats][0] = 100.0;
@@ -2017,6 +2013,38 @@ stock ClearPlayerRoundData(const playerid) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
 		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], MapConfig[mpCfgSpawnTextRange]);
 	}
+}
+
+stock bool:IsPlayerInsideMap(const playerid) {
+	if(GetPlayerInterior(playerid) > 0) {
+	    return true;
+	}
+
+	new Float:pos[3];
+    GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+    return IsPointInPolygon(ToPolygonPoint(pos[0], pos[1]), Polygon);
+}
+
+stock CheckPlayerForOOM(const playerid) {
+	if(!Misc[playerid][mdIsLogged] || !Map[mpIsStarted] ||
+		Map[mpTimeout] <= 0 || Map[mpTimeout] >= (MapConfig[mpCfgTotal] - MapConfig[mpCfgGreatTime]) ||
+		GetPlayerState(playerid) != PLAYER_STATE_ONFOOT || Round[playerid][rdCheckForOOM] > gettime()) {
+	    return;
+	}
+	
+    if(!IsPlayerInsideMap(playerid)) {
+		SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
+		SpawnPlayer(playerid);
+
+		new formated[90];
+		foreach(Player, i) {
+		    format(formated, sizeof(formated), Localization[i][LD_MSG_PLAYER_OOM], Misc[playerid][mdPlayerName]);
+		    SendClientMessage(i, 0x33CCFFFF, formated);
+		}
+	}
+	
+	Round[playerid][rdCheckForOOM] = gettime() + MapConfig[mpCfgOOMCheck];
+	return;
 }
 
 stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
@@ -2058,13 +2086,13 @@ stock ProceedClassAbilityActivation(const playerid) {
         switch(abilities[ability]) {
             case ABILITY_INFECT: InfectPlayer(playerid, classid);
 			case ABILITY_MUTATED: InfectPlayerAdvanced(playerid, classid);
-            case ABILITY_KAMIKAZE: InfectAndExplode(playerid, Classes[classid][cldDistance]);
+            case ABILITY_KAMIKAZE: InfectAndExplode(playerid, classid);
             case ABILITY_STEALER: StealArmour(playerid, classid);
 			case ABILITY_STOMPER: StompHumans(playerid, classid);
 			case ABILITY_WITCH: CurseHuman(playerid, classid);
             case ABILITY_FLASH: FlashAttackOnHuman(playerid);
-            case ABILITY_FREEZER: FreezeOnDeath(playerid, Classes[classid][cldDistance]);
-            case ABILITY_MIMICRY: MimicrySkin(playerid, Classes[classid][cldAbilityTime]);
+            case ABILITY_FREEZER: FreezePlayers(playerid, classid);
+            case ABILITY_MIMICRY: MimicrySkin(playerid, classid);
             case ABILITY_SUPPORT: EnableDisableSupportField(playerid);
             case ABILITY_RADIOACTIVE: EnableDisableRadioActiveField(playerid);
             case ABILITY_CURE_FIELD: EnableDisableCureField(playerid);
@@ -2087,7 +2115,7 @@ stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1
         switch(abilities[ability]) {
 	        case ABILITY_SUPPORT: RegenerateHealth(targetid, playerid, ClassesConfig[clsCfgRegenHealth], classid);
 	        case ABILITY_RADIOACTIVE: DamageFromRadioactiveField(targetid, playerid, ClassesConfig[clsCfgRadioactiveDamage], classid);
-	        case ABILITY_BOOMER: InfectAndExplode(playerid, Classes[classid][cldDistance]);
+	        case ABILITY_BOOMER: InfectAndExplode(playerid, classid);
 	        case ABILITY_FLESHER: InfectPlayerFlesher(targetid, playerid);
 	        case ABILITY_SPORE: InfectPlayerSpore(targetid, playerid);
 	        case ABILITY_SPITTER: InfectPlayerSpitter(targetid, playerid);
@@ -2178,7 +2206,7 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 				if(Map[mpTeamCount][1] == 1 && !Map[mpKillTheLast]) {
 				    Map[mpKillTheLast] = true;
 				    
-				    new formated[64];
+				    new formated[90];
 				    foreach(Player, i) {
 				        format(formated, sizeof(formated), Localization[i][LD_MSG_KILL_THE_LAST], Localization[i][LD_MSG_POINTS_MULTIPLE]);
                         SendClientMessage(i, 0x59E4B5FF, formated);
@@ -2231,7 +2259,7 @@ stock SetByCurrentClass(const playerid) {
 			SetPlayerFacingAngle(playerid, Map[mpZombieSpawnA][point]);
 			Misc[playerid][mdSpawnProtection] = gettime() + MapConfig[mpCfgSpawnProtectionTime];
 			
-			new formated[64];
+			new formated[90];
 			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdZombieSelectionName]);
 			SendClientMessage(playerid, 0xFFF000FF, formated);
 		}
@@ -2240,7 +2268,7 @@ stock SetByCurrentClass(const playerid) {
 			SetPlayerPos(playerid, 	Map[mpHumanSpawnX][point] + distance, Map[mpHumanSpawnY][point] + distance, Map[mpHumanSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpHumanSpawnA][point]);
 			
-			new formated[64];
+			new formated[90];
 			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdHumanSelectionName]);
 			SendClientMessage(playerid, 0xFFF000FF, formated);
   		}
@@ -2301,10 +2329,18 @@ stock bool:IsAbleToBeCursed(const playerid) {
 	return !Round[playerid][rdIsCursed];
 }
 
-bool:IsAbleToBeFlashAttacked(const playerid) {
+stock bool:IsAbleToBeFlashAttacked(const playerid) {
 	if(!IsPlayerConnected(playerid) || GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_FLASH)) {
 	    return false;
 	}
+	return true;
+}
+
+stock bool:IsAbleToBeFreezed(const playerid) {
+    if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_FREEZER)) {
+        return false;
+    }
+    
 	return true;
 }
 
@@ -2440,30 +2476,28 @@ stock InfectPlayerSpitter(const targetid, const playerid) {
     return 1;
 }
 
-stock InfectAndExplode(const playerid, const Float:range) {
-	new Float:pos[3], count;
+stock InfectAndExplode(const playerid, const classid) {
+	new Float:pos[3], count, Float:range = Classes[classid][cldDistance];
 	
 	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
 	CreateExplosion(pos[0], pos[1], pos[2], 0, range);
 
 	foreach(Humans, i) {
 	    if(!IsAbleToBeInfected(i)) continue;
-	    
 		if(IsPlayerInRangeOfPoint(i, range, pos[0], pos[1], pos[2])) {
-		    SendInfectionMessage(LD_MSG_INFECTED_EXPLOSION, i, playerid);
 	        DefaultInfection(i);
 	        ++count;
 	    }
 	}
 	
 	if(count) {
-	    AbilityUsed(playerid);
-	    
 	    new formated[96], LOCALIZATION_DATA:type = (count >= ClassesConfig[clsCfgWhoppingWhen]) ? LD_MSG_EXPLODED_WHOPPING : LD_MSG_EXPLODED;
 	    foreach(Player, i) {
 	    	format(formated, sizeof(formated), Localization[i][type], Misc[playerid][mdPlayerName], count);
 			SendClientMessage(i, 0x009900FF, formated);
 		}
+		
+		AbilityUsed(playerid);
 	}
 }
 
@@ -2475,9 +2509,9 @@ stock DamageFromRadioactiveField(const targetid, const playerid, const Float:amo
 	if(IsAbleToTakeRadioactiveDamage(targetid)) {
 	    GameTextForPlayer(targetid, RusToGame(Localization[targetid][LD_DISPLAY_RADIOACTIVE]), 1500, 5);
 	    SetPlayerHealthAC(targetid, GetPlayerHealthEx(targetid) - amount);
-		AbilityUsed(playerid);
 
 		Round[targetid][rdIsInRadioactiveField] = false;
+		AbilityUsed(playerid);
 		return 1;
 	}
 	
@@ -2492,7 +2526,6 @@ stock MirrorDamageBack(const targetid, const playerid, const Float:amount) {
 stock StealArmour(const playerid, const classid) {
     foreach(Humans, targetid) {
         if(!IsAbleToTakeArmour(targetid)) continue;
-        
     	if(IsInAbilityRange(targetid, playerid, classid)) {
             SetPlayerArmourAC(targetid, 0.0);
 
@@ -2502,8 +2535,8 @@ stock StealArmour(const playerid, const classid) {
 				SendClientMessage(i, 0x009900FF, formated);
 			}
 			
-            AbilityUsed(playerid);
 			ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
+			AbilityUsed(playerid);
     	    return 1;
     	}
 	}
@@ -2516,7 +2549,6 @@ stock StompHumans(const playerid, const classid) {
     
     foreach(Humans, targetid) {
         if(!IsAbleToBeStomped(targetid)) continue;
-    
 		if(IsInAbilityRange(targetid, playerid, classid)) {
         	GetPlayerVelocity(targetid, pos[0], pos[1], pos[2]);
 			SetPlayerVelocity(targetid, pos[0] * ClassesConfig[clsCfgStomp][0], pos[1] * ClassesConfig[clsCfgStomp][1], pos[2] + ClassesConfig[clsCfgStomp][2]);
@@ -2534,9 +2566,9 @@ stock StompHumans(const playerid, const classid) {
 			0.0, 0.0, 0.0
 		);
 				
-		AbilityUsed(playerid);
 		ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
 		SetTimerEx("DestroyObjectEffect", ClassesConfig[clsCfgStomperEffectTime], 0, "i", objectid);
+		AbilityUsed(playerid);
 	}
 	return 1;
 }
@@ -2544,7 +2576,6 @@ stock StompHumans(const playerid, const classid) {
 stock CurseHuman(const playerid, const classid) {
     foreach(Humans, targetid) {
         if(!IsAbleToBeCursed(targetid)) continue;
-        
     	if(IsInAbilityRange(targetid, playerid, classid)) {
 		    new formated[96];
 			foreach(Player, i) {
@@ -2552,8 +2583,8 @@ stock CurseHuman(const playerid, const classid) {
 				SendClientMessage(i, 0x009900FF, formated);
 			}
 
-            AbilityUsed(playerid);
 			ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
+			AbilityUsed(playerid);
     	    return 1;
     	}
 	}
@@ -2576,13 +2607,14 @@ stock FlashAttackOnHuman(const playerid) {
        	
        	SetTimerEx("MovePlayerAfterEffect", 900, 0, "ifff", playerid, old[0], old[1], old[2]);
         ApplyAnimation(playerid, "CARRY", "PUTDWN", 4.1, 0, 0, 0, 0, 850);
+        AbilityUsed(playerid);
         return 1;
      }
      
      return 0;
 }
 
-stock MimicrySkin(const playerid, const cooldown) {
+stock MimicrySkin(const playerid, const classid) {
 	static const getRandomSkinQuery[] = GET_RANDOM_SKIN_QUERY;
 	new formated[sizeof(getRandomSkinQuery) + MAX_CLASS_ID_LEN], team = (GetPlayerTeamEx(playerid) == TEAM_HUMAN) ? TEAM_ZOMBIE : TEAM_HUMAN;
 	mysql_format(Database, formated, sizeof(formated), getRandomSkinQuery, team);
@@ -2592,11 +2624,12 @@ stock MimicrySkin(const playerid, const cooldown) {
     
     Misc[playerid][mdMimicry][0] = GetPlayerSkin(playerid);
     Misc[playerid][mdMimicry][1] = GetPlayerTeamEx(playerid);
-    Misc[playerid][mdMimicry][2] = cooldown;
+    Misc[playerid][mdMimicry][2] = Classes[classid][cldAbilityTime];
     Misc[playerid][mdMimicryStats][0] = GetPlayerHealthEx(playerid);
     Misc[playerid][mdMimicryStats][1] = GetPlayerArmourEx(playerid);
     
     SetPlayerArmourAC(playerid, 0.0);
+    AbilityUsed(playerid);
 }
 
 stock ProceedMimicryChangeBack(const playerid) {
@@ -2617,8 +2650,25 @@ stock ProceedMimicryChangeBack(const playerid) {
 	}
 }
 
-stock FreezeOnDeath(playerid, Float:range) {
-
+stock FreezePlayers(const playerid, const classid) {
+    new count, Float:range = Classes[classid][cldDistance];
+    
+    foreach(Humans, targetid) {
+		if(!IsAbleToBeFreezed(targetid)) continue;
+        if(IsInAbilityRange(targetid, playerid, classid)) {
+			TogglePlayerControllable(targetid, 0);
+			SetCameraBehindPlayer(targetid);
+			++count;
+        }
+    }
+    
+    if(count) {
+    
+        ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
+        AbilityUsed(playerid);
+    }
+    
+    return 1;
 }
 
 stock PlayerInHolyField(const targetid, const playerid, const classid) {
@@ -2766,6 +2816,8 @@ stock HighJump(const playerid) {
 		pos[1] * ClassesConfig[clsCfgHighJump][1],
 		pos[2] + ClassesConfig[clsCfgHighJump][2]
 	);
+	
+	AbilityUsed(playerid);
 }
 
 stock LongJump(const playerid) {
@@ -2776,6 +2828,8 @@ stock LongJump(const playerid) {
 		pos[1] / ClassesConfig[clsCfgLongJump][1],
 		pos[2] + ClassesConfig[clsCfgLongJump][2]
 	);
+	
+	AbilityUsed(playerid);
 }
 
 stock BreakSpace(const playerid) {
@@ -2790,6 +2844,8 @@ stock BreakSpace(const playerid) {
         SetPlayerWeather(playerid, 101);
 		SetPlayerTime(playerid, 10, 0);
 	}
+	
+	AbilityUsed(playerid);
 }
 
 stock BuildBox(const playerid, const classid) {
@@ -2822,6 +2878,8 @@ stock BuildBox(const playerid, const classid) {
 			ClassesConfig[clsCfgEngineerSound],
 			0.0, 0.0, 0.0
 		);
+		
+		AbilityUsed(playerid);
 		return 1;
 	}
 

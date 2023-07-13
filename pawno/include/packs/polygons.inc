@@ -10,6 +10,13 @@ stock Float:floatmax(Float:first, Float:second) {
 	return floatcmp(first, second) >= 0 ? first : second;
 }
 
+stock Float:ToPolygonPoint(const Float:x, const Float:y) {
+	new Float:p[POINT];
+	p[_ptX_] = x;
+	p[_ptY_] = y;
+	return p;
+}
+
 stock bool:IsPointInPolygon(const Float:p[POINT], const Float:polygon[][POINT], const len = sizeof(polygon)) {
     new bool:isInside = false;
     
