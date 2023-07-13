@@ -25,6 +25,7 @@
 #include <packs/evacuation>
 #include <packs/textures>
 #include <packs/balance>
+#include <packs/polygons>
 
 #include <dependencies/jit>
 #include <dependencies/foreach>

@@ -313,12 +313,36 @@ public OnPlayerSpawn(playerid) {
 	return 1;
 }
 
+static Float:debug_pos[3], debug_time = 0;
+static const Float:polygon[RECTANGLE][POINT] = {
+	{ 584.1251, -648.7808 },
+	{ 584.3012, -392.5939 },
+	{ 838.9903, -392.6798 },
+	{ 839.0605, -675.1257 }
+};
+	
 public OnPlayerUpdate(playerid) {
 	if(GetPlayerSpeed(playerid) >= 10 && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) {
 	    Achievements[playerid][achRan] += 0.00001;
 
 		if(IsAbleToGivePointsInCategory(playerid, SESSION_RUN_POINTS)) {
 			RoundSession[playerid][rsdMobility] += RoundConfig[rdCfgMobility];
+		}
+	}
+	
+	if(gettime() > debug_time) {
+		GetPlayerPos(playerid, debug_pos[0], debug_pos[1], debug_pos[2]);
+		
+        new Float:point[POINT];
+        point[_ptX_] = debug_pos[0];
+		point[_ptY_] = debug_pos[1];
+		
+		debug_time = gettime() + 2;
+		
+		if(!IsPointInPolygon(point, polygon)) {
+		    SendClientMessage(playerid, -1, ">> Outside!");
+		} else {
+		    SendClientMessage(playerid, -1, ">> Inside!");
 		}
 	}
 	
@@ -433,7 +457,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 				return 0;
 			}
 			
-            if(gettime() < Misc[hitid][mdSpawnProtection]) {
+            if(gettime() < Misc[hitid][mdSpawnProtection] || GetObjectModel(GetPlayerSurfingObjectID(playerid)) == ClassesConfig[clsCfgEngineerBox]) {
             	SetPlayerChatBubble(hitid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
 				return 0;
             }
@@ -452,15 +476,25 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
                 return 0;
 			}
 	    }
-	    /*case BULLET_HIT_TYPE_OBJECT: {
-	        if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
+	    case BULLET_HIT_TYPE_OBJECT: {
+			if(GetObjectModel(hitid) == ClassesConfig[clsCfgEngineerBox]) {
+			    for( new i = 0; i < MAX_ROUND_BOXES; i++ ) {
+			        if(Round[playerid][rdBox][i] == hitid) {
+						DestroyObjectEx(Round[playerid][rdBox][i]);
+						Delete3DTextLabelEx(Round[playerid][rdBoxText][i]);
+						return 1;
+					}
+				}
+			}
+	    
+	        /*if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
 	            Map[mpCrystalHealth] -= float(max(1, Achievements[playerid][achRank]));
 	            
 	        	new text[256];
 				format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
 				Update3DTextLabelText(Map[mpFlagText], 0xFFF000FF, text);
-	        }
-	    }*/
+	        }*/
+	    }
 	}
 	
 	return 1;
@@ -2043,40 +2077,6 @@ stock ProceedClassAbilityActivation(const playerid) {
 	}
 }
 
-stock BuildBox(const playerid, const classid) {
-	if(Round[playerid][rdBoxCount] > -1) {
-	    new str[32], Float: pos[4], index = Round[playerid][rdBoxCount];
-		new cr = (Classes[classid][cldAbilityCount] - index) + 1;
-		new mx = Classes[classid][cldAbilityCount] + 1;
-
-		GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
-		GetPlayerFacingAngle(playerid, pos[3]);
-	    GetXYInFrontOfPlayer(playerid, pos[0], pos[1], 1.0);
-
-        format(str, sizeof(str), "%s - [%d / %d]", Misc[playerid][mdPlayerName], cr, mx);
-		Round[playerid][rdBox][index] = CreateObject(
-			ClassesConfig[clsCfgEngineerBox],
-			pos[0], pos[1], pos[2],
-			0.0, 0.0, pos[3]
-		);
-		
-		Round[playerid][rdBoxText][index] = Create3DTextLabel(str, COLOR_HUMAN,
-			pos[0], pos[1], pos[2],
-			ClassesConfig[clsCfgEngineerTextRange],
-			0, 0
-		);
-
-		Round[playerid][rdBoxCount]--;
-		PlayerPlaySound(playerid,
-			ClassesConfig[clsCfgEngineerSound],
-			0.0, 0.0, 0.0
-		);
-		return 1;
-	}
-	
-	return 0;
-}
-
 stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1, const Float:amount = 0.0) {
     new abilities[2], ability;
     new classid = Misc[playerid][mdCurrentClass][GetPlayerTeamEx(playerid)];
@@ -2255,7 +2255,7 @@ stock SetByCurrentClass(const playerid) {
 }
 
 stock bool:IsAbleToTakeRadioactiveDamage(const playerid) {
-	if(GetPlayerVirtualWorld(playerid) > 0) {
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_RADIOACTIVE)) {
 	    return false;
 	}
 
@@ -2267,8 +2267,10 @@ stock bool:IsAbleToTakeRadioactiveDamage(const playerid) {
 }
 
 stock bool:IsAbleToBeInfected(const playerid) {
-    if( Round[playerid][rdIsInfected] || Round[playerid][rdIsAdvanceInfected] ||
-		GetPlayerTeamEx(playerid) == TEAM_ZOMBIE || GetPlayerVirtualWorld(playerid) > 0) {
+    if(
+		Round[playerid][rdIsInfected] || Round[playerid][rdIsAdvanceInfected] ||
+		GetPlayerTeamEx(playerid) == TEAM_ZOMBIE || GetPlayerVirtualWorld(playerid) > 0 ||
+		ProceedClassImmunity(playerid, ABILITY_INFECT)) {
         return false;
     }
     
@@ -2276,15 +2278,15 @@ stock bool:IsAbleToBeInfected(const playerid) {
 }
 
 stock bool:IsAbleToTakeArmour(const playerid) {
-	if(GetPlayerArmourEx(playerid) > 0.0 && GetPlayerVirtualWorld(playerid) <= 0) {
-	    return true;
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_STEALER)) {
+	    return false;
 	}
 	
-	return false;
+	return GetPlayerArmourEx(playerid) > 0.0;
 }
 
 stock bool:IsAbleToBeStomped(const playerid) {
-	if(GetPlayerVirtualWorld(playerid) > 0) {
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_STOMPER)) {
 	    return false;
 	}
 	
@@ -2292,15 +2294,15 @@ stock bool:IsAbleToBeStomped(const playerid) {
 }
 
 stock bool:IsAbleToBeCursed(const playerid) {
-	if(!Round[playerid][rdIsCursed] && GetPlayerVirtualWorld(playerid) <= 0) {
-	    return true;
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_WITCH)) {
+	    return false;
 	}
 	
-	return false;
+	return !Round[playerid][rdIsCursed];
 }
 
 bool:IsAbleToBeFlashAttacked(const playerid) {
-	if(!IsPlayerConnected(playerid) || GetPlayerVirtualWorld(playerid) > 0) {
+	if(!IsPlayerConnected(playerid) || GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_FLASH)) {
 	    return false;
 	}
 	return true;
@@ -2788,6 +2790,42 @@ stock BreakSpace(const playerid) {
         SetPlayerWeather(playerid, 101);
 		SetPlayerTime(playerid, 10, 0);
 	}
+}
+
+stock BuildBox(const playerid, const classid) {
+	if(Round[playerid][rdBoxCount] > -1) {
+	    new str[32], Float: pos[4], index = Round[playerid][rdBoxCount];
+		new cr = (Classes[classid][cldAbilityCount] - index) + 1;
+		new mx = Classes[classid][cldAbilityCount] + 1;
+
+		GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+		GetPlayerFacingAngle(playerid, pos[3]);
+	    GetXYInFrontOfPlayer(playerid, pos[0], pos[1], 1.0);
+
+        format(str, sizeof(str), "%s - [%d / %d]", Misc[playerid][mdPlayerName], cr, mx);
+		Round[playerid][rdBox][index] = CreateObject(
+			ClassesConfig[clsCfgEngineerBox],
+			pos[0], pos[1], pos[2],
+			0.0, 0.0, pos[3]
+		);
+		
+		MoveObject(Round[playerid][rdBox][index], pos[0], pos[1], pos[2] + 2.5, 0.0000001);
+
+		Round[playerid][rdBoxText][index] = Create3DTextLabel(str, COLOR_HUMAN,
+			pos[0], pos[1], pos[2],
+			ClassesConfig[clsCfgEngineerTextRange],
+			0, 0
+		);
+
+		Round[playerid][rdBoxCount]--;
+		PlayerPlaySound(playerid,
+			ClassesConfig[clsCfgEngineerSound],
+			0.0, 0.0, 0.0
+		);
+		return 1;
+	}
+
+	return 0;
 }
 
 stock Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
