@@ -51,6 +51,8 @@ enum CLASSES_CONFIG_DATA {
 	clsCfgStomperEffectTime,
 	clsCfgEngineerBox,
 	clsCfgEngineerSound,
+	clsCfgSpitterWeapon,
+	clsCfgSpitterWeaponAmmo,
 	Float:clsCfgEngineerTextRange,
 };
 
@@ -83,4 +85,5 @@ enum {
 	ABILITY_LONG_JUMPS,
 	ABILITY_CURE_FIELD,
 	ABILITY_HOLY_FIELD,
+	ABLITY_MAX,
 };

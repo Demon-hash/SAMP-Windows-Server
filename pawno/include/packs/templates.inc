@@ -351,8 +351,9 @@
 	`support` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
 	`air_range` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`stomper_effect` varchar(64) NOT NULL default '18675,0.0,0.0,0.0,-1.2,1000',\
-	`flasher_effect` varchar(64) NOT NULL default '18693,10,2,15.0',\
-	`engineer_effect` varchar(64) NOT NULL default '923,1057,15.0',\
+	`flasher_effect` varchar(48) NOT NULL default '18693,10,2,15.0',\
+	`engineer_effect` varchar(48) NOT NULL default '923,1057,15.0',\
+	`spitter_effect` varchar(24) NOT NULL default '23,1',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -829,7 +830,7 @@
 	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
 	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
 	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!'),\
-	(78, '~w~You are ~g~Cursed~n~~r~Kill~w~ humans to survive', '~w~Вы ~g~прокляты~n~~r~Убивайте~w~ людей чтобы жить');\
+	(78, '~w~You are ~g~Cursed~n~~r~Abilities disabled', '~w~Вы ~g~прокляты~n~~r~Способности отключены');\
 "
 
 #define PREDIFINED_LOCALIZATION_5 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
@@ -841,5 +842,9 @@
 	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
 	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
 	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)'),\
-	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> Игрок %s был возрожден как Зомби [Причина: Выход за карту]');\
+	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> Игрок %s был возрожден как Зомби [Причина: Выход за карту]'),\
+	(88, '>> Player %s froze{FFFFFF} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} %d человек(а)!'),\
+	(89, '>> Player %s frozeFFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
+	(90, '~g~Wait some time', '~g~Подождите'),\
+	(91, '~r~Can not use', '~g~Невозможно использовать');\
 "
