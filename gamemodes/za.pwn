@@ -142,7 +142,7 @@ static
 #define CLS_CFG_CONSOLE_LOG "(9): Classes configuration"
 
 main() {
-	printf("%d", ABILITY_LONG_JUMPS);
+	printf("%d", ABILITY_CURE);
 }
 
 public OnGameModeInit() {
@@ -528,8 +528,8 @@ public OnPlayerEnterCheckpoint(playerid) {
 	SetPlayerInterior(playerid, EvacuationConfig[ecdCfgInterior]);
 	
 	DisablePlayerCheckpoint(playerid);
-	SetPlayerColor(playerid,COLOR_EVACUATED);
 	CurePlayer(playerid);
+	SetPlayerColor(playerid,COLOR_EVACUATED);
 	Round[playerid][rdIsEvacuated] = true;
 	
 	++Map[mpEvacuatedHumans];
@@ -2063,7 +2063,7 @@ stock ProceedClassAbilityActivation(const playerid) {
     for( ability = 0; ability < sizeof(abilities); ability++ ) {
         if(abilities[ability] <= 0 || abilities[ability] >= ABLITY_MAX) continue;
     
-        if(gettime() < AbilitiesTimers[playerid][abilities[ability]]) {
+        if(gettime() < AbilitiesTimers[playerid][abilities[ability]] && abilities[ability] != ABILITY_LONG_JUMPS) {
         	GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISLPAY_COOLDOWN]), 1000, 5);
 			continue;
 		}
@@ -2082,7 +2082,6 @@ stock ProceedClassAbilityActivation(const playerid) {
             case ABILITY_FREEZER: FreezePlayers(playerid, classid, ABILITY_FREEZER);
             case ABILITY_MIMICRY: MimicrySkin(playerid, classid, ABILITY_MIMICRY);
             case ABILITY_JUMPER: HighJump(playerid, classid, ABILITY_JUMPER);
-            case ABILITY_LONG_JUMPS: LongJump(playerid);
             case ABILITY_SPACEBREAKER: BreakSpace(playerid, classid, ABILITY_SPACEBREAKER);
 			case ABILITY_SPITTER: GiveSpitterWeapon(playerid, classid, ABILITY_SPITTER);
 			case ABILITY_SUPPORT: EnableDisableSupportField(playerid);
@@ -2091,6 +2090,7 @@ stock ProceedClassAbilityActivation(const playerid) {
             case ABILITY_HOLY_FIELD: EnableDisableHolyField(playerid);
             case ABILITY_KAMIKAZE: InfectAndExplode(playerid, classid);
             case ABILITY_BUILD: BuildBox(playerid, classid);
+            case ABILITY_LONG_JUMPS: LongJump(playerid, classid);
         }
 	}
 	
@@ -2321,7 +2321,8 @@ stock bool:IsAbleToBeCursed(const playerid) {
 }
 
 stock bool:IsAbleToBeFlashAttacked(const playerid) {
-	if(!IsPlayerConnected(playerid) || GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_FLASH)) {
+	if( !IsPlayerConnected(playerid) || GetPlayerVirtualWorld(playerid) > 0 ||
+		ProceedClassImmunity(playerid, ABILITY_FLASH) || Round[playerid][rdIsEvacuated]) {
 	    return false;
 	}
 	return true;
@@ -2380,6 +2381,7 @@ stock DefaultCure(const playerid) {
     Round[playerid][rdIsAdvanceInfected] = false;
     SetPlayerDrunkLevel(playerid, 0);
     TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
+    SetPlayerColor(playerid, COLOR_HUMAN);
     
     if(IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
     	RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
@@ -2930,7 +2932,7 @@ stock GiveSpitterWeapon(const playerid, const classid, const abilityid) {
 	    return 0;
 	}
 
-	GivePlayerWeaponAC(playerid, ClassesConfig[clsCfgSpitterWeapon], ClassesConfig[clsCfgSpitterWeaponAmmo]);
+	GivePlayerWeaponAC(playerid, ClassesConfig[clsCfgSpitterWeapon], Classes[classid][cldAbilityCount]);
 	AbilityUsed(playerid, classid, abilityid);
     return 1;
 }
@@ -2948,7 +2950,7 @@ stock HighJump(const playerid, const classid, const abilityid) {
 	return 1;
 }
 
-stock LongJump(const playerid) {
+stock LongJump(const playerid, const classid) {
     if( Round[playerid][rdAbilityTimes] > 0) {
 	    new Float:pos[3];
 	    GetPlayerCameraFrontVector(playerid, pos[0], pos[1], pos[2]);
@@ -2958,6 +2960,7 @@ stock LongJump(const playerid) {
 			pos[2] + ClassesConfig[clsCfgLongJump][2]
 		);
 		
+		AbilitiesTimers[playerid][ABILITY_LONG_JUMPS] = gettime() + Classes[classid][cldCooldown];
 		Round[playerid][rdAbilityTimes]--;
 		AbilityUsed(playerid);
 		return 1;
@@ -3330,6 +3333,8 @@ stock ResetMapValuesOnDeath(const playerid) {
 	    Map[mpEvacuatedHumans]--;
 	}
 	
+	ClearFromIterators(playerid);
+	
 	Misc[playerid][mdLastIssuedDamage] = -1;
     Misc[playerid][mdLastIssuedReason] = 0;
 }
@@ -3357,29 +3362,32 @@ stock ResetValuesOnDisconnect(const playerid) {
         }
     }
     
-    if(Iter_Contains(MutatedPlayers, playerid)) {
-        Iter_Remove(MutatedPlayers, playerid);
-    }
-    
-    if(Iter_Contains(RadioactivePlayers, playerid)) {
-		Iter_Remove(RadioactivePlayers, playerid);
-	}
-	
-	if(Iter_Contains(NursePlayers, playerid)) {
-	    Iter_Remove(NursePlayers, playerid);
-	}
-	
-	if(Iter_Contains(PriestPlayers, playerid)) {
-	    Iter_Remove(PriestPlayers, playerid);
-	}
-	
-	if(Iter_Contains(SupportPlayers, playerid)) {
-		Iter_Remove(SupportPlayers, playerid);
-	}
-    
+    ClearFromIterators(playerid);
     ClearPlayerRoundData(playerid);
     Round[playerid][rdIsHumanHero] = false;
 	Round[playerid][rdIsZombieBoss] = false;
+}
+
+stock ClearFromIterators(const playerid) {
+    if(Iter_Contains(MutatedPlayers, playerid)) {
+        Iter_Remove(MutatedPlayers, playerid);
+    }
+
+    if(Iter_Contains(RadioactivePlayers, playerid)) {
+		Iter_Remove(RadioactivePlayers, playerid);
+	}
+
+	if(Iter_Contains(NursePlayers, playerid)) {
+	    Iter_Remove(NursePlayers, playerid);
+	}
+
+	if(Iter_Contains(PriestPlayers, playerid)) {
+	    Iter_Remove(PriestPlayers, playerid);
+	}
+
+	if(Iter_Contains(SupportPlayers, playerid)) {
+		Iter_Remove(SupportPlayers, playerid);
+	}
 }
 
 stock GetWeaponFromConfigById(const weaponid) {
@@ -3588,12 +3596,11 @@ stock SetTeams() {
 					SendClientMessage(p, 0x59E4B5FF, formated);
 				}
 			}
-			
         } else {
             GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_TRY_TO_SURVIVE]), 2000, 6);
             SetPlayerTeamAC(playerid, TEAM_HUMAN);
             
-            if(!hero) {
+            /*if(!hero) {
 				Round[playerid][rdIsHumanHero] = true;
 				hero = true;
 				
@@ -3601,7 +3608,7 @@ stock SetTeams() {
 					format(formated, sizeof(formated), Localization[p][LD_MSG_HUMAN_HERO], Misc[playerid][mdPlayerName], Localization[p][LD_MSG_POINTS_MULTIPLE]);
 					SendClientMessage(p, 0x59E4B5FF, formated);
 				}
-			}
+			}*/
         }
         
         ResetRoundSessionOnMapStart(playerid);
@@ -3626,9 +3633,7 @@ CMD:test(playerid) {
 	    return 0;
 	}
 	
-	//SetPlayerTeamAC(playerid, TEAM_HUMAN);
-	//SetByCurrentClass(playerid);
-	
-	BreakLegs(playerid, playerid, ABILITY_STEALER);
+	SetPlayerTeamAC(playerid, TEAM_HUMAN);
+	SetByCurrentClass(playerid);
 	return 1;
 }

@@ -7,43 +7,67 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[17:37:14] 
-[17:37:14] Server Plugins
-[17:37:14] --------------
-[17:37:14]  Loading plugin: mysql
-[17:37:14]  >> plugin.mysql: R41-4 successfully loaded.
-[17:37:14]   Loaded.
-[17:37:14]  Loading plugin: dc_cmd
-[17:37:14]   Daniel's CMD plugin v2.8
-[17:37:14]     (c) 2014 Daniel_Cortez
-[17:37:14] 	www.pro-pawn.ru
-[17:37:14]   Loaded.
-[17:37:14]  Loading plugin: sscanf
-[17:37:14] 
-[17:37:14]  ===============================
-[17:37:14] 
-[17:37:14]       sscanf plugin loaded.     
-[17:37:14] 
-[17:37:14]          Version: 2.13.8
-[17:37:14] 
-[17:37:14]    (c) 2022 Alex "Y_Less" Cole  
-[17:37:14] 
-[17:37:14]  ===============================
-[17:37:14] 
-[17:37:14]   Loaded.
-[17:37:14]  Loading plugin: jit
-[17:37:14]   JIT plugin 2.4.1
-[17:37:14]   Loaded.
-[17:37:14]  Loaded 4 plugins.
+[23:16:12] 
+[23:16:12] Server Plugins
+[23:16:12] --------------
+[23:16:12]  Loading plugin: mysql
+[23:16:12]  >> plugin.mysql: R41-4 successfully loaded.
+[23:16:12]   Loaded.
+[23:16:12]  Loading plugin: dc_cmd
+[23:16:12]   Daniel's CMD plugin v2.8
+[23:16:12]     (c) 2014 Daniel_Cortez
+[23:16:12] 	www.pro-pawn.ru
+[23:16:12]   Loaded.
+[23:16:12]  Loading plugin: sscanf
+[23:16:12] 
+[23:16:12]  ===============================
+[23:16:12] 
+[23:16:12]       sscanf plugin loaded.     
+[23:16:12] 
+[23:16:12]          Version: 2.13.8
+[23:16:12] 
+[23:16:12]    (c) 2022 Alex "Y_Less" Cole  
+[23:16:12] 
+[23:16:12]  ===============================
+[23:16:12] 
+[23:16:12]   Loaded.
+[23:16:12]  Loading plugin: jit
+[23:16:12]   JIT plugin 2.4.1
+[23:16:12]   Loaded.
+[23:16:12]  Loaded 4 plugins.
 
-[17:37:14] 
-[17:37:14] Filterscripts
-[17:37:14] ---------------
-[17:37:14]   Loading filterscript 'aview.amx'...
-[17:37:14] 
+[23:16:12] 
+[23:16:12] Filterscripts
+[23:16:12] ---------------
+[23:16:12]   Loading filterscript 'aview.amx'...
+[23:16:12] 
          Animation Browser
-[17:37:14]               v1.0
-[17:37:14]              SoNik))
+[23:16:12]               v1.0
+[23:16:12]              SoNik))
 
-[17:37:14]   Loaded 1 filterscripts.
+[23:16:12]   Loaded 1 filterscripts.
 
+[23:16:14] [connection] 127.0.0.1:59633 requests connection cookie.
+[23:16:20] Started at 23:16:20 on 14/07/2023... | Status: 0
+[23:16:20] JIT is present
+[23:16:20] 25
+[23:16:20] Number of vehicle models: 0
+[23:16:20] [connection] incoming connection: 127.0.0.1:59633 id: 0
+[23:16:20] [join] Taxa has joined the server (0:127.0.0.1)
+[23:16:20] weburl = "www.sa-mp.com"  (string)
+[23:16:20] language = "English"  (string)
+[23:16:20] (1): Server configuration LOADED
+[23:16:20] (2): Gangs configuration LOADED
+[23:16:20] (3): Round configuration LOADED
+[23:16:20] (4): Evacuation configuration LOADED
+[23:16:20] (5): Map configuration LOADED
+[23:16:20] (6): Weapons configuration LOADED (17 / 17)
+[23:16:20] (7): Balance configuration LOADED
+[23:16:20] (8): Textures configuration LOADED (7 / 7)
+[23:16:20] (9): Classes configuration LOADED
+[23:16:20] (8): Classes loaded (54 / 54)
+[23:16:20] (8): Loaded 1 maps in total
+[23:16:22]   Filterscript 'village.amx' unload failed.
+[23:16:22]   Filterscript 'village.amx' loaded.
+[23:22:50]   Filterscript 'village.amx' unloaded.
+[23:22:50]   Filterscript 'village.amx' loaded.

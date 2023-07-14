@@ -4,7 +4,7 @@
 #define _weapons_pack_included
 
 #define WEAPON_FISTS 0
-#define MAX_WEAPONS 16
+#define MAX_WEAPONS 17
 
 enum WEAPONS_CONFIG_DATA {
 	wdCfgType,
