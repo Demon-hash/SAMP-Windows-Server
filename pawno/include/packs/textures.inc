@@ -3,7 +3,7 @@
 #endif
 #define _textures_pack_included
 
-#define MAX_SERVER_TEXTURES 6
+#define MAX_SERVER_TEXTURES 7
 
 enum {
 	TIMELEFT_TEXTURE_ID,
@@ -12,12 +12,14 @@ enum {
 	UNTILEVAC_TEXT_TEXTURE_ID,
 	ALIVE_INFO_TEXTURE_ID,
 	POINTS_TEXTURE_ID,
+	BLIND_TEXTURE_ID,
 };
 
 enum TEXTURES_DATA {
 	Text:timeLeftTexture,
 	Text:infectedTexture,
 	Text:untillEvacRectangleTexture,
+	Text:blindTexture,
 	Text:untilEvacTextTexture[MAX_PLAYERS],
 	Text:aliveInfoTexture[MAX_PLAYERS],
 	Text:pointsTexture[MAX_PLAYERS],

@@ -142,37 +142,7 @@ static
 #define CLS_CFG_CONSOLE_LOG "(9): Classes configuration"
 
 main() {
-	printf("%d", ABILITY_BUILD);
-	/*
-	ABILITY_NONE = 0,
-	ABILITY_INFECT,
-	ABILITY_FLESHER,
-	ABILITY_REGENERATOR,
-	ABILITY_SUPPORT,
-	ABILITY_STEALER,
-	ABILITY_BOOMER,
-	ABILITY_JUMPER,
-	ABILITY_STOMPER,
-	ABILITY_KAMIKAZE,
-	ABILITY_SPACEBREAKER,
-	ABILITY_MIMICRY,
-	ABILITY_FREEZER,
-	ABILITY_RADIOACTIVE,
-	ABILITY_FLASH,
-	ABILITY_SPITTER,
-	ABILITY_MUTATED,
-	ABILITY_SPORE,
-	ABILITY_WITCH,
-	ABILITY_MIRROR,
-	ABILITY_JUGGERNAUT,
-
-	ABILITY_CURE,
-	ABILITY_BUILD,
-	ABILITY_TASER,
-	ABILITY_LONG_JUMPS,
-	ABILITY_CURE_FIELD,
-	ABILITY_HOLY_FIELD,
-	*/
+	printf("%d", ABILITY_LONG_JUMPS);
 }
 
 public OnGameModeInit() {
@@ -627,7 +597,19 @@ public OnPlayerCommandPerformed(playerid, cmdtext[], success) {
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
     if(KEY(KEY_WALK)) {
         ProceedClassAbilityActivation(playerid);
+        return 1;
 	}
+	
+	if(KEY(KEY_JUMP)) {
+	    if(Round[playerid][rdIsLegsBroken]) {
+			ApplyAnimation(playerid, "PED", "getup_front", 4.1, 0, 0, 0, 0, 0);
+			return 1;
+		}
+		
+		return 1;
+	}
+	
+	return 1;
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
@@ -744,15 +726,7 @@ custom Update() {
 	gettime(currentHour, currentMinute, currentSecond);
 
 	foreach(Player, playerid) {
-	    if(Misc[playerid][mdKickForAuthTimeout] > 0) {
-	        Misc[playerid][mdKickForAuthTimeout]--;
-	        if(Misc[playerid][mdKickForAuthTimeout] == 0) {
-	            KickForAuthTimeout(playerid);
-	            Misc[playerid][mdKickForAuthTimeout] = -1;
-				continue;
-	        }
-	    }
-	    
+	    if(ProceedAuthTimeoutKick(playerid)) continue;
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
 	    if(Misc[playerid][mdIsLogged]) {
@@ -762,27 +736,8 @@ custom Update() {
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
-            if(IsInfected(playerid)) {
-	        	SetPlayerColor(playerid, COLOR_INFECTED);
-	        	TextDrawShowForPlayer(playerid, ServerTextures[infectedTexture]);
-	        	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
-	        	SetPlayerDrunkLevel(playerid, ServerConfig[svCfgInfectionDrunkLevel]);
-    		}
-
-    		if(IsCursed(playerid)) {
-    		    GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISLPAY_CURSE]), 5000, 5);
-    		    SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgCurseDamage]);
-    		}
-    		
-    		if(IsFrozen(playerid)) {
-    		    Round[playerid][rdFrozeTime]--;
-    		    if(Round[playerid][rdFrozeTime] == 0) {
-    		    	Round[playerid][rdFrozeTime] = -1;
-    		    	TogglePlayerControllable(playerid, 1);
-    		    	ClearAnimations(playerid);
-    		    }
-    		}
-            
+            ProceedInfection(playerid);
+            ProceedUnfreeze(playerid);
             ProceedRecoveryLongJumps(playerid);
             ProceedMimicryChangeBack(playerid);
             ProceedPassiveAbility(playerid, ABILITY_REGENERATOR);
@@ -1123,6 +1078,12 @@ custom OnMapUpdate() {
 	    }
 	}
 	
+	foreach(RadioactivePlayers, playerid) {
+	    foreach(Humans, targetid) {
+	        ProceedPassiveAbility(playerid, ABILITY_RADIOACTIVE, targetid);
+	    }
+	}
+	
 	foreach(NursePlayers, playerid) {
 	    foreach(Humans, targetid) {
 	        ProceedPassiveAbility(playerid, ABILITY_CURE_FIELD, targetid);
@@ -1132,12 +1093,6 @@ custom OnMapUpdate() {
 	foreach(PriestPlayers, playerid) {
 	    foreach(Humans, targetid) {
 	        ProceedPassiveAbility(playerid, ABILITY_HOLY_FIELD, targetid);
-	    }
-	}
-
-	foreach(RadioactivePlayers, playerid) {
-	    foreach(Humans, targetid) {
-	        ProceedPassiveAbility(playerid, ABILITY_RADIOACTIVE, targetid);
 	    }
 	}
 	
@@ -1611,7 +1566,7 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         static const descriptionColors[] = { 0xFFFFFF, 0xA7A5A5 };
 
         new i, len = clamp(cache_num_rows(), 0, MAX_CLASSES), Float:points;
-        new list[2048], formated[256], description[MAX_CLASS_DESC], color;
+        new list[2560], formated[256], description[MAX_CLASS_DESC], color;
         
         for( i = 0; i < len; i++ ) {
             cache_get_value_name_int(i, "id", ClassesSelection[playerid][i][csdId]);
@@ -1934,15 +1889,17 @@ stock ClearPlayerMiscData(const playerid) {
 }
 
 stock InitializeScreenTextures() {
-	CreateTextureFromConfig(ServerTextures[timeLeftTexture], TIMELEFT_TEXTURE_ID);
+    CreateTextureFromConfig(ServerTextures[timeLeftTexture], TIMELEFT_TEXTURE_ID);
 	CreateTextureFromConfig(ServerTextures[infectedTexture], INFECTED_TEXTURE_ID);
 	CreateTextureFromConfig(ServerTextures[untillEvacRectangleTexture], UNTILEVAC_RECTANGLE_TEXTURE_ID);
-
+	
 	for( new i; i < MAX_PLAYERS; i++ ) {
 	    CreateTextureFromConfig(ServerTextures[untilEvacTextTexture][i], UNTILEVAC_TEXT_TEXTURE_ID);
 		CreateTextureFromConfig(ServerTextures[aliveInfoTexture][i], ALIVE_INFO_TEXTURE_ID);
 		CreateTextureFromConfig(ServerTextures[pointsTexture][i], POINTS_TEXTURE_ID);
 	}
+	
+	CreateTextureFromConfig(ServerTextures[blindTexture], BLIND_TEXTURE_ID);
 }
 
 stock DestroyScreenTextures() {
@@ -2002,7 +1959,7 @@ stock ClearPlayerRoundData(const playerid) {
     Round[playerid][rdIsAdvanceInfected] = false;
 	Round[playerid][rdIsInRadioactiveField] = false;
 	Round[playerid][rdIsCursed] = false;
-	Round[playerid][rdIsTazered] = false;
+	Round[playerid][rdIsLegsBroken] = false;
     Round[playerid][rdBoxCount] = -1;
     Round[playerid][rdCheckForOOM] = 0;
  	Round[playerid][rdFrozeTime] = -1;
@@ -2113,8 +2070,12 @@ stock ProceedClassAbilityActivation(const playerid) {
 		
         switch(abilities[ability]) {
             case ABILITY_INFECT: InfectPlayer(playerid, classid, ABILITY_INFECT);
+            case ABILITY_DRUNK: InfectPlayerDrunk(playerid, classid, ABILITY_DRUNK);
+            case ABILITY_BLIND: InfectPlayerBlind(playerid, classid, ABILITY_BLIND);
 			case ABILITY_MUTATED: InfectPlayerAdvanced(playerid, classid, ABILITY_MUTATED);
-            case ABILITY_STEALER: StealArmour(playerid, classid, ABILITY_STEALER);
+            case ABILITY_ARMOUR_REMOVE: StealArmour(playerid, classid, ABILITY_ARMOUR_REMOVE);
+            case ABILITY_STEALER: StealAmmo(playerid, classid, ABILITY_STEALER);
+            case ABILITY_LEG_BREAK: BreakLegs(playerid, classid, ABILITY_LEG_BREAK);
 			case ABILITY_STOMPER: StompHumans(playerid, classid, ABILITY_STOMPER);
 			case ABILITY_WITCH: CurseHuman(playerid, classid, ABILITY_WITCH);
             case ABILITY_FLASH: FlashAttackOnHuman(playerid, classid, ABILITY_FLASH);
@@ -2156,7 +2117,6 @@ stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1
 	        case ABILITY_MIRROR: MirrorDamageBack(targetid, playerid, amount);
 			case ABILITY_HOLY_FIELD: PlayerInHolyField(targetid, playerid, classid);
 			case ABILITY_MUTATED: PlayerInfectPlayer(targetid, playerid, ClassesConfig[clsCfgAirRange]);
-			case ABILITY_TASER: TasePlayer(targetid, playerid, classid);
 		}
 	}
 }
@@ -2337,7 +2297,7 @@ stock bool:IsAbleToBeInfected(const playerid) {
 }
 
 stock bool:IsAbleToTakeArmour(const playerid) {
-	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_STEALER)) {
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_ARMOUR_REMOVE)) {
 	    return false;
 	}
 	
@@ -2372,6 +2332,22 @@ stock bool:IsAbleToBeFreezed(const playerid) {
         return false;
     }
     
+	return true;
+}
+
+stock bool:IsAbleToBreakLegs(const playerid) {
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_LEG_BREAK) || Round[playerid][rdIsLegsBroken]) {
+	    return false;
+	}
+	
+	return true;
+}
+
+stock bool:IsAbleToTakeAmmo(const playerid) {
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_STEALER)) {
+	    return false;
+	}
+
 	return true;
 }
 
@@ -2455,6 +2431,38 @@ stock InfectPlayer(const playerid, const classid, const abilityid) {
 	}
 	
     return 0;
+}
+
+stock InfectPlayerDrunk(const playerid, const classid, const abilityid) {
+    foreach(Humans, targetid) {
+	    if(!IsInAbilityRange(targetid, playerid, classid)) continue;
+		if(!IsAbleToBeInfected(targetid)) continue;
+
+        DefaultInfection(targetid);
+        SetPlayerDrunkLevel(playerid, ServerConfig[svCfgInfectionDrunkLevel]);
+    	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
+    	SendInfectionMessage(LD_MSG_MISTY_INFECTED, targetid, playerid);
+    	AbilityUsed(playerid, classid, abilityid);
+        return 1;
+	}
+
+    return 0;
+}
+
+stock InfectPlayerBlind(const playerid, const classid, const abilityid) {
+    foreach(Humans, targetid) {
+	    if(!IsInAbilityRange(targetid, playerid, classid)) continue;
+		if(!IsAbleToBeInfected(targetid)) continue;
+
+        DefaultInfection(targetid);
+       	TextDrawShowForPlayer(playerid, ServerTextures[blindTexture]);
+    	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
+    	SendInfectionMessage(LD_MSG_BLIND_INFECTED, targetid, playerid);
+    	AbilityUsed(playerid, classid, abilityid);
+        return 1;
+	}
+	
+	return 0;
 }
 
 stock InfectPlayerAdvanced(const playerid, const classid, const abilityid) {
@@ -2553,6 +2561,8 @@ stock DamageFromRadioactiveField(const targetid, const playerid, const Float:amo
 	    return 0;
 	}
 	
+	Round[targetid][rdIsInRadioactiveField] = true;
+	
 	if(IsAbleToTakeRadioactiveDamage(targetid)) {
 	    GameTextForPlayer(targetid, RusToGame(Localization[targetid][LD_DISPLAY_RADIOACTIVE]), 1500, 5);
 	    SetPlayerHealthAC(targetid, GetPlayerHealthEx(targetid) - amount);
@@ -2588,6 +2598,61 @@ stock StealArmour(const playerid, const classid, const abilityid) {
     	}
 	}
 	
+	return 0;
+}
+
+stock StealAmmo(const playerid, const classid, const abilityid) {
+    foreach(Humans, targetid) {
+        if(!IsAbleToTakeAmmo(targetid)) continue;
+    	if(IsInAbilityRange(targetid, playerid, classid)) {
+		    new formated[96], gunname[32], index, weapon, ammo, bool: taken;
+		    
+		    for( index = 0; index < 9; index++ ) {
+		    	GetPlayerWeaponData(targetid, index, weapon, ammo);
+		    	if(ammo > 0) {
+		    	    GetWeaponName(weapon, gunname, sizeof(gunname));
+		    	    ammo = max(0, floatround(ammo / 2, floatround_tozero));
+		    	    SetPVarInt(targetid, gunname, ammo);
+                    SetPlayerAmmo(targetid, weapon, ammo);
+                    taken = true;
+		    	}
+		    }
+		    
+		    if(taken) {
+				foreach(Player, i) {
+					format(formated, sizeof(formated), Localization[i][LD_MSG_AMMO_STOLE], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName]);
+					SendClientMessage(i, 0x009900FF, formated);
+				}
+
+				ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
+				AbilityUsed(playerid, classid, abilityid);
+	    	    return 1;
+    	    }
+    	    
+    	    return 0;
+    	}
+	}
+
+	return 0;
+}
+
+stock BreakLegs(const playerid, const classid, const abilityid) {
+    foreach(Humans, targetid) {
+        if(!IsAbleToBreakLegs(targetid)) continue;
+    	if(IsInAbilityRange(targetid, playerid, classid)) {
+		    new formated[96];
+			foreach(Player, i) {
+				format(formated, sizeof(formated), Localization[i][LD_MSG_BREAK_LEGS], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
+				SendClientMessage(i, 0x009900FF, formated);
+			}
+
+            Round[targetid][rdIsLegsBroken] = true;
+			ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
+			AbilityUsed(playerid, classid, abilityid);
+    	    return 1;
+    	}
+	}
+
 	return 0;
 }
 
@@ -2884,16 +2949,21 @@ stock HighJump(const playerid, const classid, const abilityid) {
 }
 
 stock LongJump(const playerid) {
-    new Float:pos[3];
-    GetPlayerCameraFrontVector(playerid, pos[0], pos[1], pos[2]);
-	SetPlayerVelocity(playerid,
-		pos[0] /  ClassesConfig[clsCfgLongJump][0],
-		pos[1] / ClassesConfig[clsCfgLongJump][1],
-		pos[2] + ClassesConfig[clsCfgLongJump][2]
-	);
+    if( Round[playerid][rdAbilityTimes] > 0) {
+	    new Float:pos[3];
+	    GetPlayerCameraFrontVector(playerid, pos[0], pos[1], pos[2]);
+		SetPlayerVelocity(playerid,
+			pos[0] /  ClassesConfig[clsCfgLongJump][0],
+			pos[1] / ClassesConfig[clsCfgLongJump][1],
+			pos[2] + ClassesConfig[clsCfgLongJump][2]
+		);
+		
+		Round[playerid][rdAbilityTimes]--;
+		AbilityUsed(playerid);
+		return 1;
+	}
 	
-	AbilityUsed(playerid);
-	return 1;
+	return 0;
 }
 
 stock ProceedRecoveryLongJumps(const playerid) {
@@ -2904,10 +2974,6 @@ stock ProceedRecoveryLongJumps(const playerid) {
 	    Round[playerid][rdAbilityTimes]++;
 	    AbilitiesTimers[playerid][ABILITY_LONG_JUMPS] = gettime() + Classes[classid][cldCooldown];
 	}
-}
-
-stock TasePlayer(const targetid, const playerid, const classid) {
-
 }
 
 stock BreakSpace(const playerid, const classid, const abilityid) {
@@ -2964,6 +3030,38 @@ stock BuildBox(const playerid, const classid) {
 
 	return 0;
 }
+
+stock ProceedAuthTimeoutKick(const playerid) {
+	if(Misc[playerid][mdKickForAuthTimeout] > 0) {
+		Misc[playerid][mdKickForAuthTimeout]--;
+		if(Misc[playerid][mdKickForAuthTimeout] == 0) {
+			KickForAuthTimeout(playerid);
+			Misc[playerid][mdKickForAuthTimeout] = -1;
+			return 1;
+		}
+	}
+   	return 0;
+}
+
+stock ProceedInfection(const playerid) {
+    if(IsInfected(playerid)) {
+    	SetPlayerColor(playerid, COLOR_INFECTED);
+    	TextDrawShowForPlayer(playerid, ServerTextures[infectedTexture]);
+    	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - ServerConfig[svCfgInfectionDamage]);
+	}
+}
+
+stock ProceedUnfreeze(const playerid) {
+    if(IsFrozen(playerid)) {
+	    Round[playerid][rdFrozeTime]--;
+	    if(Round[playerid][rdFrozeTime] == 0) {
+	    	Round[playerid][rdFrozeTime] = -1;
+	    	TogglePlayerControllable(playerid, 1);
+	    	ClearAnimations(playerid);
+	    }
+	}
+}
+
 
 stock Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
 {
@@ -3528,7 +3626,9 @@ CMD:test(playerid) {
 	    return 0;
 	}
 	
-	SetPlayerTeamAC(playerid, TEAM_HUMAN);
-	SetByCurrentClass(playerid);
-	return 0;
+	//SetPlayerTeamAC(playerid, TEAM_HUMAN);
+	//SetByCurrentClass(playerid);
+	
+	BreakLegs(playerid, playerid, ABILITY_STEALER);
+	return 1;
 }

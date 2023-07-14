@@ -13,7 +13,7 @@ enum ROUND_DATA {
 	bool:rdIsAdvanceInfected,
 	bool:rdIsInRadioactiveField,
 	bool:rdIsCursed,
-	bool:rdIsTazered,
+	bool:rdIsLegsBroken,
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
 	rdBoxCount,
