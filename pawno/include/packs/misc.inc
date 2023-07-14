@@ -34,6 +34,7 @@ enum MISC_DATA {
 	mdWeaponSkill[MAX_WEAPONS_SKILL],
 	mdDialogId,
 	mdSelectionTeam,
+	mdBlindTimeout,
 	mdHumanSelectionName[MAX_CLASS_NAME],
 	mdZombieSelectionName[MAX_CLASS_NAME],
 	mdHumanNextSelectionName[MAX_CLASS_NAME],

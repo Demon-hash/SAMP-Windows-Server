@@ -737,6 +737,7 @@ custom Update() {
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
             ProceedInfection(playerid);
+            ProceedBlind(playerid);
             ProceedUnfreeze(playerid);
             ProceedRecoveryLongJumps(playerid);
             ProceedMimicryChangeBack(playerid);
@@ -1790,6 +1791,12 @@ stock ClearAllPlayerData(const playerid) {
     SetPlayerArmourAC(playerid, 0.0);
 }
 
+stock ClearAbilitiesTimers(const playerid) {
+	for( new i; i < ABLITY_MAX; i++ ) {
+    	AbilitiesTimers[playerid][i] = 0;
+    }
+}
+
 stock ClearPlayerData(const playerid) {
     Player[playerid][pAccountId] = 0;
     Player[playerid][pLanguage] = 0;
@@ -1866,6 +1873,7 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdGang] = -1;
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
+	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdSelectionTeam] = -1;
 	strmid(Misc[playerid][mdHumanSelectionName], "", 0, MAX_CLASS_NAME);
@@ -1986,6 +1994,10 @@ stock ClearPlayerRoundData(const playerid) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
 		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], MapConfig[mpCfgSpawnTextRange]);
 	}
+	
+	ClearAbilitiesTimers(playerid);
+	TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
+	TextDrawHideForPlayer(playerid, ServerTextures[blindTexture]);
 }
 
 stock bool:IsPlayerInsideMap(const playerid) {
@@ -2441,7 +2453,7 @@ stock InfectPlayerDrunk(const playerid, const classid, const abilityid) {
 		if(!IsAbleToBeInfected(targetid)) continue;
 
         DefaultInfection(targetid);
-        SetPlayerDrunkLevel(playerid, ServerConfig[svCfgInfectionDrunkLevel]);
+        SetPlayerDrunkLevel(targetid, ServerConfig[svCfgInfectionDrunkLevel]);
     	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
     	SendInfectionMessage(LD_MSG_MISTY_INFECTED, targetid, playerid);
     	AbilityUsed(playerid, classid, abilityid);
@@ -2457,7 +2469,8 @@ stock InfectPlayerBlind(const playerid, const classid, const abilityid) {
 		if(!IsAbleToBeInfected(targetid)) continue;
 
         DefaultInfection(targetid);
-       	TextDrawShowForPlayer(playerid, ServerTextures[blindTexture]);
+        Misc[targetid][mdBlindTimeout] = Classes[classid][cldAbilityTime];
+       	TextDrawShowForPlayer(targetid, ServerTextures[blindTexture]);
     	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
     	SendInfectionMessage(LD_MSG_BLIND_INFECTED, targetid, playerid);
     	AbilityUsed(playerid, classid, abilityid);
@@ -2750,9 +2763,19 @@ stock ProceedMimicryChangeBack(const playerid) {
 	if(Misc[playerid][mdMimicry][2] > 0) {
  		Misc[playerid][mdMimicry][2]--;
    		if(Misc[playerid][mdMimicry][2] == 0) {
+   		    new color = GetPlayerColor(playerid);
+   		
      		switch(Misc[playerid][mdMimicry][1]) {
-       			case TEAM_HUMAN: SetPlayerColor(playerid, COLOR_HUMAN);
-          		case TEAM_ZOMBIE: SetPlayerColor(playerid, COLOR_ZOMBIE);
+       			case TEAM_HUMAN: {
+       			    if(color == COLOR_ZOMBIE) {
+				   		SetPlayerColor(playerid, COLOR_HUMAN);
+				   	}
+				}
+          		case TEAM_ZOMBIE: {
+          		    if(color == COLOR_HUMAN) {
+				  		SetPlayerColor(playerid, COLOR_ZOMBIE);
+				  	}
+				}
        		}
        		
        		SetPlayerSkin(playerid, Misc[playerid][mdMimicry][0]);
@@ -3046,6 +3069,16 @@ stock ProceedAuthTimeoutKick(const playerid) {
    	return 0;
 }
 
+stock ProceedBlind(const playerid) {
+    if(Misc[playerid][mdBlindTimeout] > 0) {
+        Misc[playerid][mdBlindTimeout]--;
+        if(Misc[playerid][mdBlindTimeout] == 0) {
+            TextDrawHideForPlayer(playerid, ServerTextures[blindTexture]);
+            Misc[playerid][mdBlindTimeout] = -1;
+        }
+    }
+}
+
 stock ProceedInfection(const playerid) {
     if(IsInfected(playerid)) {
     	SetPlayerColor(playerid, COLOR_INFECTED);
@@ -3333,8 +3366,6 @@ stock ResetMapValuesOnDeath(const playerid) {
 	    Map[mpEvacuatedHumans]--;
 	}
 	
-	ClearFromIterators(playerid);
-	
 	Misc[playerid][mdLastIssuedDamage] = -1;
     Misc[playerid][mdLastIssuedReason] = 0;
 }
@@ -3600,7 +3631,7 @@ stock SetTeams() {
             GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_TRY_TO_SURVIVE]), 2000, 6);
             SetPlayerTeamAC(playerid, TEAM_HUMAN);
             
-            /*if(!hero) {
+            if(!hero) {
 				Round[playerid][rdIsHumanHero] = true;
 				hero = true;
 				
@@ -3608,7 +3639,7 @@ stock SetTeams() {
 					format(formated, sizeof(formated), Localization[p][LD_MSG_HUMAN_HERO], Misc[playerid][mdPlayerName], Localization[p][LD_MSG_POINTS_MULTIPLE]);
 					SendClientMessage(p, 0x59E4B5FF, formated);
 				}
-			}*/
+			}
         }
         
         ResetRoundSessionOnMapStart(playerid);
@@ -3633,7 +3664,7 @@ CMD:test(playerid) {
 	    return 0;
 	}
 	
-	SetPlayerTeamAC(playerid, TEAM_HUMAN);
+	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
 	SetByCurrentClass(playerid);
 	return 1;
 }
