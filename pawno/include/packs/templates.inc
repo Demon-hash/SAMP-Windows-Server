@@ -350,10 +350,12 @@
 	`regeneration` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`support` DECIMAL(9,2) unsigned NOT NULL default '2.5',\
 	`air_range` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
+	`space` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
 	`stomper_effect` varchar(64) NOT NULL default '18675,0.0,0.0,0.0,-1.2,1000',\
 	`flasher_effect` varchar(48) NOT NULL default '18693,10,2,15.0',\
 	`engineer_effect` varchar(48) NOT NULL default '923,1057,15.0',\
-	`spitter_effect` varchar(24) NOT NULL default '23,1',\
+	`spitter_effect` int(3) unsigned NOT NULL default '23',\
+	`stealer_effect` int(3) unsigned NOT NULL default '5',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -407,7 +409,7 @@
 	`vehicle_damage` DECIMAL(9,2) unsigned NOT NULL default '50.0',\
 	`min_zombies_to_win` int(3) unsigned NOT NULL default '2',\
 	`max_weapon_ammo` int(5) unsigned NOT NULL default '1000',\
-	`curing_weapon` int(2) unsigned NOT NULL default '33',\
+	`rifle` int(2) unsigned NOT NULL default '33',\
 	`excluded_mirror_part` int(2) unsigned NOT NULL default '9',\
 	`meat_pickup` int(6) unsigned NOT NULL default '2804',\
 	`ammo_chance` int(3) unsigned NOT NULL default '4',\
@@ -627,44 +629,45 @@
 	(20, 'Priest', 'Священник', 'Anti-Curse Field', 'Защитное Поле От Проклятья'),\
 	(21, 'Athlete', 'Атлет', 'Long Jumps', 'Длинные прыжки'),\
 	(22, 'Nurse', 'Медсестра', 'Cure Field, Anti-Radioactive Field', 'Лечащее Поле, Анти-Радиационное поле'),\
-	(23, 'Iron Man', 'Железный Человек', 'Fast Run, High Jumps', 'Быстрый бег, Высокие прыжки'),\
-	(24, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
-	(25, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
-	(26, 'Human Queen', 'Королева', 'Long Jumps, Immunity', 'Длиные прыжки, Иммунитет');\
+	(23, 'Poisoner', 'Отравитель', 'Poisoned Bullets', 'Отравленые пули'),\
+	(24, 'Iron Man', 'Железный Человек', 'Fast Run, Long Jumps', 'Быстрый бег, Длинные прыжки'),\
+	(25, 'Architect', 'Архитектор', 'Can build 9 boxes, Immunity', 'Может создать 9 коробок, Иммунитет'),\
+	(26, 'Imaginary Doctor', 'Мнимый доктор', 'Space Traveling', 'Путишествие в пространстве'),\
+	(27, 'Human Queen', 'Королева', 'Long Jumps, Immunity', 'Длиные прыжки, Иммунитет');\
 "
 
 #define PREDIFINED_LOCALE_CLASSES_30 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
-	(27, 'Standard Zombie', 'Обычный Зомби', 'Can Infect', 'Может Заразить'),\
-	(28, 'Misty Zombie', 'Туманный Зомби', 'Infection Drunk Vision', 'Зараженный Теряет Точность'),\
-	(29, 'Blind Zombie', 'Ослепляющий Зомби', 'Infection Blinds', 'Зараженный Перестает Видеть'),\
-	(30, 'Flesher Zombie', 'Гнилой Зомби', 'Infected Meat', 'Зараженное Мясо'),\
-	(31, 'Regenerator Zombie', 'Регенератор Зомби', 'Can Regenerate HP', 'Может Восстанавливать ХП'),\
-	(32, 'Support Zombie', 'Зомби Поддержка', 'Heals In A Range', 'Восстанавливает ХП В Радиусе'),\
-	(33, 'Gangster Zombie', 'Гангстер Зомби', 'Can Steal Armour', 'Может Украсть Броню'),\
-	(34, 'Boomer Zombie', 'Взрывающийся Зомби', 'Explodes And Infects On Death', 'Взрывается И Заражает При Смерти'),\
-	(35, 'Jumper Zombie', 'Зомби Прыгун', 'High Jump', 'Высокий Прыжок'),\
-	(36, 'Jumper Boomer Zombie', 'Взрывающийся Зомби Прыгун', 'High Jump, Explodes On Death', 'Высокий Прыжок, Взрывается при смерти'),\
-	(37, 'Mega Jumper Zombie', 'Мега Зомби Прыгун', 'High Jumps', 'Высокие Прыжки'),\
-	(38, 'Stomper Zombie', 'Топтун Зомби', 'Can Stomp Humans', 'Может Отбрасывать Людей'),\
-	(39, 'Kamikaze Zombie', 'Камикадзе Зомби', 'Explodes On Request', 'Взрывается по желанию'),\
-	(40, 'Spacebreaker Zombie', 'Зомби Крушащий Пространство', 'Space Traveling', 'Путишествие в пространстве'),\
-	(41, 'Mimic Zombie', 'Мимик Зомби', 'Mimicry', 'Мимикрия');\
+	(28, 'Standard Zombie', 'Обычный Зомби', 'Can Infect', 'Может Заразить'),\
+	(29, 'Misty Zombie', 'Туманный Зомби', 'Infection Drunk Vision', 'Зараженный Теряет Точность'),\
+	(30, 'Blind Zombie', 'Ослепляющий Зомби', 'Infection Blinds', 'Зараженный Перестает Видеть'),\
+	(31, 'Flesher Zombie', 'Гнилой Зомби', 'Infected Meat', 'Зараженное Мясо'),\
+	(32, 'Regenerator Zombie', 'Регенератор Зомби', 'Can Regenerate HP', 'Может Восстанавливать ХП'),\
+	(33, 'Support Zombie', 'Зомби Поддержка', 'Heals In A Range', 'Восстанавливает ХП В Радиусе'),\
+	(34, 'Gangster Zombie', 'Гангстер Зомби', 'Can Steal Armour', 'Может Украсть Броню'),\
+	(35, 'Boomer Zombie', 'Взрывающийся Зомби', 'Explodes And Infects On Death', 'Взрывается И Заражает При Смерти'),\
+	(36, 'Jumper Zombie', 'Зомби Прыгун', 'High Jump', 'Высокий Прыжок'),\
+	(37, 'Jumper Boomer Zombie', 'Взрывающийся Зомби Прыгун', 'High Jump And Explode', 'Высокий Прыжок И Взрыв'),\
+	(38, 'Mega Jumper Zombie', 'Мега Зомби Прыгун', 'High Jumps', 'Высокие Прыжки'),\
+	(39, 'Stomper Zombie', 'Топтун Зомби', 'Can Stomp Humans', 'Может Отбрасывать Людей'),\
+	(40, 'Kamikaze Zombie', 'Камикадзе Зомби', 'Explodes On Request', 'Взрывается по желанию'),\
+	(41, 'Spacebreaker Zombie', 'Зомби Крушащий Пространство', 'Space Traveling', 'Путишествие в пространстве'),\
+	(42, 'Mimic Zombie', 'Мимик Зомби', 'Mimicry', 'Мимикрия');\
 "
 
 #define PREDIFINED_LOCALE_CLASSES_40 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
-	(42, 'Freezer Zombie', 'Холодный Зомби', 'Freezes On Death', 'Может Заморозить При Смерти'),\
-	(43, 'Radioactive Zombie', 'Радиоактивный Зомби', 'Radioactive Field', 'Радиоактивное Поле'),\
-	(44, 'Flash Zombie', 'Невероятно Быстрый Зомби', 'Lighting Attack', 'Мгновенная атака'),\
-	(45, 'Spitter Zombie', 'Плюющийся Зомби', 'Can Infect In A Range', 'Может Заразить С Расстояния'),\
-	(46, 'Mutated Zombie', 'Мутированный Зомби', 'Airborne Infection', 'Воздушно-капельная Инфекция'),\
-	(47, 'Stealer Zombie', 'Вор Зомби', 'Can Steal Ammo', 'Крадет Патроны'),\
-	(48, 'Legs Breaker Zombie', 'Ветеран Зомби', 'Can Break Human Legs', 'Ломает Ноги Людям'),\
-	(49, 'Spore Zombie', 'Споровой Зомби', 'Can Infect By Spores', 'Заражает спорами'),\
-	(50, 'Fast Zombie', 'Быстрый Зомби', 'Fast Run', 'Быстрый бег'),\
-	(51, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Armour', 'Броня'),\
-	(52, 'Witch Zombie', 'Зомби Ведьма', 'Can curse', 'Может проклясть'),\
-	(53, 'Mirror Zombie', 'Отражающий Зомби', 'Reflect Damage', 'Отражает урон'),\
-	(54, 'S.W.A.T Zombie', 'Зомби Спецназовец', 'Armour, Remove Weapons', 'Броня, Убирает оружие');\
+	(43, 'Freezer Zombie', 'Холодный Зомби', 'Can Freeze', 'Может Заморозить'),\
+	(44, 'Radioactive Zombie', 'Радиоактивный Зомби', 'Radioactive Field', 'Радиоактивное Поле'),\
+	(45, 'Flash Zombie', 'Невероятно Быстрый Зомби', 'Lighting Attack', 'Мгновенная атака'),\
+	(46, 'Spitter Zombie', 'Плюющийся Зомби', 'Can Infect In A Range', 'Может Заразить С Расстояния'),\
+	(47, 'Mutated Zombie', 'Мутированный Зомби', 'Airborne Infection', 'Воздушно-капельная Инфекция'),\
+	(48, 'Stealer Zombie', 'Вор Зомби', 'Can Steal Ammo', 'Крадет Патроны'),\
+	(49, 'Legs Breaker Zombie', 'Ветеран Зомби', 'Can Break Human Legs', 'Ломает Ноги Людям'),\
+	(50, 'Spore Zombie', 'Споровой Зомби', 'Can Infect By Spores', 'Заражает спорами'),\
+	(51, 'Fast Zombie', 'Быстрый Зомби', 'Fast Run', 'Быстрый бег'),\
+	(52, 'Enforcer Zombie', 'Пуленепробеваемый Зомби', 'Armour', 'Броня'),\
+	(53, 'Witch Zombie', 'Зомби Ведьма', 'Can curse', 'Может проклясть'),\
+	(54, 'Mirror Zombie', 'Отражающий Зомби', 'Reflect Damage', 'Отражает урон'),\
+	(55, 'Special Force Zombie', 'Зомби Спецназовец', 'Armour, Remove Weapons', 'Броня, Убирает оружие');\
 "
 
 #define PREDIFINED_HUMANS "INSERT IGNORE INTO classes (id, team, points, ability, count, immunity, weapons, cooldown, time, skin, distance, disabled) VALUES \
@@ -678,8 +681,8 @@
 	(8, 2, 5000, '', 0, '', '34', 0, 0, 294, 0, 0),\
 	(9, 2, 9000, '', 0, '', '25', 0, 0, 99, 0, 0),\
 	(10, 2, 12500, '', 0, '', '24, 31', 0, 0, 164, 0, 0),\
-	(11, 2, 15000, '', 0, '12', '31, 25', 0, 0, 109, 0, 0),\
-	(12, 2, 20000, '', 0, '17', '37, 25', 0, 0, 277, 0, 0),\
+	(11, 2, 15000, '', 0, '12', '31, 24', 0, 0, 109, 0, 0),\
+	(12, 2, 20000, '', 0, '17', '37, 24', 0, 0, 277, 0, 0),\
 	(13, 2, 35000, '26', 5, '', '24, 31, 33', 0, 0, 27, 0, 0),\
 	(14, 2, 50000, '', 0, '1', '34', 0, 0, 286, 0, 0),\
 	(15, 2, 70000, '', 0, '', '39', 0, 0, 3, 0, 0),\
@@ -689,42 +692,43 @@
 	(19, 2, 225000, '15', 0, '', '24, 31', 60, 30, 97, 0, 0),\
 	(20, 2, 300000, '29', 0, '22', '24, 31', 0, 0, 68, 10.0, 0),\
 	(21, 2, 300000, '27', 3, '', '24, 32', 5, 0, 170, 0, 0),\
-	(22, 2, 400000, '28', 0, '1,17', '24, 25, 31, 33', 0, 0, 308, 10.0, 0),\
-	(23, 2, 600000, '27', 3, '', '24, 25, 33', 5, 0, 0, 0, 0),\
-	(24, 2, 850000, '26', 8, '1', '24, 31, 25, 34', 0, 0, 153, 0, 0),\
-	(25, 2, 1000000, '14', 0, '', '24, 25, 29', 15, 10, 70, 0, 0),\
-	(26, 2, 1500000, '27', 3, '1', '24, 25, 31, 33', 5, 0, 92, 0, 0);\
+	(22, 2, 400000, '28', 0, '1,17', '24, 31, 33', 0, 0, 308, 10.0, 0),\
+	(23, 2, 500000, '30', 0, '', '24,31, 33', 0, 0, 143, 0, 0),\
+	(24, 2, 600000, '27', 3, '', '24, 33', 5, 0, 0, 0, 0),\
+	(25, 2, 850000, '26', 8, '1', '24, 31, 34', 0, 0, 153, 0, 0),\
+	(26, 2, 1000000, '14', 0, '', '24, 29', 15, 10, 70, 0, 0),\
+	(27, 2, 1500000, '27', 3, '1', '24, 31, 33', 5, 0, 92, 0, 0);\
 "
 
 #define PREDIFINED_ZOMBIES "INSERT IGNORE INTO classes (id, team, points, armour, health, ability, count, cooldown, `time`, skin, distance, disabled) VALUES \
-	(27, 1, 0, 0, 100, '1', 0, 5, 0, 181, 1.5, 0),\
-	(28, 1, 500,  0, 100, '2', 0, 5, 0, 1, 1.5, 0),\
-	(29, 1, 1500, 0, 100, '3', 0, 5, 15, 213, 1.5, 0),\
-	(30, 1, 2500, 0, 100, '4', 0, 0, 0, 181, 0, 0),\
-	(31, 1, 5000, 0, 100, '5', 0, 0, 0, 70, 0, 0),\
-	(32, 1, 7500, 0, 100, '6', 0, 0, 0, 75, 10.0, 0),\
-	(33, 1, 25000,0, 100, '9', 0, 15, 0, 28, 3.5, 0),\
-	(34, 1, 5000, 0, 45, '10',0, 0, 0, 264, 7.0, 0),\
-	(35, 1, 15000, 0, 100, '11', 0, 15, 0, 162, 0, 0),\
-	(36, 1, 25000, 0, 100, '10,11', 0, 15, 0, 162, 7.0, 0),\
-	(37, 1, 30000, 0, 100, '27', 5, 5, 0, 162, 0, 0),\
-	(38, 1, 35000, 0, 100, '12', 0, 15, 0, 78, 10.0, 0),\
-	(39, 1, 10000, 0, 45, '13', 0, 0, 0, 241, 5.0, 0),\
-	(40, 1, 250000, 0, 100, '14', 0, 15, 0, 79, 0, 0),\
-	(41, 1, 75000,  0, 100, '15', 0, 60, 30, 135, 0, 0),\
-	(42, 1, 45000,  0, 45, '16', 0, 30, 10, 137, 5.5, 0),\
-	(43, 1, 50000,  0, 100, '17', 0, 0, 0, 146, 10.0, 0),\
-	(44, 1, 35000,  0, 100, '18', 0, 30, 0, 230, 0, 0),\
-	(45, 1, 125000, 0, 100, '19', 1, 15, 0, 96, 0, 0),\
-	(46, 1, 150000, 0, 100, '20', 0, 15, 0, 200, 1.5, 0),\
-	(47, 1, 150000, 0, 100, '7',  0, 15, 0, 209, 1.5, 0),\
-	(48, 1, 150000, 0, 100, '8',  0, 15, 0, 30, 1.5, 0),\
-	(49, 1, 250000, 0, 100, '21', 0, 0, 0, 136, 0, 0),\
-	(50, 1, 400000, 0, 100, '', 0, 0, 0, 0, 0, 0),\
-	(51, 1, 850000, 100, 100, '', 0, 0, 0, 285, 0, 0),\
-	(52, 1, 600000, 0, 100, '22', 0, 15, 0, 129, 1.5, 0),\
-	(53, 1, 700000, 0, 100, '23', 0, 0, 0, 112, 0, 0),\
-	(54, 1, 1000000, 100, 100, '24', 0, 0, 0, 285, 10.0, 0);\
+	(28, 1, 0, 0, 100, '1', 0, 5, 0, 181, 1.5, 0),\
+	(29, 1, 500,  0, 100, '2', 0, 5, 0, 1, 1.5, 0),\
+	(30, 1, 1500, 0, 100, '3', 0, 5, 15, 213, 1.5, 0),\
+	(31, 1, 2500, 0, 100, '4', 0, 0, 0, 181, 0, 0),\
+	(32, 1, 5000, 0, 100, '5', 0, 0, 0, 70, 0, 0),\
+	(33, 1, 7500, 0, 100, '6', 0, 0, 0, 75, 10.0, 0),\
+	(34, 1, 25000,0, 100, '9', 0, 15, 0, 28, 3.5, 0),\
+	(35, 1, 5000, 0, 45, '10',0, 0, 0, 264, 7.0, 0),\
+	(36, 1, 15000, 0, 100, '11', 0, 15, 0, 162, 0, 0),\
+	(37, 1, 25000, 0, 100, '10,11', 0, 15, 0, 162, 7.0, 0),\
+	(38, 1, 30000, 0, 100, '27', 5, 5, 0, 162, 0, 0),\
+	(39, 1, 35000, 0, 100, '12', 0, 15, 0, 78, 10.0, 0),\
+	(40, 1, 10000, 0, 45, '13', 0, 0, 0, 241, 5.0, 0),\
+	(41, 1, 250000, 0, 100, '14', 0, 15, 0, 79, 0, 0),\
+	(42, 1, 75000,  0, 100, '15', 0, 60, 30, 135, 0, 0),\
+	(43, 1, 45000,  0, 45, '16', 0, 30, 10, 137, 5.5, 0),\
+	(44, 1, 50000,  0, 100, '17', 0, 0, 0, 146, 10.0, 0),\
+	(45, 1, 35000,  0, 100, '18', 0, 30, 0, 230, 0, 0),\
+	(46, 1, 125000, 0, 100, '19', 1, 15, 0, 96, 0, 0),\
+	(47, 1, 150000, 0, 100, '20', 0, 15, 0, 200, 1.5, 0),\
+	(48, 1, 150000, 0, 100, '7',  0, 15, 0, 209, 1.5, 0),\
+	(49, 1, 150000, 0, 100, '8',  0, 15, 0, 30, 1.5, 0),\
+	(50, 1, 250000, 0, 100, '21', 0, 0, 0, 136, 0, 0),\
+	(51, 1, 400000, 0, 100, '', 0, 0, 0, 0, 0, 0),\
+	(52, 1, 850000, 100, 100, '', 0, 0, 0, 285, 0, 0),\
+	(53, 1, 600000, 0, 100, '22', 0, 15, 0, 129, 1.5, 0),\
+	(54, 1, 700000, 0, 100, '23', 0, 0, 0, 112, 0, 0),\
+	(55, 1, 1000000, 100, 100, '24', 0, 0, 0, 285, 10.0, 0);\
 "
 
 #define PREDIFINED_TEXTURES "INSERT IGNORE INTO `textures_config` (`id`, `position`, `letter_size`, `text_size`, `default_value`, `background_color`, `texture_font`, `texture_draw_color`, `texture_outline`, `texture_proportional`, `texture_shadow`, `texture_use_box`, `texture_box_color`, `texture_alignment`) VALUES \
@@ -864,5 +868,9 @@
 	(92, '>> Player %s has been infected by misty zombie %s!', '>> Игрок %s был заражен от туманного зомби %s!'),\
 	(93, '>> Player %s has been infected by blind zombie %s!', '>> Игрок %s был заражен ослепляющим зомби %s!'),\
 	(94, '>> Player %s has stole ammo from player %s!', '>> Игрок %s украл патроны игрока %s!'),\
-	(95, '>> %s legs have been broken by %s!', '>> Ноги игрока %s были сломаны игроком %s!');\
+	(95, '>> %s legs have been broken by %s!', '>> Ноги игрока %s были сломаны игроком %s!'),\
+	(96, '~y~Remove Weapons Field is %s', '~y~Поле отнимания оружия %s'),\
+	(97, '~r~Weapons Removed', '~r~Оружие убрано'), \
+	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
+	(99, '~r~Space starts damaging you', '~r~Пространство начинает разывать вас');\
 "

@@ -14,6 +14,7 @@ enum ROUND_DATA {
 	bool:rdIsInRadioactiveField,
 	bool:rdIsCursed,
 	bool:rdIsLegsBroken,
+	bool:rdIsPoisoned,
 	rdBox[MAX_ROUND_BOXES],
 	Text3D:rdBoxText[MAX_ROUND_BOXES],
 	rdBoxCount,

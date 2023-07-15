@@ -6,7 +6,7 @@
 #define MAX_CLASS_NAME 32
 #define MAX_CLASS_DESC 96
 
-#define MAX_CLASSES 54
+#define MAX_CLASSES 55
 #define MAX_CLASSDATA_STR_LEN 24
 
 #define MAX_CLASS_ID_LEN 2
@@ -47,13 +47,14 @@ enum CLASSES_CONFIG_DATA {
 	Float:clsCfgLongJump[3],
 	Float:clsCfgStomperEffectPos[3],
 	Float:clsCfgFlasherExplosionRange,
+	Float:clsCfgSpaceDamage,
 	clsCfgStomperEffectId,
 	clsCfgStomperEffectTime,
 	clsCfgEngineerBox,
 	clsCfgEngineerSound,
-	clsCfgSpitterWeapon,
-	clsCfgSpitterWeaponAmmo,
 	Float:clsCfgEngineerTextRange,
+	clsCfgSpitterWeapon,
+	clsCfgStealAmmoFactor,
 };
 
 enum {
@@ -81,12 +82,13 @@ enum {
 	ABILITY_SPORE, // 21
 	ABILITY_WITCH, // 22
 	ABILITY_MIRROR, // 23
-	ABILITY_JUGGERNAUT, // 24
+	ABILITY_REMOVE_WEAPONS, // 24
 
 	ABILITY_CURE, // 25
 	ABILITY_BUILD, // 26
 	ABILITY_LONG_JUMPS, // 27
 	ABILITY_CURE_FIELD, // 28
 	ABILITY_HOLY_FIELD, // 29
+	ABILITY_POISON, // 30
 	ABLITY_MAX,
 };

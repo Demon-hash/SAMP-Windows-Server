@@ -71,7 +71,8 @@ static
 		MySQL:Database, updateTimerId, Iterator:Humans<MAX_PLAYERS>,
 		Iterator:Zombies<MAX_PLAYERS>, Iterator:MutatedPlayers<MAX_PLAYERS>,
 		Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
-		Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>;
+		Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
+		Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>;
 
 /*
 	MAIN
@@ -156,6 +157,7 @@ public OnGameModeInit() {
 	Iter_Clear(NursePlayers);
 	Iter_Clear(PriestPlayers);
 	Iter_Clear(SupportPlayers);
+	Iter_Clear(RemoveWeaponsPlayers);
 	Iter_Clear(Humans);
 	Iter_Clear(Zombies);
 	
@@ -504,8 +506,9 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
 		}
 	}
 	
-	if(weaponid == ServerConfig[svCfgCuringWeapon]) {
+	if(weaponid == ServerConfig[svCfgRifle]) {
 		ProceedPassiveAbility(issuerid, ABILITY_CURE, playerid);
+		ProceedPassiveAbility(issuerid, ABILITY_POISON, playerid);
 	}
 
     ShowDamageTaken(playerid, amount);
@@ -738,6 +741,7 @@ custom Update() {
             
             ProceedInfection(playerid);
             ProceedBlind(playerid);
+            ProceedSpaceDamage(playerid);
             ProceedUnfreeze(playerid);
             ProceedRecoveryLongJumps(playerid);
             ProceedMimicryChangeBack(playerid);
@@ -1073,29 +1077,28 @@ custom OnMapUpdate() {
  		}
 	}
 	
-	foreach(MutatedPlayers, playerid) {
-	    foreach(Humans, targetid) {
-	        ProceedPassiveAbility(playerid, ABILITY_MUTATED, targetid);
-	    }
-	}
 	
-	foreach(RadioactivePlayers, playerid) {
-	    foreach(Humans, targetid) {
-	        ProceedPassiveAbility(playerid, ABILITY_RADIOACTIVE, targetid);
-	    }
-	}
-	
-	foreach(NursePlayers, playerid) {
-	    foreach(Humans, targetid) {
-	        ProceedPassiveAbility(playerid, ABILITY_CURE_FIELD, targetid);
-	    }
-	}
-	
-	foreach(PriestPlayers, playerid) {
-	    foreach(Humans, targetid) {
-	        ProceedPassiveAbility(playerid, ABILITY_HOLY_FIELD, targetid);
-	    }
-	}
+	foreach(Humans, targetid) {
+	    foreach(MutatedPlayers, playerid) {
+ 			ProceedPassiveAbility(playerid, ABILITY_MUTATED, targetid);
+		}
+		
+		foreach(RadioactivePlayers, playerid) {
+ 			ProceedPassiveAbility(playerid, ABILITY_RADIOACTIVE, targetid);
+		}
+		
+		foreach(NursePlayers, playerid) {
+ 			ProceedPassiveAbility(playerid, ABILITY_CURE_FIELD, targetid);
+		}
+		
+		foreach(PriestPlayers, playerid) {
+ 			ProceedPassiveAbility(playerid, ABILITY_HOLY_FIELD, targetid);
+		}
+		
+		foreach(RemoveWeaponsPlayers, playerid) {
+ 			ProceedPassiveAbility(playerid, ABILITY_REMOVE_WEAPONS, targetid);
+		}
+ 	}
 	
 	foreach(SupportPlayers, playerid) {
 	    foreach(Zombies, targetid) {
@@ -1206,7 +1209,7 @@ custom LoadServerConfiguration() {
         cache_get_value_name_int(0, "pickup_protection", ServerConfig[svCfgPickupProtection]);
         cache_get_value_name_int(0, "min_zombies_to_win", ServerConfig[svCfgMinZombiesToWin]);
         cache_get_value_name_int(0, "max_weapon_ammo", ServerConfig[svCfgMaxWeaponAmmo]);
-        cache_get_value_name_int(0, "curing_weapon", ServerConfig[svCfgCuringWeapon]);
+        cache_get_value_name_int(0, "rifle", ServerConfig[svCfgRifle]);
         cache_get_value_name_int(0, "excluded_mirror_part", ServerConfig[svCfgExcludedMirrorPart]);
         cache_get_value_name_int(0, "meat_pickup", ServerConfig[svCfgMeatPickup]);
         cache_get_value_name_int(0, "ammo_chance", ServerConfig[svCfgAmmoChance]);
@@ -1426,11 +1429,14 @@ custom LoadClassesConfiguration() {
     if(cache_num_rows() > 0) {
         new buff[64];
         cache_get_value_name_int(0, "whopping_when", ClassesConfig[clsCfgWhoppingWhen]);
+        cache_get_value_name_int(0, "spitter_effect", ClassesConfig[clsCfgSpitterWeapon]);
+        cache_get_value_name_int(0, "stealer_effect", ClassesConfig[clsCfgStealAmmoFactor]);
         
         cache_get_value_name_float(0, "air_range", ClassesConfig[clsCfgAirRange]);
         cache_get_value_name_float(0, "radioactive", ClassesConfig[clsCfgRadioactiveDamage]);
         cache_get_value_name_float(0, "regeneration", ClassesConfig[clsCfgRegenHealth]);
         cache_get_value_name_float(0, "support", ClassesConfig[clsCfgSupportHealth]);
+        cache_get_value_name_float(0, "space", ClassesConfig[clsCfgSpaceDamage]);
         
         cache_get_value_name(0, "stomp_xyz", buff);
         sscanf(buff, "p<,>fff",
@@ -1467,12 +1473,6 @@ custom LoadClassesConfiguration() {
 			ClassesConfig[clsCfgEngineerSound],
 			ClassesConfig[clsCfgEngineerTextRange]
 		);
-		
-		cache_get_value_name(0, "spitter_effect", buff);
-		sscanf(buff, "p<,>ii", ClassesConfig[clsCfgSpitterWeapon],
-			ClassesConfig[clsCfgEngineerSound]
-		);
-		
 			
 		printf(""CLS_CFG_CONSOLE_LOG" LOADED");
 		return 1;
@@ -1968,6 +1968,7 @@ stock ClearPlayerRoundData(const playerid) {
 	Round[playerid][rdIsInRadioactiveField] = false;
 	Round[playerid][rdIsCursed] = false;
 	Round[playerid][rdIsLegsBroken] = false;
+	Round[playerid][rdIsPoisoned] = false;
     Round[playerid][rdBoxCount] = -1;
     Round[playerid][rdCheckForOOM] = 0;
  	Round[playerid][rdFrozeTime] = -1;
@@ -2075,7 +2076,7 @@ stock ProceedClassAbilityActivation(const playerid) {
     for( ability = 0; ability < sizeof(abilities); ability++ ) {
         if(abilities[ability] <= 0 || abilities[ability] >= ABLITY_MAX) continue;
     
-        if(gettime() < AbilitiesTimers[playerid][abilities[ability]] && abilities[ability] != ABILITY_LONG_JUMPS) {
+        if(gettime() < AbilitiesTimers[playerid][abilities[ability]] && abilities[ability] != ABILITY_LONG_JUMPS && GetPlayerVirtualWorld(playerid) <= 0) {
         	GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISLPAY_COOLDOWN]), 1000, 5);
 			continue;
 		}
@@ -2100,6 +2101,7 @@ stock ProceedClassAbilityActivation(const playerid) {
             case ABILITY_RADIOACTIVE: EnableDisableRadioActiveField(playerid);
             case ABILITY_CURE_FIELD: EnableDisableCureField(playerid);
             case ABILITY_HOLY_FIELD: EnableDisableHolyField(playerid);
+            case ABILITY_REMOVE_WEAPONS: EnableDisableRemoveWeapons(playerid);
             case ABILITY_KAMIKAZE: InfectAndExplode(playerid, classid);
             case ABILITY_BUILD: BuildBox(playerid, classid);
             case ABILITY_LONG_JUMPS: LongJump(playerid, classid);
@@ -2110,6 +2112,11 @@ stock ProceedClassAbilityActivation(const playerid) {
 }
 
 stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1, const Float:amount = 0.0) {
+    if(IsPoisoned(playerid)) {
+	    GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_CANT_USE]), 1000, 5);
+	    return 0;
+	}
+
     new abilities[2], ability;
     new classid = Misc[playerid][mdCurrentClass][GetPlayerTeamEx(playerid)];
     
@@ -2124,13 +2131,17 @@ stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1
 	        case ABILITY_SPORE: InfectPlayerSpore(targetid, playerid);
 	        case ABILITY_SPITTER: InfectPlayerSpitter(targetid, playerid);
 			case ABILITY_CURE: CurePlayerByShot(targetid, playerid);
+			case ABILITY_POISON: PoisePlayerByShot(targetid, playerid);
 			case ABILITY_CURE_FIELD: CurePlayerInField(targetid, playerid, classid);
 	        case ABILITY_REGENERATOR: RegenerateHealth(playerid, playerid, ClassesConfig[clsCfgSupportHealth]);
 	        case ABILITY_MIRROR: MirrorDamageBack(targetid, playerid, amount);
 			case ABILITY_HOLY_FIELD: PlayerInHolyField(targetid, playerid, classid);
+			case ABILITY_REMOVE_WEAPONS: PlayerInRemoveField(targetid, playerid, classid);
 			case ABILITY_MUTATED: PlayerInfectPlayer(targetid, playerid, ClassesConfig[clsCfgAirRange]);
 		}
 	}
+	
+	return 1;
 }
 
 stock GivePointsForRound(const playerid) {
@@ -2189,21 +2200,30 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	            switch(old) {
 	                case TEAM_ZOMBIE: {
                         Map[mpTeamCount][0]--;
-						Iter_Remove(Zombies, playerid);
+                        if(Iter_Contains(Zombies, playerid)) {
+							Iter_Remove(Zombies, playerid);
+						}
 	                }
 	                case TEAM_HUMAN: {
                         Map[mpTeamCount][1]--;
-                        Iter_Remove(Humans, playerid);
+                        if(Iter_Contains(Humans, playerid)) {
+                        	Iter_Remove(Humans, playerid);
+                        }
 	                }
 	            }
 	        }
 	    	case TEAM_ZOMBIE: {
-	    	    Iter_Add(Zombies, playerid);
-				Map[mpTeamCount][0]++;
+	    	    if(!Iter_Contains(Zombies, playerid)) {
+	    	    	Iter_Add(Zombies, playerid);
+	    	    	Map[mpTeamCount][0]++;
+				}
 
 				if(old == TEAM_HUMAN) {
-				    Iter_Remove(Humans, playerid);
-					Map[mpTeamCount][1]--;
+				    if(Iter_Contains(Humans, playerid)) {
+						Iter_Remove(Humans, playerid);
+					}
+					
+				    Map[mpTeamCount][1]--;
 				}
 				
 				if(Map[mpTeamCount][1] == 1 && !Map[mpKillTheLast]) {
@@ -2218,12 +2238,17 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 				
 			}
 	    	case TEAM_HUMAN: {
-	    	    Iter_Add(Humans, playerid);
-				Map[mpTeamCount][1]++;
+	    	    if(!Iter_Contains(Humans, playerid)) {
+	    	    	Iter_Add(Humans, playerid);
+					Map[mpTeamCount][1]++;
+				}
 				
 				if(old == TEAM_ZOMBIE) {
-				    Iter_Remove(Zombies, playerid);
-					Map[mpTeamCount][0]--;
+					if(Iter_Contains(Zombies, playerid)) {
+				    	Iter_Remove(Zombies, playerid);
+				    }
+				    
+				    Map[mpTeamCount][0]--;
 				}
         	}
 		}
@@ -2329,7 +2354,15 @@ stock bool:IsAbleToBeCursed(const playerid) {
 	    return false;
 	}
 	
-	return !Round[playerid][rdIsCursed];
+	return Round[playerid][rdIsCursed] == false;
+}
+
+stock bool:IsAbleToBePoisoned(const playerid) {
+	if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_POISON)) {
+	    return false;
+	}
+
+	return Round[playerid][rdIsPoisoned] == false;
 }
 
 stock bool:IsAbleToBeFlashAttacked(const playerid) {
@@ -2364,8 +2397,36 @@ stock bool:IsAbleToTakeAmmo(const playerid) {
 	return true;
 }
 
+stock bool:IsAbleToRemoveWeapons(const playerid) {
+    if(GetPlayerVirtualWorld(playerid) > 0 || ProceedClassImmunity(playerid, ABILITY_REMOVE_WEAPONS)) {
+	    return false;
+	}
+
+	return true;
+}
+
+stock bool:IsAbleToBeAbsolved(const playerid) {
+    if(GetPlayerVirtualWorld(playerid) > 0) {
+	    return false;
+	}
+	
+	return true;
+}
+
+stock bool:IsAbleToBeCured(const playerid) {
+    if(GetPlayerVirtualWorld(playerid) > 0) {
+	    return false;
+	}
+	
+	return true;
+}
+
 stock bool:IsCursed(const playerid) {
     return Round[playerid][rdIsCursed];
+}
+
+stock bool:IsPoisoned(const playerid) {
+    return Round[playerid][rdIsPoisoned];
 }
 
 stock bool:IsFrozen(const playerid) {
@@ -2373,7 +2434,7 @@ stock bool:IsFrozen(const playerid) {
 }
 
 stock bool:IsAbleToUseAbility(const playerid) {
-	if(IsCursed(playerid) || IsFrozen(playerid) || Round[playerid][rdIsEvacuated]) {
+	if(IsCursed(playerid) || IsPoisoned(playerid) || IsFrozen(playerid) || Round[playerid][rdIsEvacuated]) {
 		return false;
 	}
 	
@@ -2626,7 +2687,7 @@ stock StealAmmo(const playerid, const classid, const abilityid) {
 		    	GetPlayerWeaponData(targetid, index, weapon, ammo);
 		    	if(ammo > 0) {
 		    	    GetWeaponName(weapon, gunname, sizeof(gunname));
-		    	    ammo = max(0, floatround(ammo / 2, floatround_tozero));
+		    	    ammo = max(0, floatround(ammo / ClassesConfig[clsCfgStealAmmoFactor], floatround_tozero));
 		    	    SetPVarInt(targetid, gunname, ammo);
                     SetPlayerAmmo(targetid, weapon, ammo);
                     taken = true;
@@ -2634,6 +2695,8 @@ stock StealAmmo(const playerid, const classid, const abilityid) {
 		    }
 		    
 		    if(taken) {
+		        SetPlayerArmedWeapon(targetid, 0);
+		    
 				foreach(Player, i) {
 					format(formated, sizeof(formated), Localization[i][LD_MSG_AMMO_STOLE], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName]);
 					SendClientMessage(i, 0x009900FF, formated);
@@ -2814,7 +2877,7 @@ stock FreezePlayers(const playerid, const classid, const abilityid) {
 }
 
 stock PlayerInHolyField(const targetid, const playerid, const classid) {
-    if(!IsInAbilityRange(targetid, playerid, classid)) {
+    if(!IsAbleToBeAbsolved(targetid) || !IsInAbilityRange(targetid, playerid, classid)) {
         return 0;
     }
     
@@ -2833,8 +2896,19 @@ stock PlayerInHolyField(const targetid, const playerid, const classid) {
 	return 1;
 }
 
+stock PlayerInRemoveField(const targetid, const playerid, const classid) {
+    if(!IsAbleToRemoveWeapons(targetid) || !IsInAbilityRange(targetid, playerid, classid)) {
+        return 0;
+    }
+    
+    GameTextForPlayer(targetid, RusToGame(Localization[playerid][LD_DISPLAY_WEAPS_REMOVED]), 1000, 5);
+	SetPlayerArmedWeapon(targetid, 0);
+	AbilityUsed(playerid);
+	return 1;
+}
+
 stock CurePlayerInField(const targetid, const playerid, const classid) {
-    if(!IsInAbilityRange(targetid, playerid, classid)) {
+    if(!IsAbleToBeCured(targetid) || !IsInAbilityRange(targetid, playerid, classid)) {
         return 0;
     }
 
@@ -2868,6 +2942,23 @@ stock CurePlayerByShot(const targetid, const playerid) {
    	foreach(Player, i) {
    		format(formated, sizeof(formated), Localization[i][LD_MSG_CURE_RIFLE], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
 		SendClientMessage(i, 0xB2F558FF, formated);
+	}
+    return 1;
+}
+
+stock PoisePlayerByShot(const targetid, const playerid) {
+	if(!IsAbleToBePoisoned(targetid)) {
+	    return 0;
+	}
+
+    Round[targetid][rdIsPoisoned] = true;
+    SetPlayerColor(targetid, COLOR_POISONED);
+    AbilityUsed(playerid);
+
+    new formated[96];
+   	foreach(Player, i) {
+   		format(formated, sizeof(formated), Localization[i][LD_MSG_PLAYER_POISONED], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
+		SendClientMessage(i, 0x6e14b8FF, formated);
 	}
     return 1;
 }
@@ -2950,6 +3041,19 @@ stock EnableDisableHolyField(const playerid) {
 	}
 }
 
+stock EnableDisableRemoveWeapons(const playerid) {
+    new formated[32];
+    if(Iter_Contains(RemoveWeaponsPlayers, playerid)) {
+		Iter_Remove(RemoveWeaponsPlayers, playerid);
+		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_REMOVE_WEAPS_FIELD]), Localization[playerid][LD_DISPLAY_OFF]);
+        GameTextForPlayer(playerid, formated, 1000, 5);
+	} else {
+	    Iter_Add(RemoveWeaponsPlayers, playerid);
+	    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_REMOVE_WEAPS_FIELD]), Localization[playerid][LD_DISPLAY_ON]);
+        GameTextForPlayer(playerid, formated, 1000, 5);
+	}
+}
+
 stock GiveSpitterWeapon(const playerid, const classid, const abilityid) {
 	if(GetPlayerWeaponAmmo(playerid, ClassesConfig[clsCfgSpitterWeapon]) > 0) {
 	    return 0;
@@ -3002,9 +3106,17 @@ stock ProceedRecoveryLongJumps(const playerid) {
 	}
 }
 
+stock ProceedSpaceDamage(const playerid) {
+    if(gettime() > AbilitiesTimers[playerid][ABILITY_SPACEBREAKER] && GetPlayerVirtualWorld(playerid) > 0) {
+        GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_SPACE_DAMAGE]), 1000, 5);
+        SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - 5.0);
+    }
+}
+
 stock BreakSpace(const playerid, const classid, const abilityid) {
 	new world = GetPlayerVirtualWorld(playerid);
-	SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - 5.0);
+	AbilityUsed(playerid, classid, abilityid);
+	
 	if(world > 0) {
 	    SetPlayerVirtualWorld(playerid, 0);
         SetPlayerWeather(playerid, Map[mpWeather]);
@@ -3014,8 +3126,6 @@ stock BreakSpace(const playerid, const classid, const abilityid) {
         SetPlayerWeather(playerid, 101);
 		SetPlayerTime(playerid, 10, 0);
 	}
-	
-	AbilityUsed(playerid, classid, abilityid);
 	return 1;
 }
 
@@ -3418,6 +3528,10 @@ stock ClearFromIterators(const playerid) {
 
 	if(Iter_Contains(SupportPlayers, playerid)) {
 		Iter_Remove(SupportPlayers, playerid);
+	}
+	
+	if(Iter_Contains(RemoveWeaponsPlayers, playerid)) {
+		Iter_Remove(RemoveWeaponsPlayers, playerid);
 	}
 }
 

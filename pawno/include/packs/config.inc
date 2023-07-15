@@ -6,7 +6,7 @@
 enum CONFIG_DATA {
 	svCfgPreviewBot,
 	svCfgMaxWeaponAmmo,
-	svCfgCuringWeapon,
+	svCfgRifle,
 	svCfgMeatPickup,
 	svCfgAmmoChance,
 	svCfgAntidoteChance,
