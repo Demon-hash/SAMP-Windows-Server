@@ -7,68 +7,60 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[13:14:08] 
-[13:14:08] Server Plugins
-[13:14:08] --------------
-[13:14:08]  Loading plugin: mysql
-[13:14:09]  >> plugin.mysql: R41-4 successfully loaded.
-[13:14:09]   Loaded.
-[13:14:09]  Loading plugin: dc_cmd
-[13:14:09]   Daniel's CMD plugin v2.8
-[13:14:09]     (c) 2014 Daniel_Cortez
-[13:14:09] 	www.pro-pawn.ru
-[13:14:09]   Loaded.
-[13:14:09]  Loading plugin: sscanf
-[13:14:09] 
-[13:14:09]  ===============================
-[13:14:09] 
-[13:14:09]       sscanf plugin loaded.     
-[13:14:09] 
-[13:14:09]          Version: 2.13.8
-[13:14:09] 
-[13:14:09]    (c) 2022 Alex "Y_Less" Cole  
-[13:14:09] 
-[13:14:09]  ===============================
-[13:14:09] 
-[13:14:09]   Loaded.
-[13:14:09]  Loading plugin: jit
-[13:14:09]   JIT plugin 2.4.1
-[13:14:09]   Loaded.
-[13:14:09]  Loaded 4 plugins.
+[19:01:35] 
+[19:01:35] Server Plugins
+[19:01:35] --------------
+[19:01:35]  Loading plugin: mysql
+[19:01:35]  >> plugin.mysql: R41-4 successfully loaded.
+[19:01:35]   Loaded.
+[19:01:35]  Loading plugin: dc_cmd
+[19:01:35]   Daniel's CMD plugin v2.8
+[19:01:35]     (c) 2014 Daniel_Cortez
+[19:01:35] 	www.pro-pawn.ru
+[19:01:35]   Loaded.
+[19:01:35]  Loading plugin: sscanf
+[19:01:35] 
+[19:01:35]  ===============================
+[19:01:35] 
+[19:01:35]       sscanf plugin loaded.     
+[19:01:35] 
+[19:01:35]          Version: 2.13.8
+[19:01:35] 
+[19:01:35]    (c) 2022 Alex "Y_Less" Cole  
+[19:01:35] 
+[19:01:35]  ===============================
+[19:01:35] 
+[19:01:35]   Loaded.
+[19:01:35]  Loading plugin: jit
+[19:01:35]   JIT plugin 2.4.1
+[19:01:35]   Loaded.
+[19:01:35]  Loaded 4 plugins.
 
-[13:14:09] 
-[13:14:09] Filterscripts
-[13:14:09] ---------------
-[13:14:09]   Loading filterscript 'aview.amx'...
-[13:14:09] 
+[19:01:35] 
+[19:01:35] Filterscripts
+[19:01:35] ---------------
+[19:01:35]   Loading filterscript 'aview.amx'...
+[19:01:35] 
          Animation Browser
-[13:14:09]               v1.0
-[13:14:09]              SoNik))
+[19:01:35]               v1.0
+[19:01:35]              SoNik))
 
-[13:14:09]   Loaded 1 filterscripts.
+[19:01:35]   Loaded 1 filterscripts.
 
-[13:14:11] [connection] 127.0.0.1:64704 requests connection cookie.
-[13:14:17] Started at 13:14:17 on 15/07/2023... | Status: 0
-[13:14:17] JIT is present
-[13:14:17] 25
-[13:14:17] Number of vehicle models: 0
-[13:14:17] [connection] incoming connection: 127.0.0.1:64704 id: 0
-[13:14:17] [join] Taxa has joined the server (0:127.0.0.1)
-[13:14:17] weburl = "www.sa-mp.com"  (string)
-[13:14:17] language = "English"  (string)
-[13:14:17] (1): Server configuration LOADED
-[13:14:17] (2): Gangs configuration LOADED
-[13:14:17] (3): Round configuration LOADED
-[13:14:17] (4): Evacuation configuration LOADED
-[13:14:17] (5): Map configuration LOADED
-[13:14:17] (6): Weapons configuration LOADED (17 / 17)
-[13:14:17] (7): Balance configuration LOADED
-[13:14:17] (8): Textures configuration LOADED (7 / 7)
-[13:14:17] (9): Classes configuration LOADED
-[13:14:17] (8): Classes loaded (55 / 55)
-[13:14:17] (8): Loaded 1 maps in total
-[13:14:17] 6 objects loaded
-[13:14:19]   Filterscript 'village.amx' unload failed.
-[13:14:19]   Filterscript 'village.amx' loaded.
-[13:21:45]   Filterscript 'village.amx' unloaded.
-[13:21:45]   Filterscript 'village.amx' loaded.
+[19:01:43] |: JIT is present
+[19:01:43] |: Started at 19:01:43 on 15/07/2023... | Status: 0
+[19:01:43] Number of vehicle models: 0
+[19:01:43] weburl = "www.sa-mp.com"  (string)
+[19:01:43] language = "English"  (string)
+[19:01:43] |: Server configuration LOADED
+[19:01:43] |: Gangs configuration LOADED
+[19:01:43] |: Round configuration LOADED
+[19:01:43] |: Evacuation configuration LOADED
+[19:01:43] |: Map configuration LOADED
+[19:01:43] |: Weapons configuration LOADED (17 / 17)
+[19:01:43] |: Balance configuration LOADED
+[19:01:44] |: Textures configuration LOADED (7 / 7)
+[19:01:44] |: Classes configuration LOADED
+[19:01:44] |: Classes loaded (55 / 55)
+[19:01:44] |: Loaded 1 maps in total
+[19:01:44] |: 6 objects loaded

@@ -17,18 +17,20 @@ static const sqlTemplates[][] = {
 	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
 	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
-	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE
+	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
+	RANDOM_QUESTION_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
     PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
-    PREDIFINED_MAPS, PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG,
-	PREDIFINED_MAP_CONFIG, PREDIFINED_BALANCE_CONFIG, PREDIFINED_TEXTURES,
-	PREDIFINED_HUMANS, PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS,
-	PREDIFINED_LOCAL_MAPS, PREDIFINED_LOCALE_CLASSES_10,
-	PREDIFINED_LOCALE_CLASSES_20, PREDIFINED_LOCALE_CLASSES_30,
-	PREDIFINED_LOCALE_CLASSES_40, PREDIFINED_CLASSES_CONFIG,
-	PREDIFINED_RND_MSGS, PREDIFINED_OBJECTS
+    PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG,
+   	PREDIFINED_BALANCE_CONFIG, PREDIFINED_CLASSES_CONFIG,
+	PREDIFINED_MAPS, PREDIFINED_TEXTURES, PREDIFINED_HUMANS,
+	PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS, PREDIFINED_LOCAL_MAPS,
+	PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
+	PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
+	PREDIFINED_RND_MSGS, PREDIFINED_OBJECTS,
+	PREDIFINED_RND_QUESTIONS
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -62,6 +64,7 @@ static AbilitiesTimers[MAX_PLAYERS][ABLITY_MAX];
 
 static RandomQuestions[RANDOM_MESSAGES_BUFFER];
 static LocalizedRandomQuestions[MAX_PLAYERS][RANDOM_MESSAGES_DATA][MAX_RANDOM_MESSAGE_LEN];
+static LocalizedRandomAnswers[MAX_PLAYERS][RANDOM_MESSAGES_DATA][MAX_RANDOM_ANSWER_LEN];
 
 static AnticheatConfig[1];
 static ServerConfig[CONFIG_DATA];
@@ -81,41 +84,16 @@ static
 		Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>;
 
 /*
-	Random Question for %d Points:
-	What is the name of the planet closest to the sun?",
-	Which country has a plain green flag?",
-	What causes craters on the moon?",
-	The sunniest figure in geometry?",
-	This month is called summer sunset. Which one?",
-	What chemical element caused the death of Napoleon?",
-	Where did the accordion first appear?",
-	The deepest freshwater lake in the world?",
-	What is the name of the water shell of the earth?",
-	Which bird is called the forest doctor?",
-	The highest point, above sea level, in Africa?",
-	Gas, which is formed during photosynthesis of plants?",
-	What month does Australia start in autumn?",
-	What besides flags often fans wave in the stands?",
-	Which US president wrote his own story about Sherlock Holmes?",
-	Which of the famous artists in his life sold just one painting?",
-	How many eyes does an ordinary fly have?",
-	Every day, the Earth adds 400 tons in weight. Due to what?",
-	What stones are not in the sea?",
-	Which wheel does not spin in a right turn?"
-*/
-
-/*
 	MAIN
-	- Settings
-	- Random questions
-	- Shop
 	- Achievements
 	- Attachements
 	- Commands & Gangs
+	- Settings
 	- SaveUserData
 	- Anticheat
 	- Promo codes
 	- Custom tags
+	- Shop
 */
 
 /*
@@ -159,18 +137,17 @@ static
 		 
 #define CRYSTAL_STONE_TEXT "CRYSTAL STONE\n{FFFFFF}>> %.0f <<{FFF000}\nDestroy this crystal to capture the map, only gang members can deal damage\nDamage dealt depends on rank"
 
-#define SV_CFG_CONSOLE_LOG "(1): Server configuration"
-#define GS_CFG_CONSOLE_LOG "(2): Gangs configuration"
-#define RD_CFG_CONSOLE_LOG "(3): Round configuration"
-#define EVC_CFG_CONSOLE_LOG "(4): Evacuation configuration"
-#define MAP_CFG_CONSOLE_LOG "(5): Map configuration"
-#define WPS_CFG_CONSOLE_LOG "(6): Weapons configuration"
-#define BLC_CFG_CONSOLE_LOG "(7): Balance configuration"
-#define TEX_CFG_CONSOLE_LOG "(8): Textures configuration"
-#define CLS_CFG_CONSOLE_LOG "(9): Classes configuration"
+#define SV_CFG_CONSOLE_LOG "|: Server configuration"
+#define GS_CFG_CONSOLE_LOG "|: Gangs configuration"
+#define RD_CFG_CONSOLE_LOG "|: Round configuration"
+#define EVC_CFG_CONSOLE_LOG "|: Evacuation configuration"
+#define MAP_CFG_CONSOLE_LOG "|: Map configuration"
+#define WPS_CFG_CONSOLE_LOG "|: Weapons configuration"
+#define BLC_CFG_CONSOLE_LOG "|: Balance configuration"
+#define TEX_CFG_CONSOLE_LOG "|: Textures configuration"
+#define CLS_CFG_CONSOLE_LOG "|: Classes configuration"
 
 main() {
-	printf("%d", ABILITY_CURE);
 }
 
 public OnGameModeInit() {
@@ -197,7 +174,7 @@ public OnGameModeInit() {
 	AllowInteriorWeapons(1);
 	
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
-    mysql_set_charset(GLOBAL_CHARSET);
+	mysql_set_charset(GLOBAL_CHARSET);
 	new i, year, mounth, day, hours, minutes, seconds;
 	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
 	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
@@ -226,8 +203,9 @@ public OnGameModeInit() {
  	mysql_log(SQL_LOG_LEVEL);
  	
 	TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-	printf("Started at %02d:%02d:%02d on %02d/%02d/%d... | Status: %d", hours, minutes, seconds, day, mounth, year, mysql_errno(Database));
-	printf("JIT is %spresent", IsJITPresent() ? ("") : ("not "));
+	printf("|: JIT is %spresent", IsJITPresent() ? ("") : ("not "));
+	printf("|: Started at %02d:%02d:%02d on %02d/%02d/%d... | Status: %d", hours, minutes, seconds, day, mounth, year, mysql_errno(Database));
+	
 	updateTimerId = SetTimer("Update", 1000, true);
 	
 	return 1;
@@ -599,6 +577,17 @@ public OnPlayerText(playerid, text[]) {
 		i_pos++;
 	}
 	
+	if(RandomQuestions[RMB_STARTED] && !strcmp(text, LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], false)) {
+	    RoundSession[playerid][rdAdditionalPoints] += float(RandomQuestions[RMB_POINTS]);
+	    
+ 		new formated[120];
+	    foreach(Player, i) {
+	        format(formated, sizeof(formated), Localization[i][LD_MSG_RANDOM_ANSWER], Misc[playerid][mdPlayerName], LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], RandomQuestions[RMB_POINTS]);
+	        SendClientMessage(i, 0xE669FFFF, formated);
+	    }
+	    RandomQuestions[RMB_STARTED] = false;
+	}
+	
 	if(!EmptyMessage(text)) {
 	    new message[256];
 	    format(message, sizeof(message), "{%06x}%s{FFFFFF}(%d): %s", GetPlayerColor(playerid) >>> 8, Misc[playerid][mdPlayerName], playerid, text);
@@ -755,7 +744,7 @@ public OnQueryError(errorid, const error[], const callback[], const query[], MyS
 custom Update() {
 	static Float:hp, Float:armour;
 	
-	static currentHour, currentMinute, currentSecond, tip, question, formated[90];
+	static currentHour, currentMinute, currentSecond, tip, question, formated[120];
 	gettime(currentHour, currentMinute, currentSecond);
 	tip = PrepareRandomTip();
 	question = PrepareRandomQuestion();
@@ -795,11 +784,11 @@ custom Update() {
 custom LoadMapsCount() {
 	if(cache_num_rows()) {
         cache_get_value_name_int(0, "maps", Map[mpCount]);
-        printf("(8): Loaded %d maps in total", Map[mpCount]);
+        printf("|: Loaded %d maps in total", Map[mpCount]);
         return 1;
     }
     
-	printf("(8): Loading maps failed");
+	printf("|: Loading maps failed");
 	return 0;
 }
 
@@ -826,11 +815,11 @@ custom LoadClasses() {
 			cache_get_value_name_float(i, "points", Classes[i][cldPoints]);
 		}
 		
-		printf("(8): Classes loaded (%d / %d)", i, len);
+		printf("|: Classes loaded (%d / %d)", i, len);
         return 1;
     }
     
-    printf("(8): Loading classes failed");
+    printf("|: Loading classes failed");
 	return 0;
 }
 
@@ -853,7 +842,7 @@ custom LoadObjects() {
 			);
 		}
 		
-		printf("%d objects loaded", len);
+		printf("|: %d objects loaded", len);
 		return 1;
  	}
  	
@@ -1194,6 +1183,7 @@ custom EndMap() {
 custom LoadLocalization(const playerid, const type) {
     static const query[] = LOAD_LOCALIZATION_QUERY;
     static const tipsQuery[] = LOAD_LOCALIZATION_TIPS_QUERY;
+    static const questionQuery[] = LOAD_LOCALIZATION_QST_QUERY;
     
 	new index = Player[playerid][pLanguage];
 	
@@ -1204,6 +1194,10 @@ custom LoadLocalization(const playerid, const type) {
 	new formatedTips[sizeof(tipsQuery) + LOCALIZATION_SIZE];
 	mysql_format(Database, formatedTips, sizeof(formatedTips), tipsQuery, LOCALIZATION_TABLES[index]);
 	mysql_tquery(Database, formatedTips, "InitializeLocalizedTips", "i", playerid);
+	
+	new formatedQuestion[sizeof(questionQuery) + LOCALIZATION_SIZE + LOCALIZATION_SIZE];
+	mysql_format(Database, formatedQuestion, sizeof(formatedQuestion), questionQuery, LOCALIZATION_TABLES[index], LOCALIZATION_TABLES[index]);
+	mysql_tquery(Database, formatedQuestion, "InitializeLocalizedQuestions", "i", playerid);
 }
 
 custom CheckForAccount(const playerid) {
@@ -1305,9 +1299,7 @@ custom LoadServerConfiguration() {
 		ServerConfig[svCfgPreviewCameraPos][5]);
 		
 		cache_get_value_name(0, "random_question", buff);
-		sscanf(buff, "p<,>fi", ServerConfig[svCfgQuizPoints],
-			ServerConfig[svCfgQuizCooldown]
-		);
+		sscanf(buff, "p<,>ii", ServerConfig[svCfgQuizPoints], ServerConfig[svCfgQuizCooldown]);
 
         cache_get_value_name(0, "name", ServerConfig[svCfgName]);
         cache_get_value_name(0, "mode", ServerConfig[svCfgMode]);
@@ -1624,6 +1616,16 @@ custom InitializeLocalizedTips(const playerid) {
         new i, len = clamp(cache_num_rows(), 0, _:TIP_MSG_MAX);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "text", LocalizedTips[playerid][TIPS_DATA:i]);
+        }
+    }
+}
+
+custom InitializeLocalizedQuestions(const playerid) {
+    if(cache_num_rows() > 0) {
+        new i, len = clamp(cache_num_rows(), 0, _:RMD_MAX);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name(i, "text", LocalizedRandomQuestions[playerid][RANDOM_MESSAGES_DATA:i]);
+            cache_get_value_name(i, "answer", LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:i]);
         }
     }
 }
@@ -3193,7 +3195,7 @@ stock ProceedRecoveryLongJumps(const playerid) {
 }
 
 stock ProceedSpaceDamage(const playerid) {
-    if(gettime() > AbilitiesTimers[playerid][ABILITY_SPACEBREAKER] && GetPlayerVirtualWorld(playerid) > 0) {
+    if(gettime() > AbilitiesTimers[playerid][ABILITY_SPACEBREAKER] && GetPlayerVirtualWorld(playerid) > 0 && Misc[playerid][mdIsLogged]) {
         GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_SPACE_DAMAGE]), 1000, 5);
         SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - 5.0);
     }
@@ -3311,9 +3313,9 @@ stock PrepareRandomQuestion() {
 stock ProceedRandomQuestion(const playerid, const index, buffer[], const len = sizeof(buffer)) {
     if(index > -1) {
     	format(buffer, len, Localization[playerid][LD_MSG_RANDOM_QUESTION], RandomQuestions[RMB_POINTS], LocalizedRandomQuestions[playerid][RANDOM_MESSAGES_DATA:index]);
-    	SendClientMessage(playerid, 0xc25b89FF, "---------------------------------------------------");
-     	SendClientMessage(playerid, 0xc25b89FF, buffer);
-     	SendClientMessage(playerid, 0xc25b89FF, "---------------------------------------------------");
+    	SendClientMessage(playerid, 0xD049EBFF, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+     	SendClientMessage(playerid, 0xE669FFFF, buffer);
+     	SendClientMessage(playerid, 0xD049EBFF, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
 }
 
@@ -3895,6 +3897,10 @@ CMD:class(const playerid) {
 		Localization[playerid][LD_BTN_CLOSE]
 	);
 	return 1;
+}
+
+CMD:achievements(const playerid) {
+
 }
 
 CMD:test(playerid) {

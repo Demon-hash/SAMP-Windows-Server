@@ -393,7 +393,7 @@
 	`id` int(11) unsigned NOT NULL,\
 	`pickup_protection` int(4) unsigned NOT NULL default '30',\
 	`tip_per` int(3) unsigned NOT NULL default '40',\
-	`random_question` varchar(24) NOT NULL default '80.0,10',\
+	`random_question` varchar(24) NOT NULL default '80,90',\
 	`kills` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`evacuation` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
 	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
@@ -587,7 +587,7 @@
 );"
 
 #define RANDOM_MESSAGES_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS random_messages_localization (\
+	CREATE TABLE IF NOT EXISTS random_messages (\
 	`id` int(11) unsigned NOT NULL,\
 	`english` TEXT NOT NULL default '',\
 	`russian` TEXT NOT NULL default '',\
@@ -602,6 +602,39 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define RANDOM_QUESTION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS random_question (\
+	`id` int(11) unsigned NOT NULL,\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
+	`english_answer` TEXT NOT NULL default '',\
+	`russian_answer` TEXT NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \
+	(1, 'What is the name of the planet closest to the sun?', 'Как называется планета, ближайшая к Солнцу?', 'Mercury', 'Меркурий'),\
+	(2, 'Which country has a plain green flag?', 'Какая страна имеет зеленый флаг?', 'Brazil', 'Ливия'),\
+	(3, 'What causes craters on the moon?', 'Что создает кратеры на Луне?', 'Meteorites', 'Метеориты'),\
+	(4, 'The sunniest figure in geometry?', 'Самая солечная фигура в гиометрии?', 'Beam', 'Луч'),\
+	(5, 'This month is called summer sunset. Which one?', 'Какой месяц можно назвать летним закатом?', 'August', 'Август'),\
+	(6, 'What chemical element caused the death of Napoleon?', 'Какой химический элемент вызвал смерть Наполеона?', 'Arsenic', 'Мышьяк'),\
+	(7, 'Where did the accordion first appear?', 'Где впервые появился аккордеон?', 'Australia', 'Австралия'),\
+	(8, 'The deepest freshwater lake in the world?', 'Самое глубокое пресноводное озеро в мире?', 'Baikal', 'Байкал'),\
+	(9, 'What is the name of the water shell of the earth?', 'Как называется водная оболочка земли?', 'Hydrosphere', 'Гидросфера'),\
+	(10, 'Which bird is called the forest doctor?', 'Какую птицу называют лесным врачом?', 'Woodpecker', 'Дятел'),\
+	(11, 'The highest point, above sea level, in Africa?', 'Самая высокая точка над уровнем моря в Африке?', 'Kilimanjaro', 'Килиманджаро'),\
+	(12, 'Gas, which is formed during photosynthesis of plants?', 'Газ, который образуется при фотосинтезе растений?', 'Oxygen', 'Кислород'),\
+	(13, 'What month does Australia start in autumn?', 'Какой месяц в Австралии начинается осенью?', 'March', 'Март'),\
+	(14, 'What besides flags often fans wave in the stands?', 'Чем помимо флагов часто фанаты машут на трибунах?', 'Scarves', 'Шарфы'),\
+	(15, 'Which US president wrote his own story about Sherlock Holmes?', 'Какой президент США написал свой собственный рассказ о Шерлоке Холмсе?', 'Franklin Roosevelt', 'Франклин Рузвельт'),\
+	(16, 'Which of the famous artists in his life sold just one painting?', 'Кто из известных художников в своей жизни продал только одну картину?', 'Vincent Van Gogh', 'Винсент Ван Гог'),\
+	(17, 'How many eyes does an ordinary fly have?', 'Сколько глаз у обычной мухи?', 'Five', 'Пять'),\
+	(18, 'Every day, the Earth adds 400 tons in weight. Due to what?', 'Каждый день Земля прибавляет в весе 400 тонн. Из-за чего?', 'Cosmic dust', 'Космическая пыль'),\
+	(19, 'What stones are not in the sea?', 'Каких камней нет в море?', 'Dry', 'Сухих'),\
+	(20, 'Which wheel does not spin in a right turn?', 'Какое колесо не вращается при правом развороте?', 'Spare wheel', 'Запасное');\
+"
+
 #define PREDIFINED_OBJECTS "INSERT IGNORE INTO `objects` (id, model, coords) VALUES \
 	(1, 1685, '965.69617,-53.67023,1000.79242,0.00000,0.00000,0.00000'),\
 	(2, 1685, '965.69623,-51.91020,1000.79242,0.00000,0.00000,0.00000'),\
@@ -611,7 +644,7 @@
 	(6, 1685, '965.70428,-51.91020,1003.46661,0.00000,0.00000,0.00000');\
 "
 
-#define PREDIFINED_RND_MSGS "INSERT IGNORE INTO random_messages_localization (id, english, russian) VALUES \
+#define PREDIFINED_RND_MSGS "INSERT IGNORE INTO random_messages (id, english, russian) VALUES \
 	(1, '[QUICK TIP]: Want to talk about something personal? Use /pm!', '[ПОДСКАЗКА]: Хотите поговорить о чем-то личном? Используйте /pm'),\
 	(2, '[QUICK TIP]: Are you tired of being annoyed in pm? Use /(un)blockpm!', '[ПОДСКАЗКА]: Устали от личных сообщений? Используйте /(un)blockpm!'),\
 	(3, '[QUICK TIP]: Tired of spam in PM from one person? Use /(un)ignorepm!', '[ПОДСКАЗКА]: Устали от спама от одного человека? /(un)ignorepm!'),\
@@ -918,6 +951,7 @@
 	(96, '~y~Remove Weapons Field is %s', '~y~Поле отнимания оружия %s'),\
 	(97, '~r~Weapons Removed', '~r~Оружие убрано'), \
 	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
-	(99, '~r~Space starts damaging you', '~r~Пространство начинает разывать вас'),\
-	(100, 'Random Question for %d points: %s', 'Случайная викторина на %d очков: %s');\
+	(99, '~r~Space starts damaging you', '~r~Пространство начинает разрывать вас'),\
+	(100, '>> Random Question for %d points: %s', 'Случайная викторина на %d очков: %s'),\
+	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков');\
 "
