@@ -57,9 +57,9 @@
 #define ACHIEVEMENTS_CONFIG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS achievements_config (\
 	`id` int(11) unsigned NOT NULL,\
-	`reward` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`type` int(3) unsigned NOT NULL default '0',\
-	`required` int(6) unsigned NOT NULL default '1',\
+	`count` int(6) unsigned NOT NULL default '0',\
+	`reward` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
 	PRIMARY KEY (`id`)\
 );"
@@ -620,7 +620,7 @@
 	PRIMARY KEY (`id`)\
 );"
 
-#define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+#define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\
 	(3, 'Experienced', 'Use your class ability %d times', 'Тренировка', 'Используйте свою способность %d раз'),\
@@ -643,7 +643,7 @@
 	(20, 'Ammo Box', 'Collect %d ammo', 'Ящик с Патронами', 'Соберите %d патронов');\
 "
 
-#define PREDIFINED_ACHS_LOCALIZATION_2 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+#define PREDIFINED_ACHS_LOCALIZATION_2 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(21, 'Ammo Depot', 'Collect %d ammo', 'Склад с Патронами', 'Соберите %d патронов'),\
 	(22, 'Blood Lover', 'Achieve %d killstreaks', 'Любитель Крови', 'Достигните %d убийств за раз, не умирев'),\
 	(23, 'Meat Lover', 'Achieve %d killstreaks', 'Любитель Мяса', 'Достигните %d убийств за раз, не умирев'),\
@@ -666,7 +666,7 @@
 	(40, 'Unknown Virus', 'Infect %d humans', 'Неизвестный Вирус', 'Заразите %d людей');\
 "
 
-#define PREDIFINED_ACHS_LOCALIZATION_3 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+#define PREDIFINED_ACHS_LOCALIZATION_3 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(41, 'Disease', 'Infect %d humans', 'Болезнь', 'Заразите %d людей'),\
 	(42, 'Mass Infection', 'Infect %d humans', 'Карантин', 'Заразите %d людей'),\
 	(43, 'Fan', 'Play for a week in total', 'Игрок', 'Играйте в сумме в неделю'),\
@@ -689,12 +689,80 @@
 	(60, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47');\
 "
 
-#define PREDIFINED_ACHS_LOCALIZATION_4 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+#define PREDIFINED_ACHS_LOCALIZATION_4 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(61, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
 	(62, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
 	(63, 'Hermitage', 'Be the one who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
 	(64, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
 	(65, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
+"
+
+#define PREDIFINED_ACHS_CFG "INSERT IGNORE INTO `achievements_config` (id, type, count, reward, disabled) VALUES \
+	(1, 0, 10, 0, 0),\
+	(2, 0, 500, 0, 0),\
+	(3, 0, 1000, 0, 0),\
+	(4, 0, 10000, 0, 0),\
+	(5, 0, 50000, 0, 0),\
+	(6, 0, 200000, 0, 0),\
+	(7, 0, 3, 0, 0),\
+	(8, 0, 10, 0, 0),\
+	(9, 0, 20, 0, 0),\
+	(10, 0, 10, 0, 0),\
+	(11, 0, 100, 0, 0),\
+	(12, 0, 1000, 0, 0),\
+	(13, 0, 10, 0, 0),\
+	(14, 0, 100, 0, 0),\
+	(15, 0, 1000, 0, 0),\
+	(16, 0, 100, 0, 0),\
+	(17, 0, 1000, 0, 0),\
+	(18, 0, 5000, 0, 0),\
+	(19, 0, 100, 0, 0),\
+	(20, 0, 1000, 0, 0),\
+	(21, 0, 5000, 0, 0),\
+	(22, 0, 5, 0, 0),\
+	(23, 0, 50, 0, 0),\
+	(24, 0, 100, 0, 0),\
+	(25, 0, 10, 0, 0),\
+	(26, 0, 100, 0, 0),\
+	(27, 0, 300, 0, 0),\
+	(28, 0, 10, 0, 0),\
+	(29, 0, 100, 0, 0),\
+	(30, 0, 1000, 0, 0),\
+	(31, 0, 5, 0, 0),\
+	(32, 0, 100, 0, 0),\
+	(33, 0, 300, 0, 0),\
+	(34, 0, 50, 0, 0),\
+	(35, 0, 100, 0, 0),\
+	(36, 0, 200, 0, 0),\
+	(37, 0, 10000, 0, 0),\
+	(38, 0, 50000, 0, 0),\
+	(39, 0, 100000, 0, 0),\
+	(40, 0, 50, 0, 0),\
+	(41, 0, 300, 0, 0),\
+	(42, 0, 1000, 0, 0),\
+	(43, 0, 168, 0, 0),\
+	(44, 0, 4383, 0, 0),\
+	(45, 0, 8760, 0, 0),\
+	(46, 0, 100, 0, 0),\
+	(47, 0, 300, 0, 0),\
+	(48, 0, 700, 0, 0),\
+	(49, 0, 10, 0, 0),\
+	(50, 0, 100, 0, 0),\
+	(51, 0, 250, 0, 0),\
+	(52, 0, 1000, 0, 0),\
+	(53, 0, 1000, 0, 0),\
+	(54, 0, 1000, 0, 0),\
+	(55, 0, 1000, 0, 0),\
+	(56, 0, 1000, 0, 0),\
+	(57, 0, 1000, 0, 0),\
+	(58, 0, 1000, 0, 0),\
+	(59, 0, 1000, 0, 0),\
+	(60, 0, 1000, 0, 0),\
+	(61, 0, 1000, 0, 0),\
+	(62, 0, 1, 0, 0),\
+	(63, 0, 1, 0, 0),\
+	(64, 0, 1, 0, 0),\
+	(65, 0, 10000, 0, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \

@@ -30,6 +30,7 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
 	PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
 	PREDIFINED_RND_MSGS, PREDIFINED_OBJECTS,
+	PREDIFINED_ACHS_CFG,
 	PREDIFINED_RND_QUESTIONS,
 	PREDIFINED_ACHS_LOCALIZATION_1,
 	PREDIFINED_ACHS_LOCALIZATION_2,
@@ -3905,7 +3906,7 @@ CMD:class(const playerid) {
 }
 
 CMD:achievements(const playerid) {
-	static const query[] = "SELECT * FROM ";
+	static const query[] = "SELECT l.english as title, l.english_desc as description, c.type, c.count, c.reward FROM achievements_localization l LEFT JOIN achievements_config c ON c.id = l.id WHERE c.disabled = 0;";
 	return 1;
 }
 
