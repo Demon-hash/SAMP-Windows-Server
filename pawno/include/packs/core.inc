@@ -26,6 +26,7 @@
 #include <packs/textures>
 #include <packs/balance>
 #include <packs/polygons>
+#include <packs/messages>
 
 #include <dependencies/jit>
 #include <dependencies/foreach>

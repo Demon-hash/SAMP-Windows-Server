@@ -1,0 +1,23 @@
+#if defined _messages_pack_included
+	#endinput
+#endif
+#define _messages_pack_included
+
+enum TIPS_DATA {
+	TIP_MSG_PM,
+	TIP_MGG_BLOCKPM,
+	TIP_MSG_IGNORE,
+	TIP_MSG_CLASS,
+	TIP_MSG_WHAT_TO_DO,
+	TIP_MSG_EARN_POINTS,
+	TIP_MSG_NEWBIE,
+	TIP_MSG_REPORT,
+	TIP_MSG_GANG_JOIN,
+	TIP_MSG_VOTEKICK,
+	TIP_MSG_ABILITY,
+	TIP_MSG_CURE_RIFLE,
+	TIP_MSG_SAVE_STATS,
+	TIP_MSG_FAVORITES,
+	TIP_MSG_SETTINGS,
+	TIP_MSG_MAX,
+};

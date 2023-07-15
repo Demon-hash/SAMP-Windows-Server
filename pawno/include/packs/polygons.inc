@@ -1,3 +1,8 @@
+#if defined _polygon_pack_included
+	#endinput
+#endif
+#define _polygon_pack_included
+
 #define RECTANGLE 4
 
 enum POINT { Float: _ptX_, Float: _ptY_ };

@@ -16,7 +16,8 @@ static const sqlTemplates[][] = {
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
 	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
 	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
-	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE
+	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
+	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -26,7 +27,8 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_HUMANS, PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS,
 	PREDIFINED_LOCAL_MAPS, PREDIFINED_LOCALE_CLASSES_10,
 	PREDIFINED_LOCALE_CLASSES_20, PREDIFINED_LOCALE_CLASSES_30,
-	PREDIFINED_LOCALE_CLASSES_40, PREDIFINED_CLASSES_CONFIG
+	PREDIFINED_LOCALE_CLASSES_40, PREDIFINED_CLASSES_CONFIG,
+	PREDIFINED_RND_MSGS, PREDIFINED_OBJECTS
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -65,6 +67,7 @@ static Pickups[MAX_PICKUPS][PICKUP_DATA];
 static EvacuationConfig[EVACUATION_CONFIG_DATA];
 static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
+static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
 static
     	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
@@ -75,18 +78,39 @@ static
 		Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>;
 
 /*
+	Random Question for %d Points:
+	What is the name of the planet closest to the sun?",
+	Which country has a plain green flag?",
+	What causes craters on the moon?",
+	The sunniest figure in geometry?",
+	This month is called summer sunset. Which one?",
+	What chemical element caused the death of Napoleon?",
+	Where did the accordion first appear?",
+	The deepest freshwater lake in the world?",
+	What is the name of the water shell of the earth?",
+	Which bird is called the forest doctor?",
+	The highest point, above sea level, in Africa?",
+	Gas, which is formed during photosynthesis of plants?",
+	What month does Australia start in autumn?",
+	What besides flags often fans wave in the stands?",
+	Which US president wrote his own story about Sherlock Holmes?",
+	Which of the famous artists in his life sold just one painting?",
+	How many eyes does an ordinary fly have?",
+	Every day, the Earth adds 400 tons in weight. Due to what?",
+	What stones are not in the sea?",
+	Which wheel does not spin in a right turn?"
+*/
+
+/*
 	MAIN
-	- Classes
-	- Gangs
-	- Abilities
+	- Settings
+	- Random questions
 	- Shop
 	- Achievements
 	- Attachements
+	- Commands & Gangs
 	- SaveUserData
-	- Commands
 	- Anticheat
-	- Random messages
-	- Random questions
 	- Promo codes
 	- Custom tags
 */
@@ -194,12 +218,15 @@ public OnGameModeInit() {
 	
 	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
+	mysql_tquery(Database, LOAD_OBJECTS_QUERY, "LoadObjects");
+	
  	mysql_log(SQL_LOG_LEVEL);
  	
 	TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
 	printf("Started at %02d:%02d:%02d on %02d/%02d/%d... | Status: %d", hours, minutes, seconds, day, mounth, year, mysql_errno(Database));
 	printf("JIT is %spresent", IsJITPresent() ? ("") : ("not "));
 	updateTimerId = SetTimer("Update", 1000, true);
+	
 	return 1;
 }
 
@@ -725,8 +752,9 @@ public OnQueryError(errorid, const error[], const callback[], const query[], MyS
 custom Update() {
 	static Float:hp, Float:armour;
 	
-	static currentHour, currentMinute, currentSecond, formated[90];
+	static currentHour, currentMinute, currentSecond, tip, formated[90];
 	gettime(currentHour, currentMinute, currentSecond);
+	tip = PrepareRandomTip();
 
 	foreach(Player, playerid) {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
@@ -739,6 +767,7 @@ custom Update() {
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
+            ProceedRandomTip(playerid, tip, formated);
             ProceedInfection(playerid);
             ProceedBlind(playerid);
             ProceedSpaceDamage(playerid);
@@ -798,6 +827,32 @@ custom LoadClasses() {
     
     printf("(8): Loading classes failed");
 	return 0;
+}
+
+custom LoadObjects() {
+	if(cache_num_rows()) {
+	    new i, len = cache_num_rows(), model, position[6], buff[96];
+    	for( i = 0; i < len; i++ ) {
+    	    cache_get_value_name(i, "coords", buff);
+    		cache_get_value_name_int(i, "model", model);
+    		
+    		sscanf(buff, "p<,>ffffff",
+				position[0], position[1], position[2],
+				position[3], position[4], position[5]
+			);
+			
+			CreateObject(
+				model,
+				position[0], position[1], position[2],
+				position[3], position[4], position[5]
+			);
+		}
+		
+		printf("%d objects loaded", len);
+		return 1;
+ 	}
+ 	
+ 	return 0;
 }
 
 custom LoadMap() {
@@ -1133,9 +1188,17 @@ custom EndMap() {
 
 custom LoadLocalization(const playerid, const type) {
     static const query[] = LOAD_LOCALIZATION_QUERY;
-	new formated[sizeof(query) + LOCALIZATION_SIZE], index = Player[playerid][pLanguage];
+    static const tipsQuery[] = LOAD_LOCALIZATION_TIPS_QUERY;
+    
+	new index = Player[playerid][pLanguage];
+	
+	new formated[sizeof(query) + LOCALIZATION_SIZE];
     mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index]);
-	mysql_tquery(Database, formated, "InitializeLocation", "ii", playerid, type);
+	mysql_tquery(Database, formated, "InitializeLocalization", "ii", playerid, type);
+	
+	new formatedTips[sizeof(tipsQuery) + LOCALIZATION_SIZE];
+	mysql_format(Database, formatedTips, sizeof(formatedTips), tipsQuery, LOCALIZATION_TABLES[index]);
+	mysql_tquery(Database, formatedTips, "InitializeLocalizedTips", "i", playerid);
 }
 
 custom CheckForAccount(const playerid) {
@@ -1170,11 +1233,13 @@ custom GetUserAccountId(const playerid) {
 
 custom GetMimicrySkin(const playerid, const old) {
 	if(cache_num_rows()) {
-	    new skin, Float:health;
+	    new skin, Float:health, Float:armour;
         cache_get_value_name_int(0, "skin", skin);
         cache_get_value_name_float(0, "health", health);
+        cache_get_value_name_float(0, "armour", armour);
         
         SetPlayerHealthAC(playerid, health);
+        SetPlayerArmourAC(playerid, armour);
         SetPlayerSkin(playerid, skin);
         ClearAnimations(playerid);
 	}
@@ -1214,6 +1279,7 @@ custom LoadServerConfiguration() {
         cache_get_value_name_int(0, "meat_pickup", ServerConfig[svCfgMeatPickup]);
         cache_get_value_name_int(0, "ammo_chance", ServerConfig[svCfgAmmoChance]);
         cache_get_value_name_int(0, "antidote_chance", ServerConfig[svCfgAntidoteChance]);
+        cache_get_value_name_int(0, "tip_per", ServerConfig[svCfgTipMessageCooldown]);
 
         cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
         cache_get_value_name_float(0, "curse_damage", ServerConfig[svCfgCurseDamage]);
@@ -1529,7 +1595,7 @@ custom LoginOrRegister(const playerid) {
     return 0;
 }
 
-custom InitializeLocation(const playerid, const type) {
+custom InitializeLocalization(const playerid, const type) {
     if(cache_num_rows() > 0) {
         for( new i = 0; i < cache_num_rows(); i++ ) {
             cache_get_value_name(i, "text", Localization[playerid][LOCALIZATION_DATA:i]);
@@ -1539,6 +1605,15 @@ custom InitializeLocation(const playerid, const type) {
             ShowLoginDialog(playerid);
         } else {
             ShowRegisterDialog(playerid);
+        }
+    }
+}
+
+custom InitializeLocalizedTips(const playerid) {
+    if(cache_num_rows() > 0) {
+        new i, len = clamp(cache_num_rows(), 0, _:TIP_MSG_MAX);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name(i, "text", LocalizedTips[playerid][TIPS_DATA:i]);
         }
     }
 }
@@ -1959,6 +2034,7 @@ stock InitializeDefaultValues() {
 	Map[mpFlag] = -1;
 	//Map[mpFlagText] = Text3D:-1;
 	ServerConfig[svCfgCurrentOnline] = 0;
+	ServerConfig[svCfgLastTipMessage] = 0;
 }
 
 stock ClearPlayerRoundData(const playerid) {
@@ -3208,6 +3284,21 @@ stock ProceedUnfreeze(const playerid) {
 	}
 }
 
+stock PrepareRandomTip() {
+	if(gettime() > ServerConfig[svCfgLastTipMessage]) {
+        ServerConfig[svCfgLastTipMessage] = gettime() + ServerConfig[svCfgTipMessageCooldown];
+        return random(_:TIP_MSG_MAX);
+	}
+
+	return -1;
+}
+
+stock ProceedRandomTip(const playerid, const index, buffer[], const len = sizeof(buffer)) {
+    if(index > -1) {
+    	format(buffer, len, LocalizedTips[playerid][TIPS_DATA:index]);
+     	SendClientMessage(playerid, 0xc25b89FF, buffer);
+	}
+}
 
 stock Float:GetXYInFrontOfPlayer(playerid, &Float:q, &Float:w, Float:distance)
 {

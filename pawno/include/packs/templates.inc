@@ -392,6 +392,7 @@
 	CREATE TABLE IF NOT EXISTS config (\
 	`id` int(11) unsigned NOT NULL,\
 	`pickup_protection` int(4) unsigned NOT NULL default '30',\
+	`tip_per` int(3) unsigned NOT NULL default '40',\
 	`kills` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`evacuation` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
 	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
@@ -583,6 +584,49 @@
   	`texture_alignment` int(1) unsigned NOT NULL DEFAULT '0',\
   	PRIMARY KEY (`id`)\
 );"
+
+#define RANDOM_MESSAGES_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS random_messages_localization (\
+	`id` int(11) unsigned NOT NULL,\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define OBJECTS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS objects (\
+	`id` int(11) unsigned NOT NULL,\
+	`model` int(11) unsigned NOT NULL default '0',\
+	`coords` varchar(96) NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define PREDIFINED_OBJECTS "INSERT IGNORE INTO `objects` (id, model, coords) VALUES \
+	(1, 1685, '965.69617,-53.67023,1000.79242,0.00000,0.00000,0.00000'),\
+	(2, 1685, '965.69623,-51.91020,1000.79242,0.00000,0.00000,0.00000'),\
+	(3, 1685, '965.69623,-53.67020,1002.26691,0.00000,0.00000,0.00000'),\
+	(4, 1685, '965.70428,-51.91020,1002.26691,0.00000,0.00000,0.00000'),\
+	(5, 1685, '965.69623,-53.67020,1003.46661,0.00000,0.00000,0.00000'),\
+	(6, 1685, '965.70428,-51.91020,1003.46661,0.00000,0.00000,0.00000');\
+"
+
+#define PREDIFINED_RND_MSGS "INSERT IGNORE INTO random_messages_localization (id, english, russian) VALUES \
+	(1, '[QUICK TIP]: Want to talk about something personal? Use /pm!', '[ПОДСКАЗКА]: Хотите поговорить о чем-то личном? Используйте /pm'),\
+	(2, '[QUICK TIP]: Are you tired of being annoyed in pm? Use /(un)blockpm!', '[ПОДСКАЗКА]: Устали от личных сообщений? Используйте /(un)blockpm!'),\
+	(3, '[QUICK TIP]: Tired of spam in PM from one person? Use /(un)ignorepm!', '[ПОДСКАЗКА]: Устали от спама от одного человека? /(un)ignorepm!'),\
+	(4, '[QUICK TIP]: Change your class using /class!', '[ПОДСКАЗКА]: Измените свой класс, использовав /class'),\
+	(5, '[QUICK TIP]: As a Human, you must survive. As a Zombie, you must kill humans!', '[ПОДСКАЗКА]: Как человек, вы должны выжить. Как зомби, вы должны убивать людей!'),\
+	(6, '[QUICK TIP]: Earn points for active playing!', '[ПОДСКАЗКА]: Зарабатывайте очки за активную игру!'),\
+	(7, '[QUICK TIP]: Newbie? We advise you to look /cmds, /help, /rules!', '[ПОДСКАЗКА]: Новичек? Советуем использовать /cmds, /help, /rules'),\
+	(8, '[QUICK TIP]: Use /report to report rulebreakers and get points!', '[ПОДСКАЗКА]: Используйте /report чтобы сообщать о нарушителях и получайте очки!'),\
+	(9, '[QUICK TIP]: Want to become a team player? Join the gang /gang join!', '[ПОДСКАЗКА]: Хотите стать командным игроком? Вступайте в клан /gang join'),\
+	(10, '[QUICK TIP]: Did you see the cheater? Use /votekick if no admins online!', '[ПОДСКАЗКА]: Увидели нарушителя? Используйте /votekick если администрация не в сети!'),\
+	(11, '[QUICK TIP]: Almost each class has unique ability. Use LEFT ALT to activate it!', '[ПОДСКАЗКА]: Почти каждый класс имеет уникальную способность. Используйте Левый Альт, чтобы активировать ее!'),\
+	(12, '[QUICK TIP]: Medics can cure humans by using rifle!', '[ПОДСКАЗКА]: Медики могут лечить людей выстрелив в них с винтовки!'),\
+	(13, '[QUICK TIP]: You can save your stats with /ss!', '[ПОДСКАЗКА]: Вы можете сохранить свою статистику использовав /ss!'),\
+	(14, '[QUICK TIP]: Do not forget to add our server to favorites!', '[ПОДСКАЗКА]: Не забудьте добавить наш сервер в избранное!'),\
+	(15, '[QUICK TIP]: You can change some settings, check /settings!', '[ПОДСКАЗКА]: Вы можете настроить некоторые настройки под себя, используйте /settings!');\
+"
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
 #define PREDIFINED_CONFIG "INSERT IGNORE INTO config (id) VALUES (1);"

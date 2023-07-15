@@ -29,4 +29,6 @@ enum CONFIG_DATA {
 	svCfgMinZombiesToWin,
 	svCfgAuthTimeout,
 	svCfgCurrentOnline,
+	svCfgLastTipMessage,
+	svCfgTipMessageCooldown,
 };
