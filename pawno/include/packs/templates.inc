@@ -56,13 +56,21 @@
 
 #define ACHIEVEMENTS_CONFIG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS achievements_config (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`name` varchar(255) NOT NULL default '',\
-	`description` varchar(255) NOT NULL default '',\
+	`id` int(11) unsigned NOT NULL,\
 	`reward` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`type` int(3) unsigned NOT NULL default '0',\
 	`required` int(6) unsigned NOT NULL default '1',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define ACHIEVEMENTS_LOCALIZATION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS achievements_localization (\
+	`id` int(11) unsigned NOT NULL,\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
+	`english_desc` TEXT NOT NULL default '',\
+	`russian_desc` TEXT NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -611,6 +619,83 @@
 	`russian_answer` TEXT NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
+
+#define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
+	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\
+	(3, 'Experienced', 'Use your class ability %d times', 'Тренировка', 'Используйте свою способность %d раз'),\
+	(4, 'Jogging', 'Run %.3f kilometers', 'Прогулка', 'Пробегите %.3f километров'),\
+	(5, 'Runner', 'Run %.3f kilometers', 'Пробежка', 'Пробегите %.3f километров'),\
+	(6, 'Olympic Champion', 'Run %.3f kilometers', 'Забег', 'Пробегите %.3f километров'),\
+	(7, 'Lucky', 'Survive with a health of 1, %d times', 'Везение', 'Эвакуируйтесь с 1 ОЗ, %d раз'),\
+	(8, 'Inviolable', 'Survive with a health of 1, %d times', 'На грани', 'Эвакуируйтесь с 1 ОЗ, %d раз'),\
+	(9, 'Close To Death', 'Survive with a health of 1, %d times', 'На волоске', 'Эвакуируйтесь с 1 ОЗ, %d раз'),\
+	(10, 'Maniac', 'Kill %d humans', 'Маньяк', 'Убейте %d людей'),\
+	(11, 'Serial Maniac', 'Kill %d humans', 'Серийный Убийца', 'Убейте %d людей'),\
+	(12, 'Jack The Ripper', 'Kill %d humans', 'Потрошитель', 'Убейте %d людей'),\
+	(13, 'Conductor', 'Kill %d zombies', 'Проводник', 'Убейте %d зомби'),\
+	(14, 'Undead Slayer', 'Kill %d zombies', 'Убийца Нежити', 'Убейте %d зомби'),\
+	(15, 'Saint', 'Kill %d zombies', 'Святой', 'Убейте %d зомби'),\
+	(16, 'Collector', 'Collect %d meats', 'Собиратель', 'Соберите %d мяса'),\
+	(17, 'Butcher', 'Collect %d meats', 'Мясник', 'Соберите %d мяса'),\
+	(18, 'Madman', 'Collect %d meats', 'Сумасшедший', 'Соберите %d мяса'),\
+	(19, 'Ammo Belt', 'Collect %d ammo', 'Ремень с Патронами', 'Соберите %d патронов'),\
+	(20, 'Ammo Box', 'Collect %d ammo', 'Ящик с Патронами', 'Соберите %d патронов');\
+"
+
+#define PREDIFINED_ACHS_LOCALIZATION_2 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+	(21, 'Ammo Depot', 'Collect %d ammo', 'Склад с Патронами', 'Соберите %d патронов'),\
+	(22, 'Blood Lover', 'Achieve %d killstreaks', 'Любитель Крови', 'Достигните %d убийств за раз, не умирев'),\
+	(23, 'Meat Lover', 'Achieve %d killstreaks', 'Любитель Мяса', 'Достигните %d убийств за раз, не умирев'),\
+	(24, 'The Killer Machine', 'Achieve %d killstreaks', 'Машина По Уничтожению', 'Достигните %d убийств за раз, не умирев'),\
+	(25, 'Nurse', 'Cure %d humans', 'Медсестра', 'Вылечите %d людей'),\
+	(26, 'Medic', 'Cure %d humans', 'Медик', 'Вылечите %d людей'),\
+	(27, 'Doctor', 'Cure %d humans', 'Доктор', 'Вылечите %d людей'),\
+	(28, 'Risen From The Grave', 'Die %d times', 'Восставший', 'Умрите %d раз'),\
+	(29, 'Dead Rising Army', 'Die %d times', 'Армия Мертвецов', 'Умрите %d раз'),\
+	(30, 'Do Not Even Try', 'Die %d times', 'Даже Не Пытайся', 'Умрите %d раз'),\
+	(31, 'Collection Point', 'Evac %d times', 'Точка Сбора', 'Эвакуируйтесь %d раз'),\
+	(32, 'Safe Place', 'Evac %d times', 'Безопасное Место', 'Эвакуируйтесь %d раз'),\
+	(33, 'Safe Zone', 'Evac %d times', 'Лагерь Выживших', 'Эвакуируйтесь %d раз'),\
+	(34, 'Amateur', 'Make %d purchases in shop', 'Любитель', 'Купите %d вещей в магазине'),\
+	(35, 'Shopaholic', 'Make %d purchases in shop', 'Шопоголик', 'Купите %d вещей в магазине'),\
+	(36, 'Money in nowhere', 'Make %d purchases in shop', 'Деньги в Никуда', 'Купите %d вещей в магазине'),\
+	(37, 'In Cash', 'Get a total of %.0f points', 'При деньгах', 'Достигните в сумме %.0f очков'),\
+	(38, 'Businessman', 'Get a total of %.0f points', 'Бизнессмен', 'Достигните в сумме %.0f очков'),\
+	(39, 'Millionaire', 'Get a total of %.0f points', 'Миллионер', 'Достигните в сумме %.0f очков'),\
+	(40, 'Unknown Virus', 'Infect %d humans', 'Неизвестный Вирус', 'Заразите %d людей');\
+"
+
+#define PREDIFINED_ACHS_LOCALIZATION_3 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+	(41, 'Disease', 'Infect %d humans', 'Болезнь', 'Заразите %d людей'),\
+	(42, 'Mass Infection', 'Infect %d humans', 'Карантин', 'Заразите %d людей'),\
+	(43, 'Fan', 'Play for a week in total', 'Игрок', 'Играйте в сумме в неделю'),\
+	(44, 'Gamer', 'Play for a half a year in total', 'Обажатель', 'Играйте в сумме пол года'),\
+	(45, 'Exanimate', 'Play for 1 year in total', 'Безжизненный', 'Играйте в сумме год'),\
+	(46, 'Jumper', 'Jump %d times', 'Попрыгунчик', 'Прыгните %d раз'),\
+	(47, 'Toad Paws', 'Jump %d times', 'Лягушачьи Лапки', 'Прыгните %d раз'),\
+	(48, 'Pilot', 'Jump %d times', 'Пилот', 'Прыгните %d раз'),\
+	(49, 'Into The Oncoming Lane', 'Destroy %d vehicles', 'На Встречку', 'Уничтожте %d машин'),\
+	(50, 'Car accident', 'Destroy %d vehicles', 'ДТП', 'Уничтожте %d машин'),\
+	(51, 'All For Parts', 'Destroy %d vehicles', 'На Запчасти', 'Уничтожте %d машин'),\
+	(52, 'Hush, Hush', 'Master Silinced Pistol', 'Тише, тише', 'Освойте Пистолет с Глушитилем'),\
+	(53, 'Civil Defense', 'Master Colt45', 'Гражданская Оборона', 'Освойте Colt45'),\
+	(54, 'With bros', 'Master Deagle', 'С Братанами', 'Освойте Дигл'),\
+	(55, 'Stacks Of Hay', 'Master Rifle', 'Стопы Сена', 'Освойте Винтовку'),\
+	(56, 'Arrest', 'Master Shotgun', 'Под Арест', 'Освойте Дробовик'),\
+	(57, 'Special Forces', 'Master MP5', 'Спецназ', 'Освойте MP5'),\
+	(58, 'Sergeant', 'Master Combat Shotgun', 'Сержант', 'Освойте Скорострельный Дробовик'),\
+	(59, 'A Lot, A Little', 'Master Tec-9', 'Много, по немногу', 'Освойте Tec-9'),\
+	(60, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47');\
+"
+
+#define PREDIFINED_ACHS_LOCALIZATION_4 "INSERT IGNORE INTO `achievements_localization` (id, english, russian, english_desc, russian_desc) VALUES \
+	(61, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
+	(62, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
+	(63, 'Hermitage', 'Be the one who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
+	(64, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
+	(65, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
+"
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \
 	(1, 'What is the name of the planet closest to the sun?', 'Как называется планета, ближайшая к Солнцу?', 'Mercury', 'Меркурий'),\

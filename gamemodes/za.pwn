@@ -18,7 +18,7 @@ static const sqlTemplates[][] = {
 	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
 	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
-	RANDOM_QUESTION_TEMPLATE
+	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -30,7 +30,11 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
 	PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
 	PREDIFINED_RND_MSGS, PREDIFINED_OBJECTS,
-	PREDIFINED_RND_QUESTIONS
+	PREDIFINED_RND_QUESTIONS,
+	PREDIFINED_ACHS_LOCALIZATION_1,
+	PREDIFINED_ACHS_LOCALIZATION_2,
+	PREDIFINED_ACHS_LOCALIZATION_3,
+	PREDIFINED_ACHS_LOCALIZATION_4
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -2455,7 +2459,8 @@ stock bool:IsAbleToBePoisoned(const playerid) {
 
 stock bool:IsAbleToBeFlashAttacked(const playerid) {
 	if( !IsPlayerConnected(playerid) || GetPlayerVirtualWorld(playerid) > 0 ||
-		ProceedClassImmunity(playerid, ABILITY_FLASH) || Round[playerid][rdIsEvacuated]) {
+		ProceedClassImmunity(playerid, ABILITY_FLASH) || Round[playerid][rdIsEvacuated]
+		|| Map[mpTimeout] >= (MapConfig[mpCfgTotal] - MapConfig[mpCfgGreatTime])) {
 	    return false;
 	}
 	return true;
@@ -3900,7 +3905,8 @@ CMD:class(const playerid) {
 }
 
 CMD:achievements(const playerid) {
-
+	static const query[] = "SELECT * FROM ";
+	return 1;
 }
 
 CMD:test(playerid) {
