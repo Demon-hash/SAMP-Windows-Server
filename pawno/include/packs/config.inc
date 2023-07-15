@@ -31,4 +31,7 @@ enum CONFIG_DATA {
 	svCfgCurrentOnline,
 	svCfgLastTipMessage,
 	svCfgTipMessageCooldown,
+	svCfgLastQuiz,
+	svCfgQuizPoints,
+	svCfgQuizCooldown,
 };

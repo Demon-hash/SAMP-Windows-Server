@@ -60,6 +60,9 @@ static ClassesConfig[CLASSES_CONFIG_DATA];
 static ClassesSelection[MAX_PLAYERS][MAX_CLASSES][CLASSES_SELECTION_DATA];
 static AbilitiesTimers[MAX_PLAYERS][ABLITY_MAX];
 
+static RandomQuestions[RANDOM_MESSAGES_BUFFER];
+static LocalizedRandomQuestions[MAX_PLAYERS][RANDOM_MESSAGES_DATA][MAX_RANDOM_MESSAGE_LEN];
+
 static AnticheatConfig[1];
 static ServerConfig[CONFIG_DATA];
 static ServerBalance[BALANCE_DATA];
@@ -752,9 +755,10 @@ public OnQueryError(errorid, const error[], const callback[], const query[], MyS
 custom Update() {
 	static Float:hp, Float:armour;
 	
-	static currentHour, currentMinute, currentSecond, tip, formated[90];
+	static currentHour, currentMinute, currentSecond, tip, question, formated[90];
 	gettime(currentHour, currentMinute, currentSecond);
 	tip = PrepareRandomTip();
+	question = PrepareRandomQuestion();
 
 	foreach(Player, playerid) {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
@@ -768,6 +772,7 @@ custom Update() {
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
             ProceedRandomTip(playerid, tip, formated);
+            ProceedRandomQuestion(playerid, question, formated);
             ProceedInfection(playerid);
             ProceedBlind(playerid);
             ProceedSpaceDamage(playerid);
@@ -1298,6 +1303,11 @@ custom LoadServerConfiguration() {
 		ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2],
 		ServerConfig[svCfgPreviewCameraPos][3], ServerConfig[svCfgPreviewCameraPos][4],
 		ServerConfig[svCfgPreviewCameraPos][5]);
+		
+		cache_get_value_name(0, "random_question", buff);
+		sscanf(buff, "p<,>fi", ServerConfig[svCfgQuizPoints],
+			ServerConfig[svCfgQuizCooldown]
+		);
 
         cache_get_value_name(0, "name", ServerConfig[svCfgName]);
         cache_get_value_name(0, "mode", ServerConfig[svCfgMode]);
@@ -3281,6 +3291,29 @@ stock ProceedUnfreeze(const playerid) {
 	    	TogglePlayerControllable(playerid, 1);
 	    	ClearAnimations(playerid);
 	    }
+	}
+}
+
+stock PrepareRandomQuestion() {
+    if(gettime() > ServerConfig[svCfgLastQuiz]) {
+        new type = random(_:RMD_MAX);
+        RandomQuestions[RMB_TYPE] = type;
+        RandomQuestions[RMB_POINTS] = random(ServerConfig[svCfgQuizPoints]);
+        RandomQuestions[RMB_STARTED] = true;
+
+        ServerConfig[svCfgLastQuiz] = gettime() + ServerConfig[svCfgQuizCooldown];
+        return RandomQuestions[RMB_TYPE];
+	}
+
+	return -1;
+}
+
+stock ProceedRandomQuestion(const playerid, const index, buffer[], const len = sizeof(buffer)) {
+    if(index > -1) {
+    	format(buffer, len, Localization[playerid][LD_MSG_RANDOM_QUESTION], RandomQuestions[RMB_POINTS], LocalizedRandomQuestions[playerid][RANDOM_MESSAGES_DATA:index]);
+    	SendClientMessage(playerid, 0xc25b89FF, "---------------------------------------------------");
+     	SendClientMessage(playerid, 0xc25b89FF, buffer);
+     	SendClientMessage(playerid, 0xc25b89FF, "---------------------------------------------------");
 	}
 }
 

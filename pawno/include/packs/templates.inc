@@ -393,6 +393,7 @@
 	`id` int(11) unsigned NOT NULL,\
 	`pickup_protection` int(4) unsigned NOT NULL default '30',\
 	`tip_per` int(3) unsigned NOT NULL default '40',\
+	`random_question` varchar(24) NOT NULL default '80.0,10',\
 	`kills` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`evacuation` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
 	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
@@ -625,7 +626,8 @@
 	(12, '[QUICK TIP]: Medics can cure humans by using rifle!', '[ПОДСКАЗКА]: Медики могут лечить людей выстрелив в них с винтовки!'),\
 	(13, '[QUICK TIP]: You can save your stats with /ss!', '[ПОДСКАЗКА]: Вы можете сохранить свою статистику использовав /ss!'),\
 	(14, '[QUICK TIP]: Do not forget to add our server to favorites!', '[ПОДСКАЗКА]: Не забудьте добавить наш сервер в избранное!'),\
-	(15, '[QUICK TIP]: You can change some settings, check /settings!', '[ПОДСКАЗКА]: Вы можете настроить некоторые настройки под себя, используйте /settings!');\
+	(15, '[QUICK TIP]: You can change some settings, check /settings!', '[ПОДСКАЗКА]: Вы можете настроить некоторые настройки под себя, используйте /settings!'),\
+	(16, '[ПОДСКАЗКА]: Используйте /language, чтобы сменить язык', '[QUCIK TIP] You can change language by using /language');\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
@@ -916,5 +918,6 @@
 	(96, '~y~Remove Weapons Field is %s', '~y~Поле отнимания оружия %s'),\
 	(97, '~r~Weapons Removed', '~r~Оружие убрано'), \
 	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
-	(99, '~r~Space starts damaging you', '~r~Пространство начинает разывать вас');\
+	(99, '~r~Space starts damaging you', '~r~Пространство начинает разывать вас'),\
+	(100, 'Random Question for %d points: %s', 'Случайная викторина на %d очков: %s');\
 "
