@@ -7,65 +7,65 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[17:30:33] 
-[17:30:33] Server Plugins
-[17:30:33] --------------
-[17:30:33]  Loading plugin: mysql
-[17:30:33]  >> plugin.mysql: R41-4 successfully loaded.
-[17:30:33]   Loaded.
-[17:30:33]  Loading plugin: dc_cmd
-[17:30:33]   Daniel's CMD plugin v2.8
-[17:30:33]     (c) 2014 Daniel_Cortez
-[17:30:33] 	www.pro-pawn.ru
-[17:30:33]   Loaded.
-[17:30:33]  Loading plugin: sscanf
-[17:30:33] 
-[17:30:33]  ===============================
-[17:30:33] 
-[17:30:33]       sscanf plugin loaded.     
-[17:30:33] 
-[17:30:33]          Version: 2.13.8
-[17:30:33] 
-[17:30:33]    (c) 2022 Alex "Y_Less" Cole  
-[17:30:33] 
-[17:30:33]  ===============================
-[17:30:33] 
-[17:30:33]   Loaded.
-[17:30:33]  Loading plugin: jit
-[17:30:33]   JIT plugin 2.4.1
-[17:30:33]   Loaded.
-[17:30:33]  Loaded 4 plugins.
+[23:30:28] 
+[23:30:28] Server Plugins
+[23:30:28] --------------
+[23:30:28]  Loading plugin: mysql
+[23:30:28]  >> plugin.mysql: R41-4 successfully loaded.
+[23:30:28]   Loaded.
+[23:30:28]  Loading plugin: dc_cmd
+[23:30:28]   Daniel's CMD plugin v2.8
+[23:30:28]     (c) 2014 Daniel_Cortez
+[23:30:28] 	www.pro-pawn.ru
+[23:30:28]   Loaded.
+[23:30:28]  Loading plugin: sscanf
+[23:30:28] 
+[23:30:28]  ===============================
+[23:30:28] 
+[23:30:28]       sscanf plugin loaded.     
+[23:30:28] 
+[23:30:28]          Version: 2.13.8
+[23:30:28] 
+[23:30:28]    (c) 2022 Alex "Y_Less" Cole  
+[23:30:28] 
+[23:30:28]  ===============================
+[23:30:28] 
+[23:30:28]   Loaded.
+[23:30:28]  Loading plugin: jit
+[23:30:28]   JIT plugin 2.4.1
+[23:30:28]   Loaded.
+[23:30:28]  Loaded 4 plugins.
 
-[17:30:33] 
-[17:30:33] Filterscripts
-[17:30:33] ---------------
-[17:30:33]   Loading filterscript 'aview.amx'...
-[17:30:33] 
+[23:30:28] 
+[23:30:28] Filterscripts
+[23:30:28] ---------------
+[23:30:28]   Loading filterscript 'aview.amx'...
+[23:30:28] 
          Animation Browser
-[17:30:33]               v1.0
-[17:30:33]              SoNik))
+[23:30:28]               v1.0
+[23:30:28]              SoNik))
 
-[17:30:33]   Loaded 1 filterscripts.
+[23:30:28]   Loaded 1 filterscripts.
 
-[17:30:36] [connection] 127.0.0.1:58344 requests connection cookie.
-[17:30:41] |: JIT is present
-[17:30:41] |: Started at 17:30:41 on 16/07/2023... | Status: 0
-[17:30:41] Number of vehicle models: 0
-[17:30:41] [connection] incoming connection: 127.0.0.1:58344 id: 0
-[17:30:41] [join] Taxa has joined the server (0:127.0.0.1)
-[17:30:41] weburl = "www.sa-mp.com"  (string)
-[17:30:41] language = "English"  (string)
-[17:30:41] |: Server configuration LOADED
-[17:30:41] |: Gangs configuration LOADED
-[17:30:41] |: Round configuration LOADED
-[17:30:41] |: Evacuation configuration LOADED
-[17:30:41] |: Map configuration LOADED
-[17:30:41] |: Weapons configuration LOADED (17 / 17)
-[17:30:41] |: Balance configuration LOADED
-[17:30:41] |: Textures configuration LOADED (7 / 7)
-[17:30:41] |: Classes configuration LOADED
-[17:30:41] |: Classes loaded (55 / 55)
-[17:30:41] |: Loaded 1 maps in total
-[17:30:41] |: 6 objects loaded
-[17:30:42]   Filterscript 'village.amx' unload failed.
-[17:30:42]   Filterscript 'village.amx' loaded.
+[23:30:31] [connection] 127.0.0.1:56971 requests connection cookie.
+[23:30:36] |: JIT is present
+[23:30:36] |: Started at 23:30:36 on 16/07/2023... | Status: 0
+[23:30:36] Number of vehicle models: 0
+[23:30:36] [connection] incoming connection: 127.0.0.1:56971 id: 0
+[23:30:36] [join] Taxa has joined the server (0:127.0.0.1)
+[23:30:36] weburl = "www.sa-mp.com"  (string)
+[23:30:36] language = "English"  (string)
+[23:30:36] |: Server configuration LOADED
+[23:30:36] |: Gangs configuration LOADED
+[23:30:36] |: Round configuration LOADED
+[23:30:36] |: Evacuation configuration LOADED
+[23:30:36] |: Map configuration LOADED
+[23:30:36] |: Weapons configuration LOADED (17 / 17)
+[23:30:36] |: Balance configuration LOADED
+[23:30:36] |: Textures configuration LOADED (7 / 7)
+[23:30:36] |: Classes configuration LOADED
+[23:30:36] |: Classes loaded (55 / 55)
+[23:30:36] |: Loaded 1 maps in total
+[23:30:36] |: 6 objects loaded
+[23:30:38]   Filterscript 'village.amx' unload failed.
+[23:30:38]   Filterscript 'village.amx' loaded.

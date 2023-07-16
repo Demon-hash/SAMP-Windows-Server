@@ -1753,9 +1753,9 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
 
 custom GetAchievementsList(const playerid, const offset) {
 	if(cache_num_rows()) {
-	    new title[32], description[128], type, count, reward, index;
+	    new title[48], description[128], type, count, reward, index, value;
 		new normalized[128], formated[128], list[2048], i, total, len = cache_num_rows();
-		static const colors[] = { "{d5d5c3}", "{66ccff}" };
+		static const colors[][] = { "{d5d5c3}", "{66ccff}" };
 		
 		cache_get_value_name_int(0, "total", total);
 		strcat(list, Localization[playerid][LD_DG_ACHS_HEADERS]);
@@ -1766,9 +1766,20 @@ custom GetAchievementsList(const playerid, const offset) {
         	cache_get_value_name_int(i, "count", count);
         	cache_get_value_name_int(i, "reward", reward);
         	
-        	index = GetAchievementProgressByType(playerid, type, count);
+        	value = GetAchievementProgressByType(playerid, type);
+        	index = value >= count;
+        	
         	format(normalized, sizeof(normalized), description, count);
-        	format(formated, sizeof(formated), "%s%s\t%s%s (%d %s){FFFFFF} [%d/%d]\n", colors[index], title, colors[index], normalized, reward, Localization[playerid][LD_MSG_POINTS], 0, count);
+        	format(formated, sizeof(formated), "%s%s\t%s%s (%d %s){FFFFFF} [%d/%d]\n",
+				colors[index],
+				title,
+				colors[index],
+				normalized,
+				reward,
+				Localization[playerid][LD_MSG_POINTS],
+				min(value, count),
+				count
+			);
         	strcat(list, formated);
 	    }
 
@@ -1863,13 +1874,17 @@ stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type) 
     return 1;
 }
 
-stock GetAchievementProgressByType(const playerid, const type, const count) {
+stock GetAchievementProgressByType(const playerid, const type) {
 	new index = GetAchievementIndex(type);
 	if(index == -1) {
 	    return 0;
 	}
-
-	return floatround(_:Achievements[playerid][ACHIEVEMENTS_DATA:index], floatround_tozero) >= count;
+	
+	if(ACHIEVEMENTS_TYPES:type == ACH_TYPE_RUN) {
+	    return floatround(Float:Achievements[playerid][ACHIEVEMENTS_DATA:index], floatround_tozero);
+	}
+	
+	return Achievements[playerid][ACHIEVEMENTS_DATA:index];
 }
 
 stock ProceedClassSelection(const playerid, const selection, const showDialog) {
