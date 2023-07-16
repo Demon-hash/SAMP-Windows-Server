@@ -11,14 +11,15 @@ static const sqlTemplates[][] = {
 	AUCTIONLOG_TEMPLATE, WARNSLOG_TEMPLATE, MUTESLOG_TEMPLATE,
 	MUTESLOG_TEMPLATE, JAILSLOG_TEMPLATE, GANGPAYLOG_TEMPLATE,
 	AUCTION_TEMPLATE, AUCTION_CASHBACK_TEMPLATE,
-	ACHIEVEMENTS_TEMPLATE, CONFIG_TEMPLATE, STATS_TEMPLATE,
+	CONFIG_TEMPLATE, STATS_TEMPLATE,
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
 	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
 	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
 	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
-	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE
+	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
+	ACHIEVEMENTS_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -35,7 +36,8 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_ACHS_LOCALIZATION_1,
 	PREDIFINED_ACHS_LOCALIZATION_2,
 	PREDIFINED_ACHS_LOCALIZATION_3,
-	PREDIFINED_ACHS_LOCALIZATION_4
+	PREDIFINED_ACHS_LOCALIZATION_4,
+	PREDIFINED_ACHS_LOCALIZATION_5
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -723,6 +725,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
          	cmd::class(playerid);
 	        return 1;
 	    }
+	    case DIALOG_ACHIEVEMENTS: {
+			if(response) {
+			    GetAchievementsPage(playerid, ++Misc[playerid][mdNextPage]);
+			    return 1;
+			}
+
+			Misc[playerid][mdNextPage] = -1;
+			return 1;
+		}
 	}
 	
 	return 1;
@@ -1570,6 +1581,7 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_int(0, "humans", Achievements[playerid][achHumans]);
         cache_get_value_name_int(0, "zombies", Achievements[playerid][achZombies]);
         cache_get_value_name_int(0, "meats", Achievements[playerid][achMeats]);
+        cache_get_value_name_int(0, "ammo", Achievements[playerid][achAmmo]);
         cache_get_value_name_int(0, "killstreak", Achievements[playerid][achKillstreak]);
         cache_get_value_name_int(0, "infection", Achievements[playerid][achInfection]);
         cache_get_value_name_int(0, "cure", Achievements[playerid][achCure]);
@@ -1577,9 +1589,31 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_int(0, "reported", Achievements[playerid][achReported]);
         cache_get_value_name_int(0, "purchase", Achievements[playerid][achPurchase]);
         cache_get_value_name_int(0, "jumps", Achievements[playerid][achJumps]);
+        cache_get_value_name_int(0, "vehicles", Achievements[playerid][achVehicles]);
         cache_get_value_name_int(0, "hours", Achievements[playerid][achHours]);
         cache_get_value_name_int(0, "minutes", Achievements[playerid][achMinutes]);
         cache_get_value_name_int(0, "seconds", Achievements[playerid][achSeconds]);
+        cache_get_value_name_int(0, "silinced", Achievements[playerid][achSilinced]);
+        cache_get_value_name_int(0, "colt45", Achievements[playerid][achColt45]);
+        cache_get_value_name_int(0, "deagle", Achievements[playerid][achDeagle]);
+        cache_get_value_name_int(0, "rifle", Achievements[playerid][achRifle]);
+        cache_get_value_name_int(0, "shotgun", Achievements[playerid][achShotgun]);
+        cache_get_value_name_int(0, "mp5", Achievements[playerid][achMP5]);
+        cache_get_value_name_int(0, "combat", Achievements[playerid][achCombat]);
+        cache_get_value_name_int(0, "tec9", Achievements[playerid][achTec9]);
+        cache_get_value_name_int(0, "ak47", Achievements[playerid][achAk47]);
+        cache_get_value_name_int(0, "m4", Achievements[playerid][achM4]);
+        cache_get_value_name_int(0, "master", Achievements[playerid][achMaster]);
+		cache_get_value_name_int(0, "hermitage", Achievements[playerid][achHermitage]);
+		cache_get_value_name_int(0, "last_hope", Achievements[playerid][achLastHope]);
+		cache_get_value_name_int(0, "terrorist", Achievements[playerid][achTerrorist]);
+		cache_get_value_name_int(0, "answer", Achievements[playerid][achAnswer]);
+		cache_get_value_name_int(0, "lottery", Achievements[playerid][achLottery]);
+		cache_get_value_name_int(0, "capture", Achievements[playerid][achCapture]);
+		cache_get_value_name_int(0, "duels", Achievements[playerid][achDuels]);
+		cache_get_value_name_int(0, "session", Achievements[playerid][achSession]);
+		cache_get_value_name_int(0, "blood", Achievements[playerid][achBlood]);
+		cache_get_value_name_int(0, "mary", Achievements[playerid][achMary]);
         cache_get_value_name_int(0, "admin", Privileges[playerid][prsAdmin]);
         cache_get_value_name_int(0, "vip", Privileges[playerid][prsVip]);
         cache_get_value_name_int(0, "vip_till", Privileges[playerid][prsVipTill]);
@@ -1697,6 +1731,117 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
     }
 
  	return 1;
+}
+
+stock GetAchievementIndex(const type) {
+	switch(type) {
+	    case ACH_TYPE_ABILITIES: return _:achAbility;
+	    case ACH_TYPE_RUN: return _:achRan;
+	    case ACH_TYPE_LICKY: return _:achLuck;
+		case ACH_TYPE_KILL_HUMANS: return _:achHumans;
+		case ACH_TYPE_KILL_ZOMBIES: return _:achZombies;
+		case ACH_TYPE_COLLECT_MEATS: return _:achMeats;
+		case ACH_TYPE_COLLECT_AMMO: return _:achAmmo;
+		case ACH_TYPE_KILLSTREAK: return _:achKillstreak;
+		case ACH_TYPE_CURE: return _:achCure;
+		case ACH_TYPE_DIE: return _:achDeaths;
+		case ACH_TYPE_EVAC: return _:achEvac;
+		case ACH_TYPE_SHOP: return _:achPurchase;
+		case ACH_TYPE_TOTAL_POINTS: return _:achPurchase;
+		case ACH_TYPE_INFECT: return _:achInfection;
+		case ACH_TYPE_PLAY_HOURS: return _:achHours;
+		case ACH_TYPE_JUMP: return _:achJumps;
+		case ACH_TYPE_VEHICLES: return _:achVehicles;
+		case ACH_TYPE_ANSWER: return _:achAnswer;
+		case ACH_TYPE_LOTTERY: return _:achLottery;
+		case ACH_TYPE_CAPTURE: return _:achCapture;
+		case ACH_TYPE_DUELS: return _:achDuels;
+		case ACH_TYPE_SESSION: return _:achSession;
+		case ACH_TYPE_BLOOD: return _:achBlood;
+		case ACH_TYPE_REPORT: return _:achReported;
+		case ACH_TYPE_SILINCED: return _:achSilinced;
+		case ACH_TYPE_COLT45: return _:achColt45;
+		case ACH_TYPE_DEAGLE: return _:achDeagle;
+		case ACH_TYPE_RIFLE: return _:achRifle;
+		case ACH_TYPE_SHOTGUN: return _:achShotgun;
+		case ACH_TYPE_MP5: return _:achMP5;
+		case ACH_TYPE_COMBAT_SHOTGUN: return _:achCombat;
+		case ACH_TYPE_TEC9: return _:achTec9;
+		case ACH_TYPE_AK47: return _:achAk47;
+		case ACH_TYPE_M4: return _:achM4;
+		case ACH_TYPE_WEAPONS_MASTER: return _:achMaster;
+		case ACH_TYPE_HERMITAGE: return _:achHermitage;
+		case ACH_TYPE_MARY: return _:achMary;
+		case ACH_TYPE_LAST_HOPE: return _:achLastHope;
+		case ACH_TYPE_TERRORIST: return _:achTerrorist;
+	}
+	
+	return -1;
+}
+
+stock GetAchievementProgressByType(const playerid, const type, const count) {
+	new index = GetAchievementIndex(type);
+	if(index == -1) {
+	    return 0;
+	}
+	
+	return floatround(_:Achievements[playerid][GetAchievementIndex(index)], floatround_tozero) >= count;
+}
+
+custom GetAchievementsList(const playerid, const offset) {
+	if(cache_num_rows()) {
+	    new title[32], description[128], type, count, reward, index;
+		new normalized[128], formated[128], list[2048], i, total, len = cache_num_rows();
+		static const colors[] = { "{d5d5c3}", "{66ccff}" };
+		
+		cache_get_value_name_int(0, "total", total);
+		strcat(list, Localization[playerid][LD_DG_ACHS_HEADERS]);
+		for( i = 0; i < len; i++ ) {
+	        cache_get_value_name(i, "title", title);
+        	cache_get_value_name(i, "description", description);
+        	cache_get_value_name_int(i, "type", type);
+        	cache_get_value_name_int(i, "count", count);
+        	cache_get_value_name_int(i, "reward", reward);
+        	
+        	index = GetAchievementProgressByType(playerid, type, count);
+        	format(normalized, sizeof(normalized), description, count);
+        	format(formated, sizeof(formated), "%s%s\t%s%s (%d %s){FFFFFF} [%d/%d]\n", colors[index], title, colors[index], normalized, reward, Localization[playerid][LD_MSG_POINTS], 0, count);
+        	strcat(list, formated);
+	    }
+
+	    if((total - (offset + len)) > 0) {
+	        format(formated, sizeof(formated), "{66ccff}%s", Localization[playerid][LD_DG_ACHS_TITLE]);
+	        ShowPlayerDialogAC(playerid,
+				DIALOG_ACHIEVEMENTS,
+				DIALOG_STYLE_TABLIST_HEADERS,
+				formated,
+				list,
+				Localization[playerid][LD_BTN_NEXT],
+				Localization[playerid][LD_BTN_CLOSE]
+			);
+	        return 1;
+	    }
+
+     	ShowPlayerDialogAC(playerid,
+		 	DIALOG_INFO,
+			 DIALOG_STYLE_TABLIST_HEADERS,
+			 Localization[playerid][LD_DG_ACHS_TITLE],
+			 list,
+			 Localization[playerid][LD_BTN_CLOSE],
+			 ""
+	 	);
+	 	return 1;
+    }
+
+    ShowPlayerDialogAC(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_ACHS_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+    return 1;
 }
 
 stock ProceedClassSelection(const playerid, const selection, const showDialog) {
@@ -1934,6 +2079,7 @@ stock ClearPlayerAchievementsData(const playerid) {
     Achievements[playerid][achHumans] = 0;
     Achievements[playerid][achZombies] = 0;
     Achievements[playerid][achMeats] = 0;
+    Achievements[playerid][achAmmo] = 0;
     Achievements[playerid][achKillstreak] = 0;
     Achievements[playerid][achInfection] = 0;
     Achievements[playerid][achCure] = 0;
@@ -1941,10 +2087,32 @@ stock ClearPlayerAchievementsData(const playerid) {
     Achievements[playerid][achReported] = 0;
     Achievements[playerid][achPurchase] = 0;
     Achievements[playerid][achJumps] = 0;
+    Achievements[playerid][achVehicles] = 0;
     Achievements[playerid][achTotalPoints] = 0;
     Achievements[playerid][achHours] = 0;
     Achievements[playerid][achMinutes] = 0;
     Achievements[playerid][achSeconds] = 0;
+    Achievements[playerid][achSilinced] = 0;
+	Achievements[playerid][achColt45] = 0;
+	Achievements[playerid][achDeagle] = 0;
+	Achievements[playerid][achRifle] = 0;
+	Achievements[playerid][achShotgun] = 0;
+	Achievements[playerid][achMP5] = 0;
+	Achievements[playerid][achCombat] = 0;
+	Achievements[playerid][achTec9] = 0;
+	Achievements[playerid][achAk47] = 0;
+	Achievements[playerid][achM4] = 0;
+	Achievements[playerid][achMaster] = 0;
+	Achievements[playerid][achHermitage] = 0;
+	Achievements[playerid][achLastHope] = 0;
+	Achievements[playerid][achTerrorist] = 0;
+	Achievements[playerid][achAnswer] = 0;
+	Achievements[playerid][achLottery] = 0;
+	Achievements[playerid][achCapture] = 0;
+	Achievements[playerid][achDuels] = 0;
+	Achievements[playerid][achSession] = 0;
+	Achievements[playerid][achBlood] = 0;
+	Achievements[playerid][achMary] = 0;
     Achievements[playerid][achRan] = 0.0;
 }
 		
@@ -1973,7 +2141,7 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdIsLogged] = false;
     Misc[playerid][mdKickForAuthTimeout] = -1;
     Misc[playerid][mdKickForAuthTries] = ServerConfig[svCfgAuthTries];
-    
+    Misc[playerid][mdNextPage] = 0;
     Misc[playerid][mdMimicry][0] = -1;
     Misc[playerid][mdMimicry][1] = 0;
     Misc[playerid][mdMimicry][2] = -1;
@@ -3894,6 +4062,15 @@ stock SetTeams() {
     }
 }
 
+stock GetAchievementsPage(const playerid, const page = 0) {
+    static const query[] = LOAD_ACHIEVEMENTS_PAGE;
+	static const limit = 25;
+
+	new formated[sizeof(query) + 4 + 4], offset = page * limit;
+	mysql_format(Database, formated, sizeof(formated), query, offset, limit);
+	mysql_tquery(Database, formated, "GetAchievementsList", "ii", playerid, offset);
+}
+
 CMD:class(const playerid) {
     ShowPlayerDialogAC(
 		playerid, DIALOG_CLASSES, DIALOG_STYLE_LIST,
@@ -3906,7 +4083,8 @@ CMD:class(const playerid) {
 }
 
 CMD:achievements(const playerid) {
-	static const query[] = "SELECT l.english as title, l.english_desc as description, c.type, c.count, c.reward FROM achievements_localization l LEFT JOIN achievements_config c ON c.id = l.id WHERE c.disabled = 0;";
+	GetAchievementsPage(playerid, 0);
+	Misc[playerid][mdNextPage] = 0;
 	return 1;
 }
 

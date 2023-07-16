@@ -35,6 +35,7 @@ enum MISC_DATA {
 	mdDialogId,
 	mdSelectionTeam,
 	mdBlindTimeout,
+	mdNextPage,
 	mdHumanSelectionName[MAX_CLASS_NAME],
 	mdZombieSelectionName[MAX_CLASS_NAME],
 	mdHumanNextSelectionName[MAX_CLASS_NAME],

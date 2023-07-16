@@ -40,6 +40,8 @@
 	`humans` int(6) unsigned NOT NULL default '0',\
 	`zombies` int(6) unsigned NOT NULL default '0',\
 	`meats` int(6) unsigned NOT NULL default '0',\
+	`ammo` int(6) unsigned NOT NULL default '0',\
+	`vehicles` int(6) unsigned NOT NULL default '0',\
 	`killstreak` int(6) unsigned NOT NULL default '0',\
 	`infection` int(6) unsigned NOT NULL default '0',\
 	`cure` int(6) unsigned NOT NULL default '0',\
@@ -51,6 +53,27 @@
 	`hours` int(6) unsigned NOT NULL default '0',\
 	`minutes` int(2) unsigned NOT NULL default '0',\
 	`seconds` int(2) unsigned NOT NULL default '0',\
+	`silinced` int(3) unsigned NOT NULL default '0',\
+	`colt45` int(3) unsigned NOT NULL default '0',\
+	`deagle` int(3) unsigned NOT NULL default '0',\
+	`rifle` int(3) unsigned NOT NULL default '0',\
+	`shotgun` int(3) unsigned NOT NULL default '0',\
+	`mp5` int(3) unsigned NOT NULL default '0',\
+	`combat` int(3) unsigned NOT NULL default '0',\
+	`tec9` int(3) unsigned NOT NULL default '0',\
+	`ak47` int(3) unsigned NOT NULL default '0',\
+	`m4` int(3) unsigned NOT NULL default '0',\
+	`master` int(1) unsigned NOT NULL default '0',\
+	`hermitage` int(1) unsigned NOT NULL default '0',\
+	`last_hope` int(1) unsigned NOT NULL default '0',\
+	`terrorist` int(6) unsigned NOT NULL default '0',\
+	`answer` int(6) unsigned NOT NULL default '0',\
+	`lottery` int(6) unsigned NOT NULL default '0',\
+	`capture` int(6) unsigned NOT NULL default '0',\
+	`duels` int(6) unsigned NOT NULL default '0',\
+	`session` int(2) unsigned NOT NULL default '0',\
+	`blood` int(6) unsigned NOT NULL default '0',\
+	`mary` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -624,9 +647,9 @@
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\
 	(3, 'Experienced', 'Use your class ability %d times', 'Тренировка', 'Используйте свою способность %d раз'),\
-	(4, 'Jogging', 'Run %.3f kilometers', 'Прогулка', 'Пробегите %.3f километров'),\
-	(5, 'Runner', 'Run %.3f kilometers', 'Пробежка', 'Пробегите %.3f километров'),\
-	(6, 'Olympic Champion', 'Run %.3f kilometers', 'Забег', 'Пробегите %.3f километров'),\
+	(4, 'Jogging', 'Run %d kilometers', 'Прогулка', 'Пробегите %d километров'),\
+	(5, 'Runner', 'Run %d kilometers', 'Пробежка', 'Пробегите %d километров'),\
+	(6, 'Olympic Champion', 'Run %d kilometers', 'Забег', 'Пробегите %d километров'),\
 	(7, 'Lucky', 'Survive with a health of 1, %d times', 'Везение', 'Эвакуируйтесь с 1 ОЗ, %d раз'),\
 	(8, 'Inviolable', 'Survive with a health of 1, %d times', 'На грани', 'Эвакуируйтесь с 1 ОЗ, %d раз'),\
 	(9, 'Close To Death', 'Survive with a health of 1, %d times', 'На волоске', 'Эвакуируйтесь с 1 ОЗ, %d раз'),\
@@ -660,9 +683,9 @@
 	(34, 'Amateur', 'Make %d purchases in shop', 'Любитель', 'Купите %d вещей в магазине'),\
 	(35, 'Shopaholic', 'Make %d purchases in shop', 'Шопоголик', 'Купите %d вещей в магазине'),\
 	(36, 'Money in nowhere', 'Make %d purchases in shop', 'Деньги в Никуда', 'Купите %d вещей в магазине'),\
-	(37, 'In Cash', 'Get a total of %.0f points', 'При деньгах', 'Достигните в сумме %.0f очков'),\
-	(38, 'Businessman', 'Get a total of %.0f points', 'Бизнессмен', 'Достигните в сумме %.0f очков'),\
-	(39, 'Millionaire', 'Get a total of %.0f points', 'Миллионер', 'Достигните в сумме %.0f очков'),\
+	(37, 'In Cash', 'Get a total of %d points', 'При деньгах', 'Достигните в сумме %d очков'),\
+	(38, 'Businessman', 'Get a total of %d points', 'Бизнессмен', 'Достигните в сумме %d очков'),\
+	(39, 'Millionaire', 'Get a total of %d points', 'Миллионер', 'Достигните в сумме %d очков'),\
 	(40, 'Unknown Virus', 'Infect %d humans', 'Неизвестный Вирус', 'Заразите %d людей');\
 "
 
@@ -678,91 +701,137 @@
 	(49, 'Into The Oncoming Lane', 'Destroy %d vehicles', 'На Встречку', 'Уничтожте %d машин'),\
 	(50, 'Car accident', 'Destroy %d vehicles', 'ДТП', 'Уничтожте %d машин'),\
 	(51, 'All For Parts', 'Destroy %d vehicles', 'На Запчасти', 'Уничтожте %d машин'),\
-	(52, 'Hush, Hush', 'Master Silinced Pistol', 'Тише, тише', 'Освойте Пистолет с Глушитилем'),\
-	(53, 'Civil Defense', 'Master Colt45', 'Гражданская Оборона', 'Освойте Colt45'),\
-	(54, 'With bros', 'Master Deagle', 'С Братанами', 'Освойте Дигл'),\
-	(55, 'Stacks Of Hay', 'Master Rifle', 'Стопы Сена', 'Освойте Винтовку'),\
-	(56, 'Arrest', 'Master Shotgun', 'Под Арест', 'Освойте Дробовик'),\
-	(57, 'Special Forces', 'Master MP5', 'Спецназ', 'Освойте MP5'),\
-	(58, 'Sergeant', 'Master Combat Shotgun', 'Сержант', 'Освойте Скорострельный Дробовик'),\
-	(59, 'A Lot, A Little', 'Master Tec-9', 'Много, по немногу', 'Освойте Tec-9'),\
-	(60, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47');\
+	(52, 'Let Me Think', 'Answer %d random questions', 'Дайте Подумать', 'Ответьте на %d случайных вопросов'),\
+	(53, 'Quick Answer', 'Answer %d random questions', 'Быстрый Ответ', 'Ответьте на %d случайных вопросов'),\
+	(54, 'Erudition', 'Answer %d random questions', 'Эрудиция', 'Ответьте на %d случайных вопросов'),\
+	(55, 'Trembling', 'Win lottery %d times', 'Трепет', 'Выграйте %d раз в лотерее'),\
+	(56, 'Within Temptation', 'Win lottery %d times', 'В Предвкушении', 'Выграйте %d раз в лотерее'),\
+	(57, 'Casino', 'Win lottery %d times', 'Казино', 'Выграйте %d раз в лотерее'),\
+	(58, 'This Is My Territory', 'Capture %d maps', 'Это моя Территория', 'Захватите %d карт'),\
+	(59, 'The Smell Of Prey', 'Capture %d maps', 'Запах Добычи', 'Захватите %d карт'),\
+	(60, 'The Beast Inside', 'Capture %d maps', 'Зверь Внутри', 'Захватите %d карт');\
 "
 
 #define PREDIFINED_ACHS_LOCALIZATION_4 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
-	(61, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
-	(62, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
-	(63, 'Hermitage', 'Be the one who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
-	(64, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
-	(65, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
+	(61, 'Street Shootout', 'Win %d duels', 'Уличная Перестрелка', 'Выграйте %d дуэлей'),\
+	(62, 'Mud And Blood', 'Win %d duels', 'Грязь и Кровь', 'Выграйте %d дуэлей'),\
+	(63, 'Steel Eggs', 'Win %d duels', 'Стальные Яйца', 'Выграйте %d дуэлей'),\
+	(64, 'With Beer In Hand', 'Play %d hours withour quitting', 'С Пивом в Руках', 'Отыграйте %d часов за раз'),\
+	(65, 'Do Your Best', 'Play %d hours withour quitting', 'Стараюсь Как Могу', 'Отыграйте %d часов за раз'),\
+	(66, 'Excerpt', 'Play %d hours withour quitting', 'Выдержка', 'Отыграйте %d часов за раз'),\
+	(67, 'Blood Letter', 'Draw First Blood %d times', 'Кровавое Письмо', 'Пустите Первую Кровь %d раз'),\
+	(68, 'Recorder With Blood', 'Draw First Blood %d times', 'Диктофон с Кровью', 'Пустите Первую Кровь %d раз'),\
+	(69, 'Blood Concert', 'Draw First Blood %d times', 'Кровавый Концерт', 'Пустите Первую Кровь %d раз'),\
+	(70, 'Surrender', '/report %d cheaters', 'Сдавайся', 'Отправьте /report на читеров %d раз'),\
+	(71, 'In A Cage', '/report %d cheaters', 'В Клетке', 'Отправьте /report на читеров %d раз'),\
+	(72, 'We Are All In This Together', '/report %d cheaters', 'Мы Все Заодно', 'Отправьте /report на читеров %d раз'),\
+	(73, 'Hush, Hush', 'Master Silinced Pistol', 'Тише, тише', 'Освойте Пистолет с Глушитилем'),\
+	(74, 'Civil Defense', 'Master Colt45', 'Гражданская Оборона', 'Освойте Colt45'),\
+	(75, 'With bros', 'Master Deagle', 'С Братанами', 'Освойте Дигл'),\
+	(76, 'Stacks Of Hay', 'Master Rifle', 'Стопы Сена', 'Освойте Винтовку'),\
+	(77, 'Arrest', 'Master Shotgun', 'Под Арест', 'Освойте Дробовик'),\
+	(78, 'Special Forces', 'Master MP5', 'Спецназ', 'Освойте MP5'),\
+	(79, 'Sergeant', 'Master Combat Shotgun', 'Сержант', 'Освойте Скорострельный Дробовик'),\
+	(80, 'A Lot, A Little', 'Master Tec-9', 'Много, по немногу', 'Освойте Tec-9');\
+"
+#define PREDIFINED_ACHS_LOCALIZATION_5 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
+	(81, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47'),\
+	(82, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
+	(83, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
+	(84, 'Hermitage', 'Be the one man who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
+	(85, 'The Virgin Mary', 'Be the one woman who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
+	(86, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
+	(87, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
 "
 
 #define PREDIFINED_ACHS_CFG "INSERT IGNORE INTO `achievements_config` (id, type, count, reward, disabled) VALUES \
 	(1, 0, 10, 0, 0),\
 	(2, 0, 500, 0, 0),\
 	(3, 0, 1000, 0, 0),\
-	(4, 0, 10000, 0, 0),\
-	(5, 0, 50000, 0, 0),\
-	(6, 0, 200000, 0, 0),\
-	(7, 0, 3, 0, 0),\
-	(8, 0, 10, 0, 0),\
-	(9, 0, 20, 0, 0),\
-	(10, 0, 10, 0, 0),\
-	(11, 0, 100, 0, 0),\
-	(12, 0, 1000, 0, 0),\
-	(13, 0, 10, 0, 0),\
-	(14, 0, 100, 0, 0),\
-	(15, 0, 1000, 0, 0),\
-	(16, 0, 100, 0, 0),\
-	(17, 0, 1000, 0, 0),\
-	(18, 0, 5000, 0, 0),\
-	(19, 0, 100, 0, 0),\
-	(20, 0, 1000, 0, 0),\
-	(21, 0, 5000, 0, 0),\
-	(22, 0, 5, 0, 0),\
-	(23, 0, 50, 0, 0),\
-	(24, 0, 100, 0, 0),\
-	(25, 0, 10, 0, 0),\
-	(26, 0, 100, 0, 0),\
-	(27, 0, 300, 0, 0),\
-	(28, 0, 10, 0, 0),\
-	(29, 0, 100, 0, 0),\
-	(30, 0, 1000, 0, 0),\
-	(31, 0, 5, 0, 0),\
-	(32, 0, 100, 0, 0),\
-	(33, 0, 300, 0, 0),\
-	(34, 0, 50, 0, 0),\
-	(35, 0, 100, 0, 0),\
-	(36, 0, 200, 0, 0),\
-	(37, 0, 10000, 0, 0),\
-	(38, 0, 50000, 0, 0),\
-	(39, 0, 100000, 0, 0),\
-	(40, 0, 50, 0, 0),\
-	(41, 0, 300, 0, 0),\
-	(42, 0, 1000, 0, 0),\
-	(43, 0, 168, 0, 0),\
-	(44, 0, 4383, 0, 0),\
-	(45, 0, 8760, 0, 0),\
-	(46, 0, 100, 0, 0),\
-	(47, 0, 300, 0, 0),\
-	(48, 0, 700, 0, 0),\
-	(49, 0, 10, 0, 0),\
-	(50, 0, 100, 0, 0),\
-	(51, 0, 250, 0, 0),\
-	(52, 0, 1000, 0, 0),\
-	(53, 0, 1000, 0, 0),\
-	(54, 0, 1000, 0, 0),\
-	(55, 0, 1000, 0, 0),\
-	(56, 0, 1000, 0, 0),\
-	(57, 0, 1000, 0, 0),\
-	(58, 0, 1000, 0, 0),\
-	(59, 0, 1000, 0, 0),\
-	(60, 0, 1000, 0, 0),\
-	(61, 0, 1000, 0, 0),\
-	(62, 0, 1, 0, 0),\
-	(63, 0, 1, 0, 0),\
-	(64, 0, 1, 0, 0),\
-	(65, 0, 10000, 0, 0);\
+	(4, 1, 10000, 0, 0),\
+	(5, 1, 50000, 0, 0),\
+	(6, 1, 200000, 0, 0),\
+	(7, 2, 3, 0, 0),\
+	(8, 2, 10, 0, 0),\
+	(9, 2, 20, 0, 0),\
+	(10, 3, 10, 0, 0),\
+	(11, 3, 100, 0, 0),\
+	(12, 3, 1000, 0, 0),\
+	(13, 4, 10, 0, 0),\
+	(14, 4, 100, 0, 0),\
+	(15, 4, 1000, 0, 0),\
+	(16, 5, 100, 0, 0),\
+	(17, 5, 1000, 0, 0),\
+	(18, 5, 5000, 0, 0),\
+	(19, 6, 100, 0, 0),\
+	(20, 6, 1000, 0, 0),\
+	(21, 6, 5000, 0, 0),\
+	(22, 7, 5, 0, 0),\
+	(23, 7, 50, 0, 0),\
+	(24, 7, 100, 0, 0),\
+	(25, 8, 10, 0, 0),\
+	(26, 8, 100, 0, 0),\
+	(27, 8, 300, 0, 0),\
+	(28, 9, 10, 0, 0),\
+	(29, 9, 100, 0, 0),\
+	(30, 9, 1000, 0, 0),\
+	(31, 10, 5, 0, 0),\
+	(32, 10, 100, 0, 0),\
+	(33, 10, 300, 0, 0),\
+	(34, 11, 50, 0, 0),\
+	(35, 11, 100, 0, 0),\
+	(36, 11, 200, 0, 0),\
+	(37, 12, 10000, 0, 0),\
+	(38, 12, 50000, 0, 0),\
+	(39, 12, 100000, 0, 0),\
+	(40, 13, 50, 0, 0),\
+	(41, 13, 300, 0, 0),\
+	(42, 13, 1000, 0, 0),\
+	(43, 14, 168, 0, 0),\
+	(44, 14, 4383, 0, 0),\
+	(45, 15, 8760, 0, 0),\
+	(46, 16, 100, 0, 0),\
+	(47, 16, 300, 0, 0),\
+	(48, 16, 700, 0, 0),\
+	(49, 17, 10, 0, 0),\
+	(50, 17, 100, 0, 0),\
+	(51, 17, 250, 0, 0),\
+	(52, 18, 10, 0, 0),\
+	(53, 18, 50, 0, 0),\
+	(54, 18, 100, 0, 0),\
+	(55, 19, 10, 0, 0),\
+	(56, 19, 20, 0, 0),\
+	(57, 19, 30, 0, 0),\
+	(58, 20, 10, 0, 0),\
+	(59, 20, 20, 0, 0),\
+	(60, 20, 30, 0, 0),\
+	(61, 21, 10, 0, 0),\
+	(62, 21, 30, 0, 0),\
+	(63, 21, 70, 0, 0),\
+	(64, 22, 2, 0, 0),\
+	(65, 22, 6, 0, 0),\
+	(66, 22, 12, 0, 0),\
+	(67, 23, 10, 0, 0),\
+	(68, 23, 30, 0, 0),\
+	(69, 23, 60, 0, 0),\
+	(70, 24, 50, 0, 0),\
+	(71, 24, 100, 0, 0),\
+	(72, 24, 200, 0, 0),\
+	(73, 25, 1000, 0, 0),\
+	(74, 26, 1000, 0, 0),\
+	(75, 27, 1000, 0, 0),\
+	(76, 28, 1000, 0, 0),\
+	(77, 29, 1000, 0, 0),\
+	(78, 30, 1000, 0, 0),\
+	(79, 31, 1000, 0, 0),\
+	(80, 32, 1000, 0, 0),\
+	(81, 33, 1000, 0, 0),\
+	(82, 34, 1000, 0, 0),\
+	(83, 35, 1, 0, 0),\
+	(84, 36, 1, 0, 0),\
+	(85, 37, 1, 0, 0),\
+	(86, 38, 1, 0, 0),\
+	(87, 39, 10000, 0, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \
@@ -1106,5 +1175,9 @@
 	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
 	(99, '~r~Space starts damaging you', '~r~Пространство начинает разрывать вас'),\
 	(100, '>> Random Question for %d points: %s', 'Случайная викторина на %d очков: %s'),\
-	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков');\
+	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков'),\
+	(102, 'Next', 'Следующая'),\
+	(103, 'Achievements', 'Достижения'),\
+	(104, 'Nothing yet', 'Тут пока пусто'),\
+	(105, 'Name\tDescription\n', 'Название\tОписание');\
 "

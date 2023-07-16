@@ -31,6 +31,17 @@
 #define LOAD_OBJECTS_QUERY "SELECT * FROM `objects` WHERE 1;"
 #define LOAD_LOCALIZATION_QST_QUERY "SELECT `%e` as text, `%e_answer` as answer FROM `random_question` WHERE 1;"
 
+#define LOAD_ACHIEVEMENTS_PAGE "SELECT l.english AS title, l.english_desc AS description, c.type, c.count, c.reward, (\
+	SELECT COUNT( c.id ) \
+		FROM achievements_config c \
+		WHERE c.disabled = 0 \
+	) AS total \
+	FROM achievements_localization l \
+	LEFT JOIN achievements_config c ON c.id = l.id \
+	WHERE c.disabled = 0 \
+	LIMIT %d, %d\
+"
+
 #define PRELOAD_CLASSES_TITLES "\
 	SELECT COALESCE(l.%e_title, '') AS title, c.id -1 AS id \
 	FROM `classes` c \
