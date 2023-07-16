@@ -350,6 +350,11 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
 	        RoundSession[killerid][rsdKilling] += RoundConfig[rdCfgKilling];
 	    }
+	    
+	    switch(GetPlayerTeamEx(playerid)) {
+	        case TEAM_ZOMBIE: ProceedAchievementProgress(killerid, ACH_TYPE_KILL_ZOMBIES);
+	        case TEAM_HUMAN: ProceedAchievementProgress(killerid, ACH_TYPE_KILL_HUMANS);
+	    }
 	}
 	
 	if(Round[playerid][rdIsHumanHero]) {
@@ -383,7 +388,8 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	if(IsAbleToGivePointsInCategory(playerid, SESSION_UNDEAD_POINTS)) {
 	    RoundSession[playerid][rsdDeaths] += RoundConfig[rdCfgDeaths];
 	}
-
+	
+    ProceedAchievementProgress(playerid, ACH_TYPE_DIE);
  	ClearPlayerRoundData(playerid);
 	CreateDropOnDeath(playerid, killerid);
 	ResetMapValuesOnDeath(playerid);
@@ -544,6 +550,7 @@ public OnPlayerEnterCheckpoint(playerid) {
 	SetPlayerFacingAngle(playerid, EvacuationConfig[ecdCfgPosition][3]);
 	SetCameraBehindPlayer(playerid);
 	SetPlayerInterior(playerid, EvacuationConfig[ecdCfgInterior]);
+	ProceedAchievementProgress(playerid, ACH_TYPE_EVAC);
 	
 	DisablePlayerCheckpoint(playerid);
 	CurePlayer(playerid);
@@ -586,6 +593,7 @@ public OnPlayerText(playerid, text[]) {
 	
 	if(RandomQuestions[RMB_STARTED] && !strcmp(text, LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], false)) {
 	    RoundSession[playerid][rdAdditionalPoints] += float(RandomQuestions[RMB_POINTS]);
+	    ProceedAchievementProgress(playerid, ACH_TYPE_ANSWER);
 	    
  		new formated[120];
 	    foreach(Player, i) {
@@ -635,6 +643,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 			return 1;
 		}
 		
+		ProceedAchievementProgress(playerid, ACH_TYPE_JUMP);
 		return 1;
 	}
 	
@@ -752,6 +761,14 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
 	return 1;
 }
 
+public OnVehicleDeath(vehicleid, killerid) {
+	if(IsPlayerConnected(killerid)) {
+        ProceedAchievementProgress(killerid, ACH_TYPE_VEHICLES);
+	}
+	
+	return 1;
+}
+
 public OnQueryError(errorid, const error[], const callback[], const query[], MySQL:handle) {
 	printf("SQL: %s(%d) > (%s) > %s", error, errorid, callback, query);
 	return 1;
@@ -784,6 +801,7 @@ custom Update() {
             ProceedUnfreeze(playerid);
             ProceedRecoveryLongJumps(playerid);
             ProceedMimicryChangeBack(playerid);
+            ProceedHours(playerid);
             ProceedPassiveAbility(playerid, ABILITY_REGENERATOR);
             
             if(!Map[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (Map[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
@@ -1733,61 +1751,6 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
  	return 1;
 }
 
-stock GetAchievementIndex(const type) {
-	switch(type) {
-	    case ACH_TYPE_ABILITIES: return _:achAbility;
-	    case ACH_TYPE_RUN: return _:achRan;
-	    case ACH_TYPE_LICKY: return _:achLuck;
-		case ACH_TYPE_KILL_HUMANS: return _:achHumans;
-		case ACH_TYPE_KILL_ZOMBIES: return _:achZombies;
-		case ACH_TYPE_COLLECT_MEATS: return _:achMeats;
-		case ACH_TYPE_COLLECT_AMMO: return _:achAmmo;
-		case ACH_TYPE_KILLSTREAK: return _:achKillstreak;
-		case ACH_TYPE_CURE: return _:achCure;
-		case ACH_TYPE_DIE: return _:achDeaths;
-		case ACH_TYPE_EVAC: return _:achEvac;
-		case ACH_TYPE_SHOP: return _:achPurchase;
-		case ACH_TYPE_TOTAL_POINTS: return _:achPurchase;
-		case ACH_TYPE_INFECT: return _:achInfection;
-		case ACH_TYPE_PLAY_HOURS: return _:achHours;
-		case ACH_TYPE_JUMP: return _:achJumps;
-		case ACH_TYPE_VEHICLES: return _:achVehicles;
-		case ACH_TYPE_ANSWER: return _:achAnswer;
-		case ACH_TYPE_LOTTERY: return _:achLottery;
-		case ACH_TYPE_CAPTURE: return _:achCapture;
-		case ACH_TYPE_DUELS: return _:achDuels;
-		case ACH_TYPE_SESSION: return _:achSession;
-		case ACH_TYPE_BLOOD: return _:achBlood;
-		case ACH_TYPE_REPORT: return _:achReported;
-		case ACH_TYPE_SILINCED: return _:achSilinced;
-		case ACH_TYPE_COLT45: return _:achColt45;
-		case ACH_TYPE_DEAGLE: return _:achDeagle;
-		case ACH_TYPE_RIFLE: return _:achRifle;
-		case ACH_TYPE_SHOTGUN: return _:achShotgun;
-		case ACH_TYPE_MP5: return _:achMP5;
-		case ACH_TYPE_COMBAT_SHOTGUN: return _:achCombat;
-		case ACH_TYPE_TEC9: return _:achTec9;
-		case ACH_TYPE_AK47: return _:achAk47;
-		case ACH_TYPE_M4: return _:achM4;
-		case ACH_TYPE_WEAPONS_MASTER: return _:achMaster;
-		case ACH_TYPE_HERMITAGE: return _:achHermitage;
-		case ACH_TYPE_MARY: return _:achMary;
-		case ACH_TYPE_LAST_HOPE: return _:achLastHope;
-		case ACH_TYPE_TERRORIST: return _:achTerrorist;
-	}
-	
-	return -1;
-}
-
-stock GetAchievementProgressByType(const playerid, const type, const count) {
-	new index = GetAchievementIndex(type);
-	if(index == -1) {
-	    return 0;
-	}
-	
-	return floatround(_:Achievements[playerid][GetAchievementIndex(index)], floatround_tozero) >= count;
-}
-
 custom GetAchievementsList(const playerid, const offset) {
 	if(cache_num_rows()) {
 	    new title[32], description[128], type, count, reward, index;
@@ -1842,6 +1805,71 @@ custom GetAchievementsList(const playerid, const offset) {
 		""
 	);
     return 1;
+}
+
+stock GetAchievementIndex(const type) {
+	switch(type) {
+	    case ACH_TYPE_ABILITIES: return _:achAbility; // Done
+	    case ACH_TYPE_RUN: return _:achRan;
+	    case ACH_TYPE_LICKY: return _:achLuck;
+		case ACH_TYPE_KILL_HUMANS: return _:achHumans; // Done
+		case ACH_TYPE_KILL_ZOMBIES: return _:achZombies; // Done
+		case ACH_TYPE_COLLECT_MEATS: return _:achMeats; // Done
+		case ACH_TYPE_COLLECT_AMMO: return _:achAmmo; // Done
+		case ACH_TYPE_KILLSTREAK: return _:achKillstreak;
+		case ACH_TYPE_CURE: return _:achCure; // Done
+		case ACH_TYPE_DIE: return _:achDeaths; // Done
+		case ACH_TYPE_EVAC: return _:achEvac; // Done
+		case ACH_TYPE_SHOP: return _:achPurchase;
+		case ACH_TYPE_TOTAL_POINTS: return _:achPurchase;
+		case ACH_TYPE_INFECT: return _:achInfection; // Done
+		case ACH_TYPE_PLAY_HOURS: return _:achHours; // Done
+		case ACH_TYPE_JUMP: return _:achJumps; // Done
+		case ACH_TYPE_VEHICLES: return _:achVehicles; // Done
+		case ACH_TYPE_ANSWER: return _:achAnswer; // Done
+		case ACH_TYPE_LOTTERY: return _:achLottery;
+		case ACH_TYPE_CAPTURE: return _:achCapture;
+		case ACH_TYPE_DUELS: return _:achDuels;
+		case ACH_TYPE_SESSION: return _:achSession;
+		case ACH_TYPE_BLOOD: return _:achBlood;
+		case ACH_TYPE_REPORT: return _:achReported;
+		case ACH_TYPE_SILINCED: return _:achSilinced;
+		case ACH_TYPE_COLT45: return _:achColt45;
+		case ACH_TYPE_DEAGLE: return _:achDeagle;
+		case ACH_TYPE_RIFLE: return _:achRifle;
+		case ACH_TYPE_SHOTGUN: return _:achShotgun;
+		case ACH_TYPE_MP5: return _:achMP5;
+		case ACH_TYPE_COMBAT_SHOTGUN: return _:achCombat;
+		case ACH_TYPE_TEC9: return _:achTec9;
+		case ACH_TYPE_AK47: return _:achAk47;
+		case ACH_TYPE_M4: return _:achM4;
+		case ACH_TYPE_WEAPONS_MASTER: return _:achMaster;
+		case ACH_TYPE_HERMITAGE: return _:achHermitage;
+		case ACH_TYPE_MARY: return _:achMary;
+		case ACH_TYPE_LAST_HOPE: return _:achLastHope;
+		case ACH_TYPE_TERRORIST: return _:achTerrorist;
+	}
+
+	return -1;
+}
+
+stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type) {
+    new index = GetAchievementIndex(_:type);
+    if(index == -1) {
+	    return 0;
+	}
+	
+    ++Achievements[playerid][ACHIEVEMENTS_DATA:index];
+    return 1;
+}
+
+stock GetAchievementProgressByType(const playerid, const type, const count) {
+	new index = GetAchievementIndex(type);
+	if(index == -1) {
+	    return 0;
+	}
+
+	return floatround(_:Achievements[playerid][ACHIEVEMENTS_DATA:index], floatround_tozero) >= count;
 }
 
 stock ProceedClassSelection(const playerid, const selection, const showDialog) {
@@ -2729,6 +2757,7 @@ stock DefaultCure(const playerid) {
 
 stock DefaultInfection(const playerid) {
     Round[playerid][rdIsInfected] = true;
+    ProceedAchievementProgress(playerid, ACH_TYPE_INFECT);
 }
 
 stock SendInfectionMessage(const LOCALIZATION_DATA:localeid, const targetid, const playerid) {
@@ -2753,6 +2782,8 @@ stock AbilityUsed(const playerid, const classid = -1, const abilityid = -1) {
    	if(classid > -1 && abilityid > -1) {
    		AbilitiesTimers[playerid][abilityid] = gettime() + Classes[classid][cldCooldown];
    	}
+   	
+   	ProceedAchievementProgress(playerid, ACH_TYPE_ABILITIES);
 }
 
 stock InfectPlayer(const playerid, const classid, const abilityid) {
@@ -3182,6 +3213,7 @@ stock CurePlayerInField(const targetid, const playerid, const classid) {
 
     DefaultCure(targetid);
     AbilityUsed(playerid);
+    ProceedAchievementProgress(playerid, ACH_TYPE_CURE);
     
     new formated[96];
    	foreach(Player, i) {
@@ -3199,6 +3231,7 @@ stock CurePlayerByShot(const targetid, const playerid) {
 
     DefaultCure(targetid);
     AbilityUsed(playerid);
+    ProceedAchievementProgress(playerid, ACH_TYPE_CURE);
     
     new formated[96];
    	foreach(Player, i) {
@@ -3369,9 +3402,26 @@ stock ProceedRecoveryLongJumps(const playerid) {
 }
 
 stock ProceedSpaceDamage(const playerid) {
-    if(gettime() > AbilitiesTimers[playerid][ABILITY_SPACEBREAKER] && GetPlayerVirtualWorld(playerid) > 0 && Misc[playerid][mdIsLogged]) {
+    if( AbilitiesTimers[playerid][ABILITY_SPACEBREAKER] > 0 && gettime() > AbilitiesTimers[playerid][ABILITY_SPACEBREAKER] &&
+		GetPlayerVirtualWorld(playerid) > 0) {
         GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_SPACE_DAMAGE]), 1000, 5);
         SetPlayerHealthAC(playerid, GetPlayerHealthEx(playerid) - 5.0);
+    }
+}
+
+stock ProceedHours(const playerid) {
+    ++Achievements[playerid][achSeconds];
+    
+    if((Achievements[playerid][achSeconds] % 60) == 0) {
+        Achievements[playerid][achSeconds] = 0;
+        ++Achievements[playerid][achMinutes];
+        
+        if((Achievements[playerid][achMinutes] % 60) == 0) {
+            Achievements[playerid][achMinutes] = 0;
+            ++Achievements[playerid][achHours];
+            
+            ProceedAchievementProgress(playerid, ACH_TYPE_PLAY_HOURS);
+        }
     }
 }
 
@@ -3538,6 +3588,7 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 	        case TEAM_ZOMBIE: {
                 new classid = Misc[playerid][mdCurrentClass][TEAM_ZOMBIE];
 	        	SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
+	        	ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_MEATS);
 	        	return 1;
 	        }
 	        case TEAM_HUMAN: {
@@ -3546,6 +3597,8 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 	                	CurePlayer(playerid);
 	                	GameTextForPlayer(playerid,  RusToGame(Localization[playerid][LD_ANY_ANTIDOTE]), 2000, 5);
 	                }
+	                
+	                ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_MEATS);
 	                return 1;
 	            }
 	            
@@ -3558,9 +3611,11 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 				    GivePlayerWeapon(playerid, weapon, amount);
 				    format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_ANY_AMMO_PICKUP]), amount);
 				    GameTextForPlayer(playerid, formated, 2000, 5);
+				    ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_AMMO);
 				    return 1;
 				}
 				
+				ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_MEATS);
                 ProceedPassiveAbility(pickupid, ABILITY_FLESHER, playerid);
                 return 1;
 	        }
