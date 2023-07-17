@@ -27,6 +27,7 @@
 #include <packs/balance>
 #include <packs/polygons>
 #include <packs/messages>
+#include <packs/lottery>
 
 #include <dependencies/jit>
 #include <dependencies/foreach>

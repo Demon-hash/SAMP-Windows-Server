@@ -61,6 +61,9 @@ static Misc[MAX_PLAYERS][MISC_DATA];
 static Player[MAX_PLAYERS][PLAYER_DATA];
 static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
 
+static Lottery[MAX_PLAYERS];
+static LotteryConfig[LOTTERY_CONFIG_DATA];
+
 static ServerTextures[TEXTURES_DATA];
 static ServerTexturesConfig[MAX_SERVER_TEXTURES][TEXTURES_CONFIG_DATA];
 
@@ -83,12 +86,12 @@ static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
 static
-    	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
-		MySQL:Database, updateTimerId, Iterator:Humans<MAX_PLAYERS>,
-		Iterator:Zombies<MAX_PLAYERS>, Iterator:MutatedPlayers<MAX_PLAYERS>,
-		Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
-		Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
-		Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>;
+	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
+	MySQL:Database, updateTimerId, Iterator:Humans<MAX_PLAYERS>,
+	Iterator:Zombies<MAX_PLAYERS>, Iterator:MutatedPlayers<MAX_PLAYERS>,
+	Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
+	Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
+	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>;
 
 /*
 	MAIN
@@ -144,15 +147,19 @@ static
 		 
 #define CRYSTAL_STONE_TEXT "CRYSTAL STONE\n{FFFFFF}>> %.0f <<{FFF000}\nDestroy this crystal to capture the map, only gang members can deal damage\nDamage dealt depends on rank"
 
-#define SV_CFG_CONSOLE_LOG "|: Server configuration"
-#define GS_CFG_CONSOLE_LOG "|: Gangs configuration"
-#define RD_CFG_CONSOLE_LOG "|: Round configuration"
-#define EVC_CFG_CONSOLE_LOG "|: Evacuation configuration"
-#define MAP_CFG_CONSOLE_LOG "|: Map configuration"
-#define WPS_CFG_CONSOLE_LOG "|: Weapons configuration"
-#define BLC_CFG_CONSOLE_LOG "|: Balance configuration"
-#define TEX_CFG_CONSOLE_LOG "|: Textures configuration"
-#define CLS_CFG_CONSOLE_LOG "|: Classes configuration"
+#define COLOR_CONNECTIONS 0xC0C0C0FF
+#define COLOR_RANDOM_QUESTION 0xC659B6FF
+#define COLOR_MEDIC 0xB2F558FF
+#define COLOR_INFO 0xFFF000FF
+#define COLOR_ABILITY 0x009900FF
+#define COLOR_DEFAULT 0xFFFFFFFF
+#define COLOR_WARNING 0xE48800FF
+#define COLOR_ALERT 0xff4d4dFF
+#define COLOR_ADMIN 0x33CCFFFF
+#define COLOR_GLOBAL_INFO 0x59E4B5FF
+#define COLOR_POISION 0x6e14b8FF
+#define COLOR_LOTTERY 0xE68687FF
+#define COLOR_CRYSTAL_INFO 0xb823b3FF
 
 main() {
 }
@@ -191,6 +198,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_4);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
 
     mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
@@ -214,7 +222,6 @@ public OnGameModeInit() {
 	printf("|: Started at %02d:%02d:%02d on %02d/%02d/%d... | Status: %d", hours, minutes, seconds, day, mounth, year, mysql_errno(Database));
 	
 	updateTimerId = SetTimer("Update", 1000, true);
-	
 	return 1;
 }
 
@@ -234,7 +241,7 @@ public OnPlayerConnect(playerid) {
     foreach(Player, i) {
         if(i == playerid) continue;
         format(formated, sizeof(formated), Localization[i][LD_MSG_CONNECT], Misc[playerid][mdPlayerName], playerid);
-        SendClientMessage(i, 0xC0C0C0FF, formated);
+        SendClientMessage(i, COLOR_CONNECTIONS, formated);
     }
     return 1;
 }
@@ -246,7 +253,7 @@ public OnPlayerDisconnect(playerid, reason) {
     new formated[90];
     foreach(Player, i) {
         format(formated, sizeof(formated), Localization[i][LD_MSG_DISCONNECT], Misc[playerid][mdPlayerName], Localization[i][LD_MSG_TIMEOUT + LOCALIZATION_DATA:reason]);
-        SendClientMessage(i, 0xC0C0C0FF, formated);
+        SendClientMessage(i, COLOR_CONNECTIONS, formated);
     }
 	return 1;
 }
@@ -274,14 +281,14 @@ public OnPlayerRequestClass(playerid, classid) {
 }
 
 public OnPlayerRequestSpawn(playerid) {
-    if(!Misc[playerid][mdIsLogged]) {
+    if(!IsLogged(playerid)) {
 	    return 0;
 	}
 	return 1;
 }
 
 public OnPlayerSpawn(playerid) {
-	if(!Misc[playerid][mdIsLogged]) {
+	if(!IsLogged(playerid)) {
 	    return 1;
 	}
 
@@ -298,7 +305,7 @@ public OnPlayerSpawn(playerid) {
 	
 public OnPlayerUpdate(playerid) {
 	if(GetPlayerSpeed(playerid) >= 10 && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) {
-	    Achievements[playerid][achRan] += 0.00001;
+	    ProceedAchievementProgress(playerid, ACH_TYPE_RUN);
 
 		if(IsAbleToGivePointsInCategory(playerid, SESSION_RUN_POINTS)) {
 			RoundSession[playerid][rsdMobility] += RoundConfig[rdCfgMobility];
@@ -325,6 +332,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	
 	if(IsPlayerConnected(killerid)) {
 	    IncreaseWeaponSkillLevel(killerid, reason);
+	    ProceedAchievementProgress(killerid, ACH_TYPE_TERRORIST);
 	    
 	    if(!Map[mpFirstBlood]) {
 	        RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgFirstBlood];
@@ -333,7 +341,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 		 	new formated[128];
 		 	foreach(Player, i) {
 		 		format(formated, sizeof(formated), Localization[i][LD_MSG_FIRST_BLOOD], Misc[killerid][mdPlayerName], Localization[i][LD_MSG_POINTS_MULTIPLE]);
-		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 		SendClientMessage(i, COLOR_ALERT, formated);
 		 	}
 	    }
 	    
@@ -343,7 +351,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
     	    new formated[128];
 		 	foreach(Player, i) {
 		 		format(formated, sizeof(formated), Localization[i][LD_MSG_KILLED_THE_LAST], Misc[killerid][mdPlayerName], Localization[i][LD_MSG_POINTS_MULTIPLE]);
-		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 		SendClientMessage(i, COLOR_ALERT, formated);
 		 	}
     	}
 	    
@@ -366,7 +374,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	    	new formated[96];
 		 	foreach(Player, i) {
 		 		format(formated, sizeof(formated), Localization[i][LD_MSG_HUMAN_HERO_KILLED], Misc[killerid][mdPlayerName]);
-		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 		SendClientMessage(i, COLOR_ALERT, formated);
 		 	}
 		}
 	}
@@ -380,7 +388,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	        new formated[96];
 		 	foreach(Player, i) {
 		 		format(formated, sizeof(formated), Localization[i][LD_MSG_ZOMBIE_BOSS_KILLED], Misc[killerid][mdPlayerName]);
-		 		SendClientMessage(i, 0xFF0000FF, formated);
+		 		SendClientMessage(i, COLOR_ALERT, formated);
 		 	}
 	    }
 	}
@@ -562,10 +570,10 @@ public OnPlayerEnterCheckpoint(playerid) {
 	new formated[90];
 	foreach(Player, i) {
  		format(formated, sizeof(formated), Localization[i][LD_MSG_EVACUATED], Misc[playerid][mdPlayerName]);
- 		SendClientMessage(i, 0xFFF000FF, formated);
+ 		SendClientMessage(i, COLOR_INFO, formated);
 
 		if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1]) {
-            SendClientMessage(i, 0xFFF000FF, Localization[i][LD_MSG_ALL_EVACUATED]);
+            SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_ALL_EVACUATED]);
  		}
  	}
  	
@@ -581,7 +589,7 @@ public OnPlayerEnterCheckpoint(playerid) {
 }
 
 public OnPlayerText(playerid, text[]) {
-	if(!Misc[playerid][mdIsLogged]) {
+	if(!IsLogged(playerid)) {
 	    return 0;
 	}
 
@@ -593,12 +601,13 @@ public OnPlayerText(playerid, text[]) {
 	
 	if(RandomQuestions[RMB_STARTED] && !strcmp(text, LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], false)) {
 	    RoundSession[playerid][rdAdditionalPoints] += float(RandomQuestions[RMB_POINTS]);
+	    ServerConfig[svCfgQuizReset] = 0;
 	    ProceedAchievementProgress(playerid, ACH_TYPE_ANSWER);
 	    
  		new formated[120];
 	    foreach(Player, i) {
 	        format(formated, sizeof(formated), Localization[i][LD_MSG_RANDOM_ANSWER], Misc[playerid][mdPlayerName], LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], RandomQuestions[RMB_POINTS]);
-	        SendClientMessage(i, 0xE669FFFF, formated);
+	        SendClientMessage(i, COLOR_RANDOM_QUESTION, formated);
 	    }
 	    RandomQuestions[RMB_STARTED] = false;
 	}
@@ -617,7 +626,7 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
 }
 
 public OnPlayerCommandReceived(playerid, cmdtext[]) {
-	if(!Misc[playerid][mdIsLogged]) {
+	if(!IsLogged(playerid)) {
 	    return 0;
 	}
 	
@@ -721,7 +730,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	            if(Classes[i][cldId] == ClassesSelection[playerid][listitem][csdId]) {
 	                if(Achievements[playerid][achTotalPoints] < Classes[i][cldPoints]) {
 	                    format(formated, sizeof(formated), Localization[playerid][LD_MSG_NOT_ENOUGH_FOR_CLASS], Classes[i][cldPoints], Localization[playerid][LD_MSG_POINTS]);
-	                    SendClientMessage(playerid, 0xFF0000FF, formated);
+	                    SendClientMessage(playerid, COLOR_ALERT, formated);
 	                    return 1;
 	                }
 	                
@@ -755,15 +764,7 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
 	} else if(IsValidPickupEx(pickupid)) {
 	    new tip[64];
 	    format(tip, sizeof(tip), Localization[playerid][LD_MSG_PICKUP_PROTECTION], max(0, Pickups[pickupid][pcdProtectionTill] - gettime()));
- 		SendClientMessage(playerid, 0xFF0000FF, tip);
-	}
-	
-	return 1;
-}
-
-public OnVehicleDeath(vehicleid, killerid) {
-	if(IsPlayerConnected(killerid)) {
-        ProceedAchievementProgress(killerid, ACH_TYPE_VEHICLES);
+ 		SendClientMessage(playerid, COLOR_ALERT, tip);
 	}
 	
 	return 1;
@@ -777,24 +778,27 @@ public OnQueryError(errorid, const error[], const callback[], const query[], MyS
 custom Update() {
 	static Float:hp, Float:armour;
 	
-	static currentHour, currentMinute, currentSecond, tip, question, formated[120];
+	static currentHour, currentMinute, currentSecond, tip, question, lottery, formated[120];
 	gettime(currentHour, currentMinute, currentSecond);
 	tip = PrepareRandomTip();
 	question = PrepareRandomQuestion();
+	lottery = PrepareLottery();
 
 	foreach(Player, playerid) {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
-	    if(Misc[playerid][mdIsLogged]) {
+	    if(IsLogged(playerid)) {
     		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
+            
             ProceedRandomTip(playerid, tip, formated);
             ProceedRandomQuestion(playerid, question, formated);
+            ProceedLottery(playerid, lottery, formated);
             ProceedInfection(playerid);
             ProceedBlind(playerid);
             ProceedSpaceDamage(playerid);
@@ -1060,10 +1064,10 @@ custom StartMap() {
  		}
     	
     	format(formated, sizeof(formated), Localization[i][LD_MSG_MAP_ENTERING], Map[mpId], Localization[i][LD_MAP_NAME], author, controlled);
-	    SendClientMessage(i, 0xE48800FF, formated);
+	    SendClientMessage(i, COLOR_WARNING, formated);
     	
     	if(Map[mpInterior] <= 0) {
-			SendClientMessage(i, 0xFFF000FF, Localization[i][LD_MSG_MAP_CREATE_OBJECTS]);
+			SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_MAP_CREATE_OBJECTS]);
 		}
 	}
 	
@@ -1105,7 +1109,7 @@ custom OnMapUpdate() {
 	
 	if(ServerConfig[svCfgCurrentOnline] >= ServerConfig[svCfgMinZombiesToWin] && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
 	    foreach(Player, i) {
-			SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_ZOMBIES_WIN]);
+			SendClientMessage(i, COLOR_ALERT, Localization[i][LD_MSG_MAP_ZOMBIES_WIN]);
  		}
  		
 	    Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgUpdate];
@@ -1150,8 +1154,8 @@ custom OnMapUpdate() {
 			}
 
 			foreach(Player, i) {
-		    	SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_EVAC_ARRIVED]);
-				SendClientMessage(i, 0xf21822FF, Localization[i][LD_MSG_MAP_EVAC_GETTO]);
+		    	SendClientMessage(i, COLOR_ALERT, Localization[i][LD_MSG_MAP_EVAC_ARRIVED]);
+				SendClientMessage(i, COLOR_ALERT, Localization[i][LD_MSG_MAP_EVAC_GETTO]);
 				ShowCheckpoint(i);
 			}
 			
@@ -1194,7 +1198,7 @@ custom OnMapUpdate() {
 
 custom EndMap() {
     foreach(Player, i) {
-        if(!Misc[i][mdIsLogged]) {
+        if(!IsLogged(i)) {
             continue;
         }
         
@@ -1203,7 +1207,7 @@ custom EndMap() {
    			SetPlayerCameraLookAt(i, Map[mpCameraLookAt][0], Map[mpCameraLookAt][1], Map[mpCameraLookAt][2]);
         }
     	
-		SendClientMessage(i, 0xFFFFFFFF, Localization[i][LD_MSG_MAP_BEGINNING]);
+		SendClientMessage(i, COLOR_DEFAULT, Localization[i][LD_MSG_MAP_BEGINNING]);
 		GameTextForPlayer(i, RusToGame(Localization[i][LD_MSG_MAP_ROUND_OVER]), 5000, 5);
 		
 		GivePointsForRound(i);
@@ -1333,7 +1337,19 @@ custom LoadServerConfiguration() {
 		ServerConfig[svCfgPreviewCameraPos][5]);
 		
 		cache_get_value_name(0, "random_question", buff);
-		sscanf(buff, "p<,>ii", ServerConfig[svCfgQuizPoints], ServerConfig[svCfgQuizCooldown]);
+		sscanf(buff, "p<,>iii",
+			ServerConfig[svCfgQuizPoints],
+		 	ServerConfig[svCfgQuizCooldown],
+		 	ServerConfig[svCfgQuizResetTime]
+	 	);
+		
+		cache_get_value_name(0, "lottery", buff);
+		sscanf(buff, "p<,>iiii",
+		    ServerConfig[svCfgLastLotteryCooldown],
+			ServerConfig[svCfgLotteryResetTime],
+			ServerConfig[svCfgLotteryJackpot],
+			ServerConfig[svCfgLotteryJackpotPerPlayer]
+		);
 
         cache_get_value_name(0, "name", ServerConfig[svCfgName]);
         cache_get_value_name(0, "mode", ServerConfig[svCfgMode]);
@@ -1347,11 +1363,11 @@ custom LoadServerConfiguration() {
         format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
         SendRconCommand(buff);
 
-        printf(""SV_CFG_CONSOLE_LOG" LOADED");
+        printf("|: Server configuration LOADED");
         return 1;
 	}
 
-	printf(""SV_CFG_CONSOLE_LOG" FAILED");
+	printf("|: Server configuration FAILED");
 	return 0;
 }
 
@@ -1374,11 +1390,11 @@ custom LoadGangsConfiguration() {
         cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
         cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
 
-        printf(""GS_CFG_CONSOLE_LOG" LOADED");
+        printf("|: Gangs configuration LOADED");
         return 1;
     }
 
-    printf(""GS_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Gangs configuration FAILED");
     return 0;
 }
 
@@ -1397,11 +1413,11 @@ custom LoadRoundConfiguration() {
         cache_get_value_name_float(0, "brutality", RoundConfig[rdCfgBrutality]);
         cache_get_value_name_float(0, "undead", RoundConfig[rdCfgDeaths]);
         
-        printf(""RD_CFG_CONSOLE_LOG" LOADED");
+        printf("|: Round configuration LOADED");
         return 1;
     }
     
-    printf(""RD_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Round configuration FAILED");
     return 0;
 }
 
@@ -1417,11 +1433,11 @@ custom LoadEvacConfiguration() {
 			EvacuationConfig[ecdCfgPosition][3]
 		);
 
-        printf(""EVC_CFG_CONSOLE_LOG" LOADED");
+        printf("|: Evacuation configuration LOADED");
         return 1;
     }
 
-    printf(""EVC_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Evacuation configuration FAILED");
     return 0;
 }
 
@@ -1447,11 +1463,11 @@ custom LoadMapConfiguration() {
         cache_get_value_name_float(0, "hero_armour", MapConfig[mpCfgHumanHeroArmour]);
         cache_get_value_name_float(0, "zombie_armour", MapConfig[mpCfgZombieBossArmour]);
         
-        printf(""MAP_CFG_CONSOLE_LOG" LOADED");
+        printf("|: Map configuration LOADED");
         return 1;
     }
     
-    printf(""MAP_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Map configuration FAILED");
     return 0;
 }
 
@@ -1465,10 +1481,10 @@ custom LoadWeaponsConfiguration() {
         	cache_get_value_name_int(i, "pick", WeaponsConfig[i][wdCfgPick]);
         }
 
-        printf(""WPS_CFG_CONSOLE_LOG" LOADED (%d / %d)", len, MAX_WEAPONS);
+        printf("|: Weapons configuration LOADED (%d / %d)", len, MAX_WEAPONS);
         return 1;
     }
-    printf(""WPS_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Weapons configuration FAILED");
 	return 0;
 }
 
@@ -1479,10 +1495,10 @@ custom LoadBalanceConfiguration() {
     	cache_get_value_name_float(0, "max", ServerBalance[svbMaxZombies]);
     	cache_get_value_name_float(0, "by_default", ServerBalance[svbDefaultZombies]);
 
-        printf(""BLC_CFG_CONSOLE_LOG" LOADED");
+        printf("|: Balance configuration LOADED");
         return 1;
     }
-    printf(""BLC_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Balance configuration FAILED");
 	return 0;
 }
 
@@ -1517,13 +1533,13 @@ custom LoadTexturesConfiguration() {
 			cache_get_value_name_int(i, "texture_alignment", ServerTexturesConfig[i][svTxCfgTextureAlignment]);
         }
 
-        printf(""TEX_CFG_CONSOLE_LOG" LOADED (%d / %d)", len, MAX_SERVER_TEXTURES);
+        printf("|: Textures configuration LOADED (%d / %d)", len, MAX_SERVER_TEXTURES);
         InitializeScreenTextures();
         
         return 1;
     }
     
-    printf(""TEX_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Textures configuration FAILED");
 	return 0;
 }
 
@@ -1576,11 +1592,11 @@ custom LoadClassesConfiguration() {
 			ClassesConfig[clsCfgEngineerTextRange]
 		);
 			
-		printf(""CLS_CFG_CONSOLE_LOG" LOADED");
+		printf("|: Classes configuration LOADED");
 		return 1;
     }
     
-    printf(""CLS_CFG_CONSOLE_LOG" FAILED");
+    printf("|: Classes configuration FAILED");
 	return 0;
 }
 
@@ -1624,7 +1640,6 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_int(0, "master", Achievements[playerid][achMaster]);
 		cache_get_value_name_int(0, "hermitage", Achievements[playerid][achHermitage]);
 		cache_get_value_name_int(0, "last_hope", Achievements[playerid][achLastHope]);
-		cache_get_value_name_int(0, "terrorist", Achievements[playerid][achTerrorist]);
 		cache_get_value_name_int(0, "answer", Achievements[playerid][achAnswer]);
 		cache_get_value_name_int(0, "lottery", Achievements[playerid][achLottery]);
 		cache_get_value_name_int(0, "capture", Achievements[playerid][achCapture]);
@@ -1642,6 +1657,17 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
         cache_get_value_name_float(0, "total_points", Achievements[playerid][achTotalPoints]);
         cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
+        
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, Achievements[playerid][achSilinced]);
+		SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, Achievements[playerid][achColt45]);
+		SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, Achievements[playerid][achDeagle]);
+		SetPlayerSkillLevel(playerid, WEAPONSKILL_SNIPERRIFLE, Achievements[playerid][achRifle]);
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_SHOTGUN, Achievements[playerid][achShotgun]);
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_MP5, Achievements[playerid][achMP5]);
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_SPAS12_SHOTGUN, Achievements[playerid][achCombat]);
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, Achievements[playerid][achTec9]);
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, Achievements[playerid][achAk47]);
+        SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, Achievements[playerid][achM4]);
 
         PreloadDefaultLocalizedTitles(playerid);
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
@@ -1832,45 +1858,60 @@ stock GetAchievementIndex(const type) {
 		case ACH_TYPE_DIE: return _:achDeaths; // Done
 		case ACH_TYPE_EVAC: return _:achEvac; // Done
 		case ACH_TYPE_SHOP: return _:achPurchase;
-		case ACH_TYPE_TOTAL_POINTS: return _:achPurchase;
+		case ACH_TYPE_TOTAL_POINTS: return _:achTotalPoints; // Done
 		case ACH_TYPE_INFECT: return _:achInfection; // Done
 		case ACH_TYPE_PLAY_HOURS: return _:achHours; // Done
 		case ACH_TYPE_JUMP: return _:achJumps; // Done
-		case ACH_TYPE_VEHICLES: return _:achVehicles; // Done
+		case ACH_TYPE_VEHICLES: return _:achVehicles;
 		case ACH_TYPE_ANSWER: return _:achAnswer; // Done
-		case ACH_TYPE_LOTTERY: return _:achLottery;
+		case ACH_TYPE_LOTTERY: return _:achLottery; // Done
 		case ACH_TYPE_CAPTURE: return _:achCapture;
 		case ACH_TYPE_DUELS: return _:achDuels;
 		case ACH_TYPE_SESSION: return _:achSession;
 		case ACH_TYPE_BLOOD: return _:achBlood;
 		case ACH_TYPE_REPORT: return _:achReported;
-		case ACH_TYPE_SILINCED: return _:achSilinced;
-		case ACH_TYPE_COLT45: return _:achColt45;
-		case ACH_TYPE_DEAGLE: return _:achDeagle;
-		case ACH_TYPE_RIFLE: return _:achRifle;
-		case ACH_TYPE_SHOTGUN: return _:achShotgun;
-		case ACH_TYPE_MP5: return _:achMP5;
-		case ACH_TYPE_COMBAT_SHOTGUN: return _:achCombat;
-		case ACH_TYPE_TEC9: return _:achTec9;
-		case ACH_TYPE_AK47: return _:achAk47;
-		case ACH_TYPE_M4: return _:achM4;
+		case ACH_TYPE_SILINCED: return _:achSilinced; // Done
+		case ACH_TYPE_COLT45: return _:achColt45; // Done
+		case ACH_TYPE_DEAGLE: return _:achDeagle; // Done
+		case ACH_TYPE_RIFLE: return _:achRifle; // Done
+		case ACH_TYPE_SHOTGUN: return _:achShotgun; // Done
+		case ACH_TYPE_MP5: return _:achMP5; // Done
+		case ACH_TYPE_COMBAT_SHOTGUN: return _:achCombat; // Done
+		case ACH_TYPE_TEC9: return _:achTec9; // Done
+		case ACH_TYPE_AK47: return _:achAk47; // Done
+		case ACH_TYPE_M4: return _:achM4; // Done
 		case ACH_TYPE_WEAPONS_MASTER: return _:achMaster;
 		case ACH_TYPE_HERMITAGE: return _:achHermitage;
 		case ACH_TYPE_MARY: return _:achMary;
 		case ACH_TYPE_LAST_HOPE: return _:achLastHope;
-		case ACH_TYPE_TERRORIST: return _:achTerrorist;
+		case ACH_TYPE_TERRORIST: return _:achKills; // Done
 	}
 
 	return -1;
 }
 
-stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type) {
+stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, const count = 1) {
     new index = GetAchievementIndex(_:type);
     if(index == -1) {
 	    return 0;
 	}
 	
-    ++Achievements[playerid][ACHIEVEMENTS_DATA:index];
+	switch(type) {
+		case ACH_TYPE_RUN: Achievements[playerid][achRan] += 0.00001;
+		case ACH_TYPE_TOTAL_POINTS: Achievements[playerid][achTotalPoints] += float(count);
+		case ACH_TYPE_SILINCED: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+		case ACH_TYPE_COLT45: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+		case ACH_TYPE_DEAGLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+		case ACH_TYPE_RIFLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_SNIPERRIFLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_SHOTGUN: SetPlayerSkillLevel(playerid, WEAPONSKILL_SHOTGUN, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_MP5: SetPlayerSkillLevel(playerid, WEAPONSKILL_MP5, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_COMBAT_SHOTGUN: SetPlayerSkillLevel(playerid, WEAPONSKILL_SPAS12_SHOTGUN, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_TEC9: SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_AK47: SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_M4: SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+		default: ++Achievements[playerid][ACHIEVEMENTS_DATA:index];
+	}
+	
     return 1;
 }
 
@@ -1904,7 +1945,7 @@ stock ProocedClassChange(const playerid, const classid, const team, const fromSe
 		}
 		
 		Misc[playerid][mdCurrentClass][team] = classid;
-		SendClientMessage(playerid, 0xFFF000FF, Localization[playerid][LD_CLASS_GREAT_PERIOD]);
+		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_CLASS_GREAT_PERIOD]);
 		SetByCurrentClass(playerid);
 		return 1;
 	}
@@ -1915,7 +1956,7 @@ stock ProocedClassChange(const playerid, const classid, const team, const fromSe
 	}
 	
 	Misc[playerid][mdNextClass][team] = classid;
-	SendClientMessage(playerid, 0xFFF000FF, Localization[playerid][LD_CLASS_SET_AFTER]);
+	SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_CLASS_SET_AFTER]);
  	return 1;
 }
 
@@ -2084,32 +2125,23 @@ stock ClearPlayerData(const playerid) {
 }
 
 stock IncreaseWeaponSkillLevel(const playerid, const weaponid) {
-	new index = -1;
-	
 	switch(weaponid) {
-	    case 22: index = WEAPONSKILL_PISTOL;
-	    case 23: index = WEAPONSKILL_PISTOL_SILENCED;
-	    case 24: index = WEAPONSKILL_DESERT_EAGLE;
-	    case 25: index = WEAPONSKILL_SHOTGUN;
-	    case 26: index = WEAPONSKILL_SAWNOFF_SHOTGUN;
-	    case 27: index = WEAPONSKILL_SPAS12_SHOTGUN;
-	    case 28, 32: index = WEAPONSKILL_MICRO_UZI;
-	    case 29: index = WEAPONSKILL_MP5;
-	    case 30: index = WEAPONSKILL_AK47;
-	    case 31: index = WEAPONSKILL_M4;
-	    case 33,34: index = WEAPONSKILL_SNIPERRIFLE;
+	    case 22: ProceedAchievementProgress(playerid, ACH_TYPE_SILINCED);
+	    case 23: ProceedAchievementProgress(playerid, ACH_TYPE_COLT45);
+	    case 24: ProceedAchievementProgress(playerid, ACH_TYPE_DEAGLE);
+	    case 25: ProceedAchievementProgress(playerid, ACH_TYPE_SHOTGUN);
+	    case 27: ProceedAchievementProgress(playerid, ACH_TYPE_COMBAT_SHOTGUN);
+	    case 32: ProceedAchievementProgress(playerid, ACH_TYPE_TEC9);
+	    case 29: ProceedAchievementProgress(playerid, ACH_TYPE_MP5);
+	    case 30: ProceedAchievementProgress(playerid, ACH_TYPE_AK47);
+	    case 31: ProceedAchievementProgress(playerid, ACH_TYPE_M4);
+	    case 33: ProceedAchievementProgress(playerid, ACH_TYPE_RIFLE);
 	}
-	
-	if(index > -1) {
-		Misc[playerid][mdWeaponSkill][index]++;
-    	SetPlayerSkillLevel(playerid, index, Misc[playerid][mdWeaponSkill][index]);
-    }
 }
 
 stock ClearPlayerWeaponsData(const playerid) {
     for( new i = 0; i < MAX_WEAPONS_SKILL; i++ ) {
-        Misc[playerid][mdWeaponSkill][i] = 0;
-        SetPlayerSkillLevel(playerid, i, Misc[playerid][mdWeaponSkill][i]);
+        SetPlayerSkillLevel(playerid, i, 0);
     }
 }
 
@@ -2148,7 +2180,6 @@ stock ClearPlayerAchievementsData(const playerid) {
 	Achievements[playerid][achMaster] = 0;
 	Achievements[playerid][achHermitage] = 0;
 	Achievements[playerid][achLastHope] = 0;
-	Achievements[playerid][achTerrorist] = 0;
 	Achievements[playerid][achAnswer] = 0;
 	Achievements[playerid][achLottery] = 0;
 	Achievements[playerid][achCapture] = 0;
@@ -2176,6 +2207,7 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdGang] = -1;
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
+	Misc[playerid][mdKillstreak] = 0;
 	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdSelectionTeam] = -1;
@@ -2197,6 +2229,7 @@ stock ClearPlayerMiscData(const playerid) {
     }
     
     strmid(Misc[playerid][mdPassword], "", 0, MAX_PLAYER_PASSWORD);
+    Lottery[playerid] = LOTTERY_INVALID_ID;
 }
 
 stock InitializeScreenTextures() {
@@ -2263,6 +2296,10 @@ stock InitializeDefaultValues() {
 	//Map[mpFlagText] = Text3D:-1;
 	ServerConfig[svCfgCurrentOnline] = 0;
 	ServerConfig[svCfgLastTipMessage] = 0;
+	
+	LotteryConfig[LCD_STARTED] = false;
+	LotteryConfig[LCD_ID] = -1;
+	LotteryConfig[LCD_JACKPOT] = 0;
 }
 
 stock ClearPlayerRoundData(const playerid) {
@@ -2297,7 +2334,7 @@ stock ClearPlayerRoundData(const playerid) {
 	
 	for( i = 0; i < MAX_MAP_SPAWNS; i++ ) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
-		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], 0xFF0000FF, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], MapConfig[mpCfgSpawnTextRange]);
+		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], COLOR_ALERT, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], MapConfig[mpCfgSpawnTextRange]);
 	}
 	
 	ClearAbilitiesTimers(playerid);
@@ -2316,7 +2353,7 @@ stock bool:IsPlayerInsideMap(const playerid) {
 }
 
 stock CheckPlayerForOOM(const playerid) {
-	if(!Misc[playerid][mdIsLogged] || !Map[mpIsStarted] ||
+	if(!IsLogged(playerid) || !Map[mpIsStarted] ||
 		Map[mpTimeout] <= 0 || Map[mpTimeout] >= (MapConfig[mpCfgTotal] - MapConfig[mpCfgGreatTime]) ||
 		GetPlayerState(playerid) != PLAYER_STATE_ONFOOT || Round[playerid][rdCheckForOOM] > gettime()) {
 	    return;
@@ -2331,11 +2368,15 @@ stock CheckPlayerForOOM(const playerid) {
 		new formated[90];
 		foreach(Player, i) {
 		    format(formated, sizeof(formated), Localization[i][LD_MSG_PLAYER_OOM], Misc[playerid][mdPlayerName]);
-		    SendClientMessage(i, 0x33CCFFFF, formated);
+		    SendClientMessage(i, COLOR_ADMIN, formated);
 		}
 	}
 	
 	return;
+}
+
+stock bool:IsLogged(const playerid) {
+    return Misc[playerid][mdIsLogged] == true;
 }
 
 stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
@@ -2449,7 +2490,7 @@ stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1
 }
 
 stock GivePointsForRound(const playerid) {
-	new Float: amount = float(
+	new amount = (
 		clamp(floatround(RoundSession[playerid][rsdSurvival], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdKilling], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
 		clamp(floatround(RoundSession[playerid][rsdCare], floatround_tozero), 0, RoundConfig[rdCfgCap]) +
@@ -2460,8 +2501,8 @@ stock GivePointsForRound(const playerid) {
 		floatround(RoundSession[playerid][rdAdditionalPoints], floatround_tozero)
 	);
 	
-	Achievements[playerid][achTotalPoints] += amount;
-	Player[playerid][pPoints] += amount;
+	ProceedAchievementProgress(playerid, ACH_TYPE_TOTAL_POINTS, amount);
+	Player[playerid][pPoints] += float(amount);
 }
 
 
@@ -2536,7 +2577,7 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 				    new formated[90];
 				    foreach(Player, i) {
 				        format(formated, sizeof(formated), Localization[i][LD_MSG_KILL_THE_LAST], Localization[i][LD_MSG_POINTS_MULTIPLE]);
-                        SendClientMessage(i, 0x59E4B5FF, formated);
+                        SendClientMessage(i, COLOR_GLOBAL_INFO, formated);
 				    }
 				}
 				
@@ -2593,7 +2634,7 @@ stock SetByCurrentClass(const playerid) {
 			
 			new formated[90];
 			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdZombieSelectionName]);
-			SendClientMessage(playerid, 0xFFF000FF, formated);
+			SendClientMessage(playerid, COLOR_INFO, formated);
 		}
 	    case TEAM_HUMAN: {
 			SetHuman(playerid, current);
@@ -2602,7 +2643,7 @@ stock SetByCurrentClass(const playerid) {
 			
 			new formated[90];
 			format(formated, sizeof(formated), Localization[playerid][LD_CLASSES_SPAWN_AS], Misc[playerid][mdHumanSelectionName]);
-			SendClientMessage(playerid, 0xFFF000FF, formated);
+			SendClientMessage(playerid, COLOR_INFO, formated);
   		}
 	}
 	
@@ -2779,7 +2820,7 @@ stock SendInfectionMessage(const LOCALIZATION_DATA:localeid, const targetid, con
     new formated[96];
 	foreach(Player, i) {
 		format(formated, sizeof(formated), Localization[i][localeid], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
-		SendClientMessage(i, 0x009900FF, formated);
+		SendClientMessage(i, COLOR_ABILITY, formated);
 	}
 }
 
@@ -2933,7 +2974,7 @@ stock InfectAndExplode(const playerid, const classid) {
 	    new formated[96], LOCALIZATION_DATA:type = (count >= ClassesConfig[clsCfgWhoppingWhen]) ? LD_MSG_EXPLODED_WHOPPING : LD_MSG_EXPLODED;
 	    foreach(Player, i) {
 	    	format(formated, sizeof(formated), Localization[i][type], Misc[playerid][mdPlayerName], count);
-			SendClientMessage(i, 0x009900FF, formated);
+			SendClientMessage(i, COLOR_ABILITY, formated);
 		}
 		
 		AbilityUsed(playerid);
@@ -2973,7 +3014,7 @@ stock StealArmour(const playerid, const classid, const abilityid) {
 		    new formated[96];
 			foreach(Player, i) {
 				format(formated, sizeof(formated), Localization[i][LD_MSG_ARMOUR_STOLE], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName]);
-				SendClientMessage(i, 0x009900FF, formated);
+				SendClientMessage(i, COLOR_ABILITY, formated);
 			}
 			
 			ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
@@ -3007,7 +3048,7 @@ stock StealAmmo(const playerid, const classid, const abilityid) {
 		    
 				foreach(Player, i) {
 					format(formated, sizeof(formated), Localization[i][LD_MSG_AMMO_STOLE], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName]);
-					SendClientMessage(i, 0x009900FF, formated);
+					SendClientMessage(i, COLOR_ABILITY, formated);
 				}
 
 				ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
@@ -3029,7 +3070,7 @@ stock BreakLegs(const playerid, const classid, const abilityid) {
 		    new formated[96];
 			foreach(Player, i) {
 				format(formated, sizeof(formated), Localization[i][LD_MSG_BREAK_LEGS], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
-				SendClientMessage(i, 0x009900FF, formated);
+				SendClientMessage(i, COLOR_ABILITY, formated);
 			}
 
             Round[targetid][rdIsLegsBroken] = true;
@@ -3077,7 +3118,7 @@ stock CurseHuman(const playerid, const classid, const abilityid) {
 		    new formated[96];
 			foreach(Player, i) {
 				format(formated, sizeof(formated), Localization[i][LD_MSG_CURSE_PLAYER], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
-				SendClientMessage(i, 0x009900FF, formated);
+				SendClientMessage(i, COLOR_ABILITY, formated);
 			}
 
 			ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
@@ -3174,7 +3215,7 @@ stock FreezePlayers(const playerid, const classid, const abilityid) {
         new formated[64], LOCALIZATION_DATA:type = (count >= ClassesConfig[clsCfgWhoppingWhen]) ? LD_MSG_FROZE_WHOPPING : LD_MSG_FROZE;
 	    foreach(Player, i) {
 	    	format(formated, sizeof(formated), Localization[i][type], Misc[playerid][mdPlayerName], count);
-			SendClientMessage(i, 0x009900FF, formated);
+			SendClientMessage(i, COLOR_ABILITY, formated);
 		}
     
         ApplyAnimation(playerid, "CARRY", "putdwn05", 3.0, 0, 1, 1, 0, 410);
@@ -3195,7 +3236,7 @@ stock PlayerInHolyField(const targetid, const playerid, const classid) {
 	    new formated[96];
 	    foreach(Player, i) {
 	    	format(formated, sizeof(formated), Localization[i][LD_MSG_ABSOLVE_SINS], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName]);
-			SendClientMessage(i, 0xB2F558FF, formated);
+			SendClientMessage(i, COLOR_MEDIC, formated);
 		}
 		
 		AbilityUsed(playerid);
@@ -3233,7 +3274,7 @@ stock CurePlayerInField(const targetid, const playerid, const classid) {
     new formated[96];
    	foreach(Player, i) {
    		format(formated, sizeof(formated), Localization[i][LD_MSG_CURE_NURSE_FIELD], Misc[playerid][mdPlayerName]);
-		SendClientMessage(i, 0xB2F558FF, formated);
+		SendClientMessage(i, COLOR_MEDIC, formated);
 	}
 	
     return 1;
@@ -3251,7 +3292,7 @@ stock CurePlayerByShot(const targetid, const playerid) {
     new formated[96];
    	foreach(Player, i) {
    		format(formated, sizeof(formated), Localization[i][LD_MSG_CURE_RIFLE], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
-		SendClientMessage(i, 0xB2F558FF, formated);
+		SendClientMessage(i, COLOR_MEDIC, formated);
 	}
     return 1;
 }
@@ -3268,7 +3309,7 @@ stock PoisePlayerByShot(const targetid, const playerid) {
     new formated[96];
    	foreach(Player, i) {
    		format(formated, sizeof(formated), Localization[i][LD_MSG_PLAYER_POISONED], Misc[targetid][mdPlayerName], Misc[playerid][mdPlayerName]);
-		SendClientMessage(i, 0x6e14b8FF, formated);
+		SendClientMessage(i, COLOR_POISION, formated);
 	}
     return 1;
 }
@@ -3535,7 +3576,66 @@ stock ProceedUnfreeze(const playerid) {
 	}
 }
 
+stock PrepareLottery() {
+    if(gettime() > ServerConfig[svCfgLotteryReset] && ServerConfig[svCfgLotteryReset] > 0) {
+ 		LotteryConfig[LCD_STARTED] = false;
+ 		ServerConfig[svCfgLotteryReset] = 0;
+ 		
+ 		foreach(Player, i) {
+ 		    if(Lottery[i] == LotteryConfig[LCD_ID]) {
+ 		        RoundSession[i][rdAdditionalPoints] += LotteryConfig[LCD_JACKPOT];
+ 		        ProceedAchievementProgress(i, ACH_TYPE_LOTTERY);
+ 		        return i + LOTTERY_WIN_ID;
+ 		    }
+ 		}
+ 		
+ 		return INVALID_PLAYER_ID;
+	}
+	
+	if(gettime() > ServerConfig[svCfgLastLottery]) {
+		LotteryConfig[LCD_STARTED] = true;
+		LotteryConfig[LCD_ID] = random(100);
+		LotteryConfig[LCD_JACKPOT] = ServerConfig[svCfgLotteryJackpot];
+		
+		ServerConfig[svCfgLastLottery] = gettime() + ServerConfig[svCfgLastLotteryCooldown];
+	    ServerConfig[svCfgLotteryReset] = gettime() + ServerConfig[svCfgLotteryResetTime];
+	    return LotteryConfig[LCD_ID];
+	}
+	
+	return -1;
+}
+
+stock ProceedLottery(const playerid, const index, buffer[], const len = sizeof(buffer)) {
+	if(index >= LOTTERY_WIN_ID && index <= (LOTTERY_WIN_ID + MAX_PLAYERS)) {
+		new winnerid = (index - LOTTERY_WIN_ID);
+        format(buffer, len, Localization[playerid][LD_MSG_LOTTERY_PLAYER_WIN], Misc[winnerid][mdPlayerName], LotteryConfig[LCD_ID], LotteryConfig[LCD_JACKPOT]);
+	    SendClientMessage(playerid, COLOR_LOTTERY, buffer);
+	    Lottery[playerid] = LOTTERY_INVALID_ID;
+	    return 1;
+	}
+
+	if(index == INVALID_PLAYER_ID) {
+	    format(buffer, len, Localization[playerid][LD_MSG_LOTTERY_NOBODY_WIN], LotteryConfig[LCD_ID], LotteryConfig[LCD_JACKPOT]);
+	    SendClientMessage(playerid, COLOR_LOTTERY, buffer);
+	    Lottery[playerid] = LOTTERY_INVALID_ID;
+	    return 1;
+	}
+
+    if(index > -1) {
+    	SendClientMessage(playerid, COLOR_LOTTERY, Localization[playerid][LD_MSG_LOTTERY]);
+    	return 1;
+	}
+
+	return 1;
+}
+
 stock PrepareRandomQuestion() {
+	if(gettime() > ServerConfig[svCfgQuizReset] && ServerConfig[svCfgQuizReset] > 0) {
+ 		RandomQuestions[RMB_STARTED] = false;
+ 		ServerConfig[svCfgQuizReset] = 0;
+ 		return INVALID_PLAYER_ID;
+	}
+	
     if(gettime() > ServerConfig[svCfgLastQuiz]) {
         new type = random(_:RMD_MAX);
         RandomQuestions[RMB_TYPE] = type;
@@ -3543,6 +3643,7 @@ stock PrepareRandomQuestion() {
         RandomQuestions[RMB_STARTED] = true;
 
         ServerConfig[svCfgLastQuiz] = gettime() + ServerConfig[svCfgQuizCooldown];
+        ServerConfig[svCfgQuizReset] = gettime() + ServerConfig[svCfgQuizResetTime];
         return RandomQuestions[RMB_TYPE];
 	}
 
@@ -3550,12 +3651,19 @@ stock PrepareRandomQuestion() {
 }
 
 stock ProceedRandomQuestion(const playerid, const index, buffer[], const len = sizeof(buffer)) {
+	if(index == INVALID_PLAYER_ID) {
+	    SendClientMessage(playerid, COLOR_RANDOM_QUESTION, Localization[playerid][LD_MSG_RND_QUESTION_NO_ANSWER]);
+	    return 1;
+	}
+
     if(index > -1) {
     	format(buffer, len, Localization[playerid][LD_MSG_RANDOM_QUESTION], RandomQuestions[RMB_POINTS], LocalizedRandomQuestions[playerid][RANDOM_MESSAGES_DATA:index]);
-    	SendClientMessage(playerid, 0xD049EBFF, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-     	SendClientMessage(playerid, 0xE669FFFF, buffer);
-     	SendClientMessage(playerid, 0xD049EBFF, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    	SendClientMessage(playerid, COLOR_RANDOM_QUESTION, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+     	SendClientMessage(playerid, COLOR_RANDOM_QUESTION, buffer);
+     	SendClientMessage(playerid, COLOR_RANDOM_QUESTION, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
+	
+	return 1;
 }
 
 stock PrepareRandomTip() {
@@ -3570,7 +3678,7 @@ stock PrepareRandomTip() {
 stock ProceedRandomTip(const playerid, const index, buffer[], const len = sizeof(buffer)) {
     if(index > -1) {
     	format(buffer, len, LocalizedTips[playerid][TIPS_DATA:index]);
-     	SendClientMessage(playerid, 0xc25b89FF, buffer);
+     	SendClientMessage(playerid, COLOR_MEDIC, buffer);
 	}
 }
 
@@ -3851,7 +3959,7 @@ stock ResetMapValuesOnDeath(const playerid) {
 }
 
 stock ResetValuesOnDisconnect(const playerid) {
-	if(Misc[playerid][mdIsLogged]) {
+	if(IsLogged(playerid)) {
     	ServerConfig[svCfgCurrentOnline]--;
     }
     
@@ -3930,7 +4038,7 @@ stock SpawnCrystalOnMapEnd() {
 	//	Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1], Map[mpGangCrystalSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 
 		foreach(Player, i) {
-		    SendClientMessage(i, 0xb823b3FF, Localization[i][LD_MSG_MAP_CRYSTAL_DAMAGE]);
+		    SendClientMessage(i, COLOR_CRYSTAL_INFO, Localization[i][LD_MSG_MAP_CRYSTAL_DAMAGE]);
 		    if(Misc[i][mdGangRank]) {
                 SetPlayerInterior(i, 0);
 				DisablePlayerCheckpoint(i);
@@ -4092,13 +4200,13 @@ stock SetTeams() {
 
     for ( i = 0; i < MAX_PLAYERS; i++ ) {
 	    playerid = players[i] - 1;
-	    if(!IsPlayerConnected(playerid) || !Misc[playerid][mdIsLogged]) {
+	    if(!IsPlayerConnected(playerid) || !IsLogged(playerid)) {
 	    	continue;
 		}
 	
 	    if(current < required) {
-	        SendClientMessage(playerid, 0xFF0000FF, Localization[playerid][LD_MSG_CHOSEN_AS_ZOMBIE]);
-  			SendClientMessage(playerid, 0xFF0000FF, Localization[playerid][LD_MSG_CHOSEN_ZOMBIE_ABILITY]);
+	        SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_CHOSEN_AS_ZOMBIE]);
+  			SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_CHOSEN_ZOMBIE_ABILITY]);
 	        SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
             ++current;
             
@@ -4108,7 +4216,7 @@ stock SetTeams() {
 	    		
 	    		foreach(Player, p) {
 					format(formated, sizeof(formated), Localization[p][LD_MSG_ZOMBIE_BOSS], Misc[playerid][mdPlayerName], Localization[p][LD_MSG_POINTS_MULTIPLE]);
-					SendClientMessage(p, 0x59E4B5FF, formated);
+					SendClientMessage(p, COLOR_GLOBAL_INFO, formated);
 				}
 			}
         } else {
@@ -4121,7 +4229,7 @@ stock SetTeams() {
 				
 				foreach(Player, p) {
 					format(formated, sizeof(formated), Localization[p][LD_MSG_HUMAN_HERO], Misc[playerid][mdPlayerName], Localization[p][LD_MSG_POINTS_MULTIPLE]);
-					SendClientMessage(p, 0x59E4B5FF, formated);
+					SendClientMessage(p, COLOR_GLOBAL_INFO, formated);
 				}
 			}
         }
@@ -4136,9 +4244,39 @@ stock GetAchievementsPage(const playerid, const page = 0) {
     static const query[] = LOAD_ACHIEVEMENTS_PAGE;
 	static const limit = 25;
 
-	new formated[sizeof(query) + 4 + 4], offset = page * limit;
+	new formated[sizeof(query) + MAX_ID_LENGTH], offset = page * limit;
 	mysql_format(Database, formated, sizeof(formated), query, offset, limit);
 	mysql_tquery(Database, formated, "GetAchievementsList", "ii", playerid, offset);
+}
+
+CMD:lottery(const playerid, const params[]) {
+	if(sscanf(params, "i", params[0])) {
+	    SendClientMessage(playerid, COLOR_DEFAULT, "/lottery (1 - 100)");
+	    return 1;
+	}
+	
+	if(params[0] < 1 || params[0] > 100) {
+	    SendClientMessage(playerid, COLOR_DEFAULT, "/lottery (1 - 100)");
+	    return 1;
+	}
+    
+    if(!LotteryConfig[LCD_STARTED]) {
+        SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_LOTTERY_NOT_STARTED]);
+        return 1;
+    }
+    
+    if(Lottery[playerid] > LOTTERY_INVALID_ID) {
+		SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_LOTTERY_CHOSEN]);
+		return 1;
+	}
+	
+	new formated[24];
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_LOTTERY_NUMBER], params[0]);
+	SendClientMessage(playerid, COLOR_INFO, formated);
+    
+    Lottery[playerid] = (params[0] - 1);
+    LotteryConfig[LCD_JACKPOT] += ServerConfig[svCfgLotteryJackpotPerPlayer];
+	return 1;
 }
 
 CMD:class(const playerid) {
@@ -4157,6 +4295,33 @@ CMD:achievements(const playerid) {
 	Misc[playerid][mdNextPage] = 0;
 	return 1;
 }
+
+CMD:stats(const playerid, const params[]) {
+    new year, month, day, formated[96], targetid, sign[16]="";
+	getdate(year, month, day);
+	
+	sscanf(params, "I(-1)", targetid);
+    if(!IsPlayerConnected(targetid)) {
+		targetid = playerid;
+	}
+	
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_TITLE], Misc[targetid][mdPlayerName]);
+	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_KILLS], Achievements[targetid][achKills], Misc[targetid][mdKillstreak], Achievements[targetid][achKillstreak]);
+	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_PLAYED], Achievements[targetid][achHours], Achievements[targetid][achMinutes], Achievements[targetid][achSeconds]);
+	SendClientMessage(playerid, COLOR_ADMIN, formated);
+
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_GANG_ACCOUNT], Misc[targetid][mdGang], Misc[targetid][mdGangRank], Player[targetid][pAccountId]);
+	SendClientMessage(playerid, COLOR_ADMIN, formated);
+
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_DATE_SIGN], day, month, year, sign);
+	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	return 1;
+}
+
 
 CMD:test(playerid) {
 	if(Player[playerid][pAccountId] != 1) {

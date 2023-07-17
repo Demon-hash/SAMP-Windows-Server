@@ -7,65 +7,61 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[23:30:28] 
-[23:30:28] Server Plugins
-[23:30:28] --------------
-[23:30:28]  Loading plugin: mysql
-[23:30:28]  >> plugin.mysql: R41-4 successfully loaded.
-[23:30:28]   Loaded.
-[23:30:28]  Loading plugin: dc_cmd
-[23:30:28]   Daniel's CMD plugin v2.8
-[23:30:28]     (c) 2014 Daniel_Cortez
-[23:30:28] 	www.pro-pawn.ru
-[23:30:28]   Loaded.
-[23:30:28]  Loading plugin: sscanf
-[23:30:28] 
-[23:30:28]  ===============================
-[23:30:28] 
-[23:30:28]       sscanf plugin loaded.     
-[23:30:28] 
-[23:30:28]          Version: 2.13.8
-[23:30:28] 
-[23:30:28]    (c) 2022 Alex "Y_Less" Cole  
-[23:30:28] 
-[23:30:28]  ===============================
-[23:30:28] 
-[23:30:28]   Loaded.
-[23:30:28]  Loading plugin: jit
-[23:30:28]   JIT plugin 2.4.1
-[23:30:28]   Loaded.
-[23:30:28]  Loaded 4 plugins.
+[15:53:41] 
+[15:53:41] Server Plugins
+[15:53:41] --------------
+[15:53:41]  Loading plugin: mysql
+[15:53:41]  >> plugin.mysql: R41-4 successfully loaded.
+[15:53:41]   Loaded.
+[15:53:41]  Loading plugin: dc_cmd
+[15:53:41]   Daniel's CMD plugin v2.8
+[15:53:41]     (c) 2014 Daniel_Cortez
+[15:53:41] 	www.pro-pawn.ru
+[15:53:41]   Loaded.
+[15:53:41]  Loading plugin: sscanf
+[15:53:41] 
+[15:53:41]  ===============================
+[15:53:41] 
+[15:53:41]       sscanf plugin loaded.     
+[15:53:41] 
+[15:53:41]          Version: 2.13.8
+[15:53:41] 
+[15:53:41]    (c) 2022 Alex "Y_Less" Cole  
+[15:53:41] 
+[15:53:41]  ===============================
+[15:53:41] 
+[15:53:41]   Loaded.
+[15:53:41]  Loading plugin: jit
+[15:53:41]   JIT plugin 2.4.1
+[15:53:41]   Loaded.
+[15:53:41]  Loaded 4 plugins.
 
-[23:30:28] 
-[23:30:28] Filterscripts
-[23:30:28] ---------------
-[23:30:28]   Loading filterscript 'aview.amx'...
-[23:30:28] 
+[15:53:41] 
+[15:53:41] Filterscripts
+[15:53:41] ---------------
+[15:53:41]   Loading filterscript 'aview.amx'...
+[15:53:41] 
          Animation Browser
-[23:30:28]               v1.0
-[23:30:28]              SoNik))
+[15:53:41]               v1.0
+[15:53:41]              SoNik))
 
-[23:30:28]   Loaded 1 filterscripts.
+[15:53:41]   Loaded 1 filterscripts.
 
-[23:30:31] [connection] 127.0.0.1:56971 requests connection cookie.
-[23:30:36] |: JIT is present
-[23:30:36] |: Started at 23:30:36 on 16/07/2023... | Status: 0
-[23:30:36] Number of vehicle models: 0
-[23:30:36] [connection] incoming connection: 127.0.0.1:56971 id: 0
-[23:30:36] [join] Taxa has joined the server (0:127.0.0.1)
-[23:30:36] weburl = "www.sa-mp.com"  (string)
-[23:30:36] language = "English"  (string)
-[23:30:36] |: Server configuration LOADED
-[23:30:36] |: Gangs configuration LOADED
-[23:30:36] |: Round configuration LOADED
-[23:30:36] |: Evacuation configuration LOADED
-[23:30:36] |: Map configuration LOADED
-[23:30:36] |: Weapons configuration LOADED (17 / 17)
-[23:30:36] |: Balance configuration LOADED
-[23:30:36] |: Textures configuration LOADED (7 / 7)
-[23:30:36] |: Classes configuration LOADED
-[23:30:36] |: Classes loaded (55 / 55)
-[23:30:36] |: Loaded 1 maps in total
-[23:30:36] |: 6 objects loaded
-[23:30:38]   Filterscript 'village.amx' unload failed.
-[23:30:38]   Filterscript 'village.amx' loaded.
+[15:53:49] |: JIT is present
+[15:53:49] |: Started at 15:53:49 on 17/07/2023... | Status: 0
+[15:53:49] Number of vehicle models: 0
+[15:53:49] SQL: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 's Stats ~~~~~~~~~~~~~~', '~~~~~~~~~~~~~~ Статистика игрока %s's ' at line 1(1064) > () > INSERT IGNORE INTO localization (id, english, russian) VALUES (113, '~~~~~~~~~~~~~~ %s's Stats ~~~~~~~~~~~~~~', '~~~~~~~~~~~~~~ Статистика игрока %s's ~~~~~~~~~~~~~~'),(114, '>> Kills: %d - Killstreak: %d (best: %d)', '>> Убийств: %d - Убийств подряд: %d (Лучший результат: %d)'),(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Эвакуаций: %d - Duel Wins: %d - Rank: %d'),(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),(118, '>> Date: %02dD/%02dM/%dY  Sign: %s', '>> Дата: %02dD/%02dM/%dY  Подпись: %s');
+[15:53:49] weburl = "www.sa-mp.com"  (string)
+[15:53:49] language = "English"  (string)
+[15:53:49] |: Server configuration LOADED
+[15:53:49] |: Gangs configuration LOADED
+[15:53:49] |: Round configuration LOADED
+[15:53:49] |: Evacuation configuration LOADED
+[15:53:49] |: Map configuration LOADED
+[15:53:49] |: Weapons configuration LOADED (17 / 17)
+[15:53:49] |: Balance configuration LOADED
+[15:53:49] |: Textures configuration LOADED (7 / 7)
+[15:53:49] |: Classes configuration LOADED
+[15:53:49] |: Classes loaded (55 / 55)
+[15:53:49] |: Loaded 1 maps in total
+[15:53:49] |: 6 objects loaded

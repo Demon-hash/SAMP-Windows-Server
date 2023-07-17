@@ -118,8 +118,152 @@ enum LOCALIZATION_DATA {
 	LD_DG_ACHS_TITLE,
 	LD_DG_EMPTY,
 	LD_DG_ACHS_HEADERS,
-
-	LD_BTN_CANCEL,	
-	LD_BTN_PREV,
-	LD_BTN_OK,
+	LD_MSG_RND_QUESTION_NO_ANSWER,
+	LD_MSG_LOTTERY,
+	LD_MSG_LOTTERY_NOBODY_WIN,
+	LD_MSG_LOTTERY_PLAYER_WIN,
+	LD_MSG_LOTTERY_NOT_STARTED,
+	LD_MSG_LOTTERY_CHOSEN,
+	LD_MSG_LOTTERY_NUMBER,
+	LD_MSG_STATS_TITLE,
+	LD_MSG_STATS_KILLS,
+	LD_MSG_STATS_PLAYED,
+	LD_MSG_STATS_GANG_ACCOUNT,
+	LD_MSG_STATS_DATE_SIGN,
 };
+
+#define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(1, 'Login', 'Логин'),\
+	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Добро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
+	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Неверный пароль, осталось %d / 3 попыток\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
+	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\				
+	(5, 'Register', 'Регистрация'),\
+	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', 'Добро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
+	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
+	(8, 'Register', 'Регистрация'),\
+	(9, 'Login', 'Логин'),\
+	(10, 'Quit', 'Выйти'),\
+	(11, '*** %s (ID: %d) has joined the server', '*** Игрок %s (ИД: %d) подключился к серверу'),\
+	(12, '*** %s has left the server [%s]', '*** Игрок %s вышел с сервера [%s]'),\
+	(13, 'Timeout', 'Разрыв соединения'),\
+	(14, 'Leave', 'Выход'),\
+	(15, 'Kick', 'Кикнут'),\
+	(16, 'Unknown', 'Неизвестно');\
+"
+
+#define PREDIFINED_LOCALIZATION_2 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(17, 'Restarting', 'Перезагрузка'),\
+	(18, '>> %s has made it to the evacuation point!', '>> Игрок %s эвакуировался!'),\
+	(19, '>> ALL SURVIVORS EVACUATED!', '>> Все выжившие добрались до пункта эвакуации!'),\
+	(20, '>> Under protection {FFFFFF}%d{FF0000} seconds left!', '>> Под защитой, до снятия {FFFFFF}%d{FF0000} секунд'),\
+	(21, '(by %s)', '(автор %s)'),\
+	(22, '(captured by %s)', '(под контролем у %s)'),\
+	(23, '>> Entering The Map #%d (%s) %s %s', '>> Запускаем карту #%d (%s) %s %s'),\
+	(24, '>> Creating objects...', '>> Создание объектов...'),\
+	(25, '>> ZOMBIES WIN!', '>> ЗОМБИ ПОБЕДИЛИ!'),\
+	(26, '>> An evacuation has arrived for humans!', '>> Эвакуация прибыла для людей!'),\
+	(27, '>> Humans get to the checkpoint within a minute!', '>> Выжившие, доберитесь до чекпоинта за минуту!'),\
+	(28, '>> Beginning new a round...', '>> Начинается новый раунд!'),\
+	(29, '~r~ROUND OVER~n~~w~STARTING NEW ROUND...', '~r~КОНЕЦ РАУНДА~n~~w~НАЧИНАЕМ НОВЫЙ...'),\
+	(30, '>> Gang members, a crystal stone has appeared, deal as much damage as possible!', 'Участники банд, появился защитный кристал, нанесите как можно больше урона!'),\
+	(31, '~w~humans: %d~n~~r~zombies: %d', '~w~ЛЮДИ: %d~n~~r~ЗОМБИ: %d');\
+"
+
+#define PREDIFINED_LOCALIZATION_3 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(32, '{FFFFFF}%s\n{FFF000}Controlled by {FFFFFF}%s\n{FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n', '{FFFFFF}%s\n{FFF000}Под контролем у {FFFFFF}%s\n{FFF000}Захвачено в {FFFFFF}%02d:%02d {FFF000}, дата {FFFFFF}%02d/%02d/%d\n'),\ 
+	(33, '{FFF000}This gang dealt the most damage to crystal to capture the map\n', '{FFF000}Эта банда внесла наибольшее количество урона по кристаллу, чтобы захватить карту\n'),\
+	(34, '{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n', '{FFF000}Участники банды получают дополнительные очки за следующие действия:\n\n{FFFFFF}+%.0f{FFF000} очков в казну клана за эвакуацию\n'),\ 
+	(35, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n', '{FFFFFF}+%.0f{FFF000} очков в казну клана за лечение людей\n{FFFFFF}+%.0f{FFF000} очков в казну клана за использование активных способностей\n'),\
+	(36, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n{FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist', '{FFFFFF}+%.0f{FFF000} очков в казну клана за убийство игроков\n{FFFFFF}+%.2f{FFF000} очков в казну клана за помощь в убийстве зомби'),\
+	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
+	(38, 'UNUSED', 'UNUSED'),\
+	(39, 'Classes', 'Классы'),\
+	(40, 'Human Classes\nZombie Classes', 'Классы Людей\nКлассы Зомби'),\
+	(41, 'Select', 'Выбрать'),\
+	(42, 'Close', 'Закрыть'),\
+	(43, 'POINTS', 'ОЧКОВ'),\
+	(44, '>> You have been spawned as a(n) %s', '>> Ваш текущий класс %s'),\
+	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
+	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!'),\
+	(47, 'points', 'очков'),\
+	(48, '>> You need %.0f %s to use this class!', '>> Вам нужно %.0f %s чтобы использовать этот класс!'),\
+	(49, 'MISS', 'ПРОМАХ'),\
+	(50, '~g~Found:~w~ %d ammo', '~g~Поднято:~w~ %d патрон(ов)');\
+"
+
+#define PREDIFINED_LOCALIZATION_4 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(51, '>> You were chosen as a zombie go and kill all the humans!', '>> Вы были выбраны как зомби, убейте всех людей!'),\	
+	(52, '>> Use your abilities to make it faster (LEFT ALT)', '>> Используйте свои способности, чтобы ускорить это (Левый Альт)'),\
+	(53, '~r~TRY TO STAY~n~~w~ALIVE', '~r~ПОПЫТАЙТЕСЬ ~w~ВЫЖИТЬ'),\
+	(54, 'points', 'очки'),\
+	(55, '>> Player %s was chosen to be the Human Hero / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Герой(иня). Убейте его(ее) и получите дополнительные %s!'),\
+	(56, '>> Player %s has killed the Human Hero / Queen!', '>> Игрок %s убил Героя(иню)!'),\
+	(57, '>> Player %s was chosen to be the Zombie Boss / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Зомби Босс / Королева. Убейте его(ее) и получите дополнительные %s!'),\
+	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),\
+	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),\
+	(60, '>> Kill the last human and receive extra %s!', '>> Убейте последнего выжевшего и получите дополнительные %s!'),\
+	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!'),\
+	(62, '>> Player %s has been infected by standard zombie %s!', '>> Игрок %s был заражен обычным зомби %s!'),\
+	(63, '>> Player %s has been infected by mutated zombie %s!', '>> Игрок %s был заражен от мутированного зомби %s!'),\
+	(64, '>> Player %s has been infected by flesher zombie %s! (by meat)', '>> Игрок %s был заражен гнилым зомби %s! (через мясо)'),\
+	(65, '>> Player %s has been infected by spore zombie %s!', '>> Игрок %s был заражен через споры от зомби %s!'),\
+	(66, '>> Player %s has been infected by spitter zombie %s!', '>> Игрок %s был заражен плевком от зомби %s!'),\
+	(67, '>> Player %s has been infected by explosion from %s!', '>> Игрок %s был заражен взрывом от зомби %s!'),\
+	(68, '>> Player %s has blown up and infected{FFFFFF} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} %d человек(а)!'),\
+	(69, '>> Player %s has blown up and infected{FFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
+	(70, '>> Player %s has been cured by cure field!', '>> Игрок %s был выличен лечящем полем!'),\
+	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)'),\
+	(72, '~r~~h~Regeneration', '~r~~h~Восстановление'),\
+	(73, '~g~~h~Radioactive Field', '~g~~h~Радиоактивное_Поле'),\
+	(74, '~g~Antidote', '~g~Антидот'),\
+	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
+	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
+	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!'),\
+	(78, '~w~You are ~g~Cursed~n~~r~Abilities disabled', '~w~Вы ~g~прокляты~n~~r~Способности отключены');\
+"
+
+#define PREDIFINED_LOCALIZATION_5 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(79, '~r~This~w~ player is on your team', '~r~Этот~w~ игрок в вашей команде'),\
+	(80, '~r~OFF', '~r~ВЫКЛЮЧЕНО'),\
+	(81, '~g~ON', '~g~ВКЛЮЧЕНО'),\
+	(82, '~y~Radioactive Field is %s', '~y~Радиоактивное Поле %s'),\
+	(83, '~y~Cure Field is %s', '~y~Лечащие Поле %s'),\
+	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
+	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
+	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)'),\
+	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> Игрок %s был возрожден как Зомби [Причина: Выход за карту]'),\
+	(88, '>> Player %s froze{FFFFFF} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} %d человек(а)!'),\
+	(89, '>> Player %s frozeFFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
+	(90, '~g~Wait some time', '~g~Подождите'),\
+	(91, '~r~Can not use', '~g~Невозможно использовать'),\
+	(92, '>> Player %s has been infected by misty zombie %s!', '>> Игрок %s был заражен от туманного зомби %s!'),\
+	(93, '>> Player %s has been infected by blind zombie %s!', '>> Игрок %s был заражен ослепляющим зомби %s!'),\
+	(94, '>> Player %s has stole ammo from player %s!', '>> Игрок %s украл патроны игрока %s!'),\
+	(95, '>> %s legs have been broken by %s!', '>> Ноги игрока %s были сломаны игроком %s!'),\
+	(96, '~y~Remove Weapons Field is %s', '~y~Поле отнимания оружия %s'),\
+	(97, '~r~Weapons Removed', '~r~Оружие убрано'), \
+	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
+	(99, '~r~Space starts damaging you', '~r~Пространство начинает разрывать вас'),\
+	(100, '|: Random Question for %d points: %s', '|: Случайная викторина на %d очков: %s'),\
+	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков'),\
+	(102, 'Next', 'Следующая'),\
+	(103, 'Achievements', 'Достижения'),\
+	(104, 'Nothing yet', 'Тут пока пусто'),\
+	(105, 'Name\tDescription\n', 'Название\tОписание'),\
+	(106, 'RANDOM QUESTION: No one answered!', 'Случайная викторина: никто не ответил!'),\
+	(107, '>> Lottery: Number will be drawn soon. Use /lottery to get your own number', '>> Лотерея: Номер скоро будет разыгран. Используйте /lottery и выберите ваш номер!'),\
+	(108, '>> Lottery: Nobody won!{FF0000} Number: %d Jackpot: %d', '>> Лотерея: Никто не выграл! {FF0000} Номер: %d Джекпот: %d'),\
+	(109, '>> Lottery: %s has won the lottery!{C659B6} Number: %d Jackpot: %d', '>> Лотерея: Игрок %s выграл лотерею! {C659B6} Номер: %d Джекпот: %d'),\
+	(110, '>> The lottery hasnt started yet', '>> Лотерея еще не началась'),\
+	(111, '>> You have already chosen your number!', '>> Вы уже выбрали свой номер!'),\
+	(112, '>> Your number is %d', '>> Ваш номер - %d');\
+"
+
+#define PREDIFINED_LOCALIZATION_6 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(113, '~~~~~~~~~~~~~~ %s's Stats ~~~~~~~~~~~~~~', '~~~~~~~~~~~~~~ Статистика игрока %s's ~~~~~~~~~~~~~~'),\
+	(114, '>> Kills: %d - Killstreak: %d (best: %d)', '>> Убийств: %d - Убийств подряд: %d (Лучший результат: %d)'),\
+	(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Эвакуаций: %d - Duel Wins: %d - Rank: %d'),\
+	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),\
+	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),\
+	(118, '>> Date: %02dD/%02dM/%dY  Sign: %s', '>> Дата: %02dD/%02dM/%dY  Подпись: %s');\
+"

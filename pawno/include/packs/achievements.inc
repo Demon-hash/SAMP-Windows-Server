@@ -39,7 +39,6 @@ enum ACHIEVEMENTS_DATA {
 	achMaster,
 	achHermitage,
 	achLastHope,
-	achTerrorist,
 	achAnswer,
 	achLottery,
 	achCapture,

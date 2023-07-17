@@ -424,7 +424,8 @@
 	`id` int(11) unsigned NOT NULL,\
 	`pickup_protection` int(4) unsigned NOT NULL default '30',\
 	`tip_per` int(3) unsigned NOT NULL default '40',\
-	`random_question` varchar(24) NOT NULL default '80,90',\
+	`random_question` varchar(24) NOT NULL default '80,90,30',\
+	`lottery` varchar(24) NOT NULL DEFAULT '200,60,1000,10',\
 	`kills` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`evacuation` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
 	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
@@ -789,49 +790,49 @@
 	(42, 13, 1000, 0, 0),\
 	(43, 14, 168, 0, 0),\
 	(44, 14, 4383, 0, 0),\
-	(45, 15, 8760, 0, 0),\
-	(46, 16, 100, 0, 0),\
-	(47, 16, 300, 0, 0),\
-	(48, 16, 700, 0, 0),\
-	(49, 17, 10, 0, 0),\
-	(50, 17, 100, 0, 0),\
-	(51, 17, 250, 0, 0),\
-	(52, 18, 10, 0, 0),\
-	(53, 18, 50, 0, 0),\
-	(54, 18, 100, 0, 0),\
-	(55, 19, 10, 0, 0),\
-	(56, 19, 20, 0, 0),\
-	(57, 19, 30, 0, 0),\
-	(58, 20, 10, 0, 0),\
-	(59, 20, 20, 0, 0),\
-	(60, 20, 30, 0, 0),\
-	(61, 21, 10, 0, 0),\
-	(62, 21, 30, 0, 0),\
-	(63, 21, 70, 0, 0),\
-	(64, 22, 2, 0, 0),\
-	(65, 22, 6, 0, 0),\
-	(66, 22, 12, 0, 0),\
-	(67, 23, 10, 0, 0),\
-	(68, 23, 30, 0, 0),\
-	(69, 23, 60, 0, 0),\
-	(70, 24, 50, 0, 0),\
-	(71, 24, 100, 0, 0),\
-	(72, 24, 200, 0, 0),\
-	(73, 25, 1000, 0, 0),\
-	(74, 26, 1000, 0, 0),\
-	(75, 27, 1000, 0, 0),\
-	(76, 28, 1000, 0, 0),\
-	(77, 29, 1000, 0, 0),\
-	(78, 30, 1000, 0, 0),\
-	(79, 31, 1000, 0, 0),\
-	(80, 32, 1000, 0, 0),\
-	(81, 33, 1000, 0, 0),\
-	(82, 34, 1000, 0, 0),\
-	(83, 35, 1, 0, 0),\
-	(84, 36, 1, 0, 0),\
-	(85, 37, 1, 0, 0),\
-	(86, 38, 1, 0, 0),\
-	(87, 39, 10000, 0, 0);\
+	(45, 14, 8760, 0, 0),\
+	(46, 15, 100, 0, 0),\
+	(47, 15, 300, 0, 0),\
+	(48, 15, 700, 0, 0),\
+	(49, 16, 10, 0, 0),\
+	(50, 16, 100, 0, 0),\
+	(51, 16, 250, 0, 0),\
+	(52, 17, 10, 0, 0),\
+	(53, 17, 50, 0, 0),\
+	(54, 17, 100, 0, 0),\
+	(55, 18, 10, 0, 0),\
+	(56, 18, 20, 0, 0),\
+	(57, 18, 30, 0, 0),\
+	(58, 19, 10, 0, 0),\
+	(59, 19, 20, 0, 0),\
+	(60, 19, 30, 0, 0),\
+	(61, 20, 10, 0, 0),\
+	(62, 20, 30, 0, 0),\
+	(63, 20, 70, 0, 0),\
+	(64, 21, 2, 0, 0),\
+	(65, 21, 6, 0, 0),\
+	(66, 21, 12, 0, 0),\
+	(67, 22, 10, 0, 0),\
+	(68, 22, 30, 0, 0),\
+	(69, 22, 60, 0, 0),\
+	(70, 23, 50, 0, 0),\
+	(71, 23, 100, 0, 0),\
+	(72, 23, 200, 0, 0),\
+	(73, 24, 1000, 0, 0),\
+	(74, 25, 1000, 0, 0),\
+	(75, 26, 1000, 0, 0),\
+	(76, 27, 1000, 0, 0),\
+	(77, 28, 1000, 0, 0),\
+	(78, 29, 1000, 0, 0),\
+	(79, 30, 1000, 0, 0),\
+	(80, 31, 1000, 0, 0),\
+	(81, 32, 1000, 0, 0),\
+	(82, 33, 1000, 0, 0),\
+	(83, 34, 1, 0, 0),\
+	(84, 35, 1, 0, 0),\
+	(85, 36, 1, 0, 0),\
+	(86, 37, 1, 0, 0),\
+	(87, 38, 10000, 0, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \
@@ -867,22 +868,24 @@
 "
 
 #define PREDIFINED_RND_MSGS "INSERT IGNORE INTO random_messages (id, english, russian) VALUES \
-	(1, '[QUICK TIP]: Want to talk about something personal? Use /pm!', '[ПОДСКАЗКА]: Хотите поговорить о чем-то личном? Используйте /pm'),\
-	(2, '[QUICK TIP]: Are you tired of being annoyed in pm? Use /(un)blockpm!', '[ПОДСКАЗКА]: Устали от личных сообщений? Используйте /(un)blockpm!'),\
-	(3, '[QUICK TIP]: Tired of spam in PM from one person? Use /(un)ignorepm!', '[ПОДСКАЗКА]: Устали от спама от одного человека? /(un)ignorepm!'),\
-	(4, '[QUICK TIP]: Change your class using /class!', '[ПОДСКАЗКА]: Измените свой класс, использовав /class'),\
-	(5, '[QUICK TIP]: As a Human, you must survive. As a Zombie, you must kill humans!', '[ПОДСКАЗКА]: Как человек, вы должны выжить. Как зомби, вы должны убивать людей!'),\
-	(6, '[QUICK TIP]: Earn points for active playing!', '[ПОДСКАЗКА]: Зарабатывайте очки за активную игру!'),\
-	(7, '[QUICK TIP]: Newbie? We advise you to look /cmds, /help, /rules!', '[ПОДСКАЗКА]: Новичек? Советуем использовать /cmds, /help, /rules'),\
-	(8, '[QUICK TIP]: Use /report to report rulebreakers and get points!', '[ПОДСКАЗКА]: Используйте /report чтобы сообщать о нарушителях и получайте очки!'),\
-	(9, '[QUICK TIP]: Want to become a team player? Join the gang /gang join!', '[ПОДСКАЗКА]: Хотите стать командным игроком? Вступайте в клан /gang join'),\
-	(10, '[QUICK TIP]: Did you see the cheater? Use /votekick if no admins online!', '[ПОДСКАЗКА]: Увидели нарушителя? Используйте /votekick если администрация не в сети!'),\
-	(11, '[QUICK TIP]: Almost each class has unique ability. Use LEFT ALT to activate it!', '[ПОДСКАЗКА]: Почти каждый класс имеет уникальную способность. Используйте Левый Альт, чтобы активировать ее!'),\
-	(12, '[QUICK TIP]: Medics can cure humans by using rifle!', '[ПОДСКАЗКА]: Медики могут лечить людей выстрелив в них с винтовки!'),\
-	(13, '[QUICK TIP]: You can save your stats with /ss!', '[ПОДСКАЗКА]: Вы можете сохранить свою статистику использовав /ss!'),\
-	(14, '[QUICK TIP]: Do not forget to add our server to favorites!', '[ПОДСКАЗКА]: Не забудьте добавить наш сервер в избранное!'),\
-	(15, '[QUICK TIP]: You can change some settings, check /settings!', '[ПОДСКАЗКА]: Вы можете настроить некоторые настройки под себя, используйте /settings!'),\
-	(16, '[ПОДСКАЗКА]: Используйте /language, чтобы сменить язык', '[QUCIK TIP] You can change language by using /language');\
+	(1, '>> Want to talk about something personal? Use /pm!', '>> Хотите поговорить о чем-то личном? Используйте /pm'),\
+	(2, '>> Are you tired of being annoyed in pm? Use /(un)blockpm!', '>> Устали от личных сообщений? Используйте /(un)blockpm!'),\
+	(3, '>> Tired of spam in PM from one person? Use /(un)ignorepm!', '>> Устали от спама от одного человека? /(un)ignorepm!'),\
+	(4, '>> Change your class using /class!', '>> Измените свой класс, использовав /class'),\
+	(5, '>> As a Human, you must survive. As a Zombie, you must kill humans!', '>> Как человек, вы должны выжить. Как зомби, вы должны убивать людей!'),\
+	(6, '>> Earn points for active playing!', '>> Зарабатывайте очки за активную игру!'),\
+	(7, '>> Newbie? We advise you to look /cmds, /help, /rules!', '>> Новичек? Советуем использовать /cmds, /help, /rules'),\
+	(8, '>> Use /report to report rulebreakers and get points!', '>> Используйте /report чтобы сообщать о нарушителях и получайте очки!'),\
+	(9, '>> Want to become a team player? Join the gang /gang join!', '>> Хотите стать командным игроком? Вступайте в клан /gang join'),\
+	(10, '>> Did you see the cheater? Use /votekick if no admins online!', '>> Увидели нарушителя? Используйте /votekick если администрация не в сети!'),\
+	(11, '>> Almost each class has unique ability. Use LEFT ALT to activate it!', '>> Почти каждый класс имеет уникальную способность. Используйте Левый Альт, чтобы активировать ее!'),\
+	(12, '>> Medics can cure humans by using rifle!', '>> Медики могут лечить людей выстрелив в них с винтовки!'),\
+	(13, '>> You can save your stats with /ss!', '>> Вы можете сохранить свою статистику использовав /ss!'),\
+	(14, '>> Do not forget to add our server to favorites!', '>> Не забудьте добавить наш сервер в избранное!'),\
+	(15, '>> You can change some settings, check /settings!', '>> Вы можете настроить некоторые настройки под себя, используйте /settings!'),\
+	(16, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
+	(17, '>> You can gain points by completing /achievements!', '>> Вы можете получить очки, выполняя достижения! (/achievements)'),\
+	(18, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)');\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
@@ -1060,124 +1063,4 @@
 	(15, 37, 1, 500, 150),\
 	(16, 39, 10, 20, 2),\
 	(17, 41, 100, 1500, 250);\
-"
-
-#define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(1, 'Login', 'Логин'),\
-	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Добро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
-	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Неверный пароль, осталось %d / 3 попыток\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
-	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\				
-	(5, 'Register', 'Регистрация'),\
-	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', 'Добро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
-	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
-	(8, 'Register', 'Регистрация'),\
-	(9, 'Login', 'Логин'),\
-	(10, 'Quit', 'Выйти'),\
-	(11, '*** %s (ID: %d) has joined the server', '*** Игрок %s (ИД: %d) подключился к серверу'),\
-	(12, '*** %s has left the server [%s]', '*** Игрок %s вышел с сервера [%s]'),\
-	(13, 'Timeout', 'Разрыв соединения'),\
-	(14, 'Leave', 'Выход'),\
-	(15, 'Kick', 'Кикнут'),\
-	(16, 'Unknown', 'Неизвестно');\
-"
-
-#define PREDIFINED_LOCALIZATION_2 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(17, 'Restarting', 'Перезагрузка'),\
-	(18, '>> %s has made it to the evacuation point!', '>> Игрок %s эвакуировался!'),\
-	(19, '>> ALL SURVIVORS EVACUATED!', '>> Все выжившие добрались до пункта эвакуации!'),\
-	(20, '>> Under protection {FFFFFF}%d{FF0000} seconds left!', '>> Под защитой, до снятия {FFFFFF}%d{FF0000} секунд'),\
-	(21, '(by %s)', '(автор %s)'),\
-	(22, '(captured by %s)', '(под контролем у %s)'),\
-	(23, '>> Entering The Map #%d (%s) %s %s', '>> Запускаем карту #%d (%s) %s %s'),\
-	(24, '>> Creating objects...', '>> Создание объектов...'),\
-	(25, '>> ZOMBIES WIN!', '>> ЗОМБИ ПОБЕДИЛИ!'),\
-	(26, '>> An evacuation has arrived for humans!', '>> Эвакуация прибыла для людей!'),\
-	(27, '>> Humans get to the checkpoint within a minute!', '>> Выжившие, доберитесь до чекпоинта за минуту!'),\
-	(28, '>> Beginning new a round...', '>> Начинается новый раунд!'),\
-	(29, '~r~ROUND OVER~n~~w~STARTING NEW ROUND...', '~r~КОНЕЦ РАУНДА~n~~w~НАЧИНАЕМ НОВЫЙ...'),\
-	(30, '>> Gang members, a crystal stone has appeared, deal as much damage as possible!', 'Участники банд, появился защитный кристал, нанесите как можно больше урона!'),\
-	(31, '~w~humans: %d~n~~r~zombies: %d', '~w~ЛЮДИ: %d~n~~r~ЗОМБИ: %d');\
-"
-
-#define PREDIFINED_LOCALIZATION_3 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(32, '{FFFFFF}%s\n{FFF000}Controlled by {FFFFFF}%s\n{FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n', '{FFFFFF}%s\n{FFF000}Под контролем у {FFFFFF}%s\n{FFF000}Захвачено в {FFFFFF}%02d:%02d {FFF000}, дата {FFFFFF}%02d/%02d/%d\n'),\ 
-	(33, '{FFF000}This gang dealt the most damage to crystal to capture the map\n', '{FFF000}Эта банда внесла наибольшее количество урона по кристаллу, чтобы захватить карту\n'),\
-	(34, '{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n', '{FFF000}Участники банды получают дополнительные очки за следующие действия:\n\n{FFFFFF}+%.0f{FFF000} очков в казну клана за эвакуацию\n'),\ 
-	(35, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n', '{FFFFFF}+%.0f{FFF000} очков в казну клана за лечение людей\n{FFFFFF}+%.0f{FFF000} очков в казну клана за использование активных способностей\n'),\
-	(36, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n{FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist', '{FFFFFF}+%.0f{FFF000} очков в казну клана за убийство игроков\n{FFFFFF}+%.2f{FFF000} очков в казну клана за помощь в убийстве зомби'),\
-	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
-	(38, 'UNUSED', 'UNUSED'),\
-	(39, 'Classes', 'Классы'),\
-	(40, 'Human Classes\nZombie Classes', 'Классы Людей\nКлассы Зомби'),\
-	(41, 'Select', 'Выбрать'),\
-	(42, 'Close', 'Закрыть'),\
-	(43, 'POINTS', 'ОЧКОВ'),\
-	(44, '>> You have been spawned as a(n) %s', '>> Ваш текущий класс %s'),\
-	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
-	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!'),\
-	(47, 'points', 'очков'),\
-	(48, '>> You need %.0f %s to use this class!', '>> Вам нужно %.0f %s чтобы использовать этот класс!'),\
-	(49, 'MISS', 'ПРОМАХ'),\
-	(50, '~g~Found:~w~ %d ammo', '~g~Поднято:~w~ %d патрон(ов)');\
-"
-
-#define PREDIFINED_LOCALIZATION_4 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(51, '>> You were chosen as a zombie go and kill all the humans!', '>> Вы были выбраны как зомби, убейте всех людей!'),\	
-	(52, '>> Use your abilities to make it faster (LEFT ALT)', '>> Используйте свои способности, чтобы ускорить это (Левый Альт)'),\
-	(53, '~r~TRY TO STAY~n~~w~ALIVE', '~r~ПОПЫТАЙТЕСЬ ~w~ВЫЖИТЬ'),\
-	(54, 'points', 'очки'),\
-	(55, '>> Player %s was chosen to be the Human Hero / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Герой(иня). Убейте его(ее) и получите дополнительные %s!'),\
-	(56, '>> Player %s has killed the Human Hero / Queen!', '>> Игрок %s убил Героя(иню)!'),\
-	(57, '>> Player %s was chosen to be the Zombie Boss / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Зомби Босс / Королева. Убейте его(ее) и получите дополнительные %s!'),\
-	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),\
-	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),\
-	(60, '>> Kill the last human and receive extra %s!', '>> Убейте последнего выжевшего и получите дополнительные %s!'),\
-	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!'),\
-	(62, '>> Player %s has been infected by standard zombie %s!', '>> Игрок %s был заражен обычным зомби %s!'),\
-	(63, '>> Player %s has been infected by mutated zombie %s!', '>> Игрок %s был заражен от мутированного зомби %s!'),\
-	(64, '>> Player %s has been infected by flesher zombie %s! (by meat)', '>> Игрок %s был заражен гнилым зомби %s! (через мясо)'),\
-	(65, '>> Player %s has been infected by spore zombie %s!', '>> Игрок %s был заражен через споры от зомби %s!'),\
-	(66, '>> Player %s has been infected by spitter zombie %s!', '>> Игрок %s был заражен плевком от зомби %s!'),\
-	(67, '>> Player %s has been infected by explosion from %s!', '>> Игрок %s был заражен взрывом от зомби %s!'),\
-	(68, '>> Player %s has blown up and infected{FFFFFF} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} %d человек(а)!'),\
-	(69, '>> Player %s has blown up and infected{FFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
-	(70, '>> Player %s has been cured by cure field!', '>> Игрок %s был выличен лечящем полем!'),\
-	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)'),\
-	(72, '~r~~h~Regeneration', '~r~~h~Восстановление'),\
-	(73, '~g~~h~Radioactive Field', '~g~~h~Радиоактивное_Поле'),\
-	(74, '~g~Antidote', '~g~Антидот'),\
-	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
-	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
-	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!'),\
-	(78, '~w~You are ~g~Cursed~n~~r~Abilities disabled', '~w~Вы ~g~прокляты~n~~r~Способности отключены');\
-"
-
-#define PREDIFINED_LOCALIZATION_5 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(79, '~r~This~w~ player is on your team', '~r~Этот~w~ игрок в вашей команде'),\
-	(80, '~r~OFF', '~r~ВЫКЛЮЧЕНО'),\
-	(81, '~g~ON', '~g~ВКЛЮЧЕНО'),\
-	(82, '~y~Radioactive Field is %s', '~y~Радиоактивное Поле %s'),\
-	(83, '~y~Cure Field is %s', '~y~Лечащие Поле %s'),\
-	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
-	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
-	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)'),\
-	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> Игрок %s был возрожден как Зомби [Причина: Выход за карту]'),\
-	(88, '>> Player %s froze{FFFFFF} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} %d человек(а)!'),\
-	(89, '>> Player %s frozeFFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
-	(90, '~g~Wait some time', '~g~Подождите'),\
-	(91, '~r~Can not use', '~g~Невозможно использовать'),\
-	(92, '>> Player %s has been infected by misty zombie %s!', '>> Игрок %s был заражен от туманного зомби %s!'),\
-	(93, '>> Player %s has been infected by blind zombie %s!', '>> Игрок %s был заражен ослепляющим зомби %s!'),\
-	(94, '>> Player %s has stole ammo from player %s!', '>> Игрок %s украл патроны игрока %s!'),\
-	(95, '>> %s legs have been broken by %s!', '>> Ноги игрока %s были сломаны игроком %s!'),\
-	(96, '~y~Remove Weapons Field is %s', '~y~Поле отнимания оружия %s'),\
-	(97, '~r~Weapons Removed', '~r~Оружие убрано'), \
-	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
-	(99, '~r~Space starts damaging you', '~r~Пространство начинает разрывать вас'),\
-	(100, '>> Random Question for %d points: %s', 'Случайная викторина на %d очков: %s'),\
-	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков'),\
-	(102, 'Next', 'Следующая'),\
-	(103, 'Achievements', 'Достижения'),\
-	(104, 'Nothing yet', 'Тут пока пусто'),\
-	(105, 'Name\tDescription\n', 'Название\tОписание');\
 "
