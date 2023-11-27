@@ -6,7 +6,6 @@
 #define REG_ACCOUNT_QUERY "INSERT INTO `users` (`login`, `password`) VALUES ('%e', '%e');"
 #define REG_ACCOUNT_INFORMATION_QUERY "INSERT INTO `registration` (`reg_at`, `reg_ip`, `reg_key`) VALUES (%d, '%e', '%e');"
 #define REG_PRIVILEGES_QUERY "INSERT INTO `privileges` (`id`) VALUE (NULL);"
-#define REG_SKILLS_QUERY "INSERT INTO `skills` (`id`) VALUE (NULL);"
 #define REG_ACHIEVEMENTS_QUERY "INSERT INTO `achievements` (`id`) VALUE (NULL);"
 #define REG_GANG_ACCCOUNT_QUERY "INSERT INTO `gangs_users` (`id`) VALUE (NULL);"
 #define CREATE_SESSION_QUERY "INSERT INTO `login_log` (`account_id`, `date`, `ip`, `key`) VALUES (%d, %d, '%e', '%e');"
@@ -61,6 +60,79 @@
 	LIMIT 2\
 "
 
+#define UPDATE_USER_QUERY "\
+	UPDATE `users` \n\
+	SET \n\
+		`language`='%d',\
+		`points`='%f',\
+		`standing`='%f'\n\
+		WHERE `id`='%d'\
+"
+
+#define UPDATE_GANG_USER_QUERY "\
+	UPDATE `gangs_users` \n\
+	SET \n\
+		`gang_id`='%d',\
+		`rank`='%d',\
+		`warns`='%d'\n\
+		WHERE `id`='%d'\
+"
+
+#define UPDATE_PRIVILAGES_QUERY "\
+	UPDATE `privileges` \n\
+	SET \n\
+		`admin`='%d',\
+		`vip`='%d',\
+		`vip_till`='%d'\n\
+		WHERE `id`='%d'\
+"
+
+#define UPDATE_ACHIEVEMENTS_QUERY "\
+	UPDATE `achievements` \n\
+	SET \n\
+		`rank`='%d',\
+		`kills`='%d',\
+		`deaths`='%d',\
+		`ability`='%d',\
+		`luck`='%d',\
+		`humans`='%d',\
+		`zombies`='%d',\
+		`meats`='%d',\
+		`ammo`='%d',\
+		`killstreak`='%d',\
+		`infection`='%d',\
+		`cure`='%d',\
+		`evacs`='%d',\
+		`reported`='%d',\
+		`jumps`='%d',\
+		`hours`='%d',\
+		`minutes`='%d',\
+		`seconds`='%d',\
+		`silinced`='%d',\
+		`colt45`='%d',\
+		`deagle`='%d',\
+		`rifle`='%d',\
+		`shotgun`='%d',\
+		`mp5`='%d',\
+		`combat`='%d',\
+		`tec9`='%d',\
+		`ak47`='%d',\
+		`m4`='%d',\
+		`master`='%d',\
+		`hermitage`='%d',\
+		`last_hope`='%d',\
+		`answer`='%d',\
+		`lottery`='%d',\
+		`capture`='%d',\
+		`duels`='%d',\
+		`session`='%d',\
+		`blood`='%d',\
+		`mary`='%d',\
+		`total_points`='%f',\
+		`ran`='%f'\n\
+		WHERE `id` = '%d'\
+"
+
 #define CHECK_USER_QUERY "\
 	SELECT \n\
 		u.*,\n\
@@ -73,26 +145,60 @@
 		COALESCE(a.humans, 0) as humans,\n\
 		COALESCE(a.zombies, 0) as zombies,\n\
 		COALESCE(a.meats, 0) as meats,\n\
+		COALESCE(a.ammo, 0) as ammo,\n\
 		COALESCE(a.killstreak, 0) as killstreak,\n\
 		COALESCE(a.infection, 0) as infection,\n\
 		COALESCE(a.cure, 0) as cure,\n\
 		COALESCE(a.evacs, 0) as evacs,\n\
 		COALESCE(a.reported, 0) as reported,\n\
-		COALESCE(a.purchase, 0) as purchase,\n\
 		COALESCE(a.jumps, 0) as jumps,\n\
 		COALESCE(a.total_points, 0) as total_points,\n\
 		COALESCE(a.hours, 0) as hours,\n\
 		COALESCE(a.minutes, 0) as minutes,\n\
 		COALESCE(a.seconds, 0) as seconds,\n\
+		COALESCE(a.silinced, 0) as silinced,\n\
+		COALESCE(a.colt45, 0) as colt45,\n\
+		COALESCE(a.deagle, 0) as deagle,\n\
+		COALESCE(a.rifle, 0) as rifle,\n\
+		COALESCE(a.shotgun, 0) as shotgun,\n\
+		COALESCE(a.mp5, 0) as mp5,\n\
+		COALESCE(a.combat, 0) as combat,\n\
+		COALESCE(a.tec9, 0) as tec9,\n\
+		COALESCE(a.ak47, 0) as ak47,\n\
+		COALESCE(a.m4, 0) as m4,\n\
+		COALESCE(a.master, 0) as master,\n\
+		COALESCE(a.hermitage, 0) as hermitage,\n\
+		COALESCE(a.last_hope, 0) as last_hope,\n\
+		COALESCE(a.answer, 0) as answer,\n\
+		COALESCE(a.lottery, 0) as lottery,\n\
+		COALESCE(a.capture, 0) as capture,\n\
+		COALESCE(a.duels, 0) as duels,\n\
+		COALESCE(a.session, 0) as session,\n\
+		COALESCE(a.blood, 0) as blood,\n\
+		COALESCE(a.mary, 0) as mary,\n\
 		COALESCE(p.admin, 0) as admin,\n\
 		COALESCE(p.vip, 0) as vip,\n\
 		COALESCE(p.vip_till, 0) as vip_till,\n\
 		COALESCE(g.gang_id, -1) as gang_id,\n\
 		COALESCE(g.rank, 0) as gang_rank,\n\
-		COALESCE(g.warns, 0) as gang_warns\n\
+		COALESCE(g.warns, 0) as gang_warns,\n\
+		COALESCE(r.map_id, 65535) as rnd_mapid,\n\
+		COALESCE(r.team, 65535) as rnd_team,\n\
+		COALESCE(r.survival, 0.0) as rnd_survival,\n\
+		COALESCE(r.killing, 0.0) as rnd_killing,\n\
+		COALESCE(r.care, 0.0) as rnd_care,\n\
+		COALESCE(r.mobility, 0.0) as rnd_mobility,\n\
+		COALESCE(r.skillfulness, 0.0) as rnd_skillfulness,\n\
+		COALESCE(r.brutality, 0.0) as rnd_brutality,\n\
+		COALESCE(r.undead, 0.0) as rnd_undead,\n\
+		COALESCE(r.additional, 0.0) as rnd_additional\n\
 		FROM `users` u\n\
 		LEFT JOIN `achievements` a ON u.id = a.id\n\
 		LEFT JOIN `privileges` p ON u.id = p.id\n\
 		LEFT JOIN `gangs_users` g ON u.id = g.id\n\
+		LEFT JOIN `round_session` r ON u.id = r.account_id\n\
 		WHERE u.login = '%e'\
-	"
+"
+
+#define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f)"
+#define DELETE_RND_SESSION_QUERY "DELETE FROM `round_session` WHERE `account_id`='%d'"

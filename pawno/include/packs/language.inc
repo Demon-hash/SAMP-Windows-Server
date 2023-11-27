@@ -130,6 +130,7 @@ enum LOCALIZATION_DATA {
 	LD_MSG_STATS_PLAYED,
 	LD_MSG_STATS_GANG_ACCOUNT,
 	LD_MSG_STATS_DATE_SIGN,
+	LD_ENDF,
 };
 
 #define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
@@ -260,7 +261,7 @@ enum LOCALIZATION_DATA {
 "
 
 #define PREDIFINED_LOCALIZATION_6 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(113, '~~~~~~~~~~~~~~ %s's Stats ~~~~~~~~~~~~~~', '~~~~~~~~~~~~~~ Статистика игрока %s's ~~~~~~~~~~~~~~'),\
+	(113, '~~~~~~~~~~~~~~ %s ~~~~~~~~~~~~~~', '~~~~~~~~~~~~~~ %s ~~~~~~~~~~~~~~'),\
 	(114, '>> Kills: %d - Killstreak: %d (best: %d)', '>> Убийств: %d - Убийств подряд: %d (Лучший результат: %d)'),\
 	(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Эвакуаций: %d - Duel Wins: %d - Rank: %d'),\
 	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),\

@@ -1,6 +1,9 @@
 #include <packs/core>
 #include <packs/developer>
 
+// Achievemtns
+// Weekly Missions - Standing
+
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
 	GANGS_TEMPLATE, GANGS_USERS_TEMPLATE, GANGS_REQUESTS_TEMPLATE,
@@ -14,7 +17,7 @@ static const sqlTemplates[][] = {
 	CONFIG_TEMPLATE, STATS_TEMPLATE,
 	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
 	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
-	SKILLS_TEMPLATE, BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
+	BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
 	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
 	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
@@ -85,6 +88,8 @@ static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
+static WeeklyQuestsConfig[WEEKLY_QUESTS_DATA];
+
 static
 	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
 	MySQL:Database, updateTimerId, Iterator:Humans<MAX_PLAYERS>,
@@ -95,15 +100,13 @@ static
 
 /*
 	MAIN
-	- Achievements
-	- Attachements
-	- Commands & Gangs
-	- Settings
-	- SaveUserData
-	- Anticheat
-	- Promo codes
-	- Custom tags
-	- Shop
+	- Achievements - Required
+	- Admin Commands - Required
+	
+	- Weekly Quests > Attachements > Shop
+	- Commands & Gangs - Optional
+	- Settings - Optional
+	- Anticheat - Optional
 */
 
 /*
@@ -201,15 +204,16 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
 
     mysql_set_charset(LOCAL_CHARSET);
-	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerConfiguration");
-	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsConfiguration");
-	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundConfiguration");
-	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacConfiguration");
-	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapConfiguration");
-	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsConfiguration");
-	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceConfiguration");
-	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesConfiguration");
-	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesConfiguration");
+	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
+	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsCfg");
+	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundCfg");
+	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacCfg");
+	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapCfg");
+	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsCfg");
+	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceCfg");
+	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
+	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
+	// mysql_tquery(Database, LOAD_WEELKYQ_CFG_QUERY, "LoadWeeklyQuestsCfg");
 	
 	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
@@ -247,7 +251,8 @@ public OnPlayerConnect(playerid) {
 }
 
 public OnPlayerDisconnect(playerid, reason) {
-    ResetMapValuesOnDeath(playerid);
+	SavePlayer(playerid, reason);
+	ResetMapValuesOnDeath(playerid);
     ResetValuesOnDisconnect(playerid);
 	
     new formated[90];
@@ -460,14 +465,6 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 					}
 				}
 			}
-	    
-	        /*if(hitid == Map[mpCrystal] && Misc[playerid][mdGangRank]) {
-	            Map[mpCrystalHealth] -= float(max(1, Achievements[playerid][achRank]));
-	            
-	        	new text[256];
-				format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
-				Update3DTextLabelText(Map[mpFlagText], 0xFFF000FF, text);
-	        }*/
 	    }
 	}
 	
@@ -660,10 +657,6 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
-	/*if(Misc[playerid][mdDialogId] != dialogid) {
-	    return 0;
-	}*/
-	
 	switch(dialogid) {
 	    case DIALOG_REGISTER: {
 	        if(!response) {
@@ -1119,9 +1112,7 @@ custom OnMapUpdate() {
 	    Map[mpTimeoutBeforeEnd] -= MapConfig[mpCfgUpdate];
 	    
 	    if(Map[mpTimeoutBeforeEnd] == 0) {
-	        if(!SpawnCrystalOnMapEnd()) {
-                EndMap();
-	        }
+     		EndMap();
 	    }
 	}
 	
@@ -1262,7 +1253,6 @@ custom GetUserAccountId(const playerid) {
     mysql_tquery(Database, REG_PRIVILEGES_QUERY);
     mysql_tquery(Database, REG_ACHIEVEMENTS_QUERY);
     mysql_tquery(Database, REG_GANG_ACCCOUNT_QUERY);
-    mysql_tquery(Database, REG_SKILLS_QUERY);
     
     AfterAuthorization(playerid);
     return 1;
@@ -1300,7 +1290,7 @@ custom KickForAuthTimeout(const playerid) {
     Kick(playerid);
 }
 
-custom LoadServerConfiguration() {
+custom LoadServerCfg() {
     if(cache_num_rows() > 0) {
         new buff[256];
         cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
@@ -1371,7 +1361,7 @@ custom LoadServerConfiguration() {
 	return 0;
 }
 
-custom LoadGangsConfiguration() {
+custom LoadGangsCfg() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
         cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
@@ -1398,7 +1388,7 @@ custom LoadGangsConfiguration() {
     return 0;
 }
 
-custom LoadRoundConfiguration() {
+custom LoadRoundCfg() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "survival_per", RoundConfig[rdCfgSurvivalPer]);
         cache_get_value_name_int(0, "cap", RoundConfig[rdCfgCap]);
@@ -1421,7 +1411,7 @@ custom LoadRoundConfiguration() {
     return 0;
 }
 
-custom LoadEvacConfiguration() {
+custom LoadEvacCfg() {
     if(cache_num_rows() > 0) {
         new buff[256];
         cache_get_value_name(0, "position", buff);
@@ -1441,7 +1431,7 @@ custom LoadEvacConfiguration() {
     return 0;
 }
 
-custom LoadMapConfiguration() {
+custom LoadMapCfg() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "total", MapConfig[mpCfgTotal]);
         cache_get_value_name_int(0, "update", MapConfig[mpCfgUpdate]);
@@ -1471,7 +1461,7 @@ custom LoadMapConfiguration() {
     return 0;
 }
 
-custom LoadWeaponsConfiguration() {
+custom LoadWeaponsCfg() {
     if(cache_num_rows() > 0) {
         new i, len = clamp(cache_num_rows(), 0, MAX_WEAPONS);
         for( i = 0; i < len; i++ ) {
@@ -1488,7 +1478,7 @@ custom LoadWeaponsConfiguration() {
 	return 0;
 }
 
-custom LoadBalanceConfiguration() {
+custom LoadBalanceCfg() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_float(0, "min", ServerBalance[svbMinZombies]);
     	cache_get_value_name_float(0, "medium", ServerBalance[svbMediumZombies]);
@@ -1502,7 +1492,7 @@ custom LoadBalanceConfiguration() {
 	return 0;
 }
 
-custom LoadTexturesConfiguration() {
+custom LoadTexturesCfg() {
     if(cache_num_rows() > 0) {
         new buff[128], i, len = clamp(cache_num_rows(), 0, MAX_SERVER_TEXTURES);
         for( i = 0; i < len; i++ ) {
@@ -1543,7 +1533,7 @@ custom LoadTexturesConfiguration() {
 	return 0;
 }
 
-custom LoadClassesConfiguration() {
+custom LoadClassesCfg() {
     if(cache_num_rows() > 0) {
         new buff[64];
         cache_get_value_name_int(0, "whopping_when", ClassesConfig[clsCfgWhoppingWhen]);
@@ -1600,13 +1590,55 @@ custom LoadClassesConfiguration() {
 	return 0;
 }
 
+/*static const a[][] = {
+	"Kill 100 zombies", // (1000)
+	"Kill 100 humans", // (1000)
+	"Kill 50 zombies by headshot", // (1000)
+	"Infect 50 humans", // (500)
+	"Cure 50 humans" // (500),
+	"Evacuate 30 times" // (500),
+};
+
+wqdMin[3],
+	wqdMed[3],
+	wqdMax[3]
+
+custom LoadWeeklyQuestsCfg() {
+    if(cache_num_rows() > 0) {
+    	cache_get_value_name_int(0, "last", WeeklyQuestsConfig[wqdLastUpdate]);
+        cache_get_value_name_int(0, "next", WeeklyQuestsConfig[wqdNextUpdate]);
+        cache_get_value_name_int(0, "min_standing", WeeklyQuestsConfig[wqdMinStanding]);
+        cache_get_value_name_int(0, "med_standing", WeeklyQuestsConfig[wqdMedStanding]);
+        cache_get_value_name_int(0, "max_standing", WeeklyQuestsConfig[wqdMaxStanding]);
+        
+        // Misc[playerid][mdWeeklyStanding]
+    
+    	printf("|: Weekly Quests configuration LOADED");
+        return 1;
+    }
+    
+    printf("|: Weekly Quests configuration FAILED");
+    return 0;
+}*/
+
 custom LoginOrRegister(const playerid) {
 	Misc[playerid][mdKickForAuthTimeout] = (ServerConfig[svCfgAuthTimeout] * 60);
 
     if(cache_num_rows() > 0) {
-		cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
-        cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
+    	cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
         cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
+        cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
+        cache_get_value_name_float(0, "standing", Player[playerid][pStanding]);
+        
+        cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
+        cache_get_value_name_int(0, "gang_id", Misc[playerid][mdGang]);
+        cache_get_value_name_int(0, "gang_rank", Misc[playerid][mdGangRank]);
+        cache_get_value_name_int(0, "gang_warns", Misc[playerid][mdGangWarns]);
+        
+        cache_get_value_name_int(0, "admin", Privileges[playerid][prsAdmin]);
+        cache_get_value_name_int(0, "vip", Privileges[playerid][prsVip]);
+        cache_get_value_name_int(0, "vip_till", Privileges[playerid][prsVipTill]);
+        
         cache_get_value_name_int(0, "rank", Achievements[playerid][achRank]);
         cache_get_value_name_int(0, "kills", Achievements[playerid][achKills]);
         cache_get_value_name_int(0, "deaths", Achievements[playerid][achDeaths]);
@@ -1621,9 +1653,7 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name_int(0, "cure", Achievements[playerid][achCure]);
         cache_get_value_name_int(0, "evacs", Achievements[playerid][achEvac]);
         cache_get_value_name_int(0, "reported", Achievements[playerid][achReported]);
-        cache_get_value_name_int(0, "purchase", Achievements[playerid][achPurchase]);
         cache_get_value_name_int(0, "jumps", Achievements[playerid][achJumps]);
-        cache_get_value_name_int(0, "vehicles", Achievements[playerid][achVehicles]);
         cache_get_value_name_int(0, "hours", Achievements[playerid][achHours]);
         cache_get_value_name_int(0, "minutes", Achievements[playerid][achMinutes]);
         cache_get_value_name_int(0, "seconds", Achievements[playerid][achSeconds]);
@@ -1647,16 +1677,19 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_int(0, "session", Achievements[playerid][achSession]);
 		cache_get_value_name_int(0, "blood", Achievements[playerid][achBlood]);
 		cache_get_value_name_int(0, "mary", Achievements[playerid][achMary]);
-        cache_get_value_name_int(0, "admin", Privileges[playerid][prsAdmin]);
-        cache_get_value_name_int(0, "vip", Privileges[playerid][prsVip]);
-        cache_get_value_name_int(0, "vip_till", Privileges[playerid][prsVipTill]);
-        cache_get_value_name_int(0, "gang_id", Misc[playerid][mdGang]);
-        cache_get_value_name_int(0, "gang_rank", Misc[playerid][mdGangRank]);
-        cache_get_value_name_int(0, "gang_warns", Misc[playerid][mdGangWarns]);
+		cache_get_value_name_float(0, "total_points", Achievements[playerid][achTotalPoints]);
+		cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
         
-        cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
-        cache_get_value_name_float(0, "total_points", Achievements[playerid][achTotalPoints]);
-        cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
+        cache_get_value_name_int(0, "rnd_mapid", RoundSession[playerid][rsdMapId]);
+        cache_get_value_name_int(0, "rnd_team", RoundSession[playerid][rsdTeam]);
+        cache_get_value_name_float(0, "rnd_survival", RoundSession[playerid][rsdSurvival]);
+        cache_get_value_name_float(0, "rnd_killing", RoundSession[playerid][rsdKilling]);
+		cache_get_value_name_float(0, "rnd_care", RoundSession[playerid][rsdCare]);
+		cache_get_value_name_float(0, "rnd_mobility", RoundSession[playerid][rsdMobility]);
+        cache_get_value_name_float(0, "rnd_skillfulness", RoundSession[playerid][rsdSkillfulness]);
+		cache_get_value_name_float(0, "rnd_brutality", RoundSession[playerid][rsdBrutality]);
+		cache_get_value_name_float(0, "rnd_undead", RoundSession[playerid][rsdDeaths]);
+		cache_get_value_name_float(0, "rnd_additional", RoundSession[playerid][rdAdditionalPoints]);
         
         SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, Achievements[playerid][achSilinced]);
 		SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, Achievements[playerid][achColt45]);
@@ -1671,6 +1704,7 @@ custom LoginOrRegister(const playerid) {
 
         PreloadDefaultLocalizedTitles(playerid);
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
+        CheckForLoadedRound(playerid);
         return 1;
     }
    	
@@ -1680,18 +1714,165 @@ custom LoginOrRegister(const playerid) {
     return 0;
 }
 
+custom SavePlayer(const playerid, const reason) {
+	if(IsLogged(playerid)) {
+		SavePlayerData(playerid);
+	    SavePlayerAchievementsData(playerid);
+        SavePlayerPrivilagesData(playerid);
+        SavePlayerGangData(playerid);
+		
+		if(reason == DISCONNECT_QUIT) DeletePlayerRoundSession(playerid);
+  		else CreatePlayerRoundSession(playerid);
+	    return 1;
+	}
+	
+	return 0;
+}
+
+custom CreatePlayerRoundSession(const playerid) {
+    static const createSessionQuery[] = CREATE_RND_SESSION_QUERY;
+  	new formatedCreateSessionQuery[sizeof(createSessionQuery) + (ROUND_SESSION_COLUMNS * MAX_ID_LENGTH)];
+	mysql_format(Database, formatedCreateSessionQuery, sizeof(formatedCreateSessionQuery), createSessionQuery,
+		Player[playerid][pAccountId],
+		RoundSession[playerid][rsdMapId],
+	    RoundSession[playerid][rsdTeam],
+	    RoundSession[playerid][rsdSurvival],
+	    RoundSession[playerid][rsdKilling],
+	    RoundSession[playerid][rsdCare],
+	    RoundSession[playerid][rsdMobility],
+	    RoundSession[playerid][rsdSkillfulness],
+	    RoundSession[playerid][rsdBrutality],
+	    RoundSession[playerid][rsdDeaths],
+	    RoundSession[playerid][rdAdditionalPoints]
+	);
+	mysql_tquery(Database, formatedCreateSessionQuery, "");
+}
+
+custom DeletePlayerRoundSession(const playerid) {
+    static const deleteSessionQuery[] = DELETE_RND_SESSION_QUERY;
+    new formatedDeleteSessionQuery[sizeof(deleteSessionQuery) + MAX_ID_LENGTH];
+    mysql_format(Database, formatedDeleteSessionQuery, sizeof(formatedDeleteSessionQuery), deleteSessionQuery, Player[playerid][pAccountId]);
+    mysql_tquery(Database, formatedDeleteSessionQuery, "");
+}
+
+custom CheckForLoadedRound(const playerid) {
+	if(RoundSession[playerid][rsdMapId] == INVALID_VALUE) return 0;
+	if(RoundSession[playerid][rsdMapId] == Map[mpId]) return 0;
+
+	GivePointsForRound(playerid);
+	ClearPlayerRoundData(playerid);
+	DeletePlayerRoundSession(playerid);
+	return 1;
+}
+
+custom SavePlayerAchievementsData(const playerid) {
+    static const updateAchievementsQuery[] = UPDATE_ACHIEVEMENTS_QUERY;
+	new formatedUpdateAchievementsQuery[sizeof(updateAchievementsQuery) + (ACHIEVEMENTS_COLUMNS * MAX_ID_LENGTH)];
+	mysql_format(Database, formatedUpdateAchievementsQuery, sizeof(formatedUpdateAchievementsQuery), updateAchievementsQuery,
+	    Achievements[playerid][achRank],
+	    Achievements[playerid][achKills],
+	    Achievements[playerid][achDeaths],
+	    Achievements[playerid][achAbility],
+	    Achievements[playerid][achLuck],
+	    Achievements[playerid][achHumans],
+	    Achievements[playerid][achZombies],
+	    Achievements[playerid][achMeats],
+	    Achievements[playerid][achAmmo],
+	    Achievements[playerid][achKillstreak],
+	    Achievements[playerid][achInfection],
+	    Achievements[playerid][achCure],
+	    Achievements[playerid][achEvac],
+	    Achievements[playerid][achReported],
+	    Achievements[playerid][achJumps],
+	    Achievements[playerid][achHours],
+	    Achievements[playerid][achMinutes],
+	    Achievements[playerid][achSeconds],
+	    Achievements[playerid][achSilinced],
+  		Achievements[playerid][achColt45],
+    	Achievements[playerid][achDeagle],
+        Achievements[playerid][achRifle],
+        Achievements[playerid][achShotgun],
+	    Achievements[playerid][achMP5],
+    	Achievements[playerid][achCombat],
+        Achievements[playerid][achTec9],
+	    Achievements[playerid][achAk47],
+    	Achievements[playerid][achM4],
+        Achievements[playerid][achMaster],
+		Achievements[playerid][achHermitage],
+		Achievements[playerid][achLastHope],
+		Achievements[playerid][achAnswer],
+		Achievements[playerid][achLottery],
+		Achievements[playerid][achCapture],
+		Achievements[playerid][achDuels],
+		Achievements[playerid][achSession],
+		Achievements[playerid][achBlood],
+		Achievements[playerid][achMary],
+	 	Achievements[playerid][achTotalPoints],
+	    Achievements[playerid][achRan],
+		Player[playerid][pAccountId]
+	);
+	mysql_tquery(Database, formatedUpdateAchievementsQuery, "");
+	return 1;
+}
+
+custom SavePlayerPrivilagesData(const playerid) {
+    static const updatePrivilagesQuery[] = UPDATE_PRIVILAGES_QUERY;
+	new formatedUpdatePrivilagesQuery[sizeof(updatePrivilagesQuery) + (PRIVILAGES_COLUMNS * MAX_ID_LENGTH)];
+	mysql_format(Database, formatedUpdatePrivilagesQuery, sizeof(formatedUpdatePrivilagesQuery), updatePrivilagesQuery,
+        Privileges[playerid][prsAdmin],
+        Privileges[playerid][prsVip],
+        Privileges[playerid][prsVipTill],
+        Player[playerid][pAccountId]
+	);
+	mysql_tquery(Database, formatedUpdatePrivilagesQuery, "");
+	return 1;
+}
+
+custom SavePlayerData(const playerid) {
+    static const updateUserQuery[] = UPDATE_USER_QUERY;
+	new formatedUpdateUserQuery[sizeof(updateUserQuery) + (USER_COLUMNS * MAX_ID_LENGTH)];
+	mysql_format(Database, formatedUpdateUserQuery, sizeof(formatedUpdateUserQuery), updateUserQuery,
+        Player[playerid][pLanguage],
+        Player[playerid][pPoints],
+        Player[playerid][pStanding],
+        Player[playerid][pAccountId]
+	);
+	mysql_tquery(Database, formatedUpdateUserQuery, "");
+	return 1;
+}
+
+custom SavePlayerGangData(const playerid) {
+    static const updateUserQuery[] = UPDATE_GANG_USER_QUERY;
+	new formatedUpdateUserQuery[sizeof(updateUserQuery) + (GANG_USER_COLUMNS_META * MAX_ID_LENGTH)];
+	mysql_format(Database, formatedUpdateUserQuery, sizeof(formatedUpdateUserQuery), updateUserQuery,
+        Misc[playerid][mdGang],
+        Misc[playerid][mdGangRank],
+        Misc[playerid][mdGangWarns],
+        Player[playerid][pAccountId]
+	);
+	mysql_tquery(Database, formatedUpdateUserQuery, "");
+	return 1;
+}
+
 custom InitializeLocalization(const playerid, const type) {
     if(cache_num_rows() > 0) {
         for( new i = 0; i < cache_num_rows(); i++ ) {
             cache_get_value_name(i, "text", Localization[playerid][LOCALIZATION_DATA:i]);
         }
-    
+        
         if(type == AUTH_LOGIN_TYPE) {
             ShowLoginDialog(playerid);
         } else {
             ShowRegisterDialog(playerid);
         }
+        
+        return 1;
     }
+    
+    printf("3");
+    
+    Kick(playerid);
+    return 0;
 }
 
 custom InitializeLocalizedTips(const playerid) {
@@ -1763,7 +1944,7 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         Misc[playerid][mdSelectionTeam] = teamId;
         
         if(showDialog) {
-	        ShowPlayerDialogAC(
+	        ShowPlayerDialog(
 				playerid, DIALOG_SELECTION, DIALOG_STYLE_LIST,
 				Localization[playerid][LD_DG_CLASSES_TITLE],
 				list,
@@ -1811,7 +1992,7 @@ custom GetAchievementsList(const playerid, const offset) {
 
 	    if((total - (offset + len)) > 0) {
 	        format(formated, sizeof(formated), "{66ccff}%s", Localization[playerid][LD_DG_ACHS_TITLE]);
-	        ShowPlayerDialogAC(playerid,
+	        ShowPlayerDialog(playerid,
 				DIALOG_ACHIEVEMENTS,
 				DIALOG_STYLE_TABLIST_HEADERS,
 				formated,
@@ -1822,7 +2003,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	        return 1;
 	    }
 
-     	ShowPlayerDialogAC(playerid,
+     	ShowPlayerDialog(playerid,
 		 	DIALOG_INFO,
 			 DIALOG_STYLE_TABLIST_HEADERS,
 			 Localization[playerid][LD_DG_ACHS_TITLE],
@@ -1833,7 +2014,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	 	return 1;
     }
 
-    ShowPlayerDialogAC(playerid,
+    ShowPlayerDialog(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_ACHS_TITLE],
@@ -1857,12 +2038,10 @@ stock GetAchievementIndex(const type) {
 		case ACH_TYPE_CURE: return _:achCure; // Done
 		case ACH_TYPE_DIE: return _:achDeaths; // Done
 		case ACH_TYPE_EVAC: return _:achEvac; // Done
-		case ACH_TYPE_SHOP: return _:achPurchase;
 		case ACH_TYPE_TOTAL_POINTS: return _:achTotalPoints; // Done
 		case ACH_TYPE_INFECT: return _:achInfection; // Done
 		case ACH_TYPE_PLAY_HOURS: return _:achHours; // Done
 		case ACH_TYPE_JUMP: return _:achJumps; // Done
-		case ACH_TYPE_VEHICLES: return _:achVehicles;
 		case ACH_TYPE_ANSWER: return _:achAnswer; // Done
 		case ACH_TYPE_LOTTERY: return _:achLottery; // Done
 		case ACH_TYPE_CAPTURE: return _:achCapture;
@@ -2029,7 +2208,7 @@ stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 		Misc[playerid][mdKickForAuthTries]
 	);
 	
-    ShowPlayerDialogAC(
+    ShowPlayerDialog(
 		playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD,
 		Localization[playerid][LD_DG_LOGIN_TITLE], formated,
 		Localization[playerid][LD_BTN_LOGIN],
@@ -2038,7 +2217,14 @@ stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 }
 
 stock ShowRegisterDialog(const playerid, const type = DIALOG_NOERROR) {
-    ShowPlayerDialogAC(
+	printf("%s | %s | %s | %s",
+		Localization[playerid][LD_DG_REG_TITLE],
+		Localization[playerid][LD_DG_REG_DEFAULT + LOCALIZATION_DATA:type],
+		Localization[playerid][LD_BTN_REGISTER],
+		Localization[playerid][LD_BTN_QUIT]
+	);
+
+    ShowPlayerDialog(
 		playerid, DIALOG_REGISTER, DIALOG_STYLE_INPUT,
 		Localization[playerid][LD_DG_REG_TITLE],
 		Localization[playerid][LD_DG_REG_DEFAULT + LOCALIZATION_DATA:type],
@@ -2122,6 +2308,7 @@ stock ClearPlayerData(const playerid) {
     Player[playerid][pAccountId] = 0;
     Player[playerid][pLanguage] = 0;
     Player[playerid][pPoints] = 0.0;
+    Player[playerid][pStanding] = 0.0;
 }
 
 stock IncreaseWeaponSkillLevel(const playerid, const weaponid) {
@@ -2160,9 +2347,7 @@ stock ClearPlayerAchievementsData(const playerid) {
     Achievements[playerid][achCure] = 0;
     Achievements[playerid][achEvac] = 0;
     Achievements[playerid][achReported] = 0;
-    Achievements[playerid][achPurchase] = 0;
     Achievements[playerid][achJumps] = 0;
-    Achievements[playerid][achVehicles] = 0;
     Achievements[playerid][achTotalPoints] = 0;
     Achievements[playerid][achHours] = 0;
     Achievements[playerid][achMinutes] = 0;
@@ -2211,6 +2396,7 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdSelectionTeam] = -1;
+	Misc[playerid][mdWeeklyStanding] = 0;
 	strmid(Misc[playerid][mdHumanSelectionName], "", 0, MAX_CLASS_NAME);
 	strmid(Misc[playerid][mdZombieSelectionName], "", 0, MAX_CLASS_NAME);
     Misc[playerid][mdIsLogged] = false;
@@ -3851,11 +4037,6 @@ stock SetPlayerArmourAC(const playerid, const Float:armour) {
    	SetPlayerArmour(playerid, armour);
 }
 
-stock ShowPlayerDialogAC(const playerid, const dialogId, const dialogStyle, caption[], info[], button1[], button2[]) {
-    Misc[playerid][mdDialogId] = dialogId;
-	ShowPlayerDialog(playerid, dialogId, dialogStyle, caption, info, button1, button2);
-}
-
 stock NormalizeHealthAC(const playerid, &Float:hp) {
     GetPlayerHealth(playerid, hp);
 	if(Misc[playerid][mdHealth] < hp) {
@@ -3982,7 +4163,6 @@ stock ResetValuesOnDisconnect(const playerid) {
     }
     
     ClearFromIterators(playerid);
-    ClearPlayerRoundData(playerid);
     Round[playerid][rdIsHumanHero] = false;
 	Round[playerid][rdIsZombieBoss] = false;
 }
@@ -4280,7 +4460,7 @@ CMD:lottery(const playerid, const params[]) {
 }
 
 CMD:class(const playerid) {
-    ShowPlayerDialogAC(
+    ShowPlayerDialog(
 		playerid, DIALOG_CLASSES, DIALOG_STYLE_LIST,
 		Localization[playerid][LD_DG_CLASSES_TITLE],
 		Localization[playerid][LD_DG_CLASSES_LIST],

@@ -28,6 +28,7 @@
 #include <packs/polygons>
 #include <packs/messages>
 #include <packs/lottery>
+#include <packs/weekly_quests>
 
 #include <dependencies/jit>
 #include <dependencies/foreach>
@@ -66,3 +67,12 @@
 #endif
 
 #define custom%0(%1) forward%0(%1);public%0(%1)
+#define INVALID_VALUE 65535
+
+enum {
+	DISCONNECT_TIMEOUT,
+	DISCONNECT_QUIT,
+	DISCONNECT_KICK,
+	DISCONNECT_CUSTOM,
+	DISCONNECT_MODE_END,
+}

@@ -7,4 +7,5 @@ enum PLAYER_DATA {
 	pAccountId,
 	pLanguage,
 	Float:pPoints,
+	Float:pStanding,
 };

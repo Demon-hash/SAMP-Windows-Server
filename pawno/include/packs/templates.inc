@@ -3,31 +3,19 @@
 #endif
 #define _templates_pack_included
 
+#define USER_COLUMNS 4
 #define USERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS users (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`login` varchar(24) NOT NULL,\
 	`password` varchar(32) NOT NULL,\
 	`language` int(2) unsigned NOT NULL default '0',\
-	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`points` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
+	`standing` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
 	PRIMARY KEY (`id`)\
 );"
 
-#define SKILLS_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS skills (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`pistol` int(11) unsigned NOT NULL default '0',\
-	`silinced` int(11) unsigned NOT NULL default '0',\
-	`shotgun` int(11) unsigned NOT NULL default '0',\
-	`spas` int(11) unsigned NOT NULL default '0',\
-	`uzi` int(11) unsigned NOT NULL default '0',\
-	`mp5` int(11) unsigned NOT NULL default '0',\
-	`ak47` int(11) unsigned NOT NULL default '0',\
-	`m4` int(11) unsigned NOT NULL default '0',\
-	`rifle` int(11) unsigned NOT NULL default '0',\
-	PRIMARY KEY (`id`)\
-);"
-
+#define ACHIEVEMENTS_COLUMNS 44
 #define ACHIEVEMENTS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS achievements (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -41,13 +29,11 @@
 	`zombies` int(6) unsigned NOT NULL default '0',\
 	`meats` int(6) unsigned NOT NULL default '0',\
 	`ammo` int(6) unsigned NOT NULL default '0',\
-	`vehicles` int(6) unsigned NOT NULL default '0',\
 	`killstreak` int(6) unsigned NOT NULL default '0',\
 	`infection` int(6) unsigned NOT NULL default '0',\
 	`cure` int(6) unsigned NOT NULL default '0',\
 	`evacs` int(6) unsigned NOT NULL default '0',\
 	`reported` int(6) unsigned NOT NULL default '0',\
-	`purchase` int(6) unsigned NOT NULL default '0',\
 	`jumps` int(6) unsigned NOT NULL default '0',\
 	`total_points` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`hours` int(6) unsigned NOT NULL default '0',\
@@ -97,6 +83,7 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define PRIVILAGES_COLUMNS 4
 #define PRIVILEGES_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS privileges (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -262,6 +249,8 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define GANG_USER_COLUMNS_META 3
+#define GANG_USER_COLUMNS 5
 #define GANGS_USERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS gangs_users (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -503,6 +492,7 @@
    	PRIMARY KEY (`id`)\
 );"
 
+#define ROUND_SESSION_COLUMNS 11
 #define ROUND_SESSION_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS round_session (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -681,68 +671,62 @@
 	(31, 'Collection Point', 'Evac %d times', 'Точка Сбора', 'Эвакуируйтесь %d раз'),\
 	(32, 'Safe Place', 'Evac %d times', 'Безопасное Место', 'Эвакуируйтесь %d раз'),\
 	(33, 'Safe Zone', 'Evac %d times', 'Лагерь Выживших', 'Эвакуируйтесь %d раз'),\
-	(34, 'Amateur', 'Make %d purchases in shop', 'Любитель', 'Купите %d вещей в магазине'),\
-	(35, 'Shopaholic', 'Make %d purchases in shop', 'Шопоголик', 'Купите %d вещей в магазине'),\
-	(36, 'Money in nowhere', 'Make %d purchases in shop', 'Деньги в Никуда', 'Купите %d вещей в магазине'),\
-	(37, 'In Cash', 'Get a total of %d points', 'При деньгах', 'Достигните в сумме %d очков'),\
-	(38, 'Businessman', 'Get a total of %d points', 'Бизнессмен', 'Достигните в сумме %d очков'),\
-	(39, 'Millionaire', 'Get a total of %d points', 'Миллионер', 'Достигните в сумме %d очков'),\
-	(40, 'Unknown Virus', 'Infect %d humans', 'Неизвестный Вирус', 'Заразите %d людей');\
+	(34, 'In Cash', 'Get a total of %d points', 'При деньгах', 'Достигните в сумме %d очков'),\
+	(35, 'Businessman', 'Get a total of %d points', 'Бизнессмен', 'Достигните в сумме %d очков'),\
+	(36, 'Millionaire', 'Get a total of %d points', 'Миллионер', 'Достигните в сумме %d очков'),\
+	(37, 'Unknown Virus', 'Infect %d humans', 'Неизвестный Вирус', 'Заразите %d людей');\
 "
 
 #define PREDIFINED_ACHS_LOCALIZATION_3 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
-	(41, 'Disease', 'Infect %d humans', 'Болезнь', 'Заразите %d людей'),\
-	(42, 'Mass Infection', 'Infect %d humans', 'Карантин', 'Заразите %d людей'),\
-	(43, 'Fan', 'Play for a week in total', 'Игрок', 'Играйте в сумме в неделю'),\
-	(44, 'Gamer', 'Play for a half a year in total', 'Обажатель', 'Играйте в сумме пол года'),\
-	(45, 'Exanimate', 'Play for 1 year in total', 'Безжизненный', 'Играйте в сумме год'),\
-	(46, 'Jumper', 'Jump %d times', 'Попрыгунчик', 'Прыгните %d раз'),\
-	(47, 'Toad Paws', 'Jump %d times', 'Лягушачьи Лапки', 'Прыгните %d раз'),\
-	(48, 'Pilot', 'Jump %d times', 'Пилот', 'Прыгните %d раз'),\
-	(49, 'Into The Oncoming Lane', 'Destroy %d vehicles', 'На Встречку', 'Уничтожте %d машин'),\
-	(50, 'Car accident', 'Destroy %d vehicles', 'ДТП', 'Уничтожте %d машин'),\
-	(51, 'All For Parts', 'Destroy %d vehicles', 'На Запчасти', 'Уничтожте %d машин'),\
-	(52, 'Let Me Think', 'Answer %d random questions', 'Дайте Подумать', 'Ответьте на %d случайных вопросов'),\
-	(53, 'Quick Answer', 'Answer %d random questions', 'Быстрый Ответ', 'Ответьте на %d случайных вопросов'),\
-	(54, 'Erudition', 'Answer %d random questions', 'Эрудиция', 'Ответьте на %d случайных вопросов'),\
-	(55, 'Trembling', 'Win lottery %d times', 'Трепет', 'Выграйте %d раз в лотерее'),\
-	(56, 'Within Temptation', 'Win lottery %d times', 'В Предвкушении', 'Выграйте %d раз в лотерее'),\
-	(57, 'Casino', 'Win lottery %d times', 'Казино', 'Выграйте %d раз в лотерее'),\
-	(58, 'This Is My Territory', 'Capture %d maps', 'Это моя Территория', 'Захватите %d карт'),\
-	(59, 'The Smell Of Prey', 'Capture %d maps', 'Запах Добычи', 'Захватите %d карт'),\
-	(60, 'The Beast Inside', 'Capture %d maps', 'Зверь Внутри', 'Захватите %d карт');\
+	(38, 'Disease', 'Infect %d humans', 'Болезнь', 'Заразите %d людей'),\
+	(39, 'Mass Infection', 'Infect %d humans', 'Карантин', 'Заразите %d людей'),\
+	(40, 'Fan', 'Play for a week in total', 'Игрок', 'Играйте в сумме в неделю'),\
+	(41, 'Gamer', 'Play for a half a year in total', 'Обажатель', 'Играйте в сумме пол года'),\
+	(42, 'Exanimate', 'Play for 1 year in total', 'Безжизненный', 'Играйте в сумме год'),\
+	(43, 'Jumper', 'Jump %d times', 'Попрыгунчик', 'Прыгните %d раз'),\
+	(44, 'Toad Paws', 'Jump %d times', 'Лягушачьи Лапки', 'Прыгните %d раз'),\
+	(45, 'Pilot', 'Jump %d times', 'Пилот', 'Прыгните %d раз'),\
+	(46, 'Let Me Think', 'Answer %d random questions', 'Дайте Подумать', 'Ответьте на %d случайных вопросов'),\
+	(47, 'Quick Answer', 'Answer %d random questions', 'Быстрый Ответ', 'Ответьте на %d случайных вопросов'),\
+	(48, 'Erudition', 'Answer %d random questions', 'Эрудиция', 'Ответьте на %d случайных вопросов'),\
+	(49, 'Trembling', 'Win lottery %d times', 'Трепет', 'Выграйте %d раз в лотерее'),\
+	(50, 'Within Temptation', 'Win lottery %d times', 'В Предвкушении', 'Выграйте %d раз в лотерее'),\
+	(51, 'Casino', 'Win lottery %d times', 'Казино', 'Выграйте %d раз в лотерее'),\
+	(52, 'This Is My Territory', 'Capture %d maps', 'Это моя Территория', 'Захватите %d карт'),\
+	(53, 'The Smell Of Prey', 'Capture %d maps', 'Запах Добычи', 'Захватите %d карт'),\
+	(54, 'The Beast Inside', 'Capture %d maps', 'Зверь Внутри', 'Захватите %d карт');\
 "
 
 #define PREDIFINED_ACHS_LOCALIZATION_4 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
-	(61, 'Street Shootout', 'Win %d duels', 'Уличная Перестрелка', 'Выграйте %d дуэлей'),\
-	(62, 'Mud And Blood', 'Win %d duels', 'Грязь и Кровь', 'Выграйте %d дуэлей'),\
-	(63, 'Steel Eggs', 'Win %d duels', 'Стальные Яйца', 'Выграйте %d дуэлей'),\
-	(64, 'With Beer In Hand', 'Play %d hours withour quitting', 'С Пивом в Руках', 'Отыграйте %d часов за раз'),\
-	(65, 'Do Your Best', 'Play %d hours withour quitting', 'Стараюсь Как Могу', 'Отыграйте %d часов за раз'),\
-	(66, 'Excerpt', 'Play %d hours withour quitting', 'Выдержка', 'Отыграйте %d часов за раз'),\
-	(67, 'Blood Letter', 'Draw First Blood %d times', 'Кровавое Письмо', 'Пустите Первую Кровь %d раз'),\
-	(68, 'Recorder With Blood', 'Draw First Blood %d times', 'Диктофон с Кровью', 'Пустите Первую Кровь %d раз'),\
-	(69, 'Blood Concert', 'Draw First Blood %d times', 'Кровавый Концерт', 'Пустите Первую Кровь %d раз'),\
-	(70, 'Surrender', '/report %d cheaters', 'Сдавайся', 'Отправьте /report на читеров %d раз'),\
-	(71, 'In A Cage', '/report %d cheaters', 'В Клетке', 'Отправьте /report на читеров %d раз'),\
-	(72, 'We Are All In This Together', '/report %d cheaters', 'Мы Все Заодно', 'Отправьте /report на читеров %d раз'),\
-	(73, 'Hush, Hush', 'Master Silinced Pistol', 'Тише, тише', 'Освойте Пистолет с Глушитилем'),\
-	(74, 'Civil Defense', 'Master Colt45', 'Гражданская Оборона', 'Освойте Colt45'),\
-	(75, 'With bros', 'Master Deagle', 'С Братанами', 'Освойте Дигл'),\
-	(76, 'Stacks Of Hay', 'Master Rifle', 'Стопы Сена', 'Освойте Винтовку'),\
-	(77, 'Arrest', 'Master Shotgun', 'Под Арест', 'Освойте Дробовик'),\
-	(78, 'Special Forces', 'Master MP5', 'Спецназ', 'Освойте MP5'),\
-	(79, 'Sergeant', 'Master Combat Shotgun', 'Сержант', 'Освойте Скорострельный Дробовик'),\
-	(80, 'A Lot, A Little', 'Master Tec-9', 'Много, по немногу', 'Освойте Tec-9');\
+	(55, 'Street Shootout', 'Win %d duels', 'Уличная Перестрелка', 'Выграйте %d дуэлей'),\
+	(56, 'Mud And Blood', 'Win %d duels', 'Грязь и Кровь', 'Выграйте %d дуэлей'),\
+	(57, 'Steel Eggs', 'Win %d duels', 'Стальные Яйца', 'Выграйте %d дуэлей'),\
+	(58, 'With Beer In Hand', 'Play %d hours withour quitting', 'С Пивом в Руках', 'Отыграйте %d часов за раз'),\
+	(59, 'Do Your Best', 'Play %d hours withour quitting', 'Стараюсь Как Могу', 'Отыграйте %d часов за раз'),\
+	(60, 'Excerpt', 'Play %d hours withour quitting', 'Выдержка', 'Отыграйте %d часов за раз'),\
+	(61, 'Blood Letter', 'Draw First Blood %d times', 'Кровавое Письмо', 'Пустите Первую Кровь %d раз'),\
+	(62, 'Recorder With Blood', 'Draw First Blood %d times', 'Диктофон с Кровью', 'Пустите Первую Кровь %d раз'),\
+	(63, 'Blood Concert', 'Draw First Blood %d times', 'Кровавый Концерт', 'Пустите Первую Кровь %d раз'),\
+	(64, 'Surrender', '/report %d cheaters', 'Сдавайся', 'Отправьте /report на читеров %d раз'),\
+	(65, 'In A Cage', '/report %d cheaters', 'В Клетке', 'Отправьте /report на читеров %d раз'),\
+	(66, 'We Are All In This Together', '/report %d cheaters', 'Мы Все Заодно', 'Отправьте /report на читеров %d раз'),\
+	(67, 'Hush, Hush', 'Master Silinced Pistol', 'Тише, тише', 'Освойте Пистолет с Глушитилем'),\
+	(68, 'Civil Defense', 'Master Colt45', 'Гражданская Оборона', 'Освойте Colt45'),\
+	(69, 'With bros', 'Master Deagle', 'С Братанами', 'Освойте Дигл'),\
+	(70, 'Stacks Of Hay', 'Master Rifle', 'Стопы Сена', 'Освойте Винтовку'),\
+	(71, 'Arrest', 'Master Shotgun', 'Под Арест', 'Освойте Дробовик'),\
+	(72, 'Special Forces', 'Master MP5', 'Спецназ', 'Освойте MP5'),\
+	(73, 'Sergeant', 'Master Combat Shotgun', 'Сержант', 'Освойте Скорострельный Дробовик'),\
+	(74, 'A Lot, A Little', 'Master Tec-9', 'Много, по немногу', 'Освойте Tec-9');\
 "
 #define PREDIFINED_ACHS_LOCALIZATION_5 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
-	(81, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47'),\
-	(82, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
-	(83, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
-	(84, 'Hermitage', 'Be the one man who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
-	(85, 'The Virgin Mary', 'Be the one woman who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
-	(86, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
-	(87, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
+	(75, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47'),\
+	(76, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
+	(77, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
+	(78, 'Hermitage', 'Be the one man who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
+	(79, 'The Virgin Mary', 'Be the one woman who evacuated', 'Одиночество Марии', 'Будьте единственым, кто эвакуировался'),\
+	(80, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
+	(81, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
 "
 
 #define PREDIFINED_ACHS_CFG "INSERT IGNORE INTO `achievements_config` (id, type, count, reward, disabled) VALUES \
@@ -779,60 +763,54 @@
 	(31, 10, 5, 0, 0),\
 	(32, 10, 100, 0, 0),\
 	(33, 10, 300, 0, 0),\
-	(34, 11, 50, 0, 0),\
-	(35, 11, 100, 0, 0),\
-	(36, 11, 200, 0, 0),\
-	(37, 12, 10000, 0, 0),\
-	(38, 12, 50000, 0, 0),\
-	(39, 12, 100000, 0, 0),\
-	(40, 13, 50, 0, 0),\
-	(41, 13, 300, 0, 0),\
-	(42, 13, 1000, 0, 0),\
-	(43, 14, 168, 0, 0),\
-	(44, 14, 4383, 0, 0),\
-	(45, 14, 8760, 0, 0),\
-	(46, 15, 100, 0, 0),\
-	(47, 15, 300, 0, 0),\
-	(48, 15, 700, 0, 0),\
+	(34, 11, 10000, 0, 0),\
+	(35, 11, 50000, 0, 0),\
+	(36, 11, 100000, 0, 0),\
+	(37, 12, 50, 0, 0),\
+	(38, 12, 300, 0, 0),\
+	(39, 12, 1000, 0, 0),\
+	(40, 13, 168, 0, 0),\
+	(41, 13, 4383, 0, 0),\
+	(42, 13, 8760, 0, 0),\
+	(43, 14, 100, 0, 0),\
+	(44, 14, 300, 0, 0),\
+	(45, 14, 700, 0, 0),\
+	(46, 15, 10, 0, 0),\
+	(47, 15, 50, 0, 0),\
+	(48, 15, 100, 0, 0),\
 	(49, 16, 10, 0, 0),\
-	(50, 16, 100, 0, 0),\
-	(51, 16, 250, 0, 0),\
+	(50, 16, 20, 0, 0),\
+	(51, 16, 30, 0, 0),\
 	(52, 17, 10, 0, 0),\
-	(53, 17, 50, 0, 0),\
-	(54, 17, 100, 0, 0),\
+	(53, 17, 20, 0, 0),\
+	(54, 17, 30, 0, 0),\
 	(55, 18, 10, 0, 0),\
-	(56, 18, 20, 0, 0),\
-	(57, 18, 30, 0, 0),\
-	(58, 19, 10, 0, 0),\
-	(59, 19, 20, 0, 0),\
-	(60, 19, 30, 0, 0),\
+	(56, 18, 30, 0, 0),\
+	(57, 18, 70, 0, 0),\
+	(58, 19, 2, 0, 0),\
+	(59, 19, 6, 0, 0),\
+	(60, 19, 12, 0, 0),\
 	(61, 20, 10, 0, 0),\
 	(62, 20, 30, 0, 0),\
-	(63, 20, 70, 0, 0),\
-	(64, 21, 2, 0, 0),\
-	(65, 21, 6, 0, 0),\
-	(66, 21, 12, 0, 0),\
-	(67, 22, 10, 0, 0),\
-	(68, 22, 30, 0, 0),\
-	(69, 22, 60, 0, 0),\
-	(70, 23, 50, 0, 0),\
-	(71, 23, 100, 0, 0),\
-	(72, 23, 200, 0, 0),\
-	(73, 24, 1000, 0, 0),\
-	(74, 25, 1000, 0, 0),\
-	(75, 26, 1000, 0, 0),\
-	(76, 27, 1000, 0, 0),\
-	(77, 28, 1000, 0, 0),\
-	(78, 29, 1000, 0, 0),\
-	(79, 30, 1000, 0, 0),\
-	(80, 31, 1000, 0, 0),\
-	(81, 32, 1000, 0, 0),\
-	(82, 33, 1000, 0, 0),\
-	(83, 34, 1, 0, 0),\
-	(84, 35, 1, 0, 0),\
-	(85, 36, 1, 0, 0),\
-	(86, 37, 1, 0, 0),\
-	(87, 38, 10000, 0, 0);\
+	(63, 20, 60, 0, 0),\
+	(64, 21, 50, 0, 0),\
+	(65, 21, 100, 0, 0),\
+	(66, 21, 200, 0, 0),\
+	(67, 22, 1000, 0, 0),\
+	(68, 23, 1000, 0, 0),\
+	(69, 24, 1000, 0, 0),\
+	(70, 25, 1000, 0, 0),\
+	(71, 26, 1000, 0, 0),\
+	(72, 27, 1000, 0, 0),\
+	(73, 28, 1000, 0, 0),\
+	(74, 29, 1000, 0, 0),\
+	(75, 30, 1000, 0, 0),\
+	(76, 31, 1000, 0, 0),\
+	(77, 32, 1, 0, 0),\
+	(78, 33, 1, 0, 0),\
+	(79, 34, 1, 0, 0),\
+	(80, 35, 1, 0, 0),\
+	(81, 36, 10000, 0, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \
@@ -885,7 +863,8 @@
 	(15, '>> You can change some settings, check /settings!', '>> Вы можете настроить некоторые настройки под себя, используйте /settings!'),\
 	(16, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
 	(17, '>> You can gain points by completing /achievements!', '>> Вы можете получить очки, выполняя достижения! (/achievements)'),\
-	(18, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)');\
+	(18, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
+	(19, '>> You can buy clothing items by completing weekly quests! (/weekly)', '>> Вы можете покупать предметы одежды за выполнение еженедельных заданий! (/weekly)')\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
