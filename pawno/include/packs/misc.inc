@@ -45,4 +45,5 @@ enum MISC_DATA {
 	mdKickForAuthTries,
 	PlayerText3D:mdSpawnPoints[3],
 	PlayerText3D:mdFlagText,
+	mdGameplayWarns,
 };

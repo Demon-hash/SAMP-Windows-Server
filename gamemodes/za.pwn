@@ -48,7 +48,7 @@ static const LOCALIZATION_TABLES[][] = {
 };
 
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
-static AchievementsConfig[1];
+static AchievementsConfig[ACHIEVEMENTS_DATA][ACHIEVEMENT_CONFIG];
 
 static Round[MAX_PLAYERS][ROUND_DATA];
 static RoundSession[MAX_PLAYERS][ROUND_SESSION_DATA];
@@ -96,14 +96,14 @@ static
 	Iterator:Zombies<MAX_PLAYERS>, Iterator:MutatedPlayers<MAX_PLAYERS>,
 	Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
 	Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
-	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>;
+	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>, Iterator:Admins<MAX_PLAYERS>;
 
 /*
 	MAIN
 	- Achievements - Required
 	- Admin Commands - Required
 	
-	- Weekly Quests > Attachements > Shop
+	- Weekly Quests > Attachements & Inventory > Shop (Reputation + Coin)
 	- Commands & Gangs - Optional
 	- Settings - Optional
 	- Anticheat - Optional
@@ -157,12 +157,16 @@ static
 #define COLOR_ABILITY 0x009900FF
 #define COLOR_DEFAULT 0xFFFFFFFF
 #define COLOR_WARNING 0xE48800FF
-#define COLOR_ALERT 0xff4d4dFF
+#define COLOR_ALERT 0xff1a1aFF
 #define COLOR_ADMIN 0x33CCFFFF
 #define COLOR_GLOBAL_INFO 0x59E4B5FF
 #define COLOR_POISION 0x6e14b8FF
 #define COLOR_LOTTERY 0xE68687FF
 #define COLOR_CRYSTAL_INFO 0xb823b3FF
+#define COLOR_BLACK 0x000000FF
+
+#define DIALOG_ACHIEVEMENT_LOCKED "{d5d5c3}"
+#define DIALOG_ACHIEVEMENT_UNLOCKED "{66ccff}"
 
 main() {
 }
@@ -181,6 +185,7 @@ public OnGameModeInit() {
 	Iter_Clear(RemoveWeaponsPlayers);
 	Iter_Clear(Humans);
 	Iter_Clear(Zombies);
+	Iter_Clear(Admins);
 	
 	SetGameModeText("Zombies");
 	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
@@ -317,7 +322,6 @@ public OnPlayerUpdate(playerid) {
 		}
 	}
 	
-	CheckPlayerForOOM(playerid);
 	SetPlayerScore(playerid, Achievements[playerid][achRank]);
 	return 1;
 }
@@ -574,12 +578,22 @@ public OnPlayerEnterCheckpoint(playerid) {
  		}
  	}
  	
+ 	
+ 	ProceedAchievementProgress(playerid, ACH_TYPE_LAST_HOPE);
+ 	
  	if(Map[mpTeamCount][1] == 1) {
  		RoundSession[playerid][rdAdditionalPoints] += MapConfig[mpCfgLastEvacuated];
+ 		
+ 		if(IsFemaleSkin(playerid)) ProceedAchievementProgress(playerid, ACH_TYPE_MARY);
+		else ProceedAchievementProgress(playerid, ACH_TYPE_HERMITAGE);
  	}
 	
 	if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1] && Map[mpIsStarted]) {
 	   Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgUpdate];
+	   
+	   if(Map[mpTeamCount][1] == 2) {
+	   
+	   }
 	}
 	
 	return 1;
@@ -609,7 +623,7 @@ public OnPlayerText(playerid, text[]) {
 	    RandomQuestions[RMB_STARTED] = false;
 	}
 	
-	if(!EmptyMessage(text)) {
+	if(!IsEmptyMessage(text)) {
 	    new message[256];
 	    format(message, sizeof(message), "{%06x}%s{FFFFFF}(%d): %s", GetPlayerColor(playerid) >>> 8, Misc[playerid][mdPlayerName], playerid, text);
 		SendClientMessageToAll(GetPlayerColor(playerid), message);
@@ -782,7 +796,7 @@ custom Update() {
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
 	    if(IsLogged(playerid)) {
-    		format(formated, sizeof(formated),"%.0f", Player[playerid][pPoints]);
+    		format(formated, sizeof(formated),"%.0f~w~_/_~y~%.0f", Player[playerid][pPoints], Achievements[playerid][achTotalPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
@@ -1627,6 +1641,7 @@ custom LoginOrRegister(const playerid) {
     if(cache_num_rows() > 0) {
     	cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
         cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
+        cache_get_value_name_int(0, "coins", Player[playerid][pCoins]);
         cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
         cache_get_value_name_float(0, "standing", Player[playerid][pStanding]);
         
@@ -1835,6 +1850,7 @@ custom SavePlayerData(const playerid) {
         Player[playerid][pLanguage],
         Player[playerid][pPoints],
         Player[playerid][pStanding],
+        Player[playerid][pCoins],
         Player[playerid][pAccountId]
 	);
 	mysql_tquery(Database, formatedUpdateUserQuery, "");
@@ -1954,7 +1970,6 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
 		}
         return 1;
     }
-
  	return 1;
 }
 
@@ -1962,7 +1977,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	if(cache_num_rows()) {
 	    new title[48], description[128], type, count, reward, index, value;
 		new normalized[128], formated[128], list[2048], i, total, len = cache_num_rows();
-		static const colors[][] = { "{d5d5c3}", "{66ccff}" };
+		static const colors[][] = { DIALOG_ACHIEVEMENT_LOCKED, DIALOG_ACHIEVEMENT_UNLOCKED };
 		
 		cache_get_value_name_int(0, "total", total);
 		strcat(list, Localization[playerid][LD_DG_ACHS_HEADERS]);
@@ -1977,15 +1992,15 @@ custom GetAchievementsList(const playerid, const offset) {
         	index = value >= count;
         	
         	format(normalized, sizeof(normalized), description, count);
-        	format(formated, sizeof(formated), "%s%s\t%s%s (%d %s){FFFFFF} [%d/%d]\n",
+        	format(formated, sizeof(formated), "%s%s\t%s%s (%d/%d) - %d %s\n",
 				colors[index],
 				title,
 				colors[index],
 				normalized,
-				reward,
-				Localization[playerid][LD_MSG_POINTS],
 				min(value, count),
-				count
+				count,
+				reward,
+				Localization[playerid][LD_MSG_COINS]
 			);
         	strcat(list, formated);
 	    }
@@ -2028,7 +2043,7 @@ custom GetAchievementsList(const playerid, const offset) {
 stock GetAchievementIndex(const type) {
 	switch(type) {
 	    case ACH_TYPE_ABILITIES: return _:achAbility; // Done
-	    case ACH_TYPE_RUN: return _:achRan;
+	    case ACH_TYPE_RUN: return _:achRan; // Done
 	    case ACH_TYPE_LICKY: return _:achLuck;
 		case ACH_TYPE_KILL_HUMANS: return _:achHumans; // Done
 		case ACH_TYPE_KILL_ZOMBIES: return _:achZombies; // Done
@@ -2060,8 +2075,8 @@ stock GetAchievementIndex(const type) {
 		case ACH_TYPE_AK47: return _:achAk47; // Done
 		case ACH_TYPE_M4: return _:achM4; // Done
 		case ACH_TYPE_WEAPONS_MASTER: return _:achMaster;
-		case ACH_TYPE_HERMITAGE: return _:achHermitage;
-		case ACH_TYPE_MARY: return _:achMary;
+		case ACH_TYPE_HERMITAGE: return _:achHermitage; // Done
+		case ACH_TYPE_MARY: return _:achMary; // Done
 		case ACH_TYPE_LAST_HOPE: return _:achLastHope;
 		case ACH_TYPE_TERRORIST: return _:achKills; // Done
 	}
@@ -2088,6 +2103,10 @@ stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, 
         case ACH_TYPE_TEC9: SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
         case ACH_TYPE_AK47: SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
         case ACH_TYPE_M4: SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+        case ACH_TYPE_WEAPONS_MASTER: {
+            ProceedAchievementProgress(playerid, ACH_TYPE_WEAPONS_MASTER);
+        }
+        
 		default: ++Achievements[playerid][ACHIEVEMENTS_DATA:index];
 	}
 	
@@ -2105,6 +2124,18 @@ stock GetAchievementProgressByType(const playerid, const type) {
 	}
 	
 	return Achievements[playerid][ACHIEVEMENTS_DATA:index];
+}
+
+stock bool:IsFemaleSkin(const playerid) {
+	switch(GetPlayerSkin(playerid)) {
+	    case 9..13, 31, 38..41, 53..56, 63..65, 69, 75..77, 85, 87..93: return true;
+		case 129..131, 138..141, 145, 148, 150..152, 157, 169, 172, 178: return true;
+		case 190..199, 201, 205, 207, 211, 214..216,  218, 219, 224..226: return true;
+		case 231..233, 237, 238, 243..246, 251, 256: return true;
+		case 257, 263, 298, 306..309: return true;
+		default: return false;
+	}
+	return false;
 }
 
 stock ProceedClassSelection(const playerid, const selection, const showDialog) {
@@ -2243,6 +2274,11 @@ stock AfterAuthorization(const playerid) {
 	ServerConfig[svCfgCurrentOnline]++;
 	
 	Misc[playerid][mdIsLogged] = true;
+	
+	if(Privileges[playerid][prsAdmin]) {
+	    Iter_Add(Admins, playerid);
+	}
+	
     SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
    	SpawnPlayer(playerid);
 }
@@ -2307,6 +2343,7 @@ stock ClearAbilitiesTimers(const playerid) {
 stock ClearPlayerData(const playerid) {
     Player[playerid][pAccountId] = 0;
     Player[playerid][pLanguage] = 0;
+    Player[playerid][pCoins] = 0;
     Player[playerid][pPoints] = 0.0;
     Player[playerid][pStanding] = 0.0;
 }
@@ -2393,6 +2430,7 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdKillstreak] = 0;
+	Misc[playerid][mdGameplayWarns] = 0;
 	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdSelectionTeam] = -1;
@@ -2794,6 +2832,7 @@ stock SetByCurrentClass(const playerid) {
     SetPlayerArmourAC(playerid, 0.0);
     ResetWeapons(playerid);
     ClearPlayerRoundData(playerid);
+    SetPlayerSpecialAction(playerid, SPECIAL_ACTION_NONE);
 
 	new team = Misc[playerid][mdPlayerTeam];
 	new next = Misc[playerid][mdNextClass][team];
@@ -4070,14 +4109,14 @@ stock ShowDamageTaken(const playerid, const Float:damage = 0.0) {
     SetPlayerChatBubble(playerid, s, BUBBLE_COLOR, 20.0, 1000);
 }
 
-stock EmptyMessage(const string[]) {
+stock bool:IsEmptyMessage(const string[]) {
     for(new i = 0; string[i] != 0x0; i++) {
         switch(string[i]) {
             case 0x20: continue;
-            default: return 0;
+            default: return false;
         }
     }
-    return 1;
+    return true;
 }
 
 stock ClassSetup(const playerid, const classid) {
@@ -4190,6 +4229,10 @@ stock ClearFromIterators(const playerid) {
 	
 	if(Iter_Contains(RemoveWeaponsPlayers, playerid)) {
 		Iter_Remove(RemoveWeaponsPlayers, playerid);
+	}
+	
+	if(Iter_Contains(Admins, playerid)) {
+		Iter_Remove(Admins, playerid);
 	}
 }
 
@@ -4429,6 +4472,17 @@ stock GetAchievementsPage(const playerid, const page = 0) {
 	mysql_tquery(Database, formated, "GetAchievementsList", "ii", playerid, offset);
 }
 
+stock bool:HasAdminPermission(const playerid, const lvl) {
+	if(!Misc[playerid][mdIsLogged]) return false;
+	return Privileges[playerid][prsAdmin] >= lvl;
+}
+
+stock SendAdminMessage(const color, const message[]) {
+    foreach(Admins, i) {
+        SendClientMessage(i, color, message);
+    }
+}
+
 CMD:lottery(const playerid, const params[]) {
 	if(sscanf(params, "i", params[0])) {
 	    SendClientMessage(playerid, COLOR_DEFAULT, "/lottery (1 - 100)");
@@ -4502,13 +4556,194 @@ CMD:stats(const playerid, const params[]) {
 	return 1;
 }
 
+CMD:radio(const playerid) {
+    PlayAudioStreamForPlayer(playerid, "http://ep256.hostingradio.ru:8052/europaplus256.mp3");
+    return 1;
+}
 
-CMD:test(playerid) {
-	if(Player[playerid][pAccountId] != 1) {
-	    return 0;
-	}
-	
-	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
-	SetByCurrentClass(playerid);
+CMD:cmds(const playerid) {
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/help /rules /cmds /class /maps /stats /ss /radio /pm");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/(un)blockpm /(un)ignore /changename /lottery");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekick /report /stats /ss /radio /weekly /clothes");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/weapons /gang /language /achievements /ask /pay /settings");
 	return 1;
+}
+
+CMD:rules(const playerid) {
+    ShowPlayerDialog(
+		playerid, DIALOG_INFO, DIALOG_STYLE_MSGBOX, "Rules",
+		"Do not go Out Of Map\nDo not Team Attack\nDo not Spawn Killing\nDo not Spawn Camping\nDo not Flood / Spam",
+		Localization[playerid][LD_BTN_SELECT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
+}
+
+CMD:weekly(const playerid) {
+	new title[128];
+	format(title, sizeof(title), "Weekly Activities - %d %s - %.0f Reputation", Player[playerid][pCoins], Localization[playerid][LD_MSG_COINS], Player[playerid][pStanding]);
+
+    ShowPlayerDialog(
+		playerid, DIALOG_WEEKLY, DIALOG_STYLE_LIST, title,
+		"Activities\nRewards",
+		Localization[playerid][LD_BTN_SELECT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
+	
+	// Rewards:
+	// Attachements - 6 coins + 2,500 rep + 1,000 points,
+	// Custom Tag - 15 coins + 5,000 rep + 10,000 points,
+	// Color For Nickname - 20 coins + 10,000 rep ( Yellow, White, Pink, Red, Orange ) + 25,000 points,
+	// Skin - 30 coins + 25,000 rep + 100,000 points
+	
+	// DIALOG_WEEKLY_REWARDS
+	
+	return 1;
+}
+
+// ADMIN COMMANDS
+
+CMD:apm(const playerid, const params[]) {
+	if(!HasAdminPermission(playerid, 2)) return 0;
+
+   	if(sscanf(params, "is[128]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /apm (id) (text)");
+  		return 1;
+	}
+
+	new message[(MAX_PLAYER_NAME * 2) + 128];
+	format(message, sizeof(message), "[ADMIN MESSAGE] %s send an admin message to %s(%d): %s", Misc[playerid][mdPlayerName], Misc[params[0]][mdPlayerName], params[0], params[1]);
+	SendAdminMessage(COLOR_ADMIN, message);
+
+  	format(message, sizeof(message), "[ADMIN MESSAGE]: %s", params[1]);
+    SendClientMessage(params[0], COLOR_INFO, message);
+	return 1;
+}
+ALTX:apm("/answer");
+
+CMD:jail(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 1)) return 0;
+    
+    new time, targets[5] = { -1, -1, -1, -1, -1 }, reason[64] = "";
+    sscanf(params, "iis[64]", targets[0], time, reason);
+    sscanf(params, "iiis[64]", targets[0], targets[1], time, reason);
+	sscanf(params, "iiiis[64]", targets[0], targets[1], targets[2], time, reason);
+	sscanf(params, "iiiiis[64]", targets[0], targets[1], targets[2], targets[3], time, reason);
+	sscanf(params, "iiiiiis[64]", targets[0], targets[1], targets[2], targets[3], targets[4], time, reason);
+
+	if(time < 1 || time > 5 || !strlen(reason)) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jail (id...)^5 (time)[1-5] (reason)");
+ 		return 1;
+   	}
+   	
+   	for( new j, message[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128]; j < sizeof(targets); j++ ) {
+        if(IsPlayerConnected(targets[j])) {
+            format(message, sizeof(message), "[JAIL]: %s(%d) has been jailed by %s for %d minute(s) [%s]", Misc[targets[j]][mdPlayerName], targets[j], Misc[playerid][mdPlayerName], time, reason);
+            SendAdminMessage(COLOR_ADMIN, message);
+            
+            format(message, sizeof(message), "[JAIL]: You have been jailed for %d minute(s) [%s]", time, reason);
+    		SendClientMessage(targets[j], COLOR_ALERT, message);
+        
+            // Player[targets[j]][Jailed] = time * 60;
+            SetPlayerSkin(targets[j], 62);
+			SetPlayerSpecialAction(targets[j], SPECIAL_ACTION_CUFFED);
+			SetPlayerPos(targets[j], 264.1425, 77.4712, 1001.0391);
+			SetPlayerFacingAngle(targets[j], 263.0160);
+			SetPlayerInterior(targets[j], 6);
+			SetPlayerColor(targets[j], COLOR_BLACK);
+			SetPlayerTeamAC(targets[j], TEAM_ZOMBIE);
+			ResetWeapons(targets[j]);
+			SetPlayerArmourAC(targets[j], 0.0);
+			SetPlayerHealthAC(targets[j], 100.0);
+        }
+   	}
+   	
+	return 1;
+}
+
+CMD:unjail(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 1)) return 0;
+    
+    if(sscanf(params, "i", params[0])) {
+    	SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unjail (id)");
+     	return 1;
+	}
+
+    if(IsPlayerConnected(params[0])) {
+	    new targetid = params[0], message[(MAX_PLAYER_NAME * 2) + 64];
+	    format(message, sizeof(message), "[JAIL]: %s(%d) has been unjailed by %s", Misc[targetid][mdPlayerName], targetid, Misc[playerid][mdPlayerName]);
+     	SendAdminMessage(COLOR_ADMIN, message);
+     	
+	    // Player[targetid][Jailed] = -1;
+    	SetSpawnInfo(targetid, TEAM_ZOMBIE, 252, Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0], 0.0, 0, 0, 0, 0, 0, 0);
+	    SetPlayerTeamAC(targetid, TEAM_ZOMBIE);
+	    SpawnPlayer(targetid);
+	}
+    return 1;
+}
+
+CMD:warn(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 1)) return 0;
+
+    new targets[5] = { -1, -1, -1, -1, -1 }, reason[64] = "";
+    sscanf(params, "is[64]", targets[0], reason);
+    sscanf(params, "iis[64]", targets[0], targets[1], reason);
+	sscanf(params, "iiis[64]", targets[0], targets[1], targets[2], reason);
+	sscanf(params, "iiiis[64]", targets[0], targets[1], targets[2], targets[3], reason);
+	sscanf(params, "iiiiis[64]", targets[0], targets[1], targets[2], targets[3], targets[4], reason);
+
+	if(!strlen(reason)) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warn (id...)^5 (reason)");
+ 		return 1;
+   	}
+
+   	for( new j, message[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128]; j < sizeof(targets); j++ ) {
+        if(IsPlayerConnected(targets[j])) {
+            ++Misc[targets[j]][mdGameplayWarns];
+            
+            format(message, sizeof(message), "[WARN]: %s(%d) has been warned by %s [%s] (%d / 3)", Misc[targets[j]][mdPlayerName], targets[j], Misc[playerid][mdPlayerName], reason, Misc[targets[j]][mdGameplayWarns]);
+            SendAdminMessage(COLOR_ADMIN, message);
+
+            format(message, sizeof(message), "You have been warned for %s (%d / 3)", reason, Misc[targets[j]][mdGameplayWarns]);
+    		ShowPlayerDialog(targets[j], DIALOG_INFO, DIALOG_STYLE_MSGBOX, "WARNING", message, Localization[targets[j]][LD_BTN_CLOSE], "");
+        }
+   	}
+
+	return 1;
+}
+
+CMD:unwarn(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 1)) return 0;
+    
+    if(sscanf(params, "i", params[0])) {
+	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unwarn (id)");
+		return 1;
+	}
+
+    if(IsPlayerConnected(params[0])) {
+        new targetid = params[0];
+        
+	 	if(Misc[targetid][mdGameplayWarns]) {
+	 	    new message[(MAX_PLAYER_NAME * 2) + 64];
+		 	format(message, sizeof(message), "[WARN]: %s(%d) has been unwarned by %s", Misc[targetid][mdPlayerName], targetid, Misc[playerid][mdPlayerName]);
+		 	SendAdminMessage(COLOR_ADMIN, message);
+		 	
+	 		--Misc[targetid][mdGameplayWarns];
+	 		return 1;
+	 	}
+	 	
+	 	SendClientMessage(playerid, COLOR_ADMIN, ">> The player does not have warns!");
+	 	return 1;
+	}
+
+    return 1;
+}
+
+CMD:acmds(const playerid) {
+    if(!HasAdminPermission(playerid, 1)) return 0;
+    
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/aduty /getip /getid /slap /getinfo /sync /apm /answer /(un)jail /(un)warn");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/cc /tban /kick /spec /(un)mute /checkip /muwa /waja /goto /checkip");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/ban /offban /offtban /time /weather /get /makezombie /(un)banip");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/warnlog /jaillog /mutelog /banlog /namelog");
+    return 1;
 }

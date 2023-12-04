@@ -65,7 +65,8 @@
 	SET \n\
 		`language`='%d',\
 		`points`='%f',\
-		`standing`='%f'\n\
+		`standing`='%f',\
+		`coins`='%d'\n\
 		WHERE `id`='%d'\
 "
 

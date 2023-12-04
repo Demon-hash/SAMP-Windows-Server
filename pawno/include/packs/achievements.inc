@@ -3,6 +3,13 @@
 #endif
 #define _achievements_pack_included
 
+enum ACHIEVEMENT_CONFIG {
+	accgReward,
+	accgType,
+	accgCount,
+	accgDisabled,
+}
+
 enum ACHIEVEMENTS_DATA {
 	Float:achRan,
 	Float:achTotalPoints,

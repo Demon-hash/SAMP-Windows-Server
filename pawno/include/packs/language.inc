@@ -127,9 +127,11 @@ enum LOCALIZATION_DATA {
 	LD_MSG_LOTTERY_NUMBER,
 	LD_MSG_STATS_TITLE,
 	LD_MSG_STATS_KILLS,
+	LD_MSG_STATS_WINS,
 	LD_MSG_STATS_PLAYED,
 	LD_MSG_STATS_GANG_ACCOUNT,
 	LD_MSG_STATS_DATE_SIGN,
+	LD_MSG_COINS,
 	LD_ENDF,
 };
 
@@ -266,5 +268,6 @@ enum LOCALIZATION_DATA {
 	(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Эвакуаций: %d - Duel Wins: %d - Rank: %d'),\
 	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),\
 	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),\
-	(118, '>> Date: %02dD/%02dM/%dY  Sign: %s', '>> Дата: %02dD/%02dM/%dY  Подпись: %s');\
+	(118, '>> Date: %02dD/%02dM/%dY  Sign: %s', '>> Дата: %02dD/%02dM/%dY  Подпись: %s'),\
+	(119, 'Coin(s)', 'Монет(а/ы)');\
 "
