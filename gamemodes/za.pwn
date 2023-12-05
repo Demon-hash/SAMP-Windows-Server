@@ -353,23 +353,50 @@ public OnPlayerDeath(playerid, killerid, reason) {
 		 	}
 	    }
 	    
-    	if(Map[mpKillTheLast] && GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
-    	    RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgKillLast];
-    	    
-    	    new formated[128];
-		 	foreach(Player, i) {
-		 		format(formated, sizeof(formated), Localization[i][LD_MSG_KILLED_THE_LAST], Misc[killerid][mdPlayerName], Localization[i][LD_MSG_POINTS_MULTIPLE]);
-		 		SendClientMessage(i, COLOR_ALERT, formated);
-		 	}
-    	}
+	    if(GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
+	    	if(Map[mpKillTheLast]) {
+	    	    RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgKillLast];
+
+	    	    new formated[128];
+			 	foreach(Player, i) {
+			 		format(formated, sizeof(formated), Localization[i][LD_MSG_KILLED_THE_LAST], Misc[killerid][mdPlayerName], Localization[i][LD_MSG_POINTS_MULTIPLE]);
+			 		SendClientMessage(i, COLOR_ALERT, formated);
+			 	}
+	    	}
+	    	
+	    	if(Misc[playerid][mdKillstreak]) {
+	    		new formated[128], count = max(1, Misc[playerid][mdKillstreak] / MapConfig[mpCfgKillstreakFactor]);
+			 	foreach(Player, i) {
+			 		format(formated, sizeof(formated), Localization[i][LD_MSG_KILLSTREAK_KILLED], Misc[killerid][mdPlayerName], count, Localization[i][LD_MSG_POINTS], Misc[playerid][mdPlayerName], Misc[playerid][mdKillstreak]);
+			 		SendClientMessage(i, COLOR_ORANGE, formated);
+			 	}
+			 	
+			 	RoundSession[killerid][rdAdditionalPoints] += float(count);
+	    	    Misc[playerid][mdKillstreak] = 0;
+	    	}
+	    	
+	    	ProceedAchievementProgress(killerid, ACH_TYPE_KILL_HUMANS);
+	    }
+	    
+	    if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
+	    
+	    	if(++Misc[killerid][mdKillstreak] % 5 == 0) {
+	    	    new formated[48 + MAX_PLAYER_NAME];
+	    	
+	    	    foreach(Player, i) {
+					format(formated, sizeof(formated), Localization[i][LD_MSG_KILLSTREAKS], Misc[killerid][mdPlayerName], Misc[killerid][mdKillstreak], Misc[killerid][mdKillstreak] / MapConfig[mpCfgKillstreakFactor], Localization[i][LD_MSG_POINTS]);
+                    SendClientMessage(i, COLOR_ABILITY, formated);
+				}
+				
+				RoundSession[killerid][rdAdditionalPoints] += float(Misc[killerid][mdKillstreak] / MapConfig[mpCfgKillstreakFactor]);
+				ProceedAchievementProgress(killerid, ACH_TYPE_KILLSTREAK, Misc[killerid][mdKillstreak]);
+	    	}
+	    
+	        ProceedAchievementProgress(killerid, ACH_TYPE_KILL_ZOMBIES);
+	    }
 	    
 	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
 	        RoundSession[killerid][rsdKilling] += RoundConfig[rdCfgKilling];
-	    }
-	    
-	    switch(GetPlayerTeamEx(playerid)) {
-	        case TEAM_ZOMBIE: ProceedAchievementProgress(killerid, ACH_TYPE_KILL_ZOMBIES);
-	        case TEAM_HUMAN: ProceedAchievementProgress(killerid, ACH_TYPE_KILL_HUMANS);
 	    }
 	}
 	
@@ -403,6 +430,10 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	
 	if(IsAbleToGivePointsInCategory(playerid, SESSION_UNDEAD_POINTS)) {
 	    RoundSession[playerid][rsdDeaths] += RoundConfig[rdCfgDeaths];
+	}
+	
+	if(GetPlayerTeamEx(playerid) == TEAM_HUMAN && Misc[playerid][mdKillstreak]) {
+	    Misc[playerid][mdKillstreak] = 0;
 	}
 	
     ProceedAchievementProgress(playerid, ACH_TYPE_DIE);
@@ -577,22 +608,30 @@ public OnPlayerEnterCheckpoint(playerid) {
  		}
  	}
  	
+ 	if(GetPlayerHealthEx(playerid) <= 1.0) {
+ 	    ProceedAchievementProgress(playerid, ACH_TYPE_LICKY);
+ 	}
  	
- 	// ProceedAchievementProgress(playerid, ACH_TYPE_LAST_HOPE);
- 	
- 	if(Map[mpTeamCount][1] == 1) {
- 		RoundSession[playerid][rdAdditionalPoints] += MapConfig[mpCfgLastEvacuated];
- 		
- 		if(IsFemaleSkin(playerid)) ProceedAchievementProgress(playerid, ACH_TYPE_MARY);
-		else ProceedAchievementProgress(playerid, ACH_TYPE_HERMITAGE);
+ 	switch(Iter_Count(Humans)) {
+ 	    case 1: {
+            RoundSession[playerid][rdAdditionalPoints] += MapConfig[mpCfgLastEvacuated];
+
+			if(IsFemaleSkin(playerid)) ProceedAchievementProgress(playerid, ACH_TYPE_MARY);
+			else ProceedAchievementProgress(playerid, ACH_TYPE_HERMITAGE);
+ 	    }
+ 	    case 2: {
+			new players[2], inx;
+			foreach(Humans, i) players[inx++] = i;
+			
+			if(IsFemaleSkin(players[0]) && IsMaleSkin(players[1]) || IsMaleSkin(players[0]) && IsFemaleSkin(players[1])) {
+			    ProceedAchievementProgress(players[0], ACH_TYPE_LAST_HOPE);
+			    ProceedAchievementProgress(players[1], ACH_TYPE_LAST_HOPE);
+			}
+ 	    }
  	}
 	
 	if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1] && Map[mpIsStarted]) {
 	   Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgUpdate];
-	   
-	   if(Map[mpTeamCount][1] == 2) {
-	   
-	   }
 	}
 	
 	return 1;
@@ -1413,7 +1452,8 @@ custom LoadMapCfg() {
         cache_get_value_name_int(0, "great_period", MapConfig[mpCfgGreatTime]);
         cache_get_value_name_int(0, "spawn_protection_time", MapConfig[mpCfgSpawnProtectionTime]);
         cache_get_value_name_int(0, "oom_check", MapConfig[mpCfgOOMCheck]);
-        
+        cache_get_value_name_int(0, "killstreak_factor", MapConfig[mpCfgKillstreakFactor]);
+
         cache_get_value_name_float(0, "spawn_text_range", MapConfig[mpCfgSpawnTextRange]);
         cache_get_value_name_float(0, "human_hero_kill", MapConfig[mpCfgHumanHeroPoints]);
         cache_get_value_name_float(0, "zombie_boss_kill", MapConfig[mpCfgZombieBossPoints]);
@@ -1673,6 +1713,7 @@ custom LoginOrRegister(const playerid) {
         
         cache_get_value_name_int(0, "rnd_mapid", RoundSession[playerid][rsdMapId]);
         cache_get_value_name_int(0, "rnd_team", RoundSession[playerid][rsdTeam]);
+        cache_get_value_name_int(0, "rnd_time", RoundSession[playerid][rdConnectedTime]);
         cache_get_value_name_float(0, "rnd_survival", RoundSession[playerid][rsdSurvival]);
         cache_get_value_name_float(0, "rnd_killing", RoundSession[playerid][rsdKilling]);
 		cache_get_value_name_float(0, "rnd_care", RoundSession[playerid][rsdCare]);
@@ -1734,7 +1775,8 @@ custom CreatePlayerRoundSession(const playerid) {
 	    RoundSession[playerid][rsdSkillfulness],
 	    RoundSession[playerid][rsdBrutality],
 	    RoundSession[playerid][rsdDeaths],
-	    RoundSession[playerid][rdAdditionalPoints]
+	    RoundSession[playerid][rdAdditionalPoints],
+	    RoundSession[playerid][rdConnectedTime]
 	);
 	mysql_tquery(Database, formatedCreateSessionQuery, "");
 }
@@ -2030,15 +2072,15 @@ custom GetAchievementsList(const playerid, const offset) {
 
 stock ACHIEVEMENTS_DATA:GetAchievementIndex(const type) {
 	switch(type) {
-	    case ACH_TYPE_KILLSTREAK: return achKillstreak;
-	    case ACH_TYPE_LICKY: return achLuck;
 	    case ACH_TYPE_CAPTURE: return achCapture;
 		case ACH_TYPE_DUELS: return achDuels;
-		case ACH_TYPE_SESSION: return achSession;
 		case ACH_TYPE_BLOOD: return achBlood;
 		case ACH_TYPE_REPORT: return achReported;
-		case ACH_TYPE_LAST_HOPE: return achLastHope;
 		
+		case ACH_TYPE_SESSION: return achSession; // Done
+		case ACH_TYPE_LAST_HOPE: return achLastHope; // Done
+		case ACH_TYPE_LICKY: return achLuck; // Done
+		case ACH_TYPE_KILLSTREAK: return achKillstreak; // Done
 	    case ACH_TYPE_ABILITIES: return achAbility; // Done
 	    case ACH_TYPE_RUN: return achRan; // Done
 		case ACH_TYPE_KILL_HUMANS: return achHumans; // Done
@@ -2089,6 +2131,23 @@ stock CreateAchievementsHashmap() {
 	}
 }
 
+stock GetWeaponSkillByType(const ACHIEVEMENTS_TYPES:type) {
+	switch(type) {
+	    case ACH_TYPE_SILINCED: return WEAPONSKILL_PISTOL_SILENCED;
+		case ACH_TYPE_COLT45: return WEAPONSKILL_PISTOL;
+		case ACH_TYPE_DEAGLE: return WEAPONSKILL_DESERT_EAGLE;
+		case ACH_TYPE_RIFLE: return WEAPONSKILL_SNIPERRIFLE;
+        case ACH_TYPE_SHOTGUN: return WEAPONSKILL_SHOTGUN;
+        case ACH_TYPE_MP5: return WEAPONSKILL_MP5;
+        case ACH_TYPE_COMBAT_SHOTGUN: return WEAPONSKILL_SPAS12_SHOTGUN;
+        case ACH_TYPE_TEC9: return WEAPONSKILL_MICRO_UZI;
+        case ACH_TYPE_AK47: return WEAPONSKILL_AK47;
+        case ACH_TYPE_M4: return WEAPONSKILL_M4;
+	}
+	
+	return -1;
+}
+
 stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, const count = 1) {
     new ACHIEVEMENTS_DATA:index = GetAchievementIndex(_:type);
     if(index == ACHIEVEMENTS_DATA:-1) {
@@ -2097,20 +2156,39 @@ stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, 
 	
 	switch(type) {
 		case ACH_TYPE_RUN: Achievements[playerid][achRan] += 0.00001;
+		case ACH_TYPE_KILLSTREAK: {
+		    if(Achievements[playerid][index] < count) {
+		        Achievements[playerid][index] = count;
+		    }
+		}
+		case ACH_TYPE_SESSION: {
+		    new normalized = count / 3600000;
+		    if(Achievements[playerid][index] < normalized) {
+		        Achievements[playerid][index] = normalized;
+		    }
+		}
+		case ACH_TYPE_SILINCED, ACH_TYPE_COLT45, ACH_TYPE_DEAGLE, ACH_TYPE_RIFLE, ACH_TYPE_SHOTGUN,
+			 ACH_TYPE_MP5, ACH_TYPE_COMBAT_SHOTGUN, ACH_TYPE_TEC9, ACH_TYPE_AK47, ACH_TYPE_M4:
+	 	{
+			Achievements[playerid][index] += count;
+			SetPlayerSkillLevel(playerid, GetWeaponSkillByType(type), Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+			ProceedAchievementProgress(playerid, ACH_TYPE_WEAPONS_MASTER);
+		}
+		case ACH_TYPE_WEAPONS_MASTER: {
+		    if(Achievements[playerid][achSilinced] >= AchievementsHashmap[ACH_TYPE_SILINCED][0][achpCount] &&
+			Achievements[playerid][achColt45] >= AchievementsHashmap[ACH_TYPE_COLT45][0][achpCount] &&
+			Achievements[playerid][achDeagle] >= AchievementsHashmap[ACH_TYPE_DEAGLE][0][achpCount] &&
+			Achievements[playerid][achRifle] >= AchievementsHashmap[ACH_TYPE_RIFLE][0][achpCount] &&
+			Achievements[playerid][achShotgun] >= AchievementsHashmap[ACH_TYPE_SHOTGUN][0][achpCount] &&
+			Achievements[playerid][achMP5] >= AchievementsHashmap[ACH_TYPE_MP5][0][achpCount] &&
+			Achievements[playerid][achCombat] >= AchievementsHashmap[ACH_TYPE_COMBAT_SHOTGUN][0][achpCount] &&
+			Achievements[playerid][achTec9] >= AchievementsHashmap[ACH_TYPE_TEC9][0][achpCount] &&
+			Achievements[playerid][achAk47] >= AchievementsHashmap[ACH_TYPE_AK47][0][achpCount] &&
+			Achievements[playerid][achM4] >= AchievementsHashmap[ACH_TYPE_M4][0][achpCount]) {
+			    Achievements[playerid][index] += count;
+			}
+		}
         default: Achievements[playerid][index] += count;
-        
-		/*case ACH_TYPE_SILINCED: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-		case ACH_TYPE_COLT45: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-		case ACH_TYPE_DEAGLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-		case ACH_TYPE_RIFLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_SNIPERRIFLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_SHOTGUN: SetPlayerSkillLevel(playerid, WEAPONSKILL_SHOTGUN, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_MP5: SetPlayerSkillLevel(playerid, WEAPONSKILL_MP5, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_COMBAT_SHOTGUN: SetPlayerSkillLevel(playerid, WEAPONSKILL_SPAS12_SHOTGUN, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_TEC9: SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_AK47: SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_M4: SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_WEAPONS_MASTER: {}
-		*/
 	}
 	
 	for( new i = 0, id; i < MAX_ACHIEVEMENT_ACTIVITIES; i++ ) {
@@ -2147,6 +2225,7 @@ custom GetLocalizedTextForPlayers(const playerid, const reward, const id) {
 	    }
 	    
 	    AchievementsProgress[playerid][id] = 1;
+	    Player[playerid][pCoins] += reward;
 	}
 
 	return 1;
@@ -2193,6 +2272,10 @@ stock bool:IsFemaleSkin(const playerid) {
 		default: return false;
 	}
 	return false;
+}
+
+stock bool:IsMaleSkin(const playerid) {
+	return !IsFemaleSkin(playerid);
 }
 
 stock ProceedClassSelection(const playerid, const selection, const showDialog) {
@@ -2785,6 +2868,7 @@ stock InitializeMapConfig() {
     MapConfig[mpCfgGreatTime] = 30;
     MapConfig[mpCfgSpawnProtectionTime] = 15;
     MapConfig[mpCfgOOMCheck] = 2;
+    MapConfig[mpCfgKillstreakFactor] = 5;
     MapConfig[mpCfgSpawnTextRange] = 50.0;
     MapConfig[mpCfgHumanHeroPoints] = 0.0;
     MapConfig[mpCfgZombieBossPoints] = 0.0;
@@ -3029,6 +3113,7 @@ stock ResetRoundSessionOnMapStart(const playerid) {
     RoundSession[playerid][rsdBrutality] = 0.0;
     RoundSession[playerid][rsdDeaths] = 0.0;
     RoundSession[playerid][rdAdditionalPoints] = 0.0;
+    RoundSession[playerid][rdConnectedTime] = NetStats_GetConnectedTime(playerid) + 1;
 }
 
 stock ClearPlayerRoundSession(const playerid) {
@@ -3042,6 +3127,7 @@ stock ClearPlayerRoundSession(const playerid) {
     RoundSession[playerid][rsdBrutality] = 0.0;
     RoundSession[playerid][rsdDeaths] = 0.0;
     RoundSession[playerid][rdAdditionalPoints] = 0.0;
+    RoundSession[playerid][rdConnectedTime] = NetStats_GetConnectedTime(playerid) + 1;
 }
 
 stock GetPlayerTeamEx(const playerid) {
@@ -3985,13 +4071,11 @@ stock ProceedHours(const playerid) {
         Achievements[playerid][achSeconds] = 0;
         ++Achievements[playerid][achMinutes];
         
-        if((Achievements[playerid][achMinutes] % 60) == 0) {
-            Achievements[playerid][achMinutes] = 0;
-            ++Achievements[playerid][achHours];
-            
-            ProceedAchievementProgress(playerid, ACH_TYPE_PLAY_HOURS);
-        }
-    }
+        if(Achievements[playerid][achMinutes] >= 60) {
+			Achievements[playerid][achMinutes] = 0;
+			ProceedAchievementProgress(playerid, ACH_TYPE_PLAY_HOURS);
+		}
+	}
 }
 
 stock BreakSpace(const playerid, const classid, const abilityid) {
@@ -4745,6 +4829,8 @@ stock SetTeams() {
         ResetRoundSessionOnMapStart(playerid);
         SpawnPlayer(playerid);
 		SetCameraBehindPlayer(playerid);
+		
+		ProceedAchievementProgress(playerid, ACH_TYPE_SESSION, RoundSession[playerid][rdConnectedTime]);
     }
 }
 
@@ -4875,10 +4961,10 @@ CMD:weekly(const playerid) {
 	);
 	
 	// Rewards:
-	// Attachements - 6 coins + 2,500 rep + 1,000 points,
-	// Custom Tag - 15 coins + 5,000 rep + 10,000 points,
-	// Color For Nickname - 20 coins + 10,000 rep ( Yellow, White, Pink, Red, Orange ) + 25,000 points,
-	// Skin - 30 coins + 25,000 rep + 100,000 points
+	// Attachements - 1 coins + 2,500 rep + 1,000 points,
+	// Custom Tag - 5 coins + 5,000 rep + 10,000 points,
+	// Color For Nickname - 10 coins + 10,000 rep ( Yellow, White, Pink, Red, Orange ) + 25,000 points,
+	// Skin - 15 coins + 25,000 rep + 100,000 points
 	
 	// DIALOG_WEEKLY_REWARDS
 	
@@ -4886,15 +4972,8 @@ CMD:weekly(const playerid) {
 }
 
 CMD:test(playerid, params[]) {
-    if(Player[playerid][pAccountId] == 1) {
-        /*if(sscanf(params, "i", params[0])) {
-            SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /test (percent)");
-        }
-        
-        Achievements[playerid][achRan] += float(params[0]);*/
-        
-       // Map[mpTimeout] = 10;
-    }
+    if(Player[playerid][pAccountId] != 1) return 0;
+ 	return 1;
 }
 
 // ADMIN COMMANDS

@@ -196,6 +196,7 @@
 		COALESCE(r.skillfulness, 0.0) as rnd_skillfulness,\n\
 		COALESCE(r.brutality, 0.0) as rnd_brutality,\n\
 		COALESCE(r.undead, 0.0) as rnd_undead,\n\
+		COALESCE(r.time, 0) as rnd_time,\n\
 		COALESCE(r.additional, 0.0) as rnd_additional\n\
 		FROM `users` u\n\
 		LEFT JOIN `achievements` a ON u.id = a.id\n\
@@ -205,5 +206,5 @@
 		WHERE u.login = '%e'\
 "
 
-#define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f)"
+#define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional, time) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%d)"
 #define DELETE_RND_SESSION_QUERY "DELETE FROM `round_session` WHERE `account_id`='%d'"

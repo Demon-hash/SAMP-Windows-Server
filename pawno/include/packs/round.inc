@@ -28,6 +28,7 @@ enum ROUND_SESSION_DATA {
 	rsdTeam,
 	Float:rsdSurvival,
 	Float:rsdKilling,
+	rdConnectedTime,
 	Float:rsdCare,
 	Float:rsdMobility,
 	Float:rsdSkillfulness,

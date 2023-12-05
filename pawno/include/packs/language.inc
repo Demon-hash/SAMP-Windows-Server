@@ -133,6 +133,8 @@ enum LOCALIZATION_DATA {
 	LD_MSG_STATS_DATE_SIGN,
 	LD_MSG_COINS,
 	LD_MSG_ACH_UNLOCKED,
+	LD_MSG_KILLSTREAKS,
+	LD_MSG_KILLSTREAK_KILLED,
 	LD_ENDF,
 };
 
@@ -271,5 +273,7 @@ enum LOCALIZATION_DATA {
 	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),\
 	(118, '>> Date: %02dD/%02dM/%dY  Sign: %s', '>> Дата: %02dD/%02dM/%dY  Подпись: %s'),\
 	(119, 'Coin(s)', 'Монет(а/ы)'),\
-	(120, '>> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)', '>> Игрок %s открыл новое достижение{FFFFFF} %s +%d %s (/achievements)');\
+	(120, '>> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)', '>> Игрок %s открыл новое достижение{FFFFFF} %s +%d %s (/achievements)'),\
+	(121, '>> %s has achieved a %d killstreak!{FFFFFF} (+%d %s)', '>> Игрок %s достиг серии из %d убийств!{FFFFFF} (+%d %s)'),\
+	(122, '>> %s earned %d %s for killing %s on {FFFFFF}%d killstreak!', '>> Игрок %s заработал %d %s за убийство игрока %s на{FFFFFF} серии из %d убийств!');\
 "

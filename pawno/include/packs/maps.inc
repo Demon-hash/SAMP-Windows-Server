@@ -71,6 +71,7 @@ enum MAP_CONFIG_DATA {
 	mpCfgGreatTime,
 	mpCfgOOMCheck,
 	mpCfgSpawnProtectionTime,
+	mpCfgKillstreakFactor,
 	mpCfgHumanHeroWeapons[24],
 	Float:mpCfgSpawnTextRange,
 	Float:mpCfgHumanHeroPoints,

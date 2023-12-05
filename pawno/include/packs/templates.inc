@@ -494,7 +494,7 @@
    	PRIMARY KEY (`id`)\
 );"
 
-#define ROUND_SESSION_COLUMNS 11
+#define ROUND_SESSION_COLUMNS 12
 #define ROUND_SESSION_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS round_session (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -509,6 +509,7 @@
 	`brutality` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`undead` DECIMAL(9,2) unsigned NOT NULL default '0',\
 	`additional` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`time` int(8) unsigned NOT NULL default '0',\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -549,6 +550,7 @@
 	`great_period` int(6) unsigned NOT NULL default '30',\
 	`spawn_protection_time` int(6) unsigned NOT NULL default '15',\
 	`oom_check` int(6) unsigned NOT NULL default '2',\
+	`killstreak_factor` int(6) unsigned NOT NULL default '5',\
 	`zombie_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
 	`hero_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
 	`hero_weapons` varchar(24) NOT NULL default '31, 24',\
