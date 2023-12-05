@@ -1,8 +1,9 @@
 #include <packs/core>
 #include <packs/developer>
 
-// Achievemtns
+// Achievemtns - Line: 2173
 // Weekly Missions - Standing
+// Classes[i][cldDisabled]
 
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
@@ -48,7 +49,8 @@ static const LOCALIZATION_TABLES[][] = {
 };
 
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
-static AchievementsConfig[ACHIEVEMENTS_DATA][ACHIEVEMENT_CONFIG];
+static AchievementsConfig[MAX_ACHIEVEMENTS][ACHIEVEMENT_CONFIG];
+static AchievementsHashmap[ACHIEVEMENTS_TYPES][MAX_ACHIEVEMENT_ACTIVITIES];
 
 static Round[MAX_PLAYERS][ROUND_DATA];
 static RoundSession[MAX_PLAYERS][ROUND_SESSION_DATA];
@@ -164,6 +166,7 @@ static
 #define COLOR_LOTTERY 0xE68687FF
 #define COLOR_CRYSTAL_INFO 0xb823b3FF
 #define COLOR_BLACK 0x000000FF
+#define COLOR_LIME 0x62E300FF
 
 #define DIALOG_ACHIEVEMENT_LOCKED "{d5d5c3}"
 #define DIALOG_ACHIEVEMENT_UNLOCKED "{66ccff}"
@@ -172,7 +175,21 @@ main() {
 }
 
 public OnGameModeInit() {
+    new i, year, mounth, day, hours, minutes, seconds;
+    TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+    printf("|: JIT is %spresent", IsJITPresent() ? ("") : ("not "));
+	printf("|: Started at %02d:%02d:%02d on %02d/%02d/%d...", hours, minutes, seconds, day, mounth, year);
+
 	InitializePickups();
+	InitializeServerConfig();
+	InitializeRoundConfig();
+	InitializeMapConfig();
+	InitializeServerBalance();
+	InitializeAchievementsConfig();
+	InitializeClassesConfig();
+	InitializeGangsConfig();
+	InitializeEvacuationConfig();
+	InitializeServerTextures();
  	InitializeClassesData();
 	InitializeWeaponsData();
 	InitializeDefaultValues();
@@ -197,7 +214,7 @@ public OnGameModeInit() {
 	
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
 	mysql_set_charset(GLOBAL_CHARSET);
-	new i, year, mounth, day, hours, minutes, seconds;
+	
 	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
 	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
 
@@ -218,6 +235,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceCfg");
 	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
 	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
+	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
 	// mysql_tquery(Database, LOAD_WEELKYQ_CFG_QUERY, "LoadWeeklyQuestsCfg");
 	
 	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
@@ -225,10 +243,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, LOAD_OBJECTS_QUERY, "LoadObjects");
 	
  	mysql_log(SQL_LOG_LEVEL);
- 	
-	TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-	printf("|: JIT is %spresent", IsJITPresent() ? ("") : ("not "));
-	printf("|: Started at %02d:%02d:%02d on %02d/%02d/%d... | Status: %d", hours, minutes, seconds, day, mounth, year, mysql_errno(Database));
+ 	printf("|: MySQL status: %d", mysql_errno(Database));
 	
 	updateTimerId = SetTimer("Update", 1000, true);
 	return 1;
@@ -314,7 +329,7 @@ public OnPlayerSpawn(playerid) {
 }
 	
 public OnPlayerUpdate(playerid) {
-	if(GetPlayerSpeed(playerid) >= 10 && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) {
+	if(GetPlayerSpeed(playerid) >= 10 && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT && IsRunning(playerid)) {
 	    ProceedAchievementProgress(playerid, ACH_TYPE_RUN);
 
 		if(IsAbleToGivePointsInCategory(playerid, SESSION_RUN_POINTS)) {
@@ -490,7 +505,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	    Misc[damagedid][mdLastIssuedDamage] = playerid;
 	    Misc[damagedid][mdLastIssuedReason] = weaponid;
 	
-        if( weaponid == 0 && GetPlayerTeamEx(playerid) == TEAM_ZOMBIE  && GetPlayerTeamEx(damagedid) == TEAM_HUMAN) {
+        if( weaponid == RoundConfig[rdCfgBrutalityWeapon] && GetPlayerTeamEx(playerid) == TEAM_ZOMBIE  && GetPlayerTeamEx(damagedid) == TEAM_HUMAN) {
 			if(GetPlayerArmourEx(damagedid) > 0.0) {
 			    SetPlayerArmourAC(damagedid, GetPlayerArmourEx(damagedid) - ServerConfig[svCfgZombieFistsDamage]);
 			    return 1;
@@ -579,7 +594,7 @@ public OnPlayerEnterCheckpoint(playerid) {
  	}
  	
  	
- 	ProceedAchievementProgress(playerid, ACH_TYPE_LAST_HOPE);
+ 	// ProceedAchievementProgress(playerid, ACH_TYPE_LAST_HOPE);
  	
  	if(Map[mpTeamCount][1] == 1) {
  		RoundSession[playerid][rdAdditionalPoints] += MapConfig[mpCfgLastEvacuated];
@@ -663,7 +678,9 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 			return 1;
 		}
 		
-		ProceedAchievementProgress(playerid, ACH_TYPE_JUMP);
+		if(IsJumping(playerid) && GetPlayerSpeed(playerid) >= 15) {
+			ProceedAchievementProgress(playerid, ACH_TYPE_JUMP);
+		}
 		return 1;
 	}
 	
@@ -829,11 +846,11 @@ custom Update() {
 custom LoadMapsCount() {
 	if(cache_num_rows()) {
         cache_get_value_name_int(0, "maps", Map[mpCount]);
-        printf("|: Loaded %d maps in total", Map[mpCount]);
+        printf("[x] Loaded %d maps in total", Map[mpCount]);
         return 1;
     }
     
-	printf("|: Loading maps failed");
+	printf("[ ] Loading maps failed");
 	return 0;
 }
 
@@ -860,11 +877,11 @@ custom LoadClasses() {
 			cache_get_value_name_float(i, "points", Classes[i][cldPoints]);
 		}
 		
-		printf("|: Classes loaded (%d / %d)", i, len);
+		printf("[x] Classes loaded (%d / %d)", i, len);
         return 1;
     }
     
-    printf("|: Loading classes failed");
+    printf("[ ] Loading classes failed");
 	return 0;
 }
 
@@ -887,10 +904,11 @@ custom LoadObjects() {
 			);
 		}
 		
-		printf("|: %d objects loaded", len);
+		printf("[x] Loaded %d objects", len);
 		return 1;
  	}
  	
+ 	printf("[ ] Loaded objects FAILED");
  	return 0;
 }
 
@@ -1308,7 +1326,6 @@ custom LoadServerCfg() {
     if(cache_num_rows() > 0) {
         new buff[256];
         cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
-        cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
         cache_get_value_name_int(0, "max_auth_timeout", ServerConfig[svCfgAuthTimeout]);
         cache_get_value_name_int(0, "max_auth_tries", ServerConfig[svCfgAuthTries]);
         cache_get_value_name_int(0, "infection_drunk", ServerConfig[svCfgInfectionDrunkLevel]);
@@ -1367,11 +1384,11 @@ custom LoadServerCfg() {
         format(buff, sizeof(buff), "language %s", ServerConfig[svCfgLanguage]);
         SendRconCommand(buff);
 
-        printf("|: Server configuration LOADED");
+        printf("[x] Server configuration LOADED");
         return 1;
 	}
 
-	printf("|: Server configuration FAILED");
+	printf("[ ] Server configuration FAILED");
 	return 0;
 }
 
@@ -1394,11 +1411,11 @@ custom LoadGangsCfg() {
         cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
         cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
 
-        printf("|: Gangs configuration LOADED");
+        printf("[x] Gangs configuration LOADED");
         return 1;
     }
 
-    printf("|: Gangs configuration FAILED");
+    printf("[ ] Gangs configuration FAILED");
     return 0;
 }
 
@@ -1417,11 +1434,11 @@ custom LoadRoundCfg() {
         cache_get_value_name_float(0, "brutality", RoundConfig[rdCfgBrutality]);
         cache_get_value_name_float(0, "undead", RoundConfig[rdCfgDeaths]);
         
-        printf("|: Round configuration LOADED");
+        printf("[x] Round configuration LOADED");
         return 1;
     }
     
-    printf("|: Round configuration FAILED");
+    printf("[ ] Round configuration FAILED");
     return 0;
 }
 
@@ -1437,11 +1454,11 @@ custom LoadEvacCfg() {
 			EvacuationConfig[ecdCfgPosition][3]
 		);
 
-        printf("|: Evacuation configuration LOADED");
+        printf("[x] Evacuation configuration LOADED");
         return 1;
     }
 
-    printf("|: Evacuation configuration FAILED");
+    printf("[ ] Evacuation configuration FAILED");
     return 0;
 }
 
@@ -1467,11 +1484,11 @@ custom LoadMapCfg() {
         cache_get_value_name_float(0, "hero_armour", MapConfig[mpCfgHumanHeroArmour]);
         cache_get_value_name_float(0, "zombie_armour", MapConfig[mpCfgZombieBossArmour]);
         
-        printf("|: Map configuration LOADED");
+        printf("[x] Map configuration LOADED");
         return 1;
     }
     
-    printf("|: Map configuration FAILED");
+    printf("[ ] Map configuration FAILED");
     return 0;
 }
 
@@ -1485,10 +1502,10 @@ custom LoadWeaponsCfg() {
         	cache_get_value_name_int(i, "pick", WeaponsConfig[i][wdCfgPick]);
         }
 
-        printf("|: Weapons configuration LOADED (%d / %d)", len, MAX_WEAPONS);
+        printf("[x] Weapons configuration LOADED (%d / %d)", len, MAX_WEAPONS);
         return 1;
     }
-    printf("|: Weapons configuration FAILED");
+    printf("[ ] Weapons configuration FAILED");
 	return 0;
 }
 
@@ -1499,10 +1516,10 @@ custom LoadBalanceCfg() {
     	cache_get_value_name_float(0, "max", ServerBalance[svbMaxZombies]);
     	cache_get_value_name_float(0, "by_default", ServerBalance[svbDefaultZombies]);
 
-        printf("|: Balance configuration LOADED");
+        printf("[x] Balance configuration LOADED");
         return 1;
     }
-    printf("|: Balance configuration FAILED");
+    printf("[ ] Balance configuration FAILED");
 	return 0;
 }
 
@@ -1537,13 +1554,33 @@ custom LoadTexturesCfg() {
 			cache_get_value_name_int(i, "texture_alignment", ServerTexturesConfig[i][svTxCfgTextureAlignment]);
         }
 
-        printf("|: Textures configuration LOADED (%d / %d)", len, MAX_SERVER_TEXTURES);
+        printf("[x] Textures configuration LOADED (%d / %d)", len, MAX_SERVER_TEXTURES);
         InitializeScreenTextures();
         
         return 1;
     }
     
-    printf("|: Textures configuration FAILED");
+    printf("[ ] Textures configuration FAILED");
+	return 0;
+}
+
+custom LoadAchievementsCfg() {
+    if(cache_num_rows() > 0) {
+        new i, len = clamp(cache_num_rows(), 0, MAX_ACHIEVEMENTS);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name_int(i, "id", AchievementsConfig[i][accgId]);
+            cache_get_value_name_int(i, "type", AchievementsConfig[i][accgType]);
+            cache_get_value_name_int(i, "count", AchievementsConfig[i][accgCount]);
+            cache_get_value_name_int(i, "reward", AchievementsConfig[i][accgReward]);
+            cache_get_value_name_int(i, "disabled", AchievementsConfig[i][accgDisabled]);
+        }
+        
+        printf("[x] Achievements configuration LOADED (%d / %d)", len, MAX_ACHIEVEMENTS);
+        CreateAchievementsHashmap();
+        return 1;
+    }
+    
+    printf("[ ] Achievements configuration FAILED");
 	return 0;
 }
 
@@ -1596,11 +1633,11 @@ custom LoadClassesCfg() {
 			ClassesConfig[clsCfgEngineerTextRange]
 		);
 			
-		printf("|: Classes configuration LOADED");
+		printf("[x] Classes configuration LOADED");
 		return 1;
     }
     
-    printf("|: Classes configuration FAILED");
+    printf("[ ] Classes configuration FAILED");
 	return 0;
 }
 
@@ -2084,15 +2121,38 @@ stock GetAchievementIndex(const type) {
 	return -1;
 }
 
+stock CreateAchievementsHashmap() {
+	for( new i = 0, type, inx; i < MAX_ACHIEVEMENTS; i++ ) {
+	    inx = 0;
+	    type = AchievementsConfig[i][accgType];
+	    
+	    for( new j = 0; j < MAX_ACHIEVEMENTS; j++ ) {
+	        if(type == AchievementsConfig[j][accgType]) {
+                AchievementsHashmap[ACHIEVEMENTS_TYPES:type][inx++] = AchievementsConfig[j][accgCount];
+	        }
+	    }
+	}
+}
+
 stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, const count = 1) {
     new index = GetAchievementIndex(_:type);
     if(index == -1) {
 	    return 0;
 	}
 	
+	// format(str, sizeof(str), ">> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)", Misc[playerid][mdPlayerName], "test", 5, Localization[playerid][LD_MSG_COINS]);
+	// SendClientMessage(playerid, COLOR_LIME, str);
+	
+	/*
+	AchievementsConfig[i][accgType]
+ 	AchievementsConfig[i][accgCount]
+  	AchievementsConfig[i][accgReward]
+   AchievementsConfig[i][accgDisabled]
+	*/
+	
 	switch(type) {
-		case ACH_TYPE_RUN: Achievements[playerid][achRan] += 0.00001;
-		case ACH_TYPE_TOTAL_POINTS: Achievements[playerid][achTotalPoints] += float(count);
+		case ACH_TYPE_RUN: Achievements[playerid][ACHIEVEMENTS_DATA:index] += 0.00001;
+		case ACH_TYPE_TOTAL_POINTS: Achievements[playerid][ACHIEVEMENTS_DATA:index] += float(count);
 		case ACH_TYPE_SILINCED: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
 		case ACH_TYPE_COLT45: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
 		case ACH_TYPE_DEAGLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
@@ -2103,12 +2163,22 @@ stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, 
         case ACH_TYPE_TEC9: SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
         case ACH_TYPE_AK47: SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
         case ACH_TYPE_M4: SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        case ACH_TYPE_WEAPONS_MASTER: {
+        /*case ACH_TYPE_WEAPONS_MASTER: {
             ProceedAchievementProgress(playerid, ACH_TYPE_WEAPONS_MASTER);
-        }
+        }*/
         
 		default: ++Achievements[playerid][ACHIEVEMENTS_DATA:index];
 	}
+	
+	// TODO: Achievements
+	static const loadMapNameQuery[] = LOAD_ACHIEVEMENT_NAME_QUERY;
+    new formatedLoadMapNameQuery[sizeof(loadMapNameQuery) + MAX_ID_LENGTH];
+    mysql_format(Database, formatedLoadMapNameQuery, sizeof(formatedLoadMapNameQuery), loadMapNameQuery, Map[mpId]);
+    mysql_tquery(Database, formatedLoadMapNameQuery, "GetLocalizedAchievementName", "i", playerid);
+	
+	new str[128];
+	format(str, sizeof(str), "%d | [%d, %d, %d] / %d", _:type, AchievementsHashmap[type][0], AchievementsHashmap[type][1], AchievementsHashmap[type][2], Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+	SendClientMessage(playerid, COLOR_LIME, str);
 	
     return 1;
 }
@@ -2125,6 +2195,21 @@ stock GetAchievementProgressByType(const playerid, const type) {
 	
 	return Achievements[playerid][ACHIEVEMENTS_DATA:index];
 }
+
+stock bool:IsJumping(const playerid) {
+	switch(GetPlayerAnimationIndex(playerid)) {
+	    case 1062, 1141, 1064, 1195..1198: return true;
+	}
+	return false;
+}
+
+stock bool:IsRunning(const playerid) {
+	switch(GetPlayerAnimationIndex(playerid)) {
+	    case 1249, 1064, 1457, 1222..1236, 1276..1280: return true;
+	}
+	return false;
+}
+
 
 stock bool:IsFemaleSkin(const playerid) {
 	switch(GetPlayerSkin(playerid)) {
@@ -2205,12 +2290,9 @@ stock LoadNewMap() {
 	}
     
     static const loadMapNameQuery[] = LOAD_MAP_NAME_QUERY;
-    new formatedLoadMapNameQuery[sizeof(loadMapNameQuery) + LOCALIZATION_SIZE], index;
-    foreach(Player, i) {
-        index = Player[i][pLanguage];
-    	mysql_format(Database, formatedLoadMapNameQuery, sizeof(formatedLoadMapNameQuery), loadMapNameQuery, LOCALIZATION_TABLES[index], Map[mpId]);
-        mysql_tquery(Database, formatedLoadMapNameQuery, "GetLocalizedMapName", "i", i);
-    }
+    new formatedLoadMapNameQuery[sizeof(loadMapNameQuery) + MAX_ID_LENGTH];
+    mysql_format(Database, formatedLoadMapNameQuery, sizeof(formatedLoadMapNameQuery), loadMapNameQuery, Map[mpId]);
+    mysql_tquery(Database, formatedLoadMapNameQuery, "GetLocalizedMapName");
     
    	static const loadMapQuery[] = LOAD_MAP_DATA_QUERY;
 	new formated[sizeof(loadMapQuery) + MAX_ID_LENGTH];
@@ -2218,10 +2300,17 @@ stock LoadNewMap() {
  	mysql_tquery(Database, formated, "LoadMap");
 }
 
-custom GetLocalizedMapName(const playerid) {
+custom GetLocalizedMapName() {
 	if(cache_num_rows()) {
-        cache_get_value_name(0, "name", Localization[playerid][LD_MAP_NAME]);
+	
+	    new index;
+	    foreach(Player, i) {
+	        index = Player[i][pLanguage];
+	        cache_get_value_name(0, LOCALIZATION_TABLES[index], Localization[i][LD_MAP_NAME]);
+	    }
 	}
+	
+	return 1;
 }
 
 stock SetMapId() {
@@ -2290,6 +2379,8 @@ stock InitializeWeaponsData() {
 	    WeaponsConfig[i][wdCfgDefault] = 0;
 	    WeaponsConfig[i][wdCfgPick] = 0;
 	}
+	
+	printf("[x] Clear Weapons data on load");
 }
 
 stock InitializeClassesData() {
@@ -2309,6 +2400,48 @@ stock InitializeClassesData() {
 		strmid(Classes[i][cldImmunity], "", 0, MAX_CLASSDATA_STR_LEN);
 		strmid(Classes[i][cldWeapons], "", 0, MAX_CLASSDATA_STR_LEN);
 	}
+	
+	printf("[x] Clear Classes data on load");
+}
+
+stock InitializeClassesConfig() {
+    ClassesConfig[clsCfgWhoppingWhen] = INVALID_VALUE;
+	ClassesConfig[clsCfgSpitterWeapon] = INVALID_VALUE;
+ 	ClassesConfig[clsCfgStealAmmoFactor] = 1;
+	ClassesConfig[clsCfgAirRange] = 0.0;
+    ClassesConfig[clsCfgRadioactiveDamage] = 0.0;
+    ClassesConfig[clsCfgRegenHealth] = 0.0;
+    ClassesConfig[clsCfgSupportHealth] = 0.0;
+ 	ClassesConfig[clsCfgSpaceDamage] = 0.0;
+
+    ClassesConfig[clsCfgStomp][0] = 1.0;
+	ClassesConfig[clsCfgStomp][1] = 1.0;
+	ClassesConfig[clsCfgStomp][2] = 1.0;
+
+    ClassesConfig[clsCfgStomperEffectId] = INVALID_OBJECT_ID;
+	ClassesConfig[clsCfgStomperEffectPos][0] = 0.0;
+	ClassesConfig[clsCfgStomperEffectPos][1] = 0.0;
+	ClassesConfig[clsCfgStomperEffectPos][2] = 0.0;
+	ClassesConfig[clsCfgStomperEffectTime] = 0;
+
+	ClassesConfig[clsCfgFlasherEffectId] = INVALID_OBJECT_ID;
+	ClassesConfig[clsCfgFlasherEffectTime] = 0;
+	ClassesConfig[clsCfgFlasherExplosionType] = 0;
+	ClassesConfig[clsCfgFlasherExplosionRange] = 0.0;
+
+    ClassesConfig[clsCfgHighJump][0] = 1.0;
+	ClassesConfig[clsCfgHighJump][1] = 1.0;
+	ClassesConfig[clsCfgHighJump][2] = 1.0;
+
+    ClassesConfig[clsCfgLongJump][0] = 1.0;
+	ClassesConfig[clsCfgLongJump][1] = 1.0;
+	ClassesConfig[clsCfgLongJump][2] = 1.0;
+
+    ClassesConfig[clsCfgEngineerBox] = INVALID_OBJECT_ID;
+	ClassesConfig[clsCfgEngineerSound] = 0;
+	ClassesConfig[clsCfgEngineerTextRange] = 0.0;
+		
+	printf("[x] Clear Classes Config data on load");
 }
 
 stock ClearLocalizedClassesData(const playerid) {
@@ -2327,6 +2460,7 @@ stock ClearAllPlayerData(const playerid) {
     ClearPlayerRoundSession(playerid);
     ClearPlayerWeaponsData(playerid);
     ClearLocalizedClassesData(playerid);
+    ClearPlayerAttachedObjects(playerid);
     
     ResetWeapons(playerid);
     
@@ -2348,19 +2482,12 @@ stock ClearPlayerData(const playerid) {
     Player[playerid][pStanding] = 0.0;
 }
 
-stock IncreaseWeaponSkillLevel(const playerid, const weaponid) {
-	switch(weaponid) {
-	    case 22: ProceedAchievementProgress(playerid, ACH_TYPE_SILINCED);
-	    case 23: ProceedAchievementProgress(playerid, ACH_TYPE_COLT45);
-	    case 24: ProceedAchievementProgress(playerid, ACH_TYPE_DEAGLE);
-	    case 25: ProceedAchievementProgress(playerid, ACH_TYPE_SHOTGUN);
-	    case 27: ProceedAchievementProgress(playerid, ACH_TYPE_COMBAT_SHOTGUN);
-	    case 32: ProceedAchievementProgress(playerid, ACH_TYPE_TEC9);
-	    case 29: ProceedAchievementProgress(playerid, ACH_TYPE_MP5);
-	    case 30: ProceedAchievementProgress(playerid, ACH_TYPE_AK47);
-	    case 31: ProceedAchievementProgress(playerid, ACH_TYPE_M4);
-	    case 33: ProceedAchievementProgress(playerid, ACH_TYPE_RIFLE);
-	}
+stock ClearPlayerAttachedObjects(const playerid) {
+	for( new i = 0; i < 9; i++ ) {
+        if(IsPlayerAttachedObjectSlotUsed(playerid, i)) {
+            RemovePlayerAttachedObject(playerid, i);
+        }
+    }
 }
 
 stock ClearPlayerWeaponsData(const playerid) {
@@ -2470,6 +2597,23 @@ stock InitializeScreenTextures() {
 	CreateTextureFromConfig(ServerTextures[blindTexture], BLIND_TEXTURE_ID);
 }
 
+stock InitializeGangsConfig() {
+	GangsConfig[gdCfgCapacity] = 10;
+	GangsConfig[gdCfgFlagId] = 11245;
+    GangsConfig[gdCfgRequired] = 25000.0;
+    GangsConfig[gdCfgDefault] = 5000.0;
+    GangsConfig[gdCfgMultiply] = 2.0;
+    GangsConfig[gdCfgArmourPerLevel] = 10.0;
+    GangsConfig[gdCfgCrystalHealth] = 50000.0;
+    GangsConfig[gdCfgFlagDistance] = 100.0;
+    GangsConfig[gdCfgPerCure] = 0.0;
+    GangsConfig[gdCfgPerKill] = 0.0;
+    GangsConfig[gdCfgPerEvac] = 0.0;
+    GangsConfig[gdCfgPerAbility] = 0.0;
+    GangsConfig[gdCfgPerAssist] = 0.0;
+	return 1;
+}
+
 stock DestroyScreenTextures() {
     for( new i; i < MAX_PLAYERS; i++ ) {
         if(IsPlayerConnected(i)) {
@@ -2524,6 +2668,163 @@ stock InitializeDefaultValues() {
 	LotteryConfig[LCD_STARTED] = false;
 	LotteryConfig[LCD_ID] = -1;
 	LotteryConfig[LCD_JACKPOT] = 0;
+	
+	for( i = 0; i < MAX_OBJECTS; i++ ) {
+	    DestroyObjectEx(i);
+	}
+	
+	printf("[x] Clear Default values on load");
+}
+
+stock InitializeAchievementsConfig() {
+    for( new i = 0; i < MAX_ACHIEVEMENTS; i++ ) {
+        AchievementsConfig[i][accgId] = INVALID_VALUE;
+        AchievementsConfig[i][accgType] = INVALID_VALUE;
+        AchievementsConfig[i][accgCount] = INVALID_VALUE;
+        AchievementsConfig[i][accgReward] = 0;
+        AchievementsConfig[i][accgDisabled] = 1;
+    }
+    
+    printf("[x] Clear Achievements data on load");
+    return 1;
+}
+
+stock InitializeServerTextures() {
+	for( new i = 0; i < MAX_SERVER_TEXTURES; i++ ) {
+		ServerTexturesConfig[i][svTxCfgTexturePosition][0] = -2048.0;
+	 	ServerTexturesConfig[i][svTxCfgTexturePosition][1] = -2048.0;
+		 
+	 	ServerTexturesConfig[i][svTxCfgTextureLetterSize][0] = 0.1;
+	 	ServerTexturesConfig[i][svTxCfgTextureLetterSize][1] = 0.1;
+		 
+	 	ServerTexturesConfig[i][svTxCfgTextureTextSize][0] = 0.1;
+	 	ServerTexturesConfig[i][svTxCfgTextureTextSize][1] = 0.1;
+		 
+	 	ServerTexturesConfig[i][svTxCfgTextureBoxColor] = 0x00000000;
+	 	ServerTexturesConfig[i][svTxCfgTextureBackgroundColor] = 0x00000000;
+        ServerTexturesConfig[i][svTxCfgTextureDrawColor] = 0x00000000;
+        
+        strmid(ServerTexturesConfig[i][svTxCfgTextureDefaultValue], "", 0, MAX_SERVER_TEXTURE_NAME);
+        
+		ServerTexturesConfig[i][svTxCfgTextureFont] = 0;
+		ServerTexturesConfig[i][svTxCfgTextureOutline] = 0;
+		ServerTexturesConfig[i][svTxCfgTextureProportional] = 0;
+		ServerTexturesConfig[i][svTxCfgTextureShadow] = 0;
+		ServerTexturesConfig[i][svTxCfgTextureUseBox] = 0;
+		ServerTexturesConfig[i][svTxCfgTextureAlignment] = 0;
+	}
+	
+	printf("[x] Clear Textures data on load");
+	return 1;
+}
+
+stock InitializeServerConfig() {
+    ServerConfig[svCfgPreviewBot] = 0;
+    ServerConfig[svCfgAuthTimeout] = 2;
+    ServerConfig[svCfgAuthTries] = 3;
+    ServerConfig[svCfgInfectionDrunkLevel] = 0;
+    ServerConfig[svCfgPickupProtection] = 15;
+    ServerConfig[svCfgMinZombiesToWin] = 2;
+    ServerConfig[svCfgMaxWeaponAmmo] = 100;
+    ServerConfig[svCfgRifle] = INVALID_VALUE;
+    ServerConfig[svCfgExcludedMirrorPart] = INVALID_VALUE;
+    ServerConfig[svCfgMeatPickup] = INVALID_OBJECT_ID;
+    ServerConfig[svCfgAmmoChance] = 0;
+    ServerConfig[svCfgAntidoteChance] = 0;
+    ServerConfig[svCfgTipMessageCooldown] = 120;
+    ServerConfig[svCfgInfectionDamage] = 0.0;
+    ServerConfig[svCfgCurseDamage] = 0.0;
+    ServerConfig[svCfgVehicleDamage] = 0.0;
+    ServerConfig[svCfgSpawnRange] = 0.0;
+    ServerConfig[svCfgZombieFistsDamage] = 1.0;
+    ServerConfig[svCfgPreviewBotPos][0] = 0.0;
+	ServerConfig[svCfgPreviewBotPos][1] = 0.0;
+	ServerConfig[svCfgPreviewBotPos][2]  = 0.0;
+	ServerConfig[svCfgPreviewBotPos][3] = 0.0;
+	ServerConfig[svCfgPreviewCameraPos][0] = 0.0;
+	ServerConfig[svCfgPreviewCameraPos][1] = 0.0;
+	ServerConfig[svCfgPreviewCameraPos][2] = 0.0;
+	ServerConfig[svCfgPreviewCameraPos][3] = 0.0;
+	ServerConfig[svCfgPreviewCameraPos][4] = 0.0;
+	ServerConfig[svCfgPreviewCameraPos][5] = 0.0;
+	ServerConfig[svCfgQuizPoints] = 0;
+ 	ServerConfig[svCfgQuizCooldown] = 500;
+ 	ServerConfig[svCfgQuizResetTime] = 500;
+ 	ServerConfig[svCfgLastLotteryCooldown] = 500;
+	ServerConfig[svCfgLotteryResetTime] = 500;
+	ServerConfig[svCfgLotteryJackpot] = 0;
+	ServerConfig[svCfgLotteryJackpotPerPlayer] = 0;
+	
+	strmid(ServerConfig[svCfgName], "Loading...", 0, MAX_SERVER_CONFIG_NAME_LEN);
+	strmid(ServerConfig[svCfgMode], "Loading...", 0, MAX_SERVER_CONFIG_NAME_LEN);
+ 	strmid(ServerConfig[svCfgDiscord], "Loading...", 0, MAX_SERVER_CONFIG_NAME_LEN);
+  	strmid(ServerConfig[svCfgSite], "Loading...", 0, MAX_SERVER_CONFIG_NAME_LEN);
+   	strmid(ServerConfig[svCfgLanguage], "Loading...", 0, MAX_SERVER_CONFIG_NAME_LEN);
+   	
+   	printf("[x] Clear Server config on load");
+	return 1;
+}
+
+stock InitializeRoundConfig() {
+    RoundConfig[rdCfgSurvivalPer] = 0;
+    RoundConfig[rdCfgCap] = 0;
+    RoundConfig[rdCfgBrutalityWeapon] = INVALID_VALUE;
+    RoundConfig[rdCfgEvac] = 0.0;
+    RoundConfig[rdCfgSurvival] = 0.0;
+    RoundConfig[rdCfgKilling] = 0.0;
+    RoundConfig[rdCfgCare] = 0.0;
+    RoundConfig[rdCfgMobility] = 0.0;
+    RoundConfig[rdCfgSkillfulness] = 0.0;
+    RoundConfig[rdCfgBrutality] = 0.0;
+    RoundConfig[rdCfgDeaths] = 0.0;
+
+    printf("[x] Clear Round config on load");
+    return 1;
+}
+
+stock InitializeEvacuationConfig() {
+	EvacuationConfig[ecdCfgInterior] = 0;
+	EvacuationConfig[ecdCfgSound] = 0;
+	EvacuationConfig[ecdCfgPosition][0] = 3096.0;
+	EvacuationConfig[ecdCfgPosition][1] = 3096.0;
+	EvacuationConfig[ecdCfgPosition][2] = 1024.0;
+	EvacuationConfig[ecdCfgPosition][3] = 0.0;
+	
+	printf("[x] Clear Evacuation config on load");
+    return 1;
+}
+
+stock InitializeServerBalance() {
+    ServerBalance[svbMinZombies] = 2.0;
+    ServerBalance[svbMediumZombies] = 3.0;
+    ServerBalance[svbMaxZombies] = 4.0;
+    ServerBalance[svbDefaultZombies] = 2.0;
+
+    printf("[x] Clear Balance config on load");
+    return 1;
+}
+
+stock InitializeMapConfig() {
+    MapConfig[mpCfgTotal] = 300;
+    MapConfig[mpCfgUpdate] = 5;
+    MapConfig[mpCfgBalance] = 30;
+    MapConfig[mpCfgEnd] = 60;
+    MapConfig[mpCfgRestart] = 10;
+    MapConfig[mpCfgGreatTime] = 30;
+    MapConfig[mpCfgSpawnProtectionTime] = 15;
+    MapConfig[mpCfgOOMCheck] = 2;
+    MapConfig[mpCfgSpawnTextRange] = 50.0;
+    MapConfig[mpCfgHumanHeroPoints] = 0.0;
+    MapConfig[mpCfgZombieBossPoints] = 0.0;
+	MapConfig[mpCfgFirstBlood] = 0.0;
+    MapConfig[mpCfgKillLast] = 0.0;
+    MapConfig[mpCfgLastEvacuated] = 0.0;
+    MapConfig[mpCfgHumanHeroArmour] = 0.0;
+    MapConfig[mpCfgZombieBossArmour] = 0.0;
+    strmid(MapConfig[mpCfgHumanHeroWeapons], "24,31", 0, 7);
+
+    printf("[x] Clear Map config on load");
+    return 1;
 }
 
 stock ClearPlayerRoundData(const playerid) {
@@ -2564,6 +2865,21 @@ stock ClearPlayerRoundData(const playerid) {
 	ClearAbilitiesTimers(playerid);
 	TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
 	TextDrawHideForPlayer(playerid, ServerTextures[blindTexture]);
+}
+
+stock IncreaseWeaponSkillLevel(const playerid, const weaponid) {
+	switch(weaponid) {
+	    case 22: ProceedAchievementProgress(playerid, ACH_TYPE_SILINCED);
+	    case 23: ProceedAchievementProgress(playerid, ACH_TYPE_COLT45);
+	    case 24: ProceedAchievementProgress(playerid, ACH_TYPE_DEAGLE);
+	    case 25: ProceedAchievementProgress(playerid, ACH_TYPE_SHOTGUN);
+	    case 27: ProceedAchievementProgress(playerid, ACH_TYPE_COMBAT_SHOTGUN);
+	    case 32: ProceedAchievementProgress(playerid, ACH_TYPE_TEC9);
+	    case 29: ProceedAchievementProgress(playerid, ACH_TYPE_MP5);
+	    case 30: ProceedAchievementProgress(playerid, ACH_TYPE_AK47);
+	    case 31: ProceedAchievementProgress(playerid, ACH_TYPE_M4);
+	    case 33: ProceedAchievementProgress(playerid, ACH_TYPE_RIFLE);
+	}
 }
 
 stock bool:IsPlayerInsideMap(const playerid) {

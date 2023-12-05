@@ -15,7 +15,7 @@
 #define LOAD_ROUND_CFG_QUERY "SELECT * FROM round_config WHERE 1 LIMIT 1;"
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`=0;"
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
-#define LOAD_MAP_NAME_QUERY "SELECT COALESCE(m.%e, '') as name FROM `maps_localization` m WHERE m.id = %d;"
+#define LOAD_MAP_NAME_QUERY "SELECT * FROM `maps_localization` WHERE id = %d;"
 #define REFRESH_PLAYER_WEAPONS_QUERY "DELETE FROM `weapons` WHERE `time` < %d;"
 #define LOAD_GANGS_CFG_QUERY "SELECT * FROM gangs_config WHERE 1 LIMIT 1;"
 #define LOAD_EVAC_CFG_QUERY "SELECT * FROM evac_config WHERE 1 LIMIT 1;"
@@ -29,6 +29,7 @@
 #define GET_RANDOM_SKIN_QUERY "SELECT c.skin,c.health,c.armour FROM `classes` c WHERE `disabled` = 0 AND `team` = %d ORDER BY RAND() LIMIT 1;"
 #define LOAD_OBJECTS_QUERY "SELECT * FROM `objects` WHERE 1;"
 #define LOAD_LOCALIZATION_QST_QUERY "SELECT `%e` as text, `%e_answer` as answer FROM `random_question` WHERE 1;"
+#define LOAD_ACHS_CFG_QUERY "SELECT * FROM `achievements_config` WHERE 1;"
 
 #define LOAD_ACHIEVEMENTS_PAGE "SELECT l.english AS title, l.english_desc AS description, c.type, c.count, c.reward, (\
 	SELECT COUNT( c.id ) \

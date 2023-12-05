@@ -3,7 +3,11 @@
 #endif
 #define _achievements_pack_included
 
+#define MAX_ACHIEVEMENTS 81
+#define MAX_ACHIEVEMENT_ACTIVITIES 3
+
 enum ACHIEVEMENT_CONFIG {
+	accgId,
 	accgReward,
 	accgType,
 	accgCount,
