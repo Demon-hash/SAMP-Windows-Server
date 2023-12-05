@@ -132,6 +132,7 @@ enum LOCALIZATION_DATA {
 	LD_MSG_STATS_GANG_ACCOUNT,
 	LD_MSG_STATS_DATE_SIGN,
 	LD_MSG_COINS,
+	LD_MSG_ACH_UNLOCKED,
 	LD_ENDF,
 };
 
@@ -189,7 +190,7 @@ enum LOCALIZATION_DATA {
 	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
 	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!'),\
 	(47, 'points', 'очков'),\
-	(48, '>> You need %.0f %s to use this class!', '>> Вам нужно %.0f %s чтобы использовать этот класс!'),\
+	(48, '>> You need %d %s to use this class!', '>> Вам нужно %d %s чтобы использовать этот класс!'),\
 	(49, 'MISS', 'ПРОМАХ'),\
 	(50, '~g~Found:~w~ %d ammo', '~g~Поднято:~w~ %d патрон(ов)');\
 "
@@ -269,5 +270,6 @@ enum LOCALIZATION_DATA {
 	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),\
 	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),\
 	(118, '>> Date: %02dD/%02dM/%dY  Sign: %s', '>> Дата: %02dD/%02dM/%dY  Подпись: %s'),\
-	(119, 'Coin(s)', 'Монет(а/ы)');\
+	(119, 'Coin(s)', 'Монет(а/ы)'),\
+	(120, '>> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)', '>> Игрок %s открыл новое достижение{FFFFFF} %s +%d %s (/achievements)');\
 "

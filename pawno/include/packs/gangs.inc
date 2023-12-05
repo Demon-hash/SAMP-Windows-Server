@@ -21,8 +21,8 @@ enum GANG_DATA {
 enum GANGS_CONFIG_DATA {
 	gdCfgCapacity,
 	gdCfgFlagId,
-	Float:gdCfgRequired,
-	Float:gdCfgDefault,
+	gdCfgRequired,
+	gdCfgDefault,
 	Float:gdCfgMultiply,
 	Float:gdCfgArmourPerLevel,
 	Float:gdCfgCrystalHealth,

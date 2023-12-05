@@ -6,6 +6,12 @@
 #define MAX_ACHIEVEMENTS 81
 #define MAX_ACHIEVEMENT_ACTIVITIES 3
 
+enum ACHIEVEMENT_HASHMAP {
+	achpId,
+	achpCount,
+	achpReward,
+}
+
 enum ACHIEVEMENT_CONFIG {
 	accgId,
 	accgReward,
@@ -16,7 +22,7 @@ enum ACHIEVEMENT_CONFIG {
 
 enum ACHIEVEMENTS_DATA {
 	Float:achRan,
-	Float:achTotalPoints,
+	achTotalPoints,
 	achRank,
 	achKills,
 	achDeaths,

@@ -19,7 +19,7 @@ enum CLASSES_DATA {
 	cldImmunity[MAX_CLASSDATA_STR_LEN],
 	cldAbility[MAX_CLASSDATA_STR_LEN],
 	cldWeapons[MAX_CLASSDATA_STR_LEN],
-	Float:cldPoints,
+	cldPoints,
 	cldCooldown,
 	cldAbilityTime,
 	cldAbilityCount,

@@ -11,8 +11,8 @@
 	`password` varchar(32) NOT NULL,\
 	`language` int(2) unsigned NOT NULL default '0',\
 	`coins` int(6) unsigned NOT NULL default '0',\
-	`points` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
-	`standing` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
+	`points` int(6) unsigned NOT NULL default '0',\
+	`standing` int(6) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -36,7 +36,7 @@
 	`evacs` int(6) unsigned NOT NULL default '0',\
 	`reported` int(6) unsigned NOT NULL default '0',\
 	`jumps` int(6) unsigned NOT NULL default '0',\
-	`total_points` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`total_points` int(6) unsigned NOT NULL default '0',\
 	`hours` int(6) unsigned NOT NULL default '0',\
 	`minutes` int(2) unsigned NOT NULL default '0',\
 	`seconds` int(2) unsigned NOT NULL default '0',\
@@ -61,6 +61,7 @@
 	`session` int(2) unsigned NOT NULL default '0',\
 	`blood` int(6) unsigned NOT NULL default '0',\
 	`mary` int(1) unsigned NOT NULL default '0',\
+	`progress` varchar(256) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -69,7 +70,7 @@
 	`id` int(11) unsigned NOT NULL,\
 	`type` int(3) unsigned NOT NULL default '0',\
 	`count` int(6) unsigned NOT NULL default '0',\
-	`reward` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`reward` int(6) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '1',\
 	PRIMARY KEY (`id`)\
 );"
@@ -168,7 +169,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`target_id` int(11) unsigned NOT NULL,\
 	`issued_id` int(11) unsigned NOT NULL,\
-	`amount` DECIMAL(9,2) unsigned NOT NULL,\
+	`amount` int(6) unsigned NOT NULL,\
 	`target_ip` varchar(16) NOT NULL,\
 	`issued_ip` varchar(16) NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
@@ -180,7 +181,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
 	`from_id` int(11) unsigned NOT NULL,\
-	`amount` DECIMAL(9,2) unsigned NOT NULL,\
+	`amount` int(6) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`ip` varchar(16) NOT NULL,\
    	PRIMARY KEY (`id`)\
@@ -229,7 +230,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
 	`gang_id` int(11) unsigned NOT NULL,\
-	`amount` DECIMAL(9,2) unsigned NOT NULL,\
+	`amount` int(6) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`ip` varchar(16) NOT NULL,\
 	PRIMARY KEY (`id`)\
@@ -244,7 +245,7 @@
 	`name` varchar(32) NOT NULL default '',\
 	`tag` varchar(6) NOT NULL default '',\
 	`level` int(3) unsigned NOT NULL default '0',\
-	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
+	`points` int(6) unsigned NOT NULL default '0',\
 	`house` int(1) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
@@ -299,8 +300,8 @@
 	CREATE TABLE IF NOT EXISTS gangs_config (\
 	`id` int(11) unsigned NOT NULL,\
 	`capacity` int(3) unsigned NOT NULL default '10',\
-	`required` DECIMAL(9,2) unsigned NOT NULL default '25000.0',\
-	`default` DECIMAL(9,2) unsigned NOT NULL default '5000.0',\
+	`required` int(6) unsigned NOT NULL default '25000',\
+	`default` int(6) unsigned NOT NULL default '5000',\
 	`multiply` DECIMAL(9,2) unsigned NOT NULL default '2.0',\
 	`armour_per_level` DECIMAL(9,2) unsigned NOT NULL default '10.0',\
 	`crystal_health` DECIMAL(9,2) unsigned NOT NULL default '50000.0',\
@@ -386,7 +387,7 @@
 	`team` int(3) unsigned NOT NULL default '0',\
 	`health` DECIMAL(9,2) unsigned NOT NULL default '100.0',\
 	`armour` DECIMAL(9,2) unsigned NOT NULL default '0.0',\
-    	`points` DECIMAL(9,2) unsigned NOT NULL default '0',\
+    	`points` int(6) unsigned NOT NULL default '0',\
 	`cooldown` int(3) unsigned NOT NULL default '15',\
 	`time` int(3) unsigned NOT NULL default '15',\
 	`count` int(3) unsigned NOT NULL default '3',\
@@ -416,10 +417,10 @@
 	`tip_per` int(3) unsigned NOT NULL default '40',\
 	`random_question` varchar(24) NOT NULL default '80,90,30',\
 	`lottery` varchar(24) NOT NULL DEFAULT '200,60,1000,10',\
-	`kills` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
-	`evacuation` DECIMAL(9,2) unsigned NOT NULL default '15.0',\
-	`cure` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
-	`ability` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
+	`kills` int(6) unsigned NOT NULL default '1',\
+	`evacuation` int(6) unsigned NOT NULL default '15',\
+	`cure` int(6) unsigned NOT NULL default '1',\
+	`ability` int(6) unsigned NOT NULL default '1',\
 	`infection_damage` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`curse_damage` DECIMAL(9,2) unsigned NOT NULL default '4.0',\
 	`fists_damage` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
@@ -480,7 +481,7 @@
 	`seller_id` int(11) unsigned NOT NULL,\
 	`type` int(4) unsigned NOT NULL,\	
 	`count` int(11) unsigned NOT NULL,\
-	`points` DECIMAL(9,2) unsigned NOT NULL,\
+	`points` int(6) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
@@ -489,7 +490,7 @@
 	CREATE TABLE IF NOT EXISTS auction_cashback (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
-	`points` DECIMAL(9,2) unsigned NOT NULL,\
+	`points` int(6) unsigned NOT NULL,\
    	PRIMARY KEY (`id`)\
 );"
 
@@ -734,18 +735,18 @@
 	(1, 0, 10, 1, 0),\
 	(2, 0, 500, 1, 0),\
 	(3, 0, 1000, 1, 0),\
-	(4, 1, 10000, 2, 0),\
-	(5, 1, 50000, 4, 0),\
-	(6, 1, 200000, 6, 0),\
+	(4, 1, 10000, 1, 0),\
+	(5, 1, 50000, 1, 0),\
+	(6, 1, 200000, 1, 0),\
 	(7, 2, 3, 1, 0),\
 	(8, 2, 10, 1, 0),\
 	(9, 2, 20, 1, 0),\
 	(10, 3, 10, 1, 0),\
 	(11, 3, 100, 1, 0),\
-	(12, 3, 1000, 2, 0),\
+	(12, 3, 1000, 1, 0),\
 	(13, 4, 10, 1, 0),\
 	(14, 4, 100, 1, 0),\
-	(15, 4, 1000, 2, 0),\
+	(15, 4, 1000, 1, 0),\
 	(16, 5, 100, 1, 0),\
 	(17, 5, 1000, 1, 0),\
 	(18, 5, 5000, 1, 0),\
@@ -753,8 +754,8 @@
 	(20, 6, 1000, 1, 0),\
 	(21, 6, 5000, 1, 0),\
 	(22, 7, 5, 1, 0),\
-	(23, 7, 50, 2, 0),\
-	(24, 7, 100, 3, 0),\
+	(23, 7, 50, 1, 0),\
+	(24, 7, 100, 1, 0),\
 	(25, 8, 10, 1, 0),\
 	(26, 8, 100, 1, 0),\
 	(27, 8, 300, 1, 0),\
@@ -762,56 +763,56 @@
 	(29, 9, 100, 1, 0),\
 	(30, 9, 1000, 1, 0),\
 	(31, 10, 5, 1, 0),\
-	(32, 10, 100, 3, 0),\
-	(33, 10, 300, 5, 0),\
+	(32, 10, 100, 1, 0),\
+	(33, 10, 300, 1, 0),\
 	(34, 11, 10000, 1, 0),\
 	(35, 11, 50000, 1, 0),\
 	(36, 11, 100000, 1, 0),\
 	(37, 12, 50, 1, 0),\
 	(38, 12, 300, 1, 0),\
 	(39, 12, 1000, 1, 0),\
-	(40, 13, 168, 10, 0),\
-	(41, 13, 4383, 20, 0),\
-	(42, 13, 8760, 30, 0),\
+	(40, 13, 168, 1, 0),\
+	(41, 13, 4383, 1, 0),\
+	(42, 13, 8760, 1, 0),\
 	(43, 14, 100, 1, 0),\
 	(44, 14, 300, 1, 0),\
 	(45, 14, 700, 1, 0),\
 	(46, 15, 10, 1, 0),\
 	(47, 15, 50, 1, 0),\
 	(48, 15, 100, 1, 0),\
-	(49, 16, 10, 5, 0),\
-	(50, 16, 20, 5, 0),\
-	(51, 16, 30, 5, 0),\
+	(49, 16, 10, 1, 0),\
+	(50, 16, 20, 1, 0),\
+	(51, 16, 30, 1, 0),\
 	(52, 17, 10, 1, 0),\
 	(53, 17, 20, 1, 0),\
 	(54, 17, 30, 1, 0),\
 	(55, 18, 10, 1, 0),\
-	(56, 18, 30, 2, 0),\
-	(57, 18, 70, 3, 0),\
-	(58, 19, 2, 2, 0),\
-	(59, 19, 6, 6, 0),\
-	(60, 19, 12, 12, 0),\
+	(56, 18, 30, 1, 0),\
+	(57, 18, 70, 1, 0),\
+	(58, 19, 2, 1, 0),\
+	(59, 19, 6, 1, 0),\
+	(60, 19, 12, 1, 0),\
 	(61, 20, 10, 1, 0),\
 	(62, 20, 30, 1, 0),\
 	(63, 20, 60, 1, 0),\
 	(64, 21, 50, 1, 0),\
 	(65, 21, 100, 1, 0),\
 	(66, 21, 200, 1, 0),\
-	(67, 22, 1000, 10, 0),\
-	(68, 23, 1000, 10, 0),\
-	(69, 24, 1000, 10, 0),\
-	(70, 25, 1000, 10, 0),\
-	(71, 26, 1000, 10, 0),\
-	(72, 27, 1000, 10, 0),\
-	(73, 28, 1000, 10, 0),\
-	(74, 29, 1000, 10, 0),\
-	(75, 30, 1000, 10, 0),\
-	(76, 31, 1000, 10, 0),\
+	(67, 22, 1000, 1, 0),\
+	(68, 23, 1000, 1, 0),\
+	(69, 24, 1000, 1, 0),\
+	(70, 25, 1000, 1, 0),\
+	(71, 26, 1000, 1, 0),\
+	(72, 27, 1000, 1, 0),\
+	(73, 28, 1000, 1, 0),\
+	(74, 29, 1000, 1, 0),\
+	(75, 30, 1000, 1, 0),\
+	(76, 31, 1000, 1, 0),\
 	(77, 32, 1, 1, 0),\
 	(78, 33, 1, 1, 0),\
 	(79, 34, 1, 1, 0),\
 	(80, 35, 1, 1, 0),\
-	(81, 36, 10000, 20, 0);\
+	(81, 36, 10000, 1, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \
@@ -958,10 +959,10 @@
 	(1, 2, 0, '', 0, '', '23', 0, 0, 121, 0, 0),\
 	(2, 2, 500, '', 0, '', '24, 41', 0, 0, 105, 0, 0),\
 	(3, 2, 750, '', 0, '', '24, 25', 0, 0, 280, 0, 0),\
-	(4, 2, 1000, '', 0, '', '33, 25', 0, 0, 158, 0, 0),\	
+	(4, 2, 1000, '', 0, '', '33, 25', 0, 0, 201, 0, 0),\	
 	(5, 2, 1500, '', 0, '', '30', 0, 0, 287, 0, 0),\
 	(6, 2, 2000, '', 0, '16', '24,25', 0, 0, 249, 0, 0),\	
-	(7, 2, 3000, '25', 0, '', '24, 25, 33', 0, 0, 275, 0, 0),\
+	(7, 2, 3000, '25', 0, '', '24, 25, 33', 0, 0, 308, 0, 0),\
 	(8, 2, 5000, '', 0, '', '34', 0, 0, 294, 0, 0),\
 	(9, 2, 9000, '', 0, '', '25', 0, 0, 99, 0, 0),\
 	(10, 2, 12500, '', 0, '', '24, 31', 0, 0, 164, 0, 0),\

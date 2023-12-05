@@ -1,9 +1,7 @@
 #include <packs/core>
 #include <packs/developer>
 
-// Achievemtns - Line: 2173
 // Weekly Missions - Standing
-// Classes[i][cldDisabled]
 
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
@@ -49,8 +47,10 @@ static const LOCALIZATION_TABLES[][] = {
 };
 
 static Achievements[MAX_PLAYERS][ACHIEVEMENTS_DATA];
+static AchievementsProgress[MAX_PLAYERS][MAX_ACHIEVEMENTS];
+
 static AchievementsConfig[MAX_ACHIEVEMENTS][ACHIEVEMENT_CONFIG];
-static AchievementsHashmap[ACHIEVEMENTS_TYPES][MAX_ACHIEVEMENT_ACTIVITIES];
+static AchievementsHashmap[ACHIEVEMENTS_TYPES][MAX_ACHIEVEMENT_ACTIVITIES][ACHIEVEMENT_HASHMAP];
 
 static Round[MAX_PLAYERS][ROUND_DATA];
 static RoundSession[MAX_PLAYERS][ROUND_SESSION_DATA];
@@ -151,22 +151,6 @@ static
 		 "
 		 
 #define CRYSTAL_STONE_TEXT "CRYSTAL STONE\n{FFFFFF}>> %.0f <<{FFF000}\nDestroy this crystal to capture the map, only gang members can deal damage\nDamage dealt depends on rank"
-
-#define COLOR_CONNECTIONS 0xC0C0C0FF
-#define COLOR_RANDOM_QUESTION 0xC659B6FF
-#define COLOR_MEDIC 0xB2F558FF
-#define COLOR_INFO 0xFFF000FF
-#define COLOR_ABILITY 0x009900FF
-#define COLOR_DEFAULT 0xFFFFFFFF
-#define COLOR_WARNING 0xE48800FF
-#define COLOR_ALERT 0xff1a1aFF
-#define COLOR_ADMIN 0x33CCFFFF
-#define COLOR_GLOBAL_INFO 0x59E4B5FF
-#define COLOR_POISION 0x6e14b8FF
-#define COLOR_LOTTERY 0xE68687FF
-#define COLOR_CRYSTAL_INFO 0xb823b3FF
-#define COLOR_BLACK 0x000000FF
-#define COLOR_LIME 0x62E300FF
 
 #define DIALOG_ACHIEVEMENT_LOCKED "{d5d5c3}"
 #define DIALOG_ACHIEVEMENT_UNLOCKED "{66ccff}"
@@ -813,7 +797,7 @@ custom Update() {
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
 	    if(IsLogged(playerid)) {
-    		format(formated, sizeof(formated),"%.0f~w~_/_~y~%.0f", Player[playerid][pPoints], Achievements[playerid][achTotalPoints]);
+    		format(formated, sizeof(formated),"%d~w~_/_~y~%d", Player[playerid][pPoints], Achievements[playerid][achTotalPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
@@ -864,9 +848,8 @@ custom LoadClasses() {
 			cache_get_value_name_int(i, "cooldown", Classes[i][cldCooldown]);
 			cache_get_value_name_int(i, "time", Classes[i][cldAbilityTime]);
 			cache_get_value_name_int(i, "count", Classes[i][cldAbilityCount]);
-			
-            cache_get_value_float(i, "points", Classes[i][cldPoints]);
-
+            cache_get_value_name_int(i, "points", Classes[i][cldPoints]);
+            
             cache_get_value_name(i, "ability", Classes[i][cldAbility]);
 			cache_get_value_name(i, "immunity", Classes[i][cldImmunity]);
 			cache_get_value_name(i, "weapons", Classes[i][cldWeapons]);
@@ -874,7 +857,6 @@ custom LoadClasses() {
 			cache_get_value_name_float(i, "health", Classes[i][cldHealth]);
 			cache_get_value_name_float(i, "armour", Classes[i][cldArmour]);
 			cache_get_value_name_float(i, "distance", Classes[i][cldDistance]);
-			cache_get_value_name_float(i, "points", Classes[i][cldPoints]);
 		}
 		
 		printf("[x] Classes loaded (%d / %d)", i, len);
@@ -891,11 +873,7 @@ custom LoadObjects() {
     	for( i = 0; i < len; i++ ) {
     	    cache_get_value_name(i, "coords", buff);
     		cache_get_value_name_int(i, "model", model);
-    		
-    		sscanf(buff, "p<,>ffffff",
-				position[0], position[1], position[2],
-				position[3], position[4], position[5]
-			);
+    		sscanf(buff, "p<,>a<f>[6]", position);
 			
 			CreateObject(
 				model,
@@ -942,32 +920,19 @@ custom LoadMap() {
     	cache_get_value_name_float(0, "checkpoint_size", Map[mpCheckpointSize]);
         
     	cache_get_value_name(0, "gates_ids", buff);
-    	sscanf(buff, "p<,>ii", Map[mpGates][0], Map[mpGates][1]);
+    	sscanf(buff, "p<,>a<i>[2]", Map[mpGates]);
     	
     	cache_get_value_name(0, "crystal_coords", buff);
-     	sscanf(buff, "p<,>ffff",
-		 	Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1],
-     		Map[mpGangCrystalSpawn][2], Map[mpGangCrystalSpawn][3]
- 		);
+     	sscanf(buff, "p<,>a<f>[4]", Map[mpGangCrystalSpawn]);
  		
  		cache_get_value_name(0, "near_crystal_coords", buff);
-     	sscanf(buff, "p<,>ffff",
-		 	Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1],
-     		Map[mpGangNearCrystalSpawn][2], Map[mpGangNearCrystalSpawn][3]
- 		);
+     	sscanf(buff, "p<,>a<f>[4]", Map[mpGangNearCrystalSpawn]);
  		
  		cache_get_value_name(0, "flag_coords", buff);
-     	sscanf(buff, "p<,>ffffff",
-		 	Map[mpFlagCoords][0], Map[mpFlagCoords][1],
-     		Map[mpFlagCoords][2], Map[mpFlagCoords][3],
-     		Map[mpFlagCoords][4], Map[mpFlagCoords][5]
- 		);
+     	sscanf(buff, "p<,>a<f>[6]", Map[mpFlagCoords]);
  		
  		cache_get_value_name(0, "flag_coords_text", buff);
-     	sscanf(buff, "p<,>fff",
-		 	Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1],
-     		Map[mpFlagTextCoords][2]
- 		);
+     	sscanf(buff, "p<,>a<f>[3]", Map[mpFlagTextCoords]);
     	
 	    cache_get_value_name(0, "humans_coords", buff);
      	sscanf(buff, "p<,>ffffffffffff",
@@ -990,11 +955,7 @@ custom LoadMap() {
 		);
 	 	
 	 	cache_get_value_name(0, "checkpoint_coords", buff);
-	 	sscanf(buff, "p<,>fff",
-		 	Map[mpCheckpointCoords][0],
-	 	    Map[mpCheckpointCoords][1],
-		 	Map[mpCheckpointCoords][2]
-	 	);
+	 	sscanf(buff, "p<,>a<f>[3]", Map[mpCheckpointCoords]);
 		 
 	 	cache_get_value_name(0, "camera_coords", buff);
  		sscanf(buff, "p<,>ffffff",
@@ -1003,20 +964,10 @@ custom LoadMap() {
 	 	);
 
 		cache_get_value_name(0, "gates_coords", buff);
- 		sscanf(buff, "p<,>ffffffffffff",
-		 	Map[mpGatesCoords][0], Map[mpGatesCoords][1], Map[mpGatesCoords][2],
-		 	Map[mpGatesCoords][3], Map[mpGatesCoords][4], Map[mpGatesCoords][5],
-		 	Map[mpGatesCoords][6], Map[mpGatesCoords][7], Map[mpGatesCoords][8],
-		 	Map[mpGatesCoords][9], Map[mpGatesCoords][10], Map[mpGatesCoords][11]
-	 	);
+ 		sscanf(buff, "p<,>a<f>[12]", Map[mpGatesCoords]);
 	 	
 	 	cache_get_value_name(0, "gates_move_coords", buff);
- 		sscanf(buff, "p<,>ffffffffffff",
-		 	Map[mpGatesMoveCoords][0], Map[mpGatesMoveCoords][1], Map[mpGatesMoveCoords][2],
-		 	Map[mpGatesMoveCoords][3], Map[mpGatesMoveCoords][4], Map[mpGatesMoveCoords][5],
-		 	Map[mpGatesMoveCoords][6], Map[mpGatesMoveCoords][7], Map[mpGatesMoveCoords][8],
-		 	Map[mpGatesMoveCoords][9], Map[mpGatesMoveCoords][10], Map[mpGatesMoveCoords][11]
-	 	);
+ 		sscanf(buff, "p<,>a<f>[12]", Map[mpGatesMoveCoords]);
     
     	strmid(Map[mpPrevFilename], Map[mpFilename], 0, MAX_MAP_FILENAME);
     	
@@ -1347,15 +1298,10 @@ custom LoadServerCfg() {
         cache_get_value_name_float(0, "fists_damage", ServerConfig[svCfgZombieFistsDamage]);
 
         cache_get_value_name(0, "preview_bot_coords", buff);
-		sscanf(buff, "p<,>ffff", ServerConfig[svCfgPreviewBotPos][0],
-		ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2],
-		ServerConfig[svCfgPreviewBotPos][3]);
+		sscanf(buff, "p<,>a<f>[4]", ServerConfig[svCfgPreviewBotPos]);
 
 		cache_get_value_name(0, "preview_camera_coords", buff);
-		sscanf(buff, "p<,>ffffff", ServerConfig[svCfgPreviewCameraPos][0],
-		ServerConfig[svCfgPreviewCameraPos][1], ServerConfig[svCfgPreviewCameraPos][2],
-		ServerConfig[svCfgPreviewCameraPos][3], ServerConfig[svCfgPreviewCameraPos][4],
-		ServerConfig[svCfgPreviewCameraPos][5]);
+		sscanf(buff, "p<,>a<f>[6]", ServerConfig[svCfgPreviewCameraPos]);
 		
 		cache_get_value_name(0, "random_question", buff);
 		sscanf(buff, "p<,>iii",
@@ -1396,9 +1342,8 @@ custom LoadGangsCfg() {
     if(cache_num_rows() > 0) {
         cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
         cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
-
-        cache_get_value_name_float(0, "required", GangsConfig[gdCfgRequired]);
-        cache_get_value_name_float(0, "default", GangsConfig[gdCfgDefault]);
+        cache_get_value_name_int(0, "required", GangsConfig[gdCfgRequired]);
+        cache_get_value_name_int(0, "default", GangsConfig[gdCfgDefault]);
 
         cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
         cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
@@ -1449,11 +1394,7 @@ custom LoadEvacCfg() {
         cache_get_value_name_int(0, "interior", EvacuationConfig[ecdCfgInterior]);
         cache_get_value_name_int(0, "sound", EvacuationConfig[ecdCfgSound]);
 
-        sscanf(buff, "p<,>ffff", EvacuationConfig[ecdCfgPosition][0],
-			EvacuationConfig[ecdCfgPosition][1], EvacuationConfig[ecdCfgPosition][2],
-			EvacuationConfig[ecdCfgPosition][3]
-		);
-
+        sscanf(buff, "p<,>a<f>[4]", EvacuationConfig[ecdCfgPosition]);
         printf("[x] Evacuation configuration LOADED");
         return 1;
     }
@@ -1598,10 +1539,7 @@ custom LoadClassesCfg() {
         cache_get_value_name_float(0, "space", ClassesConfig[clsCfgSpaceDamage]);
         
         cache_get_value_name(0, "stomp_xyz", buff);
-        sscanf(buff, "p<,>fff",
-			ClassesConfig[clsCfgStomp][0], ClassesConfig[clsCfgStomp][1],
-			ClassesConfig[clsCfgStomp][2]
-		);
+        sscanf(buff, "p<,>a<f>[3]", ClassesConfig[clsCfgStomp]);
 		
 		cache_get_value_name(0, "stomper_effect", buff);
 		sscanf(buff, "p<,>ifffi", ClassesConfig[clsCfgStomperEffectId],
@@ -1618,14 +1556,10 @@ custom LoadClassesCfg() {
 		);
 		
 		cache_get_value_name(0, "high_jump_xyz", buff);
-		sscanf(buff, "p<,>fff", ClassesConfig[clsCfgHighJump][0],
-			ClassesConfig[clsCfgHighJump][1], ClassesConfig[clsCfgHighJump][2]
-		);
+		sscanf(buff, "p<,>a<f>[3]", ClassesConfig[clsCfgHighJump]);
 		
 		cache_get_value_name(0, "long_jump_xyz", buff);
-		sscanf(buff, "p<,>fff", ClassesConfig[clsCfgLongJump][0],
-			ClassesConfig[clsCfgLongJump][1], ClassesConfig[clsCfgLongJump][2]
-		);
+		sscanf(buff, "p<,>a<f>[3]", ClassesConfig[clsCfgLongJump]);
 		
 		cache_get_value_name(0, "engineer_effect", buff);
 		sscanf(buff, "p<,>iif",  ClassesConfig[clsCfgEngineerBox],
@@ -1676,11 +1610,12 @@ custom LoginOrRegister(const playerid) {
 	Misc[playerid][mdKickForAuthTimeout] = (ServerConfig[svCfgAuthTimeout] * 60);
 
     if(cache_num_rows() > 0) {
+        new progress[256], form[16];
     	cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
         cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
         cache_get_value_name_int(0, "coins", Player[playerid][pCoins]);
-        cache_get_value_name_float(0, "points", Player[playerid][pPoints]);
-        cache_get_value_name_float(0, "standing", Player[playerid][pStanding]);
+        cache_get_value_name_int(0, "points", Player[playerid][pPoints]);
+        cache_get_value_name_int(0, "standing", Player[playerid][pStanding]);
         
         cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
         cache_get_value_name_int(0, "gang_id", Misc[playerid][mdGang]);
@@ -1729,8 +1664,12 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_int(0, "session", Achievements[playerid][achSession]);
 		cache_get_value_name_int(0, "blood", Achievements[playerid][achBlood]);
 		cache_get_value_name_int(0, "mary", Achievements[playerid][achMary]);
-		cache_get_value_name_float(0, "total_points", Achievements[playerid][achTotalPoints]);
+		cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
 		cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
+		
+		cache_get_value_name(0, "progress", progress);
+		format(form, sizeof(form), "p<,>a<i>[%d]", MAX_ACHIEVEMENTS);
+		sscanf(progress, form, AchievementsProgress[playerid]);
         
         cache_get_value_name_int(0, "rnd_mapid", RoundSession[playerid][rsdMapId]);
         cache_get_value_name_int(0, "rnd_team", RoundSession[playerid][rsdTeam]);
@@ -1818,8 +1757,19 @@ custom CheckForLoadedRound(const playerid) {
 }
 
 custom SavePlayerAchievementsData(const playerid) {
+	new progress[256], num[4];
+	for( new i = 0; i < MAX_ACHIEVEMENTS; i++ ) {
+	    if(i < MAX_ACHIEVEMENTS - 1) {
+	        format(num, sizeof(num), "%d,", AchievementsProgress[playerid][i]);
+            strcat(progress, num);
+	    } else {
+            format(num, sizeof(num), "%d", AchievementsProgress[playerid][i]);
+            strcat(progress, num);
+	    }
+	}
+
     static const updateAchievementsQuery[] = UPDATE_ACHIEVEMENTS_QUERY;
-	new formatedUpdateAchievementsQuery[sizeof(updateAchievementsQuery) + (ACHIEVEMENTS_COLUMNS * MAX_ID_LENGTH)];
+	new formatedUpdateAchievementsQuery[sizeof(updateAchievementsQuery) + (ACHIEVEMENTS_COLUMNS * MAX_ID_LENGTH) + sizeof(progress)];
 	mysql_format(Database, formatedUpdateAchievementsQuery, sizeof(formatedUpdateAchievementsQuery), updateAchievementsQuery,
 	    Achievements[playerid][achRank],
 	    Achievements[playerid][achKills],
@@ -1861,6 +1811,7 @@ custom SavePlayerAchievementsData(const playerid) {
 		Achievements[playerid][achMary],
 	 	Achievements[playerid][achTotalPoints],
 	    Achievements[playerid][achRan],
+	    progress,
 		Player[playerid][pAccountId]
 	);
 	mysql_tquery(Database, formatedUpdateAchievementsQuery, "");
@@ -1970,18 +1921,18 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         static const enabledTitlesColors[] = { 0x009900, 0x75F0B0 };
         static const descriptionColors[] = { 0xFFFFFF, 0xA7A5A5 };
 
-        new i, len = clamp(cache_num_rows(), 0, MAX_CLASSES), Float:points;
+        new i, len = clamp(cache_num_rows(), 0, MAX_CLASSES), points;
         new list[2560], formated[256], description[MAX_CLASS_DESC], color;
         
         for( i = 0; i < len; i++ ) {
             cache_get_value_name_int(i, "id", ClassesSelection[playerid][i][csdId]);
+            cache_get_value_name_int(i, "points", points);
             cache_get_value_name(i, "title", ClassesSelection[playerid][i][csdName]);
             cache_get_value_name(i, "description", description);
-            cache_get_value_float(i, "points", points);
 
 			if(!showDialog) continue;
             color = (Achievements[playerid][achTotalPoints] < points) ? disabledTitlesColors[i % 2] : enabledTitlesColors[i % 2];
-            format(formated, sizeof(formated), "{%06x}%s{%06x} - %s - %s%.0f %s\n",
+            format(formated, sizeof(formated), "{%06x}%s{%06x} - %s - %s%d %s\n",
 				color,
 				ClassesSelection[playerid][i][csdName],
 				descriptionColors[i % 2],
@@ -2077,48 +2028,49 @@ custom GetAchievementsList(const playerid, const offset) {
     return 1;
 }
 
-stock GetAchievementIndex(const type) {
+stock ACHIEVEMENTS_DATA:GetAchievementIndex(const type) {
 	switch(type) {
-	    case ACH_TYPE_ABILITIES: return _:achAbility; // Done
-	    case ACH_TYPE_RUN: return _:achRan; // Done
-	    case ACH_TYPE_LICKY: return _:achLuck;
-		case ACH_TYPE_KILL_HUMANS: return _:achHumans; // Done
-		case ACH_TYPE_KILL_ZOMBIES: return _:achZombies; // Done
-		case ACH_TYPE_COLLECT_MEATS: return _:achMeats; // Done
-		case ACH_TYPE_COLLECT_AMMO: return _:achAmmo; // Done
-		case ACH_TYPE_KILLSTREAK: return _:achKillstreak;
-		case ACH_TYPE_CURE: return _:achCure; // Done
-		case ACH_TYPE_DIE: return _:achDeaths; // Done
-		case ACH_TYPE_EVAC: return _:achEvac; // Done
-		case ACH_TYPE_TOTAL_POINTS: return _:achTotalPoints; // Done
-		case ACH_TYPE_INFECT: return _:achInfection; // Done
-		case ACH_TYPE_PLAY_HOURS: return _:achHours; // Done
-		case ACH_TYPE_JUMP: return _:achJumps; // Done
-		case ACH_TYPE_ANSWER: return _:achAnswer; // Done
-		case ACH_TYPE_LOTTERY: return _:achLottery; // Done
-		case ACH_TYPE_CAPTURE: return _:achCapture;
-		case ACH_TYPE_DUELS: return _:achDuels;
-		case ACH_TYPE_SESSION: return _:achSession;
-		case ACH_TYPE_BLOOD: return _:achBlood;
-		case ACH_TYPE_REPORT: return _:achReported;
-		case ACH_TYPE_SILINCED: return _:achSilinced; // Done
-		case ACH_TYPE_COLT45: return _:achColt45; // Done
-		case ACH_TYPE_DEAGLE: return _:achDeagle; // Done
-		case ACH_TYPE_RIFLE: return _:achRifle; // Done
-		case ACH_TYPE_SHOTGUN: return _:achShotgun; // Done
-		case ACH_TYPE_MP5: return _:achMP5; // Done
-		case ACH_TYPE_COMBAT_SHOTGUN: return _:achCombat; // Done
-		case ACH_TYPE_TEC9: return _:achTec9; // Done
-		case ACH_TYPE_AK47: return _:achAk47; // Done
-		case ACH_TYPE_M4: return _:achM4; // Done
-		case ACH_TYPE_WEAPONS_MASTER: return _:achMaster;
-		case ACH_TYPE_HERMITAGE: return _:achHermitage; // Done
-		case ACH_TYPE_MARY: return _:achMary; // Done
-		case ACH_TYPE_LAST_HOPE: return _:achLastHope;
-		case ACH_TYPE_TERRORIST: return _:achKills; // Done
+	    case ACH_TYPE_KILLSTREAK: return achKillstreak;
+	    case ACH_TYPE_LICKY: return achLuck;
+	    case ACH_TYPE_CAPTURE: return achCapture;
+		case ACH_TYPE_DUELS: return achDuels;
+		case ACH_TYPE_SESSION: return achSession;
+		case ACH_TYPE_BLOOD: return achBlood;
+		case ACH_TYPE_REPORT: return achReported;
+		case ACH_TYPE_LAST_HOPE: return achLastHope;
+		
+	    case ACH_TYPE_ABILITIES: return achAbility; // Done
+	    case ACH_TYPE_RUN: return achRan; // Done
+		case ACH_TYPE_KILL_HUMANS: return achHumans; // Done
+		case ACH_TYPE_KILL_ZOMBIES: return achZombies; // Done
+		case ACH_TYPE_COLLECT_MEATS: return achMeats; // Done
+		case ACH_TYPE_COLLECT_AMMO: return achAmmo; // Done
+		case ACH_TYPE_CURE: return achCure; // Done
+		case ACH_TYPE_DIE: return achDeaths; // Done
+		case ACH_TYPE_EVAC: return achEvac; // Done
+		case ACH_TYPE_TOTAL_POINTS: return achTotalPoints; // Done
+		case ACH_TYPE_INFECT: return achInfection; // Done
+		case ACH_TYPE_PLAY_HOURS: return achHours; // Done
+		case ACH_TYPE_JUMP: return achJumps; // Done
+		case ACH_TYPE_ANSWER: return achAnswer; // Done
+		case ACH_TYPE_LOTTERY: return achLottery; // Done
+		case ACH_TYPE_SILINCED: return achSilinced; // Done
+		case ACH_TYPE_COLT45: return achColt45; // Done
+		case ACH_TYPE_DEAGLE: return achDeagle; // Done
+		case ACH_TYPE_RIFLE: return achRifle; // Done
+		case ACH_TYPE_SHOTGUN: return achShotgun; // Done
+		case ACH_TYPE_MP5: return achMP5; // Done
+		case ACH_TYPE_COMBAT_SHOTGUN: return achCombat; // Done
+		case ACH_TYPE_TEC9: return achTec9; // Done
+		case ACH_TYPE_AK47: return achAk47; // Done
+		case ACH_TYPE_M4: return achM4; // Done
+		case ACH_TYPE_WEAPONS_MASTER: return achMaster; // Done
+		case ACH_TYPE_HERMITAGE: return achHermitage; // Done
+		case ACH_TYPE_MARY: return achMary; // Done
+		case ACH_TYPE_TERRORIST: return achKills; // Done
 	}
 
-	return -1;
+	return ACHIEVEMENTS_DATA:-1;
 }
 
 stock CreateAchievementsHashmap() {
@@ -2127,33 +2079,27 @@ stock CreateAchievementsHashmap() {
 	    type = AchievementsConfig[i][accgType];
 	    
 	    for( new j = 0; j < MAX_ACHIEVEMENTS; j++ ) {
-	        if(type == AchievementsConfig[j][accgType]) {
-                AchievementsHashmap[ACHIEVEMENTS_TYPES:type][inx++] = AchievementsConfig[j][accgCount];
+	        if(type == AchievementsConfig[j][accgType] && !AchievementsConfig[j][accgDisabled]) {
+	            AchievementsHashmap[ACHIEVEMENTS_TYPES:type][inx][achpId] = AchievementsConfig[j][accgId];
+                AchievementsHashmap[ACHIEVEMENTS_TYPES:type][inx][achpCount] = AchievementsConfig[j][accgCount];
+                AchievementsHashmap[ACHIEVEMENTS_TYPES:type][inx][achpReward] = AchievementsConfig[j][accgReward];
+                inx++;
 	        }
 	    }
 	}
 }
 
 stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, const count = 1) {
-    new index = GetAchievementIndex(_:type);
-    if(index == -1) {
+    new ACHIEVEMENTS_DATA:index = GetAchievementIndex(_:type);
+    if(index == ACHIEVEMENTS_DATA:-1) {
 	    return 0;
 	}
 	
-	// format(str, sizeof(str), ">> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)", Misc[playerid][mdPlayerName], "test", 5, Localization[playerid][LD_MSG_COINS]);
-	// SendClientMessage(playerid, COLOR_LIME, str);
-	
-	/*
-	AchievementsConfig[i][accgType]
- 	AchievementsConfig[i][accgCount]
-  	AchievementsConfig[i][accgReward]
-   AchievementsConfig[i][accgDisabled]
-	*/
-	
 	switch(type) {
-		case ACH_TYPE_RUN: Achievements[playerid][ACHIEVEMENTS_DATA:index] += 0.00001;
-		case ACH_TYPE_TOTAL_POINTS: Achievements[playerid][ACHIEVEMENTS_DATA:index] += float(count);
-		case ACH_TYPE_SILINCED: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
+		case ACH_TYPE_RUN: Achievements[playerid][achRan] += 0.00001;
+        default: Achievements[playerid][index] += count;
+        
+		/*case ACH_TYPE_SILINCED: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
 		case ACH_TYPE_COLT45: SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
 		case ACH_TYPE_DEAGLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
 		case ACH_TYPE_RIFLE: SetPlayerSkillLevel(playerid, WEAPONSKILL_SNIPERRIFLE, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
@@ -2163,38 +2109,64 @@ stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, 
         case ACH_TYPE_TEC9: SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
         case ACH_TYPE_AK47: SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
         case ACH_TYPE_M4: SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, ++Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-        /*case ACH_TYPE_WEAPONS_MASTER: {
-            ProceedAchievementProgress(playerid, ACH_TYPE_WEAPONS_MASTER);
-        }*/
-        
-		default: ++Achievements[playerid][ACHIEVEMENTS_DATA:index];
+        case ACH_TYPE_WEAPONS_MASTER: {}
+		*/
 	}
 	
-	// TODO: Achievements
-	static const loadMapNameQuery[] = LOAD_ACHIEVEMENT_NAME_QUERY;
-    new formatedLoadMapNameQuery[sizeof(loadMapNameQuery) + MAX_ID_LENGTH];
-    mysql_format(Database, formatedLoadMapNameQuery, sizeof(formatedLoadMapNameQuery), loadMapNameQuery, Map[mpId]);
-    mysql_tquery(Database, formatedLoadMapNameQuery, "GetLocalizedAchievementName", "i", playerid);
-	
-	new str[128];
-	format(str, sizeof(str), "%d | [%d, %d, %d] / %d", _:type, AchievementsHashmap[type][0], AchievementsHashmap[type][1], AchievementsHashmap[type][2], Achievements[playerid][ACHIEVEMENTS_DATA:index]);
-	SendClientMessage(playerid, COLOR_LIME, str);
-	
+	for( new i = 0, id; i < MAX_ACHIEVEMENT_ACTIVITIES; i++ ) {
+	    id = AchievementsHashmap[type][i][achpId];
+	    if(type == ACH_TYPE_RUN) {
+	 		if(floatround(Float:Achievements[playerid][index], floatround_tozero) >= AchievementsHashmap[type][i][achpCount] && !AchievementsProgress[playerid][id]) {
+	         	UnlockAchievement(playerid, AchievementsHashmap[type][i][achpId], AchievementsHashmap[type][i][achpReward]);
+	 		}
+ 		} else {
+            if(Achievements[playerid][ACHIEVEMENTS_DATA:index] >= AchievementsHashmap[type][i][achpCount] && !AchievementsProgress[playerid][id]) {
+            	UnlockAchievement(playerid, AchievementsHashmap[type][i][achpId], AchievementsHashmap[type][i][achpReward]);
+   			}
+ 		}
+ 	}
+   	
     return 1;
 }
 
+stock UnlockAchievement(const playerid, const id, const reward) {
+    static const loadAchNameQuery[] = LOAD_ACHIEVEMENT_NAME_QUERY;
+	new formatedLoadAchNameQuery[sizeof(loadAchNameQuery) + MAX_ID_LENGTH];
+	mysql_format(Database, formatedLoadAchNameQuery, sizeof(formatedLoadAchNameQuery), loadAchNameQuery, id);
+	mysql_tquery(Database, formatedLoadAchNameQuery, "GetLocalizedTextForPlayers", "iii", playerid, reward, id);
+}
+
+custom GetLocalizedTextForPlayers(const playerid, const reward, const id) {
+	if(cache_num_rows()) {
+	    new index, name[32], str[128];
+	    foreach(Player, i) {
+	        index = Player[i][pLanguage];
+	        cache_get_value_name(0, LOCALIZATION_TABLES[index], name);
+	        format(str, sizeof(str), Localization[i][LD_MSG_ACH_UNLOCKED], Misc[playerid][mdPlayerName], name, reward, Localization[i][LD_MSG_COINS]);
+            SendClientMessage(i, COLOR_LIME, str);
+	    }
+	    
+	    AchievementsProgress[playerid][id] = 1;
+	}
+
+	return 1;
+}
+
+
 stock GetAchievementProgressByType(const playerid, const type) {
-	new index = GetAchievementIndex(type);
-	if(index == -1) {
+	new ACHIEVEMENTS_DATA:index = GetAchievementIndex(type);
+	if(index == ACHIEVEMENTS_DATA:-1) {
 	    return 0;
 	}
 	
 	if(ACHIEVEMENTS_TYPES:type == ACH_TYPE_RUN) {
-	    return floatround(Float:Achievements[playerid][ACHIEVEMENTS_DATA:index], floatround_tozero);
+	    return floatround(Float:Achievements[playerid][index], floatround_tozero);
 	}
 	
-	return Achievements[playerid][ACHIEVEMENTS_DATA:index];
+	return Achievements[playerid][index];
 }
+
+// STOCK BOOL
 
 stock bool:IsJumping(const playerid) {
 	switch(GetPlayerAnimationIndex(playerid)) {
@@ -2478,8 +2450,8 @@ stock ClearPlayerData(const playerid) {
     Player[playerid][pAccountId] = 0;
     Player[playerid][pLanguage] = 0;
     Player[playerid][pCoins] = 0;
-    Player[playerid][pPoints] = 0.0;
-    Player[playerid][pStanding] = 0.0;
+    Player[playerid][pPoints] = 0;
+    Player[playerid][pStanding] = 0;
 }
 
 stock ClearPlayerAttachedObjects(const playerid) {
@@ -2600,8 +2572,8 @@ stock InitializeScreenTextures() {
 stock InitializeGangsConfig() {
 	GangsConfig[gdCfgCapacity] = 10;
 	GangsConfig[gdCfgFlagId] = 11245;
-    GangsConfig[gdCfgRequired] = 25000.0;
-    GangsConfig[gdCfgDefault] = 5000.0;
+    GangsConfig[gdCfgRequired] = 25000;
+    GangsConfig[gdCfgDefault] = 5000;
     GangsConfig[gdCfgMultiply] = 2.0;
     GangsConfig[gdCfgArmourPerLevel] = 10.0;
     GangsConfig[gdCfgCrystalHealth] = 50000.0;
@@ -2939,7 +2911,7 @@ stock bool:IsAbleToGivePointsInCategory(const playerid, const type) {
 stock ProceedClassImmunity(const playerid, const abilityid) {
     new immunities[2], immunity;
     new classid = Misc[playerid][mdCurrentClass][GetPlayerTeamEx(playerid)];
-    sscanf(Classes[classid][cldImmunity], "p<,>ii", immunities[0], immunities[1]);
+    sscanf(Classes[classid][cldImmunity], "p<,>a<i>[2]", immunities);
     for( immunity = 0; immunity < sizeof(immunities); immunity++ ) {
         if(immunities[immunity] == abilityid) {
 			return 1;
@@ -2957,7 +2929,7 @@ stock ProceedClassAbilityActivation(const playerid) {
 
     new abilities[2], ability;
     new classid = Misc[playerid][mdCurrentClass][GetPlayerTeamEx(playerid)];
-    sscanf(Classes[classid][cldAbility], "p<,>ii", abilities[0], abilities[1]);
+    sscanf(Classes[classid][cldAbility], "p<,>a<i>[2]", abilities);
     for( ability = 0; ability < sizeof(abilities); ability++ ) {
         if(abilities[ability] <= 0 || abilities[ability] >= ABLITY_MAX) continue;
     
@@ -3005,7 +2977,7 @@ stock ProceedPassiveAbility(const playerid, const abilityid, const targetid = -1
     new abilities[2], ability;
     new classid = Misc[playerid][mdCurrentClass][GetPlayerTeamEx(playerid)];
     
-    sscanf(Classes[classid][cldAbility], "p<,>ii", abilities[0], abilities[1]);
+    sscanf(Classes[classid][cldAbility], "p<,>a<i>[2]", abilities);
     for( ability = 0; ability < sizeof(abilities); ability++ ) {
         if(abilities[ability] != abilityid) continue;
         switch(abilities[ability]) {
@@ -3042,7 +3014,7 @@ stock GivePointsForRound(const playerid) {
 	);
 	
 	ProceedAchievementProgress(playerid, ACH_TYPE_TOTAL_POINTS, amount);
-	Player[playerid][pPoints] += float(amount);
+	Player[playerid][pPoints] += amount;
 }
 
 
@@ -4441,10 +4413,7 @@ stock ClassSetup(const playerid, const classid) {
     SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
     SetPlayerArmourAC(playerid, Classes[classid][cldArmour]);
 
-    sscanf(Classes[classid][cldWeapons], "p<,>iiiiiiiii", weapons[0],
-		weapons[1], weapons[2], weapons[3], weapons[4], weapons[5],
-		weapons[6], weapons[7], weapons[8]
-	);
+    sscanf(Classes[classid][cldWeapons], "p<,>a<i>[9]", weapons);
 
 	for( i = 0; i < sizeof(weapons); i++ ) {
 	    if(!weapons[i]) continue;
@@ -4914,6 +4883,18 @@ CMD:weekly(const playerid) {
 	// DIALOG_WEEKLY_REWARDS
 	
 	return 1;
+}
+
+CMD:test(playerid, params[]) {
+    if(Player[playerid][pAccountId] == 1) {
+        /*if(sscanf(params, "i", params[0])) {
+            SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /test (percent)");
+        }
+        
+        Achievements[playerid][achRan] += float(params[0]);*/
+        
+       // Map[mpTimeout] = 10;
+    }
 }
 
 // ADMIN COMMANDS

@@ -16,6 +16,7 @@
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`=0;"
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
 #define LOAD_MAP_NAME_QUERY "SELECT * FROM `maps_localization` WHERE id = %d;"
+#define LOAD_ACHIEVEMENT_NAME_QUERY "SELECT * FROM `achievements_localization` WHERE id = %d;"
 #define REFRESH_PLAYER_WEAPONS_QUERY "DELETE FROM `weapons` WHERE `time` < %d;"
 #define LOAD_GANGS_CFG_QUERY "SELECT * FROM gangs_config WHERE 1 LIMIT 1;"
 #define LOAD_EVAC_CFG_QUERY "SELECT * FROM evac_config WHERE 1 LIMIT 1;"
@@ -65,8 +66,8 @@
 	UPDATE `users` \n\
 	SET \n\
 		`language`='%d',\
-		`points`='%f',\
-		`standing`='%f',\
+		`points`='%d',\
+		`standing`='%d',\
 		`coins`='%d'\n\
 		WHERE `id`='%d'\
 "
@@ -130,8 +131,9 @@
 		`session`='%d',\
 		`blood`='%d',\
 		`mary`='%d',\
-		`total_points`='%f',\
-		`ran`='%f'\n\
+		`total_points`='%d',\
+		`ran`='%f',\
+		`progress`='%e'\n\
 		WHERE `id` = '%d'\
 "
 
@@ -178,6 +180,7 @@
 		COALESCE(a.session, 0) as session,\n\
 		COALESCE(a.blood, 0) as blood,\n\
 		COALESCE(a.mary, 0) as mary,\n\
+		COALESCE(a.progress, '') as progress,\n\
 		COALESCE(p.admin, 0) as admin,\n\
 		COALESCE(p.vip, 0) as vip,\n\
 		COALESCE(p.vip_till, 0) as vip_till,\n\
