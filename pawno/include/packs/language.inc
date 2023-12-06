@@ -164,6 +164,12 @@ enum LOCALIZATION_DATA {
 	LD_MSG_VOTEKICK_FAIL,
 	LD_MSG_CONNECT_ADMIN,
 	LD_MSG_DISCONNECT_ADMIN,
+	LD_MSG_ADMIN_MESSAGE,
+	LD_MSG_PLAYER_MESSAGE,
+	LD_MSG_ADMIN_JAILED,
+	LD_MSG_PLAYER_JAILED,
+	LD_MSG_ADMIN_UNJAILED,
+	LD_MSG_PLAYER_UNJAILED,
 	LD_ENDF,
 };
 
@@ -326,7 +332,7 @@ enum LOCALIZATION_DATA {
 	(141, 'Report sent!', 'Жалоба отправлена!'),\
 	(142, 'Unknown command. Check /cmds', 'Неизвестная команда. Просмотрите /cmds'),\
 	(143, '>> Voting is already underway!', '>> Голосование уже идёт!'),\
-	(144, '[VOTEKICK] Player %s(%d) will be kicked. [Reason: %s]{FFFFFF} (by %s)', '[ГОЛОСОВАНИЕ] Игрок %s(%d) будет кикнут. [Причина: %s]{FFFFFF} (инициатор %s)'),\
+	(144, '[VOTEKICK] Player %s(%d) will be kicked [Reason: %s]{FFFFFF} (by %s)', '[ГОЛОСОВАНИЕ] Игрок %s(%d) будет кикнут [Причина: %s]{FFFFFF} (инициатор %s)'),\
 	(145, '[VOTEKICK] Use /yes and /no for voting!', '[ГОЛОСОВАНИЕ] Используйте /yes и /no для голосования!'),\
 	(146, '>> %s voted for a kick (%d / %d)', '>> Игрок %s проголосовал за кик (%d / %d)'),\
 	(147, '>> %s did not vote for a kick (%d / %d)', '>> Игрок %s проголосовал против (%d / %d)');\
@@ -336,5 +342,11 @@ enum LOCALIZATION_DATA {
 	(148, '[VOTEKICK] %s has been kicked', '[ГОЛОСОВАНИЕ] Игрок %s был кикнут'),\
 	(149, '[VOTEKICK] Voting canceled', '[ГОЛОСОВАНИЕ] Отменено'),\
 	(150, '*** %s has joined the server (ID %d) (Player %d) (IP %s)', '*** Игрок %s подключился к серверу (ID %d) (Игрок %d) (IP %s)'),\
-	(151, '*** %s has left the server (%s) (%s)', '*** Игрок %s вышел с сервера (%s) (%s)');\
+	(151, '*** %s has left the server (%s) (%s)', '*** Игрок %s вышел с сервера (%s) (%s)'),\
+	(152, '[ADMIN MESSAGE] %s send an admin message to %s(%d):{FFFFFF} %s', '[АДМИН-СООБШЕНИЕ] Администратор %s ответил игроку %s(%d):{FFFFFF} %s'),\
+	(153, '[ADMIN MESSAGE]:{FFFFFF} %s', '[АДМИН-СООБШЕНИЕ]:{FFFFFF} %s'),\
+	(154, '>> %s(%d) has been jailed by %s for 3 minutes [Reason: %s]', '>> Игрок %s(%d) был посажен в тюрьму администратором %s на 3 минуты [Причина: %s]'),\
+	(155, '>> %s has been jailed for 3 minutes [Reason: %s]', '>> Игрок %s был посажен в тюрьму на 3 минуты [Причина: %s]'),\
+	(156, '>> %s(%d) has been unjailed by %s', '>> Игрок %s(%d) был освобождён из тюрьмы администратором %s'),\
+	(157, '>> %s has been unjailed', '>> Игрок %s был освобождён из тюрьмы');\
 "

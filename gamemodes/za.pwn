@@ -2435,7 +2435,7 @@ stock bool:IsMaleSkin(const playerid) {
 	return !IsFemaleSkin(playerid);
 }
 
-stock bool:HasAdminPermission(const playerid, const lvl) {
+stock bool:HasAdminPermission(const playerid, const lvl = 1) {
 	if(!Misc[playerid][mdIsLogged]) return false;
 	return Privileges[playerid][prsAdmin] >= lvl;
 }
@@ -2781,6 +2781,8 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdKillstreak] = 0;
+	Misc[playerid][mdMuted] = -1;
+	Misc[playerid][mdJailed] = -1;
 	Misc[playerid][mdGameplayWarns] = 0;
 	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
@@ -5034,12 +5036,6 @@ stock GetAchievementsPage(const playerid, const page = 0) {
 	mysql_tquery(Database, formated, "GetAchievementsList", "ii", playerid, offset);
 }
 
-stock SendAdminMessage(const color, const message[]) {
-    foreach(Admins, i) {
-        SendClientMessage(i, color, message);
-    }
-}
-
 stock ResetVotekickData() {
     Votekick[vkIsStarted] = false;
     Votekick[vkTimeout] = 0;
@@ -5410,87 +5406,97 @@ CMD:weekly(const playerid) {
 
 // ADMIN COMMANDS
 
+ALTX:apm("/answer");
 CMD:apm(const playerid, const params[]) {
-	if(!HasAdminPermission(playerid, 2)) return 0;
+	if(!HasAdminPermission(playerid)) return 0;
 
    	if(sscanf(params, "is[128]", params[0], params[1])) {
 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /apm (id) (text)");
   		return 1;
 	}
-
+	
 	new message[(MAX_PLAYER_NAME * 2) + 128];
-	format(message, sizeof(message), "[ADMIN MESSAGE] %s send an admin message to %s(%d): %s", Misc[playerid][mdPlayerName], Misc[params[0]][mdPlayerName], params[0], params[1]);
-	SendAdminMessage(COLOR_ADMIN, message);
+	foreach(Admins, i) {
+		format(message, sizeof(message), Localization[i][LD_MSG_ADMIN_MESSAGE], Misc[playerid][mdPlayerName], Misc[params[0]][mdPlayerName], params[0], params[1]);
+		SendClientMessage(i, COLOR_ADMIN, message);
+	}
 
-  	format(message, sizeof(message), "[ADMIN MESSAGE]: %s", params[1]);
+  	format(message, sizeof(message), Localization[params[0]][LD_MSG_PLAYER_MESSAGE], params[1]);
     SendClientMessage(params[0], COLOR_INFO, message);
 	return 1;
 }
-ALTX:apm("/answer");
 
 CMD:jail(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 1)) return 0;
+    if(!HasAdminPermission(playerid)) return 0;
     
-    new time, targets[5] = { -1, -1, -1, -1, -1 }, reason[64] = "";
-    sscanf(params, "iis[64]", targets[0], time, reason);
-    sscanf(params, "iiis[64]", targets[0], targets[1], time, reason);
-	sscanf(params, "iiiis[64]", targets[0], targets[1], targets[2], time, reason);
-	sscanf(params, "iiiiis[64]", targets[0], targets[1], targets[2], targets[3], time, reason);
-	sscanf(params, "iiiiiis[64]", targets[0], targets[1], targets[2], targets[3], targets[4], time, reason);
-
-	if(time < 1 || time > 5 || !strlen(reason)) {
- 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jail (id...)^5 (time)[1-5] (reason)");
+    if(sscanf(params, "is[64]", params[0], params[1])) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jail (id) (reason)");
+        return 1;
+    }
+    
+	if(!IsPlayerConnected(params[0]) || !strlen(params[1])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jail (id) (reason)");
  		return 1;
    	}
    	
-   	for( new j, message[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128]; j < sizeof(targets); j++ ) {
-        if(IsPlayerConnected(targets[j])) {
-            format(message, sizeof(message), "[JAIL]: %s(%d) has been jailed by %s for %d minute(s) [%s]", Misc[targets[j]][mdPlayerName], targets[j], Misc[playerid][mdPlayerName], time, reason);
-            SendAdminMessage(COLOR_ADMIN, message);
-            
-            format(message, sizeof(message), "[JAIL]: You have been jailed for %d minute(s) [%s]", time, reason);
-    		SendClientMessage(targets[j], COLOR_ALERT, message);
-        
-            // Player[targets[j]][Jailed] = time * 60;
-            SetPlayerSkin(targets[j], 62);
-			SetPlayerSpecialAction(targets[j], SPECIAL_ACTION_CUFFED);
-			SetPlayerPos(targets[j], 264.1425, 77.4712, 1001.0391);
-			SetPlayerFacingAngle(targets[j], 263.0160);
-			SetPlayerInterior(targets[j], 6);
-			SetPlayerColor(targets[j], COLOR_BLACK);
-			SetPlayerTeamAC(targets[j], TEAM_ZOMBIE);
-			ResetWeapons(targets[j]);
-			SetPlayerArmourAC(targets[j], 0.0);
-			SetPlayerHealthAC(targets[j], 100.0);
-        }
-   	}
-   	
+   	new message[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128];
+	foreach(Player, i) {
+	    if(HasAdminPermission(i)) format(message, sizeof(message), Localization[i][LD_MSG_ADMIN_JAILED], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], params[1]);
+		else format(message, sizeof(message), Localization[i][LD_MSG_PLAYER_JAILED], Misc[params[0]][mdPlayerName], params[1]);
+		SendClientMessage(i, COLOR_ADMIN, message);
+	}
+	
+	Misc[params[0]][mdJailed] = 180;
+	SpawnPlayerInJail(params[0]);
 	return 1;
 }
 
 CMD:unjail(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 1)) return 0;
-    
+    if(!HasAdminPermission(playerid)) return 0;
+
     if(sscanf(params, "i", params[0])) {
     	SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unjail (id)");
      	return 1;
 	}
 
-    if(IsPlayerConnected(params[0])) {
-	    new targetid = params[0], message[(MAX_PLAYER_NAME * 2) + 64];
-	    format(message, sizeof(message), "[JAIL]: %s(%d) has been unjailed by %s", Misc[targetid][mdPlayerName], targetid, Misc[playerid][mdPlayerName]);
-     	SendAdminMessage(COLOR_ADMIN, message);
-     	
-	    // Player[targetid][Jailed] = -1;
-    	SetSpawnInfo(targetid, TEAM_ZOMBIE, 252, Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0], 0.0, 0, 0, 0, 0, 0, 0);
-	    SetPlayerTeamAC(targetid, TEAM_ZOMBIE);
-	    SpawnPlayer(targetid);
+    if(!IsPlayerConnected(params[0])) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unjail (id)");
+     	return 1;
+    }
+    
+    new message[(MAX_PLAYER_NAME * 2) + 64];
+    foreach(Player, i) {
+	    if(HasAdminPermission(i)) format(message, sizeof(message), Localization[i][LD_MSG_ADMIN_UNJAILED], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName]);
+	    else format(message, sizeof(message), Localization[i][LD_MSG_PLAYER_UNJAILED], Misc[params[0]][mdPlayerName]);
+	    SendClientMessage(i, COLOR_ADMIN, message);
 	}
+	
+	UnjailPlayer(params[0]);
     return 1;
 }
 
-CMD:warn(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 1)) return 0;
+stock UnjailPlayer(const playerid) {
+    Misc[playerid][mdJailed] = -1;
+   	SetSpawnInfo(playerid, TEAM_ZOMBIE, 252, Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0], 0.0, 0, 0, 0, 0, 0, 0);
+   	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
+    SpawnPlayer(playerid);
+}
+
+stock SpawnPlayerInJail(const playerid) {
+    SetPlayerSkin(playerid, 62);
+	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CUFFED);
+	SetPlayerPos(playerid, 264.1425, 77.4712, 1001.0391);
+	SetPlayerFacingAngle(playerid, 263.0160);
+	SetPlayerInterior(playerid, 6);
+	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
+	SetPlayerColor(playerid, COLOR_BLACK);
+	ResetWeapons(playerid);
+	SetPlayerArmourAC(playerid, 0.0);
+	SetPlayerHealthAC(playerid, 100.0);
+}
+
+/*CMD:warn(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
 
     new targets[5] = { -1, -1, -1, -1, -1 }, reason[64] = "";
     sscanf(params, "is[64]", targets[0], reason);
@@ -5520,7 +5526,7 @@ CMD:warn(const playerid, const params[]) {
 }
 
 CMD:unwarn(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 1)) return 0;
+    if(!HasAdminPermission(playerid)) return 0;
     
     if(sscanf(params, "i", params[0])) {
 	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unwarn (id)");
@@ -5544,11 +5550,12 @@ CMD:unwarn(const playerid, const params[]) {
 	}
 
     return 1;
-}
+}*/
+
 // /spec /kick /ban /banip  /warn /mute /cc /getip /makezombie
 
 CMD:acmds(const playerid) {
-    if(!HasAdminPermission(playerid, 1)) return 0;
+    if(!HasAdminPermission(playerid)) return 0;
     
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/aduty /getip /getid /slap /getinfo /sync /apm /answer /(un)jail /(un)warn");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/cc /tban /kick /spec /(un)mute /checkip /muwa /waja /goto /checkip");
