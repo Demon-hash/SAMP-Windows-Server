@@ -662,6 +662,22 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define RULES_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS za_rules (\
+	`id` int(11) unsigned NOT NULL,\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define HELP_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS za_help (\
+	`id` int(11) unsigned NOT NULL,\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\

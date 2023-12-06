@@ -29,6 +29,7 @@
 #include <packs/messages>
 #include <packs/lottery>
 #include <packs/settings>
+#include <packs/votekick>
 #include <packs/weekly_quests>
 
 #include <dependencies/jit>
@@ -44,10 +45,10 @@
 #define SERVER_TIMESTAMP 3
 
 #undef MAX_PLAYERS
-#define MAX_PLAYERS 50
+#define MAX_PLAYERS 30
 
 #undef MAX_VEHICLES
-#define MAX_VEHICLES 50
+#define MAX_VEHICLES 30
 
 #define MAX_ID_LENGTH 12
 

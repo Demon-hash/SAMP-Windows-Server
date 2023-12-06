@@ -34,6 +34,8 @@
 #define LOAD_OBJECTS_QUERY "SELECT * FROM `objects` WHERE 1;"
 #define LOAD_LOCALIZATION_QST_QUERY "SELECT `%e` as text, `%e_answer` as answer FROM `random_question` WHERE 1;"
 #define LOAD_ACHS_CFG_QUERY "SELECT * FROM `achievements_config` WHERE 1;"
+#define GET_RULES_QUERY "SELECT %e as text FROM `za_rules` WHERE 1;"
+#define GET_HELP_QUERY "SELECT %e as text FROM `za_help` WHERE 1;"
 
 #define LOAD_ACHIEVEMENTS_PAGE "SELECT l.%e AS title, l.%e_desc AS description, c.type, c.count, c.reward, (\
 	SELECT COUNT( c.id ) \
@@ -237,3 +239,5 @@
 
 #define CREATE_SIGN "INSERT INTO `signs` (name, account_id, ip, sign) VALUES ('%e', %d, '%e', '%e')"
 #define UPDATE_SIGN "UPDATE `signs` SET `name`='%e',`points`='%d',`total`='%d' WHERE `account_id` = '%d'"
+
+#define CREATE_VOTEKICK_LOG "INSERT INTO `votekick_log` (account_id, target_id, date, reason, ip, target_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"

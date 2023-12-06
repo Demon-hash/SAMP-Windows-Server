@@ -22,6 +22,7 @@ enum MISC_DATA {
 	mdLastIssuedDamage,
 	mdLastIssuedReason,
 	bool:mdIsLogged,
+	mdLastReportedId,
     	Float:mdHealth,
     	Float:mdArmour,
 	Float:mdMimicryStats[2],

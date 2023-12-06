@@ -150,6 +150,18 @@ enum LOCALIZATION_DATA {
 	LD_DG_SETTINGS_NO,
 	LD_DISPLAY_ABLT_READY,
 	LD_MSG_AUTOLOG,
+	LD_DG_RULES_TITLE,
+	LD_DG_HELP_TITLE,
+	LD_MSG_REPORT,
+	LD_MSG_REPORT_SENT,
+	LD_MSG_UNKNOW_COMMAND,
+	LD_MSG_VOTEKICK_STARTED,
+	LD_MSG_VOTEKICK,
+	LD_MSG_VOTEKICK_OPTS,
+	LD_MSG_VOTEKICK_YES,
+	LD_MSG_VOTEKICK_NO,
+	LD_MSG_VOTEKICK_SUCCESS,
+	LD_MSG_VOTEKICK_FAIL,
 	LD_ENDF,
 };
 
@@ -305,5 +317,20 @@ enum LOCALIZATION_DATA {
 	(134, '{009900}[ YES ]', '{009900}[ ДА ]'),\
 	(135, '{ff1a1a}[ NO ]', '{ff1a1a}[ НЕТ ]'),\
 	(136, '~y~ABILITY~w~ IS~g~ READY!', '~y~СПОСОБНОСТЬ~g~ ГОТОВА!'),\
-	(137, '>> Login is automatic based on setting!', '>> Вход выполнен автоматически на основе настройки!');\
+	(137, '>> Login is automatic based on setting!', '>> Вход выполнен автоматически на основе настройки!'),\
+	(138, 'Rules', 'Правила'),\
+	(139, 'Help', 'Помощь'),\
+	(140, '[REPORT] %s has reported %s(%d):{FFFFFF} %s', '[ЖАЛОБА] Игрок %s отправил жалобу на игрока %s(%d):{FFFFFF} %s'),\
+	(141, 'Report sent!', 'Жалоба отправлена!'),\
+	(142, 'Unknown command. Check /cmds', 'Неизвестная команда. Просмотрите /cmds'),\
+	(143, '>> Voting is already underway!', '>> Голосование уже идёт!'),\
+	(144, '[VOTEKICK] Player %s(%d) will be kicked. [Reason: %s]{FFFFFF} (by %s)', '[ГОЛОСОВАНИЕ] Игрок %s(%d) будет кикнут. [Причина: %s]{FFFFFF} (инициатор %s)'),\
+	(145, '[VOTEKICK] Use /yes and /no for voting!', '[ГОЛОСОВАНИЕ] Используйте /yes и /no для голосования!'),\
+	(146, '>> %s voited YES! (%d / %d)', '>> Игрок %s согласился! (%d / %d)'),\
+	(147, '>> %s voited NO! (%d / %d)', '>> Игрок %s против! (%d / %d)');\
+"
+
+#define PREDIFINED_LOCALIZATION_7 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(148, '[VOTEKICK] %s has been kicked', '[ГОЛОСОВАНИЕ] Игрок %s был кикнут'),\
+	(149, '[VOTEKICK] Voting canceled', '[ГОЛОСОВАНИЕ] Отменено');\
 "
