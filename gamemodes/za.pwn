@@ -2,6 +2,7 @@
 #include <packs/developer>
 
 //  Use Flash Zombie Ability and Chicken Class in the first 20 Seconds. (till timer reach 280)
+// Votekick min xp
 // Weekly Missions - Standing
 
 static const sqlTemplates[][] = {
@@ -105,6 +106,8 @@ static
 	Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
 	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>, Iterator:Admins<MAX_PLAYERS>;
 
+static joinedPlayers = 0;
+
 /*
 	MAIN
 	- Achievements - Required
@@ -113,7 +116,6 @@ static
 	- Weekly Quests > Attachements & Inventory > Shop (Reputation + Coin)
 	- Collections > Coins gain
 	- Commands & Gangs - Optional
-	- Settings - Optional
 	- Anticheat - Optional
 */
 
@@ -252,23 +254,23 @@ public OnPlayerConnect(playerid) {
     ClearAllPlayerData(playerid);
     CheckForAccount(playerid);
     
-    new formated[90];
+    ++joinedPlayers;
+    
+    new formated[128];
     foreach(Player, i) {
         if(i == playerid) continue;
-        format(formated, sizeof(formated), Localization[i][LD_MSG_CONNECT], Misc[playerid][mdPlayerName], playerid);
+        if(Privileges[i][prsAdmin]) format(formated, sizeof(formated), Localization[i][LD_MSG_CONNECT_ADMIN], Misc[playerid][mdPlayerName], playerid, joinedPlayers, Misc[playerid][mdIp]);
+        else format(formated, sizeof(formated), Localization[i][LD_MSG_CONNECT], Misc[playerid][mdPlayerName], playerid, joinedPlayers);
         SendClientMessage(i, COLOR_CONNECTIONS, formated);
     }
     return 1;
 }
 
 public OnPlayerDisconnect(playerid, reason) {
-	SavePlayer(playerid, reason);
-	ResetMapValuesOnDeath(playerid);
-    ResetValuesOnDisconnect(playerid);
-	
-    new formated[90];
+    new formated[128];
     foreach(Player, i) {
-        format(formated, sizeof(formated), Localization[i][LD_MSG_DISCONNECT], Misc[playerid][mdPlayerName], Localization[i][LD_MSG_TIMEOUT + LOCALIZATION_DATA:reason]);
+        if(Privileges[i][prsAdmin]) format(formated, sizeof(formated), Localization[i][LD_MSG_DISCONNECT_ADMIN], Misc[playerid][mdPlayerName], Misc[playerid][mdIp], Localization[i][LD_MSG_TIMEOUT + LOCALIZATION_DATA:reason]);
+        else format(formated, sizeof(formated), Localization[i][LD_MSG_DISCONNECT], Misc[playerid][mdPlayerName], Localization[i][LD_MSG_TIMEOUT + LOCALIZATION_DATA:reason]);
         SendClientMessage(i, COLOR_CONNECTIONS, formated);
     }
     
@@ -279,6 +281,10 @@ public OnPlayerDisconnect(playerid, reason) {
 
 		ResetVotekickData();
 	}
+	
+	SavePlayer(playerid, reason);
+	ResetMapValuesOnDeath(playerid);
+    ResetValuesOnDisconnect(playerid);
 	return 1;
 }
 
@@ -5547,6 +5553,6 @@ CMD:acmds(const playerid) {
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/aduty /getip /getid /slap /getinfo /sync /apm /answer /(un)jail /(un)warn");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/cc /tban /kick /spec /(un)mute /checkip /muwa /waja /goto /checkip");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/ban /offban /offtban /time /weather /get /makezombie /(un)banip");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/warnlog /jaillog /mutelog /banlog /namelog");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /warnlog /jaillog /mutelog /banlog /namelog");
     return 1;
 }

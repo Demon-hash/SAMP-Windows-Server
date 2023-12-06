@@ -162,6 +162,8 @@ enum LOCALIZATION_DATA {
 	LD_MSG_VOTEKICK_NO,
 	LD_MSG_VOTEKICK_SUCCESS,
 	LD_MSG_VOTEKICK_FAIL,
+	LD_MSG_CONNECT_ADMIN,
+	LD_MSG_DISCONNECT_ADMIN,
 	LD_ENDF,
 };
 
@@ -176,8 +178,8 @@ enum LOCALIZATION_DATA {
 	(8, 'Register', 'Регистрация'),\
 	(9, 'Login', 'Логин'),\
 	(10, 'Quit', 'Выйти'),\
-	(11, '*** %s (ID: %d) has joined the server', '*** Игрок %s (ИД: %d) подключился к серверу'),\
-	(12, '*** %s has left the server [%s]', '*** Игрок %s вышел с сервера [%s]'),\
+	(11, '*** %s has joined the server (ID %d) (Player %d)', '*** Игрок %s подключился к серверу (ID %d) (Игрок %d)'),\
+	(12, '*** %s has left the server (%s)', '*** Игрок %s вышел с сервера (%s)'),\
 	(13, 'Timeout', 'Разрыв соединения'),\
 	(14, 'Leave', 'Выход'),\
 	(15, 'Kick', 'Кикнут'),\
@@ -215,9 +217,9 @@ enum LOCALIZATION_DATA {
 	(41, 'Select', 'Выбрать'),\
 	(42, 'Close', 'Закрыть'),\
 	(43, 'POINTS', 'ОЧКОВ'),\
-	(44, '>> You have been spawned as a(n) %s', '>> Ваш текущий класс %s'),\
+	(44, '>> You have been spawned as a(n) %s. Use /class to change this', '>> Ваш текущий класс %s. Используйте /class чтобы изменить его'),\
 	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
-	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после перерождения!'),\
+	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после спавна!'),\
 	(47, 'points', 'очков'),\
 	(48, '>> You need %d %s to use this class!', '>> Вам нужно %d %s чтобы использовать этот класс!'),\
 	(49, 'MISS', 'ПРОМАХ'),\
@@ -326,11 +328,13 @@ enum LOCALIZATION_DATA {
 	(143, '>> Voting is already underway!', '>> Голосование уже идёт!'),\
 	(144, '[VOTEKICK] Player %s(%d) will be kicked. [Reason: %s]{FFFFFF} (by %s)', '[ГОЛОСОВАНИЕ] Игрок %s(%d) будет кикнут. [Причина: %s]{FFFFFF} (инициатор %s)'),\
 	(145, '[VOTEKICK] Use /yes and /no for voting!', '[ГОЛОСОВАНИЕ] Используйте /yes и /no для голосования!'),\
-	(146, '>> %s voited YES! (%d / %d)', '>> Игрок %s согласился! (%d / %d)'),\
-	(147, '>> %s voited NO! (%d / %d)', '>> Игрок %s против! (%d / %d)');\
+	(146, '>> %s voted for a kick (%d / %d)', '>> Игрок %s проголосовал за кик (%d / %d)'),\
+	(147, '>> %s did not vote for a kick (%d / %d)', '>> Игрок %s проголосовал против (%d / %d)');\
 "
 
 #define PREDIFINED_LOCALIZATION_7 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
 	(148, '[VOTEKICK] %s has been kicked', '[ГОЛОСОВАНИЕ] Игрок %s был кикнут'),\
-	(149, '[VOTEKICK] Voting canceled', '[ГОЛОСОВАНИЕ] Отменено');\
+	(149, '[VOTEKICK] Voting canceled', '[ГОЛОСОВАНИЕ] Отменено'),\
+	(150, '*** %s has joined the server (ID %d) (Player %d) (IP %s)', '*** Игрок %s подключился к серверу (ID %d) (Игрок %d) (IP %s)'),\
+	(151, '*** %s has left the server (%s) (%s)', '*** Игрок %s вышел с сервера (%s) (%s)');\
 "
