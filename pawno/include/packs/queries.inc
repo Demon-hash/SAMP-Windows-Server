@@ -3,9 +3,12 @@
 #endif
 #define _queries_pack_included
 
+#define MAX_AUTOLOG_HOURS 21600
+
 #define REG_ACCOUNT_QUERY "INSERT INTO `users` (`login`, `password`) VALUES ('%e', '%e');"
 #define REG_ACCOUNT_INFORMATION_QUERY "INSERT INTO `registration` (`reg_at`, `reg_ip`, `reg_key`) VALUES (%d, '%e', '%e');"
 #define REG_PRIVILEGES_QUERY "INSERT INTO `privileges` (`id`) VALUE (NULL);"
+#define REG_SETTINGS_QUERY "INSERT INTO `settings` (`id`) VALUE (NULL);"
 #define REG_ACHIEVEMENTS_QUERY "INSERT INTO `achievements` (`id`) VALUE (NULL);"
 #define REG_GANG_ACCCOUNT_QUERY "INSERT INTO `gangs_users` (`id`) VALUE (NULL);"
 #define CREATE_SESSION_QUERY "INSERT INTO `login_log` (`account_id`, `date`, `ip`, `key`) VALUES (%d, %d, '%e', '%e');"
@@ -87,6 +90,17 @@
 		`admin`='%d',\
 		`vip`='%d',\
 		`vip_till`='%d'\n\
+		WHERE `id`='%d'\
+"
+
+#define UPDATE_SETTINGS_QUERY "\
+	UPDATE `settings` \n\
+	SET \n\
+		`pm`='%d',\
+		`ding`='%d',\
+		`duels`='%d',\
+		`ability`='%d',\
+		`auto_login`='%d'\n\
 		WHERE `id`='%d'\
 "
 
@@ -187,6 +201,14 @@
 		COALESCE(g.gang_id, -1) as gang_id,\n\
 		COALESCE(g.rank, 0) as gang_rank,\n\
 		COALESCE(g.warns, 0) as gang_warns,\n\
+		COALESCE(s.pm, 0) as set_pm,\n\
+		COALESCE(s.ding, 0) as set_ding,\n\
+		COALESCE(s.duels, 0) as set_duels,\n\
+		COALESCE(s.ability, 0) as set_ability,\n\
+		COALESCE(s.auto_login, 0) as set_auto_login,\n\
+		COALESCE(l.ip, 'NULL') as login_ip,\n\
+		COALESCE(l.date, 0) as login_date,\n\
+		COALESCE(l.account_id, -1) as login_id,\n\
 		COALESCE(r.map_id, 65535) as rnd_mapid,\n\
 		COALESCE(r.team, 65535) as rnd_team,\n\
 		COALESCE(r.survival, 0.0) as rnd_survival,\n\
@@ -202,8 +224,12 @@
 		LEFT JOIN `achievements` a ON u.id = a.id\n\
 		LEFT JOIN `privileges` p ON u.id = p.id\n\
 		LEFT JOIN `gangs_users` g ON u.id = g.id\n\
+		LEFT JOIN `settings` s ON u.id = s.id\n\
 		LEFT JOIN `round_session` r ON u.id = r.account_id\n\
-		WHERE u.login = '%e'\
+		LEFT JOIN `login_log` l ON u.id = l.account_id\n\
+		WHERE u.login = '%e'\n\
+		ORDER BY l.date DESC\n\
+		LIMIT 1\
 "
 
 #define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional, time) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%d)"

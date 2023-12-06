@@ -650,6 +650,18 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define SETTINGS_COLUMNS 5
+#define SETTINGS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS settings (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`pm` int(1) unsigned NOT NULL default '0',\
+	`ding` int(1) unsigned NOT NULL default '0',\
+	`duels` int(1) unsigned NOT NULL default '0',\
+	`ability` int(1) unsigned NOT NULL default '0',\
+	`auto_login` int(1) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\

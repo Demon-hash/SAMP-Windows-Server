@@ -1,6 +1,7 @@
 #include <packs/core>
 #include <packs/developer>
 
+//  Use Flash Zombie Ability and Chicken Class in the first 20 Seconds. (till timer reach 280). Thank you for reading, with best wishes from our Management team.
 // Weekly Missions - Standing
 
 static const sqlTemplates[][] = {
@@ -21,7 +22,7 @@ static const sqlTemplates[][] = {
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
 	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
 	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
-	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE
+	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE, SETTINGS_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -1329,6 +1330,7 @@ custom GetUserAccountId(const playerid) {
 
     mysql_tquery(Database, REG_PRIVILEGES_QUERY);
     mysql_tquery(Database, REG_ACHIEVEMENTS_QUERY);
+    mysql_tquery(Database, REG_SETTINGS_QUERY);
     mysql_tquery(Database, REG_GANG_ACCCOUNT_QUERY);
     
     AfterAuthorization(playerid);
@@ -1705,7 +1707,7 @@ custom LoginOrRegister(const playerid) {
 	Misc[playerid][mdKickForAuthTimeout] = (ServerConfig[svCfgAuthTimeout] * 60);
 
     if(cache_num_rows() > 0) {
-        new progress[256], form[16];
+        new progress[256], form[16], login_ip[16], login_date, login_id;
     	cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
         cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
         cache_get_value_name_int(0, "coins", Player[playerid][pCoins]);
@@ -1761,10 +1763,17 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_int(0, "mary", Achievements[playerid][achMary]);
 		cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
 		cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
-		
 		cache_get_value_name(0, "progress", progress);
-		format(form, sizeof(form), "p<,>a<i>[%d]", MAX_ACHIEVEMENTS);
-		sscanf(progress, form, AchievementsProgress[playerid]);
+		
+		cache_get_value_name_int(0, "set_pm", Settings[playerid][sdPMsBlocked]);
+		cache_get_value_name_int(0, "set_ding", Settings[playerid][sdDing]);
+		cache_get_value_name_int(0, "set_duels", Settings[playerid][sdBlockDuels]);
+		cache_get_value_name_int(0, "set_ability", Settings[playerid][sdAbilityReady]);
+		cache_get_value_name_int(0, "set_auto_login", Settings[playerid][sdAutoLogin]);
+		
+		cache_get_value_name(0, "login_ip", login_ip);
+		cache_get_value_name_int(0, "login_date", login_date);
+		cache_get_value_name_int(0, "login_id", login_id);
         
         cache_get_value_name_int(0, "rnd_mapid", RoundSession[playerid][rsdMapId]);
         cache_get_value_name_int(0, "rnd_team", RoundSession[playerid][rsdTeam]);
@@ -1777,6 +1786,16 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_float(0, "rnd_brutality", RoundSession[playerid][rsdBrutality]);
 		cache_get_value_name_float(0, "rnd_undead", RoundSession[playerid][rsdDeaths]);
 		cache_get_value_name_float(0, "rnd_additional", RoundSession[playerid][rdAdditionalPoints]);
+        
+        format(form, sizeof(form), "p<,>a<i>[%d]", MAX_ACHIEVEMENTS);
+		sscanf(progress, form, AchievementsProgress[playerid]);
+        
+        SetPVarInt(playerid, "auto-log", 0);
+		if(gettime() < login_date + MAX_AUTOLOG_HOURS) {
+		    if(Player[playerid][pAccountId] == login_id && !strcmp(Misc[playerid][mdIp], login_ip)) {
+				SetPVarInt(playerid, "auto-log", 1);
+			}
+		}
         
         SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, Achievements[playerid][achSilinced]);
 		SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, Achievements[playerid][achColt45]);
@@ -1807,6 +1826,7 @@ custom SavePlayer(const playerid, const reason) {
 	    SavePlayerAchievementsData(playerid);
         SavePlayerPrivilagesData(playerid);
         SavePlayerGangData(playerid);
+        SavePlayerSettingsData(playerid);
         SavePlayerSign(playerid);
 		
 		switch(reason) {
@@ -1847,7 +1867,7 @@ custom CreatePlayerSign(playerid) {
 	SHA256_PassHash(input, "md_06/12/2023_00:14-1790", hash, sizeof(hash));
 	
 	static const createSignQuery[] = CREATE_SIGN;
- 	new formatedQuery[sizeof(createSignQuery) + MAX_PLAYER_NAME + MAX_ID_LENGTH + 16 + 64];
+ 	new formatedQuery[sizeof(createSignQuery) + MAX_PLAYER_NAME + MAX_ID_LENGTH + MAX_PLAYER_IP + 64];
     mysql_format(Database, formatedQuery, sizeof(formatedQuery), createSignQuery, Misc[playerid][mdPlayerName], Player[playerid][pAccountId], Misc[playerid][mdIp], hash);
 	mysql_tquery(Database, formatedQuery, "", "", "");
 	strmid(Misc[playerid][mdSign], hash, 0, 16);
@@ -1938,6 +1958,20 @@ custom SavePlayerAchievementsData(const playerid) {
 	mysql_tquery(Database, formatedUpdateAchievementsQuery, "");
 	return 1;
 }
+		
+custom SavePlayerSettingsData(const playerid) {
+    static const query[] = UPDATE_SETTINGS_QUERY;
+	new formated[sizeof(query) + MAX_ID_LENGTH + SETTINGS_COLUMNS];
+	mysql_format(Database, formated, sizeof(formated), query,
+        Settings[playerid][sdPMsBlocked],
+		Settings[playerid][sdDing],
+		Settings[playerid][sdBlockDuels],
+		Settings[playerid][sdAbilityReady],
+		Settings[playerid][sdAutoLogin],
+        Player[playerid][pAccountId]
+	);
+    mysql_tquery(Database, formated, "");
+}
 
 custom SavePlayerPrivilagesData(const playerid) {
     static const updatePrivilagesQuery[] = UPDATE_PRIVILAGES_QUERY;
@@ -1999,7 +2033,14 @@ custom InitializeLocalization(const playerid, const type) {
         }
         
         switch(type) {
-            case AUTH_LOGIN_TYPE: ShowLoginDialog(playerid);
+            case AUTH_LOGIN_TYPE: {
+                if(GetPVarInt(playerid, "auto-log") == 1 && Settings[playerid][sdAutoLogin]) {
+					AfterAuthorization(playerid);
+                    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_AUTOLOG]);
+				} else {
+					ShowLoginDialog(playerid);
+				}
+            }
             case AUTH_REG_TYPE: ShowRegisterDialog(playerid);
             case -1: SendClientMessage(playerid, COLOR_ADMIN, Localization[playerid][LD_MSG_LANGUAGE_SET]);
         }

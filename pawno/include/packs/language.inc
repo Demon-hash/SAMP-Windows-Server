@@ -149,6 +149,7 @@ enum LOCALIZATION_DATA {
 	LD_DG_SETTINGS_YES,
 	LD_DG_SETTINGS_NO,
 	LD_DISPLAY_ABLT_READY,
+	LD_MSG_AUTOLOG,
 	LD_ENDF,
 };
 
@@ -285,7 +286,7 @@ enum LOCALIZATION_DATA {
 	(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Эвакуаций: %d - Duel Wins: %d - Rank: %d'),\
 	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),\
 	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),\
-	(118, '>> Date: %02dD/%02dM/%dY - {dfb7bc}Session ID: MD_%s', '>> Дата: %02dD/%02dM/%dY - {dfb7bc}Сессия: MD_%s'),\
+	(118, '>> Date: %02dD/%02dM/%dY - Session: MD_%s', '>> Дата: %02dD/%02dM/%dY - Сессия: MD_%s'),\
 	(119, 'Coin(s)', 'Монет(а/ы)'),\
 	(120, '>> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)', '>> Игрок %s открыл новое достижение{FFFFFF} %s +%d %s (/achievements)'),\
 	(121, '>> %s has achieved a %d killstreak!{FFFFFF} (+%d %s)', '>> Игрок %s достиг серии из %d убийств!{FFFFFF} (+%d %s)'),\
@@ -303,5 +304,6 @@ enum LOCALIZATION_DATA {
 	(133, 'Setting Name\tState\nBlock PMs\t%s\nDing On Hit\t%s\nBlock Duel Requests\t%s\n\"Ability Is Ready\" notification\t%s\nAuto-Login\t%s', 'Название\tСостояние\nБлокировать ЛС\t%s\nЗвук при попадании\t%s\nБлокировать дуэли\t%s\nУведомление \"Способность Готова\"\t%s\nАвто-Логин\t%s'),\
 	(134, '{009900}[ YES ]', '{009900}[ ДА ]'),\
 	(135, '{ff1a1a}[ NO ]', '{ff1a1a}[ НЕТ ]'),\
-	(136, '~y~ABILITY~w~ IS~g~ READY!', '~y~СПОСОБНОСТЬ~g~ ГОТОВА!');\
+	(136, '~y~ABILITY~w~ IS~g~ READY!', '~y~СПОСОБНОСТЬ~g~ ГОТОВА!'),\
+	(137, '>> Login is automatic based on setting!', '>> Вход выполнен автоматически на основе настройки!');\
 "
