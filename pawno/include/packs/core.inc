@@ -28,6 +28,7 @@
 #include <packs/polygons>
 #include <packs/messages>
 #include <packs/lottery>
+#include <packs/settings>
 #include <packs/weekly_quests>
 
 #include <dependencies/jit>
@@ -63,7 +64,11 @@
 #endif
 
 #if !defined gpci
-    native gpci(playerid, serial[], len);
+	native gpci(playerid, serial[], len);
+#endif
+
+#if !defined SHA256_PassHash
+	native SHA256_PassHash(password[], salt[], ret_hash[], ret_hash_len);
 #endif
 
 #define custom%0(%1) forward%0(%1);public%0(%1)

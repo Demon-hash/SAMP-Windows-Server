@@ -3,7 +3,7 @@
 #endif
 #define _textures_pack_included
 
-#define MAX_SERVER_TEXTURES 7
+#define MAX_SERVER_TEXTURES 8
 #define MAX_SERVER_TEXTURE_NAME 32
 
 enum {
@@ -14,6 +14,7 @@ enum {
 	ALIVE_INFO_TEXTURE_ID,
 	POINTS_TEXTURE_ID,
 	BLIND_TEXTURE_ID,
+	ABILITY_READY_TEXTURE_ID,
 };
 
 enum TEXTURES_DATA {
@@ -24,6 +25,7 @@ enum TEXTURES_DATA {
 	Text:untilEvacTextTexture[MAX_PLAYERS],
 	Text:aliveInfoTexture[MAX_PLAYERS],
 	Text:pointsTexture[MAX_PLAYERS],
+	Text:abilityReadyTexture[MAX_PLAYERS],
 };
 
 enum TEXTURES_CONFIG_DATA {

@@ -46,4 +46,5 @@ enum MISC_DATA {
 	PlayerText3D:mdSpawnPoints[3],
 	PlayerText3D:mdFlagText,
 	mdGameplayWarns,
+	mdSign[16],
 };

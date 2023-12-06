@@ -638,6 +638,18 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define SIGNS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS signs (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`name` varchar(24) NOT NULL,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`sign` varchar(64) NOT NULL,\
+	`ip` varchar(16) NOT NULL,\
+	`points` int(11) unsigned NOT NULL default '0',\
+	`total` int(11) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\
@@ -851,24 +863,22 @@
 
 #define PREDIFINED_RND_MSGS "INSERT IGNORE INTO random_messages (id, english, russian) VALUES \
 	(1, '>> Want to talk about something personal? Use /pm!', '>> Хотите поговорить о чем-то личном? Используйте /pm'),\
-	(2, '>> Are you tired of being annoyed in pm? Use /(un)blockpm!', '>> Устали от личных сообщений? Используйте /(un)blockpm!'),\
-	(3, '>> Tired of spam in PM from one person? Use /(un)ignorepm!', '>> Устали от спама от одного человека? /(un)ignorepm!'),\
-	(4, '>> Change your class using /class!', '>> Измените свой класс, использовав /class'),\
-	(5, '>> As a Human, you must survive. As a Zombie, you must kill humans!', '>> Как человек, вы должны выжить. Как зомби, вы должны убивать людей!'),\
-	(6, '>> Earn points for active playing!', '>> Зарабатывайте очки за активную игру!'),\
-	(7, '>> Newbie? We advise you to look /cmds, /help, /rules!', '>> Новичек? Советуем использовать /cmds, /help, /rules'),\
-	(8, '>> Use /report to report rulebreakers and get points!', '>> Используйте /report чтобы сообщать о нарушителях и получайте очки!'),\
-	(9, '>> Want to become a team player? Join the gang /gang join!', '>> Хотите стать командным игроком? Вступайте в клан /gang join'),\
-	(10, '>> Did you see the cheater? Use /votekick if no admins online!', '>> Увидели нарушителя? Используйте /votekick если администрация не в сети!'),\
-	(11, '>> Almost each class has unique ability. Use LEFT ALT to activate it!', '>> Почти каждый класс имеет уникальную способность. Используйте Левый Альт, чтобы активировать ее!'),\
-	(12, '>> Medics can cure humans by using rifle!', '>> Медики могут лечить людей выстрелив в них с винтовки!'),\
-	(13, '>> You can save your stats with /ss!', '>> Вы можете сохранить свою статистику использовав /ss!'),\
-	(14, '>> Do not forget to add our server to favorites!', '>> Не забудьте добавить наш сервер в избранное!'),\
-	(15, '>> You can change some settings, check /settings!', '>> Вы можете настроить некоторые настройки под себя, используйте /settings!'),\
-	(16, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
-	(17, '>> You can gain points by completing /achievements!', '>> Вы можете получить очки, выполняя достижения! (/achievements)'),\
-	(18, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
-	(19, '>> You can buy attachments, tags, color nicknames, skins by completing weekly activities! (/weekly)', '>> Вы можете покупать предметы одежды, тэги, цвета, скины за выполнение еженедельных заданий! (/weekly)')\
+	(2, '>> Change your class using /class!', '>> Измените свой класс, использовав /class'),\
+	(3, '>> As a Human, you must survive. As a Zombie, you must kill humans!', '>> Как человек, вы должны выжить. Как зомби, вы должны убивать людей!'),\
+	(4, '>> Earn points for active playing!', '>> Зарабатывайте очки за активную игру!'),\
+	(5, '>> Newbie? We advise you to look /cmds, /help, /rules!', '>> Новичек? Советуем использовать /cmds, /help, /rules'),\
+	(6, '>> Use /report to report rulebreakers and get points!', '>> Используйте /report чтобы сообщать о нарушителях и получайте очки!'),\
+	(7, '>> Want to become a team player? Join the gang /gang join!', '>> Хотите стать командным игроком? Вступайте в клан /gang join'),\
+	(8, '>> Did you see the cheater? Use /votekick if no admins online!', '>> Увидели нарушителя? Используйте /votekick если администрация не в сети!'),\
+	(9, '>> Almost each class has unique ability. Use LEFT ALT to activate it!', '>> Почти каждый класс имеет уникальную способность. Используйте Левый Альт, чтобы активировать ее!'),\
+	(10, '>> Medics can cure humans by using rifle!', '>> Медики могут лечить людей выстрелив в них с винтовки!'),\
+	(11, '>> You can save your stats with /ss!', '>> Вы можете сохранить свою статистику использовав /ss!'),\
+	(12, '>> Do not forget to add our server to favorites!', '>> Не забудьте добавить наш сервер в избранное!'),\
+	(13, '>> You can change some settings, check /settings!', '>> Вы можете настроить некоторые настройки под себя, используйте /settings!'),\
+	(14, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
+	(15, '>> You can gain coins by completing /achievements!', '>> Вы можете получить монеты, выполняя достижения! (/achievements)'),\
+	(16, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
+	(17, '>> You can buy attachments, tags, color nicknames, skins by completing weekly activities! (/weekly)', '>> Вы можете покупать предметы одежды, тэги, цвета, скины за выполнение еженедельных заданий! (/weekly)')\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
@@ -1025,7 +1035,8 @@
 	(4, '18.500000, 285.250000', '0.562500, 1.984999', '0.0,0.0', 'UNTIL EVAC', '0x000000FF', 1, '0xFF0000FF', 1, 1, 0, 0, '0', 1),\
 	(5, '21.500000, 220.000000', '0.511498, 1.477498', '0.0,0.0', '~w~humans: 0~n~~r~zombies: 0', '0x000000FF', 2, '0xFFFFFFFF', 0, 1, 1, 0, '0', 1),\
 	(6, '546.000000, 35.000000', '0.270000, 1.000000', '0.0,0.0', '0', '0x000000FF', 2, '0x0d8adeFF', 0, 1, 1, 0, '0', 0),\
-	(7, '0.0,0.0', '0.0,0.0', '640.0,450.0', 'LD_SPAC:white', '0xFFFFFFFF', '4', '0x000000FF', '0', '0', '0', '0', '0', '1');\
+	(7, '0.0,0.0', '0.0,0.0', '640.0,450.0', 'LD_SPAC:white', '0xFFFFFFFF', '4', '0x000000FF', '0', '0', '0', '0', '0', '1'),\
+	(8, '300.000000,426.875000', '0.637500,2.107499', '0.0,0.0', 'null', '0x000000FF', '2', '0xFFFFFFFF', '0', '1', '1', '0', '0', '1');\
 "
 
 #define PREDIFINED_WEAPONS "INSERT IGNORE INTO weapons_config (id, type, chance, `default`, pick) VALUES \

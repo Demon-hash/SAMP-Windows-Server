@@ -32,7 +32,7 @@
 #define LOAD_LOCALIZATION_QST_QUERY "SELECT `%e` as text, `%e_answer` as answer FROM `random_question` WHERE 1;"
 #define LOAD_ACHS_CFG_QUERY "SELECT * FROM `achievements_config` WHERE 1;"
 
-#define LOAD_ACHIEVEMENTS_PAGE "SELECT l.english AS title, l.english_desc AS description, c.type, c.count, c.reward, (\
+#define LOAD_ACHIEVEMENTS_PAGE "SELECT l.%e AS title, l.%e_desc AS description, c.type, c.count, c.reward, (\
 	SELECT COUNT( c.id ) \
 		FROM achievements_config c \
 		WHERE c.disabled = 0 \
@@ -208,3 +208,6 @@
 
 #define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional, time) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%d)"
 #define DELETE_RND_SESSION_QUERY "DELETE FROM `round_session` WHERE `account_id`='%d'"
+
+#define CREATE_SIGN "INSERT INTO `signs` (name, account_id, ip, sign) VALUES ('%e', %d, '%e', '%e')"
+#define UPDATE_SIGN "UPDATE `signs` SET `name`='%e',`points`='%d',`total`='%d' WHERE `account_id` = '%d'"

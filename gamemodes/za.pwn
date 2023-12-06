@@ -21,7 +21,7 @@ static const sqlTemplates[][] = {
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
 	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
 	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
-	ACHIEVEMENTS_TEMPLATE
+	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -65,6 +65,7 @@ static MapConfig[MAP_CONFIG_DATA];
 static Misc[MAX_PLAYERS][MISC_DATA];
 static Player[MAX_PLAYERS][PLAYER_DATA];
 static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
+static Settings[MAX_PLAYERS][SETTINGS_DATA];
 
 static Lottery[MAX_PLAYERS];
 static LotteryConfig[LOTTERY_CONFIG_DATA];
@@ -99,6 +100,8 @@ static
 	Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
 	Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
 	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>, Iterator:Admins<MAX_PLAYERS>;
+	
+static serverRestartTime = 0;
 
 /*
 	MAIN
@@ -106,6 +109,7 @@ static
 	- Admin Commands - Required
 	
 	- Weekly Quests > Attachements & Inventory > Shop (Reputation + Coin)
+	- Collections > Coins gain
 	- Commands & Gangs - Optional
 	- Settings - Optional
 	- Anticheat - Optional
@@ -163,20 +167,6 @@ public OnGameModeInit() {
     TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
     printf("|: JIT is %spresent", IsJITPresent() ? ("") : ("not "));
 	printf("|: Started at %02d:%02d:%02d on %02d/%02d/%d...", hours, minutes, seconds, day, mounth, year);
-
-	InitializePickups();
-	InitializeServerConfig();
-	InitializeRoundConfig();
-	InitializeMapConfig();
-	InitializeServerBalance();
-	InitializeAchievementsConfig();
-	InitializeClassesConfig();
-	InitializeGangsConfig();
-	InitializeEvacuationConfig();
-	InitializeServerTextures();
- 	InitializeClassesData();
-	InitializeWeaponsData();
-	InitializeDefaultValues();
 	
 	Iter_Clear(MutatedPlayers);
 	Iter_Clear(RadioactivePlayers);
@@ -209,22 +199,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
 
-    mysql_set_charset(LOCAL_CHARSET);
-	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
-	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsCfg");
-	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundCfg");
-	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacCfg");
-	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapCfg");
-	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsCfg");
-	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceCfg");
-	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
-	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
-	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
-	// mysql_tquery(Database, LOAD_WEELKYQ_CFG_QUERY, "LoadWeeklyQuestsCfg");
-	
-	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
-	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
-	mysql_tquery(Database, LOAD_OBJECTS_QUERY, "LoadObjects");
+    RepatchServer();
 	
  	mysql_log(SQL_LOG_LEVEL);
  	printf("|: MySQL status: %d", mysql_errno(Database));
@@ -329,6 +304,9 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	if(!IsPlayerConnected(playerid)) {
 	    return 0;
 	}
+	
+	Misc[playerid][mdArmour] = 0.0;
+	Misc[playerid][mdHealth] = 0.0;
 	
 	if(!IsPlayerConnected(killerid) && IsPlayerConnected(Misc[playerid][mdLastIssuedDamage])) {
 	    killerid = Misc[playerid][mdLastIssuedDamage];
@@ -572,6 +550,10 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
 	}
 
     ShowDamageTaken(playerid, amount);
+    if(Settings[issuerid][sdDing]) {
+		PlayerPlaySound(issuerid, 17802, 0.0, 0.0, 0.0);
+	}
+	
 	return 1;
 }
 
@@ -799,6 +781,31 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 			Misc[playerid][mdNextPage] = -1;
 			return 1;
 		}
+		case DIALOG_LANGUAGES: {
+            if(response) {
+                Player[playerid][pLanguage] = listitem;
+                LoadLocalization(playerid, -1);
+                return 1;
+            }
+            
+            return 1;
+		}
+		case DIALOG_SETTINGS: {
+		    if(response) {
+		        if(Settings[playerid][SETTINGS_DATA:listitem]) {
+		            Settings[playerid][SETTINGS_DATA:listitem] = false;
+		            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_SETTING_BLOCKED]);
+		            cmd::settings(playerid);
+		            return 1;
+		        }
+		        
+		        Settings[playerid][SETTINGS_DATA:listitem] = true;
+          		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_SETTING_UNBLOCKED]);
+          		cmd::settings(playerid);
+          		return 1;
+		    }
+		    return 1;
+		}
 	}
 	
 	return 1;
@@ -835,6 +842,12 @@ custom Update() {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
+	    if(serverRestartTime <= 5 && serverRestartTime >= 1) {
+	        format(formated, sizeof(formated), "[PATCH]: %d second left before patch!", serverRestartTime);
+	        SendClientMessage(playerid, COLOR_ADMIN, formated);
+	        PlayerPlaySound(playerid, 1056, 0.0, 0.0, 0.0);
+	    }
+	    
 	    if(IsLogged(playerid)) {
     		format(formated, sizeof(formated),"%d~w~_/_~y~%d", Player[playerid][pPoints], Achievements[playerid][achTotalPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
@@ -861,9 +874,51 @@ custom Update() {
 	    }
 	}
 	
+	if(serverRestartTime) {
+	    --serverRestartTime;
+	    if(serverRestartTime == 0) {
+	        RepatchServer();
+	    }
+	}
+	
 	if((currentSecond % MapConfig[mpCfgUpdate]) == 0) {
 		OnMapUpdate();
 	}
+}
+
+custom RepatchServer() {
+    InitializePickups();
+	InitializeServerConfig();
+	InitializeRoundConfig();
+	InitializeMapConfig();
+	InitializeServerBalance();
+	InitializeAchievementsConfig();
+	InitializeClassesConfig();
+	InitializeGangsConfig();
+	InitializeEvacuationConfig();
+	InitializeServerTextures();
+ 	InitializeClassesData();
+	InitializeWeaponsData();
+	InitializeDefaultValues();
+	
+	mysql_set_charset(LOCAL_CHARSET);
+	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
+	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsCfg");
+	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundCfg");
+	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacCfg");
+	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapCfg");
+	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsCfg");
+	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceCfg");
+	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
+	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
+	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
+	// mysql_tquery(Database, LOAD_WEELKYQ_CFG_QUERY, "LoadWeeklyQuestsCfg");
+
+	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
+	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
+	mysql_tquery(Database, LOAD_OBJECTS_QUERY, "LoadObjects");
+	
+	SendClientMessageToAll(COLOR_ADMIN, "The code has been rebuilt!");
 }
 
 custom LoadMapsCount() {
@@ -1752,9 +1807,14 @@ custom SavePlayer(const playerid, const reason) {
 	    SavePlayerAchievementsData(playerid);
         SavePlayerPrivilagesData(playerid);
         SavePlayerGangData(playerid);
+        SavePlayerSign(playerid);
 		
-		if(reason == DISCONNECT_QUIT) DeletePlayerRoundSession(playerid);
-  		else CreatePlayerRoundSession(playerid);
+		switch(reason) {
+		    case DISCONNECT_QUIT: DeletePlayerRoundSession(playerid);
+		    case DISCONNECT_CUSTOM: {
+			}
+		    default: CreatePlayerRoundSession(playerid);
+		}
 	    return 1;
 	}
 	
@@ -1779,6 +1839,25 @@ custom CreatePlayerRoundSession(const playerid) {
 	    RoundSession[playerid][rdConnectedTime]
 	);
 	mysql_tquery(Database, formatedCreateSessionQuery, "");
+}
+
+custom CreatePlayerSign(playerid) {
+	new hash[65], input[MAX_PLAYER_NAME + MAX_ID_LENGTH];
+	format(input, sizeof(input), "%s+%d", Misc[playerid][mdPlayerName] + gettime());
+	SHA256_PassHash(input, "md_06/12/2023_00:14-1790", hash, sizeof(hash));
+	
+	static const createSignQuery[] = CREATE_SIGN;
+ 	new formatedQuery[sizeof(createSignQuery) + MAX_PLAYER_NAME + MAX_ID_LENGTH + 16 + 64];
+    mysql_format(Database, formatedQuery, sizeof(formatedQuery), createSignQuery, Misc[playerid][mdPlayerName], Player[playerid][pAccountId], Misc[playerid][mdIp], hash);
+	mysql_tquery(Database, formatedQuery, "", "", "");
+	strmid(Misc[playerid][mdSign], hash, 0, 16);
+}
+
+custom CreatePlayerSession(const playerid) {
+	static const sessionQuery[] = CREATE_SESSION_QUERY;
+    new formatedSessionQuery[sizeof(sessionQuery) + MAX_ID_LENGTH + MAX_ID_LENGTH + MAX_PLAYER_IP + GPCI_LENGTH];
+    mysql_format(Database, formatedSessionQuery, sizeof(formatedSessionQuery), sessionQuery, Player[playerid][pAccountId], gettime(), Misc[playerid][mdIp], Misc[playerid][mdSerial]);
+    mysql_tquery(Database, formatedSessionQuery);
 }
 
 custom DeletePlayerRoundSession(const playerid) {
@@ -1900,16 +1979,29 @@ custom SavePlayerGangData(const playerid) {
 	return 1;
 }
 
+custom SavePlayerSign(const playerid) {
+	static const updateSign[] = UPDATE_SIGN;
+	new formatedUpdateSign[sizeof(updateSign) + MAX_PLAYER_NAME + (MAX_ID_LENGTH * 3)];
+	
+    mysql_format(Database, formatedUpdateSign, sizeof(formatedUpdateSign), updateSign,
+		Misc[playerid][mdPlayerName],
+		Player[playerid][pPoints],
+		Achievements[playerid][achTotalPoints],
+		Player[playerid][pAccountId]
+	);
+	mysql_tquery(Database, formatedUpdateSign, "", "", "");
+}
+
 custom InitializeLocalization(const playerid, const type) {
     if(cache_num_rows() > 0) {
         for( new i = 0; i < cache_num_rows(); i++ ) {
             cache_get_value_name(i, "text", Localization[playerid][LOCALIZATION_DATA:i]);
         }
         
-        if(type == AUTH_LOGIN_TYPE) {
-            ShowLoginDialog(playerid);
-        } else {
-            ShowRegisterDialog(playerid);
+        switch(type) {
+            case AUTH_LOGIN_TYPE: ShowLoginDialog(playerid);
+            case AUTH_REG_TYPE: ShowRegisterDialog(playerid);
+            case -1: SendClientMessage(playerid, COLOR_ADMIN, Localization[playerid][LD_MSG_LANGUAGE_SET]);
         }
         
         return 1;
@@ -2409,15 +2501,13 @@ stock ShowRegisterDialog(const playerid, const type = DIALOG_NOERROR) {
 }
 
 stock AfterAuthorization(const playerid) {
-    static const sessionQuery[] = CREATE_SESSION_QUERY;
-    new formatedSessionQuery[sizeof(sessionQuery) + MAX_ID_LENGTH + MAX_ID_LENGTH + MAX_PLAYER_IP + GPCI_LENGTH];
-    mysql_format(Database, formatedSessionQuery, sizeof(formatedSessionQuery), sessionQuery, Player[playerid][pAccountId], gettime(), Misc[playerid][mdIp], Misc[playerid][mdSerial]);
-    mysql_tquery(Database, formatedSessionQuery);
-	
 	Misc[playerid][mdKickForAuthTimeout] = -1;
 	ServerConfig[svCfgCurrentOnline]++;
 	
 	Misc[playerid][mdIsLogged] = true;
+	
+	CreatePlayerSession(playerid);
+	CreatePlayerSign(playerid);
 	
 	if(Privileges[playerid][prsAdmin]) {
 	    Iter_Add(Admins, playerid);
@@ -2510,6 +2600,7 @@ stock ClearAllPlayerData(const playerid) {
     ClearPlayerData(playerid);
     ClearPlayerPrevilegesData(playerid);
     ClearPlayerMiscData(playerid);
+    ClearPlayerSettingsData(playerid);
     ClearPlayerAchievementsData(playerid);
     ClearPlayerRoundData(playerid);
     ClearPlayerRoundSession(playerid);
@@ -2600,6 +2691,14 @@ stock ClearPlayerPrevilegesData(const playerid) {
  	Privileges[playerid][prsVipTill] = 0;
 }
 
+stock ClearPlayerSettingsData(const playerid) {
+    Settings[playerid][sdPMsBlocked] = false;
+    Settings[playerid][sdDing] = false;
+    Settings[playerid][sdBlockDuels] = false;
+    Settings[playerid][sdAbilityReady] = false;
+    Settings[playerid][sdAutoLogin] = false;
+}
+
 stock ClearPlayerMiscData(const playerid) {
     GetPlayerName(playerid, Misc[playerid][mdPlayerName], MAX_PLAYER_NAME);
     GetPlayerIp(playerid, Misc[playerid][mdIp], MAX_PLAYER_IP);
@@ -2619,6 +2718,7 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdWeeklyStanding] = 0;
 	strmid(Misc[playerid][mdHumanSelectionName], "", 0, MAX_CLASS_NAME);
 	strmid(Misc[playerid][mdZombieSelectionName], "", 0, MAX_CLASS_NAME);
+	strmid(Misc[playerid][mdSign], "", 0, 16);
     Misc[playerid][mdIsLogged] = false;
     Misc[playerid][mdKickForAuthTimeout] = -1;
     Misc[playerid][mdKickForAuthTries] = ServerConfig[svCfgAuthTries];
@@ -2647,6 +2747,7 @@ stock InitializeScreenTextures() {
 	    CreateTextureFromConfig(ServerTextures[untilEvacTextTexture][i], UNTILEVAC_TEXT_TEXTURE_ID);
 		CreateTextureFromConfig(ServerTextures[aliveInfoTexture][i], ALIVE_INFO_TEXTURE_ID);
 		CreateTextureFromConfig(ServerTextures[pointsTexture][i], POINTS_TEXTURE_ID);
+		CreateTextureFromConfig(ServerTextures[abilityReadyTexture][i], ABILITY_READY_TEXTURE_ID);
 	}
 	
 	CreateTextureFromConfig(ServerTextures[blindTexture], BLIND_TEXTURE_ID);
@@ -2675,11 +2776,14 @@ stock DestroyScreenTextures() {
             TextDrawHideForPlayer(i, ServerTextures[untilEvacTextTexture][i]);
             TextDrawHideForPlayer(i, ServerTextures[aliveInfoTexture][i]);
             TextDrawHideForPlayer(i, ServerTextures[pointsTexture][i]);
+            TextDrawHideForPlayer(i, ServerTextures[abilityReadyTexture][i]);
+            
         }
 
         TextDrawDestroy(ServerTextures[untilEvacTextTexture][i]);
         TextDrawDestroy(ServerTextures[aliveInfoTexture][i]);
         TextDrawDestroy(ServerTextures[pointsTexture][i]);
+        TextDrawDestroy(ServerTextures[abilityReadyTexture][i]);
 	}
 
 	TextDrawHideForAll(ServerTextures[untillEvacRectangleTexture]);
@@ -3436,9 +3540,24 @@ stock AbilityUsed(const playerid, const classid = -1, const abilityid = -1) {
    	
    	if(classid > -1 && abilityid > -1) {
    		AbilitiesTimers[playerid][abilityid] = gettime() + Classes[classid][cldCooldown];
+   		
+   		if(Settings[playerid][sdAbilityReady]) {
+		   	SetTimerEx("ShowAbilityReadyNotification", Classes[classid][cldCooldown] * 1000, 0, "i", playerid);
+		}
    	}
    	
    	ProceedAchievementProgress(playerid, ACH_TYPE_ABILITIES);
+}
+
+custom ShowAbilityReadyNotification(const playerid) {
+ 	TextDrawSetString(ServerTextures[abilityReadyTexture][playerid], RusToGame(Localization[playerid][LD_DISPLAY_ABLT_READY]));
+    TextDrawShowForPlayer(playerid, ServerTextures[abilityReadyTexture][playerid]);
+    PlayerPlaySound(playerid, 1056, 0.0, 0.0, 0.0);
+ 	SetTimerEx("HideAbilityReadyNotification", 2000, 0, "i", playerid);
+}
+
+custom HideAbilityReadyNotification(const playerid) {
+    TextDrawHideForPlayer(playerid, ServerTextures[abilityReadyTexture][playerid]);
 }
 
 stock InfectPlayer(const playerid, const classid, const abilityid) {
@@ -4191,7 +4310,7 @@ stock PrepareLottery() {
 	
 	if(gettime() > ServerConfig[svCfgLastLottery]) {
 		LotteryConfig[LCD_STARTED] = true;
-		LotteryConfig[LCD_ID] = random(100);
+		LotteryConfig[LCD_ID] = 1 + random(99);
 		LotteryConfig[LCD_JACKPOT] = ServerConfig[svCfgLotteryJackpot];
 		
 		ServerConfig[svCfgLastLottery] = gettime() + ServerConfig[svCfgLastLotteryCooldown];
@@ -4837,9 +4956,10 @@ stock SetTeams() {
 stock GetAchievementsPage(const playerid, const page = 0) {
     static const query[] = LOAD_ACHIEVEMENTS_PAGE;
 	static const limit = 25;
-
-	new formated[sizeof(query) + MAX_ID_LENGTH], offset = page * limit;
-	mysql_format(Database, formated, sizeof(formated), query, offset, limit);
+	
+	new index = Player[playerid][pLanguage];
+	new formated[sizeof(query) + MAX_ID_LENGTH + (LOCALIZATION_SIZE * 2)], offset = page * limit;
+	mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], LOCALIZATION_TABLES[index], offset, limit);
 	mysql_tquery(Database, formated, "GetAchievementsList", "ii", playerid, offset);
 }
 
@@ -4879,7 +4999,7 @@ CMD:lottery(const playerid, const params[]) {
 	format(formated, sizeof(formated), Localization[playerid][LD_MSG_LOTTERY_NUMBER], params[0]);
 	SendClientMessage(playerid, COLOR_INFO, formated);
     
-    Lottery[playerid] = (params[0] - 1);
+    Lottery[playerid] = params[0];
     LotteryConfig[LCD_JACKPOT] += ServerConfig[svCfgLotteryJackpotPerPlayer];
 	return 1;
 }
@@ -4902,7 +5022,7 @@ CMD:achievements(const playerid) {
 }
 
 CMD:stats(const playerid, const params[]) {
-    new year, month, day, formated[96], targetid, sign[16]="";
+    new year, month, day,  targetid, formated[96];
 	getdate(year, month, day);
 	
 	sscanf(params, "I(-1)", targetid);
@@ -4913,17 +5033,31 @@ CMD:stats(const playerid, const params[]) {
 	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_TITLE], Misc[targetid][mdPlayerName]);
 	SendClientMessage(playerid, COLOR_ADMIN, formated);
 	
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_POINTS], Player[targetid][pPoints], Achievements[playerid][achTotalPoints]);
+	SendClientMessage(playerid, COLOR_WHITE, formated);
+	
 	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_KILLS], Achievements[targetid][achKills], Misc[targetid][mdKillstreak], Achievements[targetid][achKillstreak]);
-	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	SendClientMessage(playerid, COLOR_WHITE, formated);
+	
+	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_WINS], Achievements[targetid][achEvac], 0, Achievements[targetid][achRank]);
+	SendClientMessage(playerid, COLOR_WHITE, formated);
 	
 	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_PLAYED], Achievements[targetid][achHours], Achievements[targetid][achMinutes], Achievements[targetid][achSeconds]);
-	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	SendClientMessage(playerid, COLOR_WHITE, formated);
 
 	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_GANG_ACCOUNT], Misc[targetid][mdGang], Misc[targetid][mdGangRank], Player[targetid][pAccountId]);
-	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	SendClientMessage(playerid, COLOR_WHITE, formated);
 
-	format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_DATE_SIGN], day, month, year, sign);
-	SendClientMessage(playerid, COLOR_ADMIN, formated);
+	if(playerid == targetid) format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_DATE_SIGN], day, month, year, Misc[playerid][mdSign]);
+	else format(formated, sizeof(formated), Localization[playerid][LD_MSG_STATS_DATE_SIGN], day, month, year, "MD");
+	
+	SendClientMessage(playerid, COLOR_WHITE, formated);
+	return 1;
+}
+
+CMD:ss(const playerid) {
+    SavePlayer(playerid, DISCONNECT_CUSTOM);
+    SendClientMessage(playerid, COLOR_ADMIN, Localization[playerid][LD_MSG_SAVED_STATS]);
 	return 1;
 }
 
@@ -4932,11 +5066,91 @@ CMD:radio(const playerid) {
     return 1;
 }
 
+CMD:language(const playerid) {
+	ShowPlayerDialog(playerid,
+		DIALOG_LANGUAGES,
+		DIALOG_STYLE_LIST,
+		Localization[playerid][LD_DG_LANGUAGES_TITLE],
+		Localization[playerid][LD_DG_LANGUAGES_OPTS],
+		Localization[playerid][LD_BTN_SELECT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
+	return 1;
+}
+
+CMD:ask(const playerid, const params[]) {
+    if(sscanf(params, "s[64]", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ask (question)");
+  		return 1;
+	}
+	
+	if(!strlen(params[0])) {
+	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ask (question)");
+	    return 1;
+	}
+	
+	new str[96 + MAX_PLAYER_NAME];
+	foreach(Player, i) {
+	    format(str, sizeof(str), Localization[playerid][LD_MSG_QUESTION_ASKED], Misc[playerid][mdPlayerName], params[0]);
+	    SendClientMessage(i, COLOR_RANDOM_QUESTION, str);
+	}
+	
+	return 1;
+}
+
+CMD:pm(const playerid, const params[]) {
+    if(sscanf(params, "is[64]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /pm (id) (message)");
+  		return 1;
+	}
+	
+	if(!strlen(params[1]) || !IsPlayerConnected(params[0])) {
+	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /pm (id) (message)");
+	    return 1;
+	}
+	
+	if(Settings[params[0]][sdPMsBlocked]) {
+	    SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_PMS_IS_BLOCKED]);
+	    return 1;
+	}
+	
+	new str[128];
+	format(str, sizeof(str), "[PM] %s: {FFFFFF}%s", Misc[playerid][mdPlayerName], params[1]);
+	SendClientMessage(params[0], COLOR_RANDOM_QUESTION, str);
+	
+	format(str, sizeof(str), "[<<]{FFFFFF} %s", params[1]);
+	SendClientMessage(playerid, COLOR_RANDOM_QUESTION, str);
+	return 1;
+}
+
+CMD:settings(const playerid) {
+    new setting[5][26], i, str[196];
+    for( i = 0; i < sizeof(setting); i++ ) {
+        if(Settings[playerid][SETTINGS_DATA:i]) strmid(setting[i], Localization[playerid][LD_DG_SETTINGS_YES], 0, 24);
+        else strmid(setting[i], Localization[playerid][LD_DG_SETTINGS_NO], 0, 24);
+    }
+    
+    format(str, sizeof(str), Localization[playerid][LD_DG_SETTINGS_OPTS], setting[0], setting[1], setting[2], setting[3], setting[4]);
+	ShowPlayerDialog(
+		playerid,
+		DIALOG_SETTINGS,
+		DIALOG_STYLE_TABLIST_HEADERS,
+	 	Localization[playerid][LD_DG_SETTINGS_TITLE],
+		str,
+		Localization[playerid][LD_BTN_SELECT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
+    
+	return 1;
+}
+
+// 		/lottery /class /achievements /stats /ss /radio /language
+//      /ask /pm /settings
+
 CMD:cmds(const playerid) {
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/help /rules /cmds /class /maps /stats /ss /radio /pm");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/(un)blockpm /(un)ignore /changename /lottery");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekick /report /stats /ss /radio /weekly /clothes");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/weapons /gang /language /achievements /ask /pay /settings");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/help /rules");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekick /report /weekly /clothes");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/weapons /gang /pay /settings");
 	return 1;
 }
 
@@ -4969,11 +5183,6 @@ CMD:weekly(const playerid) {
 	// DIALOG_WEEKLY_REWARDS
 	
 	return 1;
-}
-
-CMD:test(playerid, params[]) {
-    if(Player[playerid][pAccountId] != 1) return 0;
- 	return 1;
 }
 
 // ADMIN COMMANDS
@@ -5112,6 +5321,22 @@ CMD:unwarn(const playerid, const params[]) {
 	}
 
     return 1;
+}
+
+CMD:restart(const playerid) {
+    if(!HasAdminPermission(playerid, 6)) return 0;
+    for( new i = 0; i < 25; i++ ) SendClientMessage(playerid, -1, " ");
+    SendClientMessage(playerid, COLOR_ADMIN, "[!] ~~~~~~~~ WARNING ~~~~~~~~ [!]");
+    SendClientMessage(playerid, COLOR_ADMIN, "Reconfiguration of modules is expected!");
+	SendClientMessage(playerid, COLOR_ADMIN, "At this time, the code will be rebuilt and adapted to new innovations");
+	SendClientMessage(playerid, COLOR_ADMIN, "During a rebuild, when you have some functions disabled for a certain period of time");
+	SendClientMessage(playerid, COLOR_ADMIN, "Some values will be reset if they require reconfiguration");
+	SendClientMessage(playerid, COLOR_ADMIN, "You do NOT need to re-login, everything will be done on the fly");
+	SendClientMessage(playerid, COLOR_ADMIN, "[!] ~~~~~~~~~~~~~~~~~~~~~~~~~~ [!]");
+
+	GameTextForPlayer(playerid, "~p~Incoming Server Patch", 5000, 5);
+	serverRestartTime = 30;
+	return 1;
 }
 
 CMD:acmds(const playerid) {
