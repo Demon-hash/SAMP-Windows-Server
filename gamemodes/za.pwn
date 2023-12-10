@@ -99,18 +99,25 @@ static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
 static Weekly[MAX_PLAYERS][WEEKLY_MAX_ACTIVITIES];
 static WeeklyConfig[WEEKLY_CFG_DATA];
+static WeeklyHashmap[WEEKLY_ACTIVITIES];
 
 static Votekick[VOTEKICK_DATA];
 
 static
 	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
-	MySQL:Database, updateTimerId, Iterator:Humans<MAX_PLAYERS>,
-	Iterator:Zombies<MAX_PLAYERS>, Iterator:MutatedPlayers<MAX_PLAYERS>,
-	Iterator:RadioactivePlayers<MAX_PLAYERS>, Iterator:NursePlayers<MAX_PLAYERS>,
-	Iterator:PriestPlayers<MAX_PLAYERS>, Iterator:SupportPlayers<MAX_PLAYERS>,
-	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>, Iterator:Admins<MAX_PLAYERS>;
-
-static joinedPlayers = 0;
+	weeklyActivitiesIds[WEEKLY_MAX_ACTIVITIES_LEN],
+	MySQL:Database,
+	updateTimerId,
+	Iterator:Humans<MAX_PLAYERS>,
+	Iterator:Zombies<MAX_PLAYERS>,
+	Iterator:MutatedPlayers<MAX_PLAYERS>,
+	Iterator:RadioactivePlayers<MAX_PLAYERS>,
+	Iterator:NursePlayers<MAX_PLAYERS>,
+	Iterator:PriestPlayers<MAX_PLAYERS>,
+	Iterator:SupportPlayers<MAX_PLAYERS>,
+	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>,
+	Iterator:Admins<MAX_PLAYERS>,
+	joinedPlayers = 0;
 
 /*
 	MAIN
@@ -188,6 +195,7 @@ public OnGameModeInit() {
 	InitializeServerTextures();
  	InitializeClassesData();
 	InitializeWeaponsData();
+	InitializeWeeklyData();
 	InitializeDefaultValues();
 	
 	Iter_Clear(MutatedPlayers);
@@ -221,6 +229,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_7);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
 	
 	mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
@@ -325,6 +334,11 @@ public OnPlayerSpawn(playerid) {
 	if(!IsLogged(playerid)) {
 	    return 1;
 	}
+	
+	if(Misc[playerid][mdJailed] > -1) {
+	    SpawnPlayerInJail(playerid);
+	    return 1;
+	}
 
     CheckToStartMap();
     
@@ -346,7 +360,8 @@ public OnPlayerUpdate(playerid) {
 		}
 	}
 	
-	SetPlayerScore(playerid, Achievements[playerid][achRank]);
+	SetPlayerScore(playerid, Achievements[playerid][achTotalPoints]);
+	Misc[playerid][mdAfk] = -2;
 	return 1;
 }
 
@@ -369,9 +384,12 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	if(IsPlayerConnected(killerid)) {
 	    IncreaseWeaponSkillLevel(killerid, reason);
 	    ProceedAchievementProgress(killerid, ACH_TYPE_TERRORIST);
+	    ProceedWeekly(killerid, WEEKLY_KILL_PLAYERS);
 	    
 	    if(!Map[mpFirstBlood]) {
 	        RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgFirstBlood];
+	        ProceedWeekly(killerid, WEEKLY_BLOODRUSH);
+	        
 	        Map[mpFirstBlood] = true;
 	        
 		 	new formated[128];
@@ -404,6 +422,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	    	}
 	    	
 	    	ProceedAchievementProgress(killerid, ACH_TYPE_KILL_HUMANS);
+	    	ProceedWeekly(killerid, WEEKLY_KILL_HUMANS);
 	    }
 	    
 	    if(GetPlayerTeamEx(playerid) == TEAM_ZOMBIE) {
@@ -418,9 +437,11 @@ public OnPlayerDeath(playerid, killerid, reason) {
 				
 				RoundSession[killerid][rdAdditionalPoints] += float(Misc[killerid][mdKillstreak] / MapConfig[mpCfgKillstreakFactor]);
 				ProceedAchievementProgress(killerid, ACH_TYPE_KILLSTREAK, Misc[killerid][mdKillstreak]);
+				ProceedWeekly(killerid, WEEKLY_KILLSTREAKS);
 	    	}
 	    
 	        ProceedAchievementProgress(killerid, ACH_TYPE_KILL_ZOMBIES);
+			ProceedWeekly(killerid, WEEKLY_KILL_ZOMBIES);
 	    }
 	    
 	    if(IsAbleToGivePointsInCategory(killerid, SESSION_KILL_POINTS)) {
@@ -433,6 +454,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	    
 	    if(IsPlayerConnected(killerid)) {
 	    	RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgHumanHeroPoints];
+	    	ProceedWeekly(killerid, WEEKLY_HUMAN_BOSSES);
 	    	
 	    	new formated[96];
 		 	foreach(Player, i) {
@@ -447,6 +469,7 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	    
 	    if(IsPlayerConnected(killerid)) {
 	        RoundSession[killerid][rdAdditionalPoints] += MapConfig[mpCfgZombieBossPoints];
+	        ProceedWeekly(killerid, WEEKLY_ZOMBIE_BOSSES);
 	        
 	        new formated[96];
 		 	foreach(Player, i) {
@@ -611,17 +634,12 @@ public OnPlayerEnterCheckpoint(playerid) {
 	if(GetPlayerTeamEx(playerid) != TEAM_HUMAN || Round[playerid][rdIsEvacuated] || GetPlayerVirtualWorld(playerid) > 0) {
 	    return 1;
 	}
-	
- 	if(IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS)) {
-  		RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgEvac];
-  	}
 
 	PlayerPlaySound(playerid, EvacuationConfig[ecdCfgSound], 0.0, 0.0, 0.0);
 	SetPlayerPos(playerid, EvacuationConfig[ecdCfgPosition][0], EvacuationConfig[ecdCfgPosition][1], EvacuationConfig[ecdCfgPosition][2]);
 	SetPlayerFacingAngle(playerid, EvacuationConfig[ecdCfgPosition][3]);
 	SetCameraBehindPlayer(playerid);
 	SetPlayerInterior(playerid, EvacuationConfig[ecdCfgInterior]);
-	ProceedAchievementProgress(playerid, ACH_TYPE_EVAC);
 	
 	DisablePlayerCheckpoint(playerid);
 	CurePlayer(playerid);
@@ -629,6 +647,12 @@ public OnPlayerEnterCheckpoint(playerid) {
 	Round[playerid][rdIsEvacuated] = true;
 	
 	++Map[mpEvacuatedHumans];
+	
+	ProceedAchievementProgress(playerid, ACH_TYPE_EVAC);
+	ProceedWeekly(playerid, WEEKLY_EVACUATE);
+	if(IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS)) {
+  		RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgEvac];
+  	}
 	
 	new formated[90];
 	foreach(Player, i) {
@@ -678,6 +702,15 @@ public OnPlayerText(playerid, text[]) {
 	while(text[i_pos]) {
 		if(text[i_pos] == '%') text[i_pos] = '#';
 		i_pos++;
+	}
+	
+	if((text[0] == '@' || text[0] == '"') && HasAdminPermission(playerid)) {
+	    new formated[120];
+	    format(formated, sizeof(formated), "[A-CHAT]: %s(%d): %s", Misc[playerid][mdPlayerName], playerid, text[1]);
+	    foreach(Admins, i) {
+	        SendClientMessage(i, COLOR_ADMIN, formated);
+	    }
+	    return 0;
 	}
 	
 	if(RandomQuestions[RMB_STARTED] && !strcmp(text, LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], false)) {
@@ -736,6 +769,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 		
 		if(IsJumping(playerid) && GetPlayerSpeed(playerid) >= 15) {
 			ProceedAchievementProgress(playerid, ACH_TYPE_JUMP);
+			ProceedWeekly(playerid, WEEKLY_JUMP);
 		}
 		return 1;
 	}
@@ -902,12 +936,41 @@ custom Update() {
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
 	    if(IsLogged(playerid)) {
-    		format(formated, sizeof(formated),"%d~w~_/_~y~%d", Player[playerid][pPoints], Achievements[playerid][achTotalPoints]);
+	        ++Misc[playerid][mdAfk];
+	        if(Misc[playerid][mdAfk] == 15 && GetPlayerTeamEx(playerid) == TEAM_HUMAN) {
+	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_AFK]);
+	            SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
+    			SpawnPlayer(playerid);
+	            continue;
+	        }
+	        
+	        if(Misc[playerid][mdAfk] == 300) {
+	            new str[64];
+	            foreach(Player, i) {
+	                format(str, sizeof(str), Localization[i][LD_MSG_AFK_KICK], Misc[playerid][mdPlayerName]);
+	                SendClientMessage(i, COLOR_ADMIN, str);
+	            }
+	            
+	            KickPlayer(playerid);
+				continue;
+			}
+	        
+	        if(GetPlayerPing(playerid) > 400) {
+	            new str[64];
+	            foreach(Player, i) {
+	                format(str, sizeof(str), Localization[i][LD_MSG_PING_KICK], Misc[playerid][mdPlayerName]);
+	                SendClientMessage(i, COLOR_ADMIN, str);
+	            }
+	            
+	            KickPlayer(playerid);
+	            continue;
+	        }
+	    
+    		format(formated, sizeof(formated),"%d", Player[playerid][pPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
     		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
-            
             
             ProceedRandomTip(playerid, tip, formated);
             ProceedRandomQuestion(playerid, question, formated);
@@ -923,6 +986,12 @@ custom Update() {
             
             if(!Map[mpPaused] && IsAbleToGivePointsInCategory(playerid, SESSION_SURVIVAL_POINTS) && (Map[mpTimeout] % RoundConfig[rdCfgSurvivalPer]) == 0) {
                 RoundSession[playerid][rsdSurvival] += RoundConfig[rdCfgSurvival];
+            }
+            
+            if(Misc[playerid][mdJailed] > -1) {
+                if(--Misc[playerid][mdJailed] == -1) {
+                    UnjailPlayer(playerid);
+                }
             }
 	    }
 	}
@@ -1317,11 +1386,54 @@ custom LoadLocalization(const playerid, const type) {
 	mysql_tquery(Database, formatedQuestion, "InitializeLocalizedQuestions", "i", playerid);
 }
 
+custom CheckForBan(const playerid) {
+    static const query[] = LOAD_PLAYER_BAN;
+	new formated[sizeof(query) + MAX_ID_LENGTH];
+	mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId]);
+	mysql_tquery(Database, formated, "KickForBanEvade", "i", playerid);
+}
+
 custom CheckForAccount(const playerid) {
 	static const query[] = CHECK_USER_QUERY;
 	new formated[sizeof(query) + MAX_PLAYER_NAME];
 	mysql_format(Database, formated, sizeof(formated), query, Misc[playerid][mdPlayerName]);
 	mysql_tquery(Database, formated, "LoginOrRegister", "i", playerid);
+}
+
+custom KickForBanEvade(const playerid) {
+    if(cache_num_rows()) {
+        new admin[MAX_PLAYER_NAME], reason[64], str[96], time, permanent, date;
+        cache_get_value_name(0, "admin", admin);
+        cache_get_value_name(0, "reason", reason);
+        cache_get_value_name_int(0, "permanent", permanent);
+        cache_get_value_name_int(0, "valid_till", time);
+        cache_get_value_name_int(0, "date", date);
+        
+        new year, mounth, day, hours, minutes, seconds;
+    	TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+		if(gettime() < time || permanent) {
+		    foreach(Player, i) {
+		    	if(permanent) format(str, sizeof(str), Localization[i][LD_MSG_PERM_BANNED], Misc[playerid][mdPlayerName]);
+		    	else format(str, sizeof(str), Localization[i][LD_MSG_TEMP_BANNED], Misc[playerid][mdPlayerName]);
+		    	SendClientMessage(i, COLOR_ADMIN, str);
+		    }
+		    
+		    SendClientMessage(playerid, COLOR_WHITE, Localization[playerid][LD_MSG_BANNED_TITLE]);
+		    format(str, sizeof(str), Localization[playerid][LD_MSG_BANNED_REASON], admin, reason);
+		    SendClientMessage(playerid, COLOR_WHITE, str);
+		    format(str, sizeof(str), Localization[playerid][LD_MSG_BANNED_DATE], day, mounth, year);
+		    SendClientMessage(playerid, COLOR_INFO, str);
+		    format(str, sizeof(str), Localization[playerid][LD_MSG_WRONG_BANNED], ServerConfig[svCfgDiscord]);
+ 			SendClientMessage(playerid, COLOR_ABILITY, str);
+ 			
+		    KickPlayer(playerid);
+        	return 1;
+		}
+		
+		return 0;
+    }
+    
+    return 0;
 }
 
 custom GetUserAccountId(const playerid) {
@@ -1843,6 +1955,7 @@ custom LoginOrRegister(const playerid) {
         PreloadDefaultLocalizedTitles(playerid);
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
         CheckForLoadedRound(playerid);
+        CheckForBan(playerid);
         return 1;
     }
    	
@@ -2066,12 +2179,8 @@ custom InitializeLocalization(const playerid, const type) {
         
         switch(type) {
             case AUTH_LOGIN_TYPE: {
-                if(GetPVarInt(playerid, "auto-log") == 1 && Settings[playerid][sdAutoLogin]) {
-					AfterAuthorization(playerid);
-                    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_AUTOLOG]);
-				} else {
-					ShowLoginDialog(playerid);
-				}
+                if(GetPVarInt(playerid, "auto-log") == 1 && Settings[playerid][sdAutoLogin]) AfterAuthorization(playerid);
+                else ShowLoginDialog(playerid);
             }
             case AUTH_REG_TYPE: ShowRegisterDialog(playerid);
             case -1: SendClientMessage(playerid, COLOR_ADMIN, Localization[playerid][LD_MSG_LANGUAGE_SET]);
@@ -2129,6 +2238,7 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         new i, len = clamp(cache_num_rows(), 0, MAX_CLASSES), points;
         new list[2560], formated[256], description[MAX_CLASS_DESC], color;
         
+        strcat(list, Localization[playerid][LD_DG_CLASSES_HEADERS]);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name_int(i, "id", ClassesSelection[playerid][i][csdId]);
             cache_get_value_name_int(i, "points", points);
@@ -2137,14 +2247,13 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
 
 			if(!showDialog) continue;
             color = (Achievements[playerid][achTotalPoints] < points) ? disabledTitlesColors[i % 2] : enabledTitlesColors[i % 2];
-            format(formated, sizeof(formated), "{%06x}%s{%06x} - %s - %s%d %s\n",
+            format(formated, sizeof(formated), "{%06x}%s\t{%06x}%s\t%s%d\n",
 				color,
 				ClassesSelection[playerid][i][csdName],
 				descriptionColors[i % 2],
                 description,
 				(Achievements[playerid][achTotalPoints] < points) ? "{FF0000}" : "",
-				points,
-				Localization[playerid][LD_CLASSES_TIP_EXP]
+				points
 			);
 			
             strcat(list, formated);
@@ -2154,7 +2263,8 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         
         if(showDialog) {
 	        ShowPlayerDialog(
-				playerid, DIALOG_SELECTION, DIALOG_STYLE_LIST,
+				playerid, DIALOG_SELECTION,
+				DIALOG_STYLE_TABLIST_HEADERS,
 				Localization[playerid][LD_DG_CLASSES_TITLE],
 				list,
 				Localization[playerid][LD_BTN_SELECT],
@@ -2238,8 +2348,8 @@ stock ACHIEVEMENTS_DATA:GetAchievementIndex(const type) {
 	    case ACH_TYPE_CAPTURE: return achCapture;
 		case ACH_TYPE_DUELS: return achDuels;
 		case ACH_TYPE_BLOOD: return achBlood;
-		case ACH_TYPE_REPORT: return achReported;
 		
+		case ACH_TYPE_REPORT: return achReported; // Done
 		case ACH_TYPE_SESSION: return achSession; // Done
 		case ACH_TYPE_LAST_HOPE: return achLastHope; // Done
 		case ACH_TYPE_LICKY: return achLuck; // Done
@@ -2406,6 +2516,26 @@ stock GetAchievementProgressByType(const playerid, const type) {
 	}
 	
 	return Achievements[playerid][index];
+}
+
+stock UnjailPlayer(const playerid) {
+    Misc[playerid][mdJailed] = -1;
+   	SetSpawnInfo(playerid, TEAM_ZOMBIE, 252, Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0], 0.0, 0, 0, 0, 0, 0, 0);
+   	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
+    SpawnPlayer(playerid);
+}
+
+stock SpawnPlayerInJail(const playerid) {
+    SetPlayerSkin(playerid, 62);
+	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CUFFED);
+	SetPlayerPos(playerid, 264.1425, 77.4712, 1001.0391);
+	SetPlayerFacingAngle(playerid, 263.0160);
+	SetPlayerInterior(playerid, 6);
+	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
+	SetPlayerColor(playerid, COLOR_BLACK);
+	ResetWeapons(playerid);
+	SetPlayerArmourAC(playerid, 0.0);
+	SetPlayerHealthAC(playerid, 100.0);
 }
 
 // STOCK BOOL
@@ -2625,6 +2755,12 @@ stock InitializeClassesData() {
 	printf("[x] Clear Classes data on load");
 }
 
+stock InitializeWeeklyData() {
+	for( new i = 0; i < _:WEEKLY_ACTIVITIES; i++ ) {
+    	WeeklyHashmap[WEEKLY_ACTIVITIES:i] = -1;
+    }
+}
+
 stock InitializeClassesConfig() {
     ClassesConfig[clsCfgWhoppingWhen] = INVALID_VALUE;
 	ClassesConfig[clsCfgSpitterWeapon] = INVALID_VALUE;
@@ -2682,6 +2818,7 @@ stock ClearAllPlayerData(const playerid) {
     ClearPlayerRoundSession(playerid);
     ClearPlayerWeaponsData(playerid);
     ClearLocalizedClassesData(playerid);
+    ClearPlayerWeeklyData(playerid);
     ClearPlayerAttachedObjects(playerid);
     
     ResetWeapons(playerid);
@@ -2694,6 +2831,12 @@ stock ClearAbilitiesTimers(const playerid) {
 	for( new i; i < ABLITY_MAX; i++ ) {
     	AbilitiesTimers[playerid][i] = 0;
     }
+}
+
+stock ClearPlayerWeeklyData(const playerid) {
+	for( new i = 0; i < WEEKLY_MAX_ACTIVITIES; i++ ) {
+    	Weekly[playerid][i] = 0;
+	}
 }
 
 stock ClearPlayerData(const playerid) {
@@ -2792,6 +2935,7 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGameplayWarns] = 0;
 	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
+	Misc[playerid][mdAfk] = -1;
 	Misc[playerid][mdSelectionTeam] = -1;
 	Misc[playerid][mdWeeklyStanding] = 0;
 	strmid(Misc[playerid][mdHumanSelectionName], "", 0, MAX_CLASS_NAME);
@@ -3281,6 +3425,8 @@ stock GivePointsForRound(const playerid) {
 	);
 	
 	ProceedAchievementProgress(playerid, ACH_TYPE_TOTAL_POINTS, amount);
+	ProceedWeekly(playerid, WEEKLY_COLLECT_POINTS, amount);
+	
 	Player[playerid][pPoints] += amount;
 }
 
@@ -3577,25 +3723,31 @@ stock bool:IsInfected(const playerid) {
 	return false;
 }
 
-stock DefaultCure(const playerid) {
+stock DefaultCure(const playerid, const fromid = -1) {
     Round[playerid][rdIsInfected] = false;
     Round[playerid][rdIsAdvanceInfected] = false;
     SetPlayerDrunkLevel(playerid, 0);
     TextDrawHideForPlayer(playerid, ServerTextures[infectedTexture]);
     SetPlayerColor(playerid, COLOR_HUMAN);
-    
-    if(IsAbleToGivePointsInCategory(playerid, SESSION_CARE_POINTS)) {
-    	RoundSession[playerid][rsdCare] += RoundConfig[rdCfgCare];
-	}
 	
 	if(Iter_Contains(MutatedPlayers, playerid)) {
         Iter_Remove(MutatedPlayers, playerid);
     }
+    
+    if(IsPlayerConnected(fromid)) {
+	    ProceedAchievementProgress(fromid, ACH_TYPE_CURE);
+	    ProceedWeekly(fromid, WEEKLY_CURE);
+	    if(IsAbleToGivePointsInCategory(fromid, SESSION_CARE_POINTS)) {
+	    	RoundSession[fromid][rsdCare] += RoundConfig[rdCfgCare];
+		}
+	}
 }
 
-stock DefaultInfection(const playerid) {
+stock DefaultInfection(const playerid, const fromid) {
     Round[playerid][rdIsInfected] = true;
-    ProceedAchievementProgress(playerid, ACH_TYPE_INFECT);
+    
+    ProceedAchievementProgress(fromid, ACH_TYPE_INFECT);
+    ProceedWeekly(fromid, WEEKLY_INFECT);
 }
 
 stock SendInfectionMessage(const LOCALIZATION_DATA:localeid, const targetid, const playerid) {
@@ -3613,10 +3765,6 @@ stock IsInAbilityRange(const targetid, const playerid, const classid) {
 }
 
 stock AbilityUsed(const playerid, const classid = -1, const abilityid = -1) {
-    if(IsAbleToGivePointsInCategory(playerid, SESSION_ABILITY_POINTS)) {
-    	RoundSession[playerid][rsdSkillfulness] += RoundConfig[rdCfgSkillfulness];
-   	}
-   	
    	if(classid > -1 && abilityid > -1) {
    		AbilitiesTimers[playerid][abilityid] = gettime() + Classes[classid][cldCooldown];
    		
@@ -3626,6 +3774,10 @@ stock AbilityUsed(const playerid, const classid = -1, const abilityid = -1) {
    	}
    	
    	ProceedAchievementProgress(playerid, ACH_TYPE_ABILITIES);
+   	ProceedWeekly(playerid, WEEKLY_ABILITIES);
+   	if(IsAbleToGivePointsInCategory(playerid, SESSION_ABILITY_POINTS)) {
+  		RoundSession[playerid][rsdSkillfulness] += RoundConfig[rdCfgSkillfulness];
+	}
 }
 
 custom ShowAbilityReadyNotification(const playerid) {
@@ -3644,7 +3796,7 @@ stock InfectPlayer(const playerid, const classid, const abilityid) {
 	    if(!IsInAbilityRange(targetid, playerid, classid)) continue;
 		if(!IsAbleToBeInfected(targetid)) continue;
 
-        DefaultInfection(targetid);
+        DefaultInfection(targetid, playerid);
     	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
     	SendInfectionMessage(LD_MSG_INFECTED_STANDARD, targetid, playerid);
     	AbilityUsed(playerid, classid, abilityid);
@@ -3659,7 +3811,7 @@ stock InfectPlayerDrunk(const playerid, const classid, const abilityid) {
 	    if(!IsInAbilityRange(targetid, playerid, classid)) continue;
 		if(!IsAbleToBeInfected(targetid)) continue;
 
-        DefaultInfection(targetid);
+        DefaultInfection(targetid, playerid);
         SetPlayerDrunkLevel(targetid, ServerConfig[svCfgInfectionDrunkLevel]);
     	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
     	SendInfectionMessage(LD_MSG_MISTY_INFECTED, targetid, playerid);
@@ -3675,7 +3827,7 @@ stock InfectPlayerBlind(const playerid, const classid, const abilityid) {
 	    if(!IsInAbilityRange(targetid, playerid, classid)) continue;
 		if(!IsAbleToBeInfected(targetid)) continue;
 
-        DefaultInfection(targetid);
+        DefaultInfection(targetid, playerid);
         Misc[targetid][mdBlindTimeout] = Classes[classid][cldAbilityTime];
        	TextDrawShowForPlayer(targetid, ServerTextures[blindTexture]);
     	ApplyAnimation(playerid, "BIKELEAP", "bk_jmp", 3.1, 0, 0, 0, 0, 450);
@@ -3724,7 +3876,7 @@ stock InfectPlayerFlesher(const targetid, const pickupid) {
 	    return 0;
 	}
 
-    DefaultInfection(targetid);
+    DefaultInfection(targetid, playerid);
     ApplyAnimation(targetid, "FOOD", "EAT_VOMIT_P", 4.1, 0, 0, 0, 0, 0);
     SendInfectionMessage(LD_MSG_INFECTED_FLESHER, targetid, playerid);
     AbilityUsed(playerid);
@@ -3736,7 +3888,7 @@ stock InfectPlayerSpore(const targetid, const playerid) {
 	    return 0;
 	}
 
-    DefaultInfection(targetid);
+    DefaultInfection(targetid, playerid);
     SendInfectionMessage(LD_MSG_INFECTED_SPORE, targetid, playerid);
     AbilityUsed(playerid);
     return 1;
@@ -3747,7 +3899,7 @@ stock InfectPlayerSpitter(const targetid, const playerid) {
 	    return 0;
 	}
 
-    DefaultInfection(targetid);
+    DefaultInfection(targetid, playerid);
     SendInfectionMessage(LD_MSG_INFECTED_SPITTER, targetid, playerid);
     AbilityUsed(playerid);
     return 1;
@@ -3762,7 +3914,7 @@ stock InfectAndExplode(const playerid, const classid) {
 	foreach(Humans, i) {
 	    if(!IsAbleToBeInfected(i)) continue;
 		if(IsPlayerInRangeOfPoint(i, range, pos[0], pos[1], pos[2])) {
-	        DefaultInfection(i);
+	        DefaultInfection(i, playerid);
 	        ++count;
 	    }
 	}
@@ -4064,9 +4216,8 @@ stock CurePlayerInField(const targetid, const playerid, const classid) {
 	    return 0;
 	}
 
-    DefaultCure(targetid);
+    DefaultCure(targetid, playerid);
     AbilityUsed(playerid);
-    ProceedAchievementProgress(playerid, ACH_TYPE_CURE);
     
     new formated[96];
    	foreach(Player, i) {
@@ -4082,9 +4233,8 @@ stock CurePlayerByShot(const targetid, const playerid) {
 	    return 0;
 	}
 
-    DefaultCure(targetid);
+    DefaultCure(targetid, playerid);
     AbilityUsed(playerid);
-    ProceedAchievementProgress(playerid, ACH_TYPE_CURE);
     
     new formated[96];
    	foreach(Player, i) {
@@ -4506,7 +4656,9 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 	        case TEAM_ZOMBIE: {
                 new classid = Misc[playerid][mdCurrentClass][TEAM_ZOMBIE];
 	        	SetPlayerHealthAC(playerid, Classes[classid][cldHealth]);
+	        	
 	        	ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_MEATS);
+	        	ProceedWeekly(playerid, WEEKLY_COLLECT_MEATS);
 	        	return 1;
 	        }
 	        case TEAM_HUMAN: {
@@ -4517,6 +4669,7 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 	                }
 	                
 	                ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_MEATS);
+	                ProceedWeekly(playerid, WEEKLY_COLLECT_MEATS);
 	                return 1;
 	            }
 	            
@@ -4534,6 +4687,7 @@ stock ProceedPickupAction(const playerid, const pickupid) {
 				}
 				
 				ProceedAchievementProgress(playerid, ACH_TYPE_COLLECT_MEATS);
+				ProceedWeekly(playerid, WEEKLY_COLLECT_MEATS);
                 ProceedPassiveAbility(pickupid, ABILITY_FLESHER, playerid);
                 return 1;
 	        }
@@ -4875,9 +5029,21 @@ stock CreateTextureFromConfig(&Text:texid, const buffer) {
 custom CreateWeeklyActivities() {
 	if(cache_num_rows()) {
 	    WeeklyConfig[wqdNextUpdate] = gettime() + WeeklyConfig[wqdPeriod];
-	    new len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES), i;
-	    for( i = 0; i < len; i++ ) {
-            cache_get_value_name_int(i, "activity", WeeklyConfig[wqdActivities][i]);
+	    new activity, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES), i, num[4];
+
+		for( i = 0; i < len; i++ ) {
+            cache_get_value_name_int(i, "activity", activity);
+
+			if(i < WEEKLY_MAX_ACTIVITIES - 1) {
+                format(num, sizeof(num), "%d,", activity);
+	            strcat(weeklyActivitiesIds, num);
+            } else {
+                format(num, sizeof(num), "%d", activity);
+	            strcat(weeklyActivitiesIds, num);
+            }
+            
+            WeeklyConfig[wqdActivities][i] = activity;
+            WeeklyHashmap[WEEKLY_ACTIVITIES:activity] = i;
 	    }
 
 	 	printf("[x] Created Weekly Activities %d / %d", i, WEEKLY_MAX_ACTIVITIES);
@@ -5006,7 +5172,7 @@ stock SetTeams() {
 
     for ( i = 0; i < MAX_PLAYERS; i++ ) {
 	    playerid = players[i] - 1;
-	    if(!IsPlayerConnected(playerid) || !IsLogged(playerid)) {
+	    if(!IsPlayerConnected(playerid) || !IsLogged(playerid) || Misc[playerid][mdJailed] > -1) {
 	    	continue;
 		}
 	
@@ -5095,12 +5261,68 @@ stock SaveToVotekickLog() {
 	mysql_tquery(Database, formated, "SaveToVotekickLogAndKick");
 }
 
+stock SaveToJailLog(const playerid, const issued_id, const reason[]) {
+    static const query[] = CREATE_JAIL_LOG;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3) + 64 + (MAX_PLAYER_IP * 2)];
+
+    mysql_format(Database, formated, sizeof(formated), query,
+		Player[playerid][pAccountId],
+		Player[issued_id][pAccountId],
+		gettime(),
+		reason,
+		Misc[playerid][mdIp],
+		Misc[issued_id][mdIp]
+	);
+	mysql_tquery(Database, formated, "");
+}
+
+stock SaveToBanLog(const playerid, const issued_id, const reason[], const time = 0, const permanent = 1) {
+    static const query[] = CREATE_BAN_LOG;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 6) + 64 + (MAX_PLAYER_IP * 2)];
+
+    mysql_format(Database, formated, sizeof(formated), query,
+		Player[playerid][pAccountId],
+		Player[issued_id][pAccountId],
+		0,
+		gettime(),
+		time,
+		permanent,
+		reason,
+		Misc[playerid][mdIp],
+		Misc[issued_id][mdIp]
+	);
+	mysql_tquery(Database, formated, "");
+}
+
+stock UnbanNickname(const playerid, const name[]) {
+    static const query[] = UPDATE_BAN_LOG;
+    new formated[sizeof(query) + MAX_ID_LENGTH + MAX_PLAYER_NAME];
+    mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId], name);
+    mysql_tquery(Database, formated, "UnbanPlayerCallback", "is", playerid, name);
+}
+
+custom UnbanPlayerCallback(const playerid, const name[]) {
+	if(cache_affected_rows()) {
+	    new str[(MAX_PLAYER_NAME * 2) + 64];
+	    foreach(Admins, i) {
+	        format(str, sizeof(str), Localization[i][LD_MSG_UNBAN_BY], Misc[playerid][mdPlayerName], name);
+	        SendClientMessage(i, COLOR_ADMIN, str);
+	    }
+	    return 1;
+	}
+	
+	SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_UNBAN_NONE]);
+	return 1;
+}
+
 custom SaveToVotekickLogAndKick() {
     BlockIpAddress(Misc[Votekick[vkBreaker]][mdIp], 900000);
     KickPlayer(Votekick[vkBreaker]);
 	ResetVotekickData();
 	return 1;
 }
+
+// COMMANDS
 
 CMD:lottery(const playerid, const params[]) {
 	if(sscanf(params, "i", params[0])) {
@@ -5134,7 +5356,9 @@ CMD:lottery(const playerid, const params[]) {
 
 CMD:class(const playerid) {
     ShowPlayerDialog(
-		playerid, DIALOG_CLASSES, DIALOG_STYLE_LIST,
+		playerid,
+		DIALOG_CLASSES,
+		DIALOG_STYLE_LIST,
 		Localization[playerid][LD_DG_CLASSES_TITLE],
 		Localization[playerid][LD_DG_CLASSES_LIST],
 		Localization[playerid][LD_BTN_SELECT],
@@ -5405,77 +5629,104 @@ CMD:settings(const playerid) {
 }
 
 stock PrepareWeeklyActivities(const playerid) {
-    new ids[64], num[11];
-	for( new i = 0; i < WEEKLY_MAX_ACTIVITIES; i++ ) {
-	    if(i < WEEKLY_MAX_ACTIVITIES - 1) {
-	        format(num, sizeof(num), "%d,", WeeklyConfig[wqdActivities][i]);
-            strcat(ids, num);
-	    } else {
-            format(num, sizeof(num), "%d", WeeklyConfig[wqdActivities][i]);
-            strcat(ids, num);
-	    }
-	}
-
-    static const query[] = "SELECT %e as text, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)";
-    
-    new formated[sizeof(query) + LOCALIZATION_SIZE + 64], index = Player[playerid][pLanguage];
-    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], ids);
+    static const query[] = PREPARE_WEEKLY_ACTIVITIES_QUERY;
+    new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_ACTIVITIES_LEN], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], weeklyActivitiesIds);
 	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
+}
+
+stock GetStandingByType(const type) {
+	switch(type) {
+	    case 0: return WeeklyConfig[wqdMinStanding];
+	    case 1: return WeeklyConfig[wqdMedStanding];
+	    case 2: return WeeklyConfig[wqdMaxStanding];
+	}
+	return 0;
 }
 
 custom ShowWeeklyActivities(const playerid) {
 	if(cache_num_rows()) {
-		new i, total[256], text[96], buff[96], count, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
+		new total[1024], text[96], buff[96];
+		new i, type, count, activity, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
 
+        strcat(total, "{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n");
 		for(i = 0; i < len; i++ ) {
 			cache_get_value_name(i, "text", buff);
 	        cache_get_value_name_int(i, "count", count);
+	        cache_get_value_name_int(i, "activity", activity);
+	        cache_get_value_name_int(i, "type", type);
 
 	        format(text, sizeof(text), buff, count);
-	        strcat(text, "\n");
-	        strcat(total, text);
+	        format(buff, sizeof(buff), "{FFFFFF}%s\t{FFFFFF}%d\t{FFFFFF}(%d / %d)\n", text, GetStandingByType(type), Weekly[playerid][WeeklyHashmap[WEEKLY_ACTIVITIES:activity]], count);
+	        strcat(total, buff);
+	        
+			if(i == 1 || i == 3) {
+			    strcat(total, "\n");
+			}
         }
         
         ShowPlayerDialog(
 			playerid,
-			DIALOG_SETTINGS,
-			DIALOG_STYLE_MSGBOX,
-		 	Localization[playerid][LD_DG_SETTINGS_TITLE],
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+		 	Localization[playerid][LD_DG_WEEKLY_TITLE],
 			total,
-			Localization[playerid][LD_BTN_SELECT],
-			Localization[playerid][LD_BTN_CLOSE]
+			Localization[playerid][LD_BTN_CLOSE],
+			""
 		);
  	}
 }
 
-CMD:weekly(const playerid) {
-	new title[128];
-	format(title, sizeof(title), "Weekly Activities - %d %s - %.0f Reputation", Player[playerid][pCoins], Localization[playerid][LD_MSG_COINS], Player[playerid][pStanding]);
+custom ShowPlayerIdMatches(const playerid) {
+    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
+	if(cache_num_rows()) {
+	    new i, login[MAX_PLAYER_NAME], id, buff[MAX_PLAYER_NAME + MAX_ID_LENGTH + 16];
+	    for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name_int(i, "id", id);
+	    	cache_get_value_name(i, "login", login);
 
+	    	format(buff, sizeof(buff), ">> (ID: %d): %s", id, login);
+	    	SendClientMessage(playerid, COLOR_INFO, buff);
+	    }
+	    return 1;
+	}
+
+    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_MATCHES_NONE]);
+	return 0;
+}
+
+stock ProceedWeekly(const playerid, const WEEKLY_ACTIVITIES:activity, const count = 1) {
+	new id = WeeklyHashmap[WEEKLY_ACTIVITIES:activity];
+	if(id < 0 || id >= _:WEEKLY_ACTIVITIES) {
+	    return 0;
+	}
+	
+	if(activity == WEEKLY_KILLSTREAKS) Weekly[playerid][id]  = count;
+	else Weekly[playerid][id] += count;
+
+    return 1;
+}
+
+CMD:weekly(const playerid) {
     ShowPlayerDialog(
-		playerid, DIALOG_WEEKLY, DIALOG_STYLE_LIST, title,
-		"Activities\nRewards",
+		playerid,
+		DIALOG_WEEKLY,
+		DIALOG_STYLE_LIST,
+		Localization[playerid][LD_DG_WEEKLY_TITLE],
+		Localization[playerid][LD_DG_WEEKLY_OPTS],
 		Localization[playerid][LD_BTN_SELECT],
 		Localization[playerid][LD_BTN_CLOSE]
 	);
 	
 	// Rewards:
-	// 10,000 rep = 1 coin
-	// Attachements - 1 coins + 4,000 rep
-	// Custom Tag - 5 coins + 20,000 rep
-	// Color For Nickname - 10 coins + 50,000 rep ( Yellow, White, Pink, Red, Orange )
-	// Skin - 15 coins + 50,000 rep
-	
-	
-	// DIALOG_WEEKLY_ACTIVITIES
-	// DIALOG_WEEKLY_REWARDS
+	// 3 coins + 15,000 rep = Chest:
+	// 				Dobule Points Chest
+	// 				Dobule Kills Chest
+	// 				Attachements Chest
+	// 				Color Chest ( Yellow, White, Pink, Red, Orange )
+	// 				Skin Chest
 	
 	/*
-		"Kill 10 human bosses" - 7000
-		"Achieve 100 killstreaks in a row", - 7000
-		"Kill 500 players", - 7000
-		"Bloodrush - Draw first blood 10 times" - 7000
-
 		"Kill 10 zombie bosses" - 4500
 		"Kill 50 humans" - 4500
 		"Kill 200 zombies" - 4500
@@ -5493,6 +5744,165 @@ CMD:weekly(const playerid) {
 }
 
 // ADMIN COMMANDS
+CMD:cc(const playerid) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    for( new i = 0; i < 50; i++ ) {
+        SendClientMessageToAll(COLOR_CONNECTIONS, " ");
+    }
+    
+    new str[64];
+    foreach(Player, i) {
+        if(HasAdminPermission(i)) {
+            format(str, sizeof(str), Localization[i][LD_MSG_CHAT_CLEARED_BY], Misc[playerid][mdPlayerName]);
+			SendClientMessage(i, COLOR_INFO, str);
+		} else {
+			SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_CHAT_CLEARED]);
+		}
+    }
+    
+	return 1;
+}
+
+CMD:getip(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+   	if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /getip (id)");
+  		return 1;
+	}
+	
+	if(!IsPlayerConnected(params[0])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /getip (id)");
+ 		return 1;
+   	}
+    
+    SendClientMessage(playerid, COLOR_INFO, Misc[params[0]][mdIp]);
+	return 1;
+}
+
+CMD:kick(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "is[48]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /kick (id) (reason)");
+  		return 1;
+	}
+	
+	if(!IsPlayerConnected(params[0]) || !strlen(params[1]) || Player[params[0]][pAccountId] == 1) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /kick (id) (reason)");
+ 		return 1;
+   	}
+   	
+   	new str[128];
+    foreach(Player, i) {
+        if(HasAdminPermission(i) || i == params[0]) format(str, sizeof(str), Localization[i][LD_MSG_KICKED_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], params[1]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_KICKED], Misc[params[0]][mdPlayerName], params[1]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+	
+	KickPlayer(params[0]);
+	return 1;
+}
+
+CMD:sync(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /sync (id)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /sync (id)");
+ 		return 1;
+   	}
+    
+    new Float:pos[3];
+    GetPlayerVelocity(params[0], pos[0], pos[1], pos[2]);
+    SetPlayerVelocity(params[0], pos[0], pos[1], pos[2] + 0.5);
+    ClearAnimations(params[0], 1);
+    
+    new str[128];
+    foreach(Player, i) {
+        if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_SYNC_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_SYNC], Misc[params[0]][mdPlayerName]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+    return 1;
+}
+
+CMD:slap(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "is[64]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /slap (id) (reason)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0]) || !strlen(params[1])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /slap (id) (reason)");
+ 		return 1;
+   	}
+    
+    new Float:pos[3];
+    GetPlayerVelocity(params[0], pos[0], pos[1], pos[2]);
+    SetPlayerVelocity(params[0], pos[0], pos[1], pos[2] + 10.5);
+    
+    new str[128];
+    foreach(Player, i) {
+        if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_SLAP_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], params[1]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_SLAP], Misc[params[0]][mdPlayerName], params[1]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+    
+	return 1;
+}
+
+CMD:makezombie(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "is[64]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /makezombie (id) (reason)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0]) || !strlen(params[1])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /makezombie (id) (reason)");
+ 		return 1;
+   	}
+   	
+   	new str[128];
+    foreach(Player, i) {
+        if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_MAKEZOMBIE_BY], Misc[playerid][mdPlayerName], Misc[params[0]][mdPlayerName], params[0], params[1]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_MAKEZOMBIE], Misc[params[0]][mdPlayerName], params[1]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+	
+	SetPlayerTeamAC(params[0], TEAM_ZOMBIE);
+    SpawnPlayer(params[0]);
+	return 1;
+}
+
+CMD:getid(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "s[24]", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /getid (nickname)");
+  		return 1;
+	}
+    
+    if(!strlen(params[0])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /getid (nickname)");
+ 		return 1;
+   	}
+    
+    new formated[96];
+    mysql_format(Database, formated, sizeof(formated), GET_ID_MATCHES_QUERY, params[0]);
+	mysql_tquery(Database, formated, "ShowPlayerIdMatches", "i", playerid);
+    
+    return 1;
+}
 
 ALTX:apm("/answer");
 CMD:apm(const playerid, const params[]) {
@@ -5536,6 +5946,8 @@ CMD:jail(const playerid, const params[]) {
 	
 	Misc[params[0]][mdJailed] = 180;
 	SpawnPlayerInJail(params[0]);
+	
+	SaveToJailLog(params[0], playerid, params[1]);
 	return 1;
 }
 
@@ -5563,56 +5975,89 @@ CMD:unjail(const playerid, const params[]) {
     return 1;
 }
 
-stock UnjailPlayer(const playerid) {
-    Misc[playerid][mdJailed] = -1;
-   	SetSpawnInfo(playerid, TEAM_ZOMBIE, 252, Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0], 0.0, 0, 0, 0, 0, 0, 0);
-   	SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
-    SpawnPlayer(playerid);
+CMD:ban(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+    
+    if(sscanf(params, "is[64]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ban (id) (reason)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0]) || !strlen(params[1]) || Player[params[0]][pAccountId] == 1) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ban (id) (reason)");
+ 		return 1;
+   	}
+   	
+   	new str[(MAX_PLAYER_NAME * 2) + 96];
+   	foreach(Player, i) {
+	    if(HasAdminPermission(i) || i == params[0]) format(str, sizeof(str), Localization[i][LD_MSG_BANNED_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], params[1]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_BANNED], Misc[params[0]][mdPlayerName], params[1]);
+	 	SendClientMessage(i, COLOR_ADMIN, str);
+ 	}
+ 	
+ 	format(str, sizeof(str), Localization[params[0]][LD_MSG_WRONG_BANNED], ServerConfig[svCfgDiscord]);
+ 	SendClientMessage(params[0], COLOR_ABILITY, str);
+ 	SendClientMessage(params[0], COLOR_INFO, Localization[params[0]][LD_MSG_BANNED_SCREENSHOT]);
+ 	
+ 	SaveToBanLog(params[0], playerid, params[1]);
+	KickPlayer(params[0]);
+	
+	foreach(Player, i) {
+	    if(Misc[i][mdLastReportedId] == params[0]) {
+	        SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_REPORT_HELP]);
+	        ProceedAchievementProgress(i, ACH_TYPE_REPORT);
+	        Misc[i][mdLastReportedId] = -1;
+	    }
+	}
+	
+	return 1;
 }
 
-stock SpawnPlayerInJail(const playerid) {
-    SetPlayerSkin(playerid, 62);
-	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CUFFED);
-	SetPlayerPos(playerid, 264.1425, 77.4712, 1001.0391);
-	SetPlayerFacingAngle(playerid, 263.0160);
-	SetPlayerInterior(playerid, 6);
-	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
-	SetPlayerColor(playerid, COLOR_BLACK);
-	ResetWeapons(playerid);
-	SetPlayerArmourAC(playerid, 0.0);
-	SetPlayerHealthAC(playerid, 100.0);
+CMD:unban(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+    
+    if(sscanf(params, "s[24]", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unban (nickname)");
+  		return 1;
+	}
+	
+	if(!strlen(params[0])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unban (nickname)");
+ 		return 1;
+   	}
+   	
+   	UnbanNickname(playerid, params[0]);
+	return 1;
 }
 
 /*CMD:warn(const playerid, const params[]) {
     if(!HasAdminPermission(playerid)) return 0;
 
-    new targets[5] = { -1, -1, -1, -1, -1 }, reason[64] = "";
-    sscanf(params, "is[64]", targets[0], reason);
-    sscanf(params, "iis[64]", targets[0], targets[1], reason);
-	sscanf(params, "iiis[64]", targets[0], targets[1], targets[2], reason);
-	sscanf(params, "iiiis[64]", targets[0], targets[1], targets[2], targets[3], reason);
-	sscanf(params, "iiiiis[64]", targets[0], targets[1], targets[2], targets[3], targets[4], reason);
+	new reason[64];
+    if(sscanf(params, "is[64]", params[0], reason)) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warn (id) (reason)");
+        return 1;
+    }
 
-	if(!strlen(reason)) {
- 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warn (id...)^5 (reason)");
+	if(!IsPlayerConnected(params[0]) || !strlen(reason) || Player[params[0]][pAccountId] == 1) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warn (id) (reason)");
  		return 1;
    	}
 
-   	for( new j, message[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128]; j < sizeof(targets); j++ ) {
-        if(IsPlayerConnected(targets[j])) {
-            ++Misc[targets[j]][mdGameplayWarns];
-            
-            format(message, sizeof(message), "[WARN]: %s(%d) has been warned by %s [%s] (%d / 3)", Misc[targets[j]][mdPlayerName], targets[j], Misc[playerid][mdPlayerName], reason, Misc[targets[j]][mdGameplayWarns]);
-            SendAdminMessage(COLOR_ADMIN, message);
-
-            format(message, sizeof(message), "You have been warned for %s (%d / 3)", reason, Misc[targets[j]][mdGameplayWarns]);
-    		ShowPlayerDialog(targets[j], DIALOG_INFO, DIALOG_STYLE_MSGBOX, "WARNING", message, Localization[targets[j]][LD_BTN_CLOSE], "");
-        }
-   	}
-
+	++Misc[params[0]][mdGameplayWarns];
+	
+	new str[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128];
+	foreach(Player, i) {
+	    if(HasAdminPermission(i)) format(str, sizeof(str), ">> %s(%d) has been warned by %s [Reason: %s] (%d / 3)", Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], reason, Misc[params[0]][mdGameplayWarns]);
+		else format(str, sizeof(str), ">> %s has been warned [Reason: %s] (%d / 3)", Misc[params[0]][mdPlayerName], reason, Misc[params[0]][mdGameplayWarns]);
+	 	SendClientMessage(i, COLOR_ADMIN, str);
+ 	}
+ 	
+	ShowPlayerDialog(params[0], DIALOG_INFO, DIALOG_STYLE_MSGBOX, "WARNING", reason, Localization[params[0]][LD_BTN_CLOSE], "");
 	return 1;
-}
+}*/
 
+/*
 CMD:unwarn(const playerid, const params[]) {
     if(!HasAdminPermission(playerid)) return 0;
     
@@ -5640,14 +6085,16 @@ CMD:unwarn(const playerid, const params[]) {
     return 1;
 }*/
 
-// /spec /kick /ban /banip  /warn /mute /cc /getip /makezombie
+// /spec /(un)mute /(un)warn
+// /tban /banip /warn /mute
+
+// LVL 1: /cc /kick /apm /answer /getip /sync /slap /makezombie /getid /(un)jail
+// LVL 2: /ban /unban
 
 CMD:acmds(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
-    
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/aduty /getip /getid /slap /getinfo /sync /apm /answer /(un)jail /(un)warn");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/cc /tban /kick /spec /(un)mute /checkip /muwa /waja /goto /checkip");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/ban /offban /offtban /time /weather /get /makezombie /(un)banip");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/tban /spec /(un)mute /checkip /muwa /waja /goto /checkip");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/offban /offtban /time /weather /get /(un)banip");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /warnlog /jaillog /mutelog /banlog /namelog");
     return 1;
 }

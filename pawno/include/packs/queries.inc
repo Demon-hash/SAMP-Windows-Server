@@ -37,6 +37,8 @@
 #define LOAD_ACHS_CFG_QUERY "SELECT * FROM `achievements_config` WHERE 1;"
 #define GET_RULES_QUERY "SELECT %e as text FROM `za_rules` WHERE 1;"
 #define GET_HELP_QUERY "SELECT %e as text FROM `za_help` WHERE 1;"
+#define PREPARE_WEEKLY_ACTIVITIES_QUERY "SELECT %e as text, activity, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)"
+#define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
 
 #define CREATE_WEEKLY_ACTIVITIES_QUERY "\
 	(SELECT activity FROM weekly_activities_cfg WHERE type = 2 ORDER BY RAND() LIMIT 2)\n\
@@ -243,6 +245,15 @@
 		LIMIT 1\
 "
 
+#define LOAD_PLAYER_BAN "\
+	SELECT b.date, b.valid_till, b.permanent, b.reason, u.login AS admin\n\
+	FROM `ban_log` b\n\
+	LEFT JOIN users u ON u.id = b.issued_id\n\
+	WHERE `account_id` = %d AND `unbanned_id` = 0\n\
+	ORDER BY b.date DESC\n\
+	LIMIT 1\
+"
+
 #define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional, time) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%d)"
 #define DELETE_RND_SESSION_QUERY "DELETE FROM `round_session` WHERE `account_id`='%d'"
 
@@ -250,3 +261,7 @@
 #define UPDATE_SIGN "UPDATE `signs` SET `name`='%e',`points`='%d',`total`='%d' WHERE `account_id` = '%d'"
 
 #define CREATE_VOTEKICK_LOG "INSERT INTO `votekick_log` (account_id, target_id, date, reason, ip, target_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
+#define CREATE_JAIL_LOG "INSERT INTO `jails_log` (account_id, issued_id, date, reason, target_ip, issued_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
+
+#define CREATE_BAN_LOG "INSERT INTO `ban_log` (account_id, issued_id, unbanned_id, date, valid_till, permanent, reason, target_ip, issued_ip) VALUES (%d, %d, %d, %d, %d, %d, '%e', '%e', '%e')"
+#define UPDATE_BAN_LOG "UPDATE `ban_log` SET `unbanned_id` = %d WHERE `account_id` = (SELECT `id` FROM `users` WHERE `login` = '%e')"

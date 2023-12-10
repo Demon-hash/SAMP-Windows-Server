@@ -149,7 +149,7 @@ enum LOCALIZATION_DATA {
 	LD_DG_SETTINGS_YES,
 	LD_DG_SETTINGS_NO,
 	LD_DISPLAY_ABLT_READY,
-	LD_MSG_AUTOLOG,
+	LD_MSG_BANNED_TITLE,
 	LD_DG_RULES_TITLE,
 	LD_DG_HELP_TITLE,
 	LD_MSG_REPORT,
@@ -170,6 +170,35 @@ enum LOCALIZATION_DATA {
 	LD_MSG_PLAYER_JAILED,
 	LD_MSG_ADMIN_UNJAILED,
 	LD_MSG_PLAYER_UNJAILED,
+	LD_DG_WEEKLY_TITLE,
+	LD_DG_WEEKLY_OPTS,
+	LD_DG_CLASSES_HEADERS,
+	LD_MSG_CHAT_CLEARED_BY,
+	LD_MSG_CHAT_CLEARED,
+	LD_MSG_KICKED_BY,
+	LD_MSG_KICKED,
+	LD_MSG_SYNC_BY,
+	LD_MSG_SYNC,
+	LD_MSG_SLAP_BY,
+	LD_MSG_SLAP,
+	LD_MSG_MAKEZOMBIE_BY,
+	LD_MSG_MAKEZOMBIE,
+	LD_MSG_MATCHES,
+	LD_MSG_MATCHES_NONE,
+	LD_MSG_BANNED_BY,
+	LD_MSG_BANNED,
+	LD_MSG_AFK,
+	LD_MSG_PING_KICK,
+	LD_MSG_AFK_KICK,
+	LD_MSG_REPORT_HELP,
+	LD_MSG_WRONG_BANNED,
+	LD_MSG_BANNED_SCREENSHOT,
+	LD_MSG_BANNED_REASON,
+	LD_MSG_BANNED_DATE,
+	LD_MSG_PERM_BANNED,
+	LD_MSG_TEMP_BANNED,
+	LD_MSG_UNBAN_NONE,
+	LD_MSG_UNBAN_BY,
 	LD_ENDF,
 };
 
@@ -288,9 +317,9 @@ enum LOCALIZATION_DATA {
 	(100, '|: Random Question for %d points: %s', '|: Случайная викторина на %d очков: %s'),\
 	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков'),\
 	(102, 'Next', 'Следующая'),\
-	(103, 'Achievements', 'Достижения'),\
+	(103, '{d5d5c3}Achievements', '{d5d5c3}Достижения'),\
 	(104, 'Nothing yet', 'Тут пока пусто'),\
-	(105, 'Name\tDescription\n', 'Название\tОписание\n'),\
+	(105, '{d5d5c3}Name\t{d5d5c3}Description\n', '{d5d5c3}Название\t{d5d5c3}Описание\n'),\
 	(106, 'RANDOM QUESTION: No one answered!', 'Случайная викторина: никто не ответил!'),\
 	(107, '>> Lottery: Number will be drawn soon. Use /lottery to get your own number', '>> Лотерея: Номер скоро будет разыгран. Используйте /lottery и выберите ваш номер!'),\
 	(108, '>> Lottery: Nobody won!{FF0000} Number: %d Jackpot: %d', '>> Лотерея: Никто не выграл! {FF0000} Номер: %d Джекпот: %d'),\
@@ -325,7 +354,7 @@ enum LOCALIZATION_DATA {
 	(134, '{009900}[ YES ]', '{009900}[ ДА ]'),\
 	(135, '{ff1a1a}[ NO ]', '{ff1a1a}[ НЕТ ]'),\
 	(136, '~y~ABILITY~w~ IS~g~ READY!', '~y~СПОСОБНОСТЬ~g~ ГОТОВА!'),\
-	(137, '>> Login is automatic based on setting!', '>> Вход выполнен автоматически на основе настройки!'),\
+	(137, '>> Congratulations, {FF0000}you are banned!', '>> Поздравляем, {FF0000}вы заблокированы!'),\
 	(138, 'Rules', 'Правила'),\
 	(139, 'Help', 'Помощь'),\
 	(140, '[REPORT] %s has reported %s(%d):{FFFFFF} %s', '[ЖАЛОБА] Игрок %s отправил жалобу на игрока %s(%d):{FFFFFF} %s'),\
@@ -348,5 +377,37 @@ enum LOCALIZATION_DATA {
 	(154, '>> %s(%d) has been jailed by %s for 3 minutes [Reason: %s]', '>> Игрок %s(%d) был посажен в тюрьму администратором %s на 3 минуты [Причина: %s]'),\
 	(155, '>> %s has been jailed for 3 minutes [Reason: %s]', '>> Игрок %s был посажен в тюрьму на 3 минуты [Причина: %s]'),\
 	(156, '>> %s(%d) has been unjailed by %s', '>> Игрок %s(%d) был освобождён из тюрьмы администратором %s'),\
-	(157, '>> %s has been unjailed', '>> Игрок %s был освобождён из тюрьмы');\
+	(157, '>> %s has been unjailed', '>> Игрок %s был освобождён из тюрьмы'),\
+	(158, '{d5d5c3}Weekly Activities', '{d5d5c3}Еженедельные задания'),\
+	(159, 'Activities\nRewards', 'Задания\nНаграды'),\
+	(160, '{d5d5c3}Name\t{d5d5c3}Description\t{d5d5c3}Total Points\n', '{d5d5c3}Название\t{d5d5c3}Описание\t{d5d5c3}Очков в общем\n'),\
+	(161, '>> Chat cleared by %s', 'Чат был очищен администратором %s'),\
+	(162, '>> Chat cleared by an administrator', 'Чат был очищен администратором'),\
+	(163, '>> %s(%d) has been kicked by %s [Reason: %s]', '%s(%d) был кикнут администратором %s [Причина: %s]'),\
+	(164, '>> %s has been kicked [Reason: %s]', '%s был кикнут [Причина: %s]'),\
+	(165, '>> %s(%d) has been synced by %s', 'Игрок %s(%d) был синхронизирован администратором %s'),\
+	(166, '>> %s has been synced', 'Игрок %s был синхронизирован'),\
+	(167, '>> %s(%d) got a slap from %s [Reason: %s]', 'Игрок %s(%d) получил пощечину от %s [Причина: %s]'),\
+	(168, '>> %s got a slap [Reason: %s]', 'Игрок %s получил пощечину [Причина: %s]'),\
+	(169, '>> %s has changed %s(%d) team to zombie [Reason: %s]', 'Администратор %s сменил команду игрока %s(%d) на зомби [Причина: %s]'),\
+	(170, '>> %s has changed team to zombie [Reason: %s]', 'Игрок %s сменил команду на зомби [Причина: %s]'),\
+	(171, '~~~~~~~ MATCHES ~~~~~~~', '~~~~~~~ СОВПАДЕНИЯ ~~~~~~~'),\
+	(172, '>> Nothing found', '>> Ничего не найдено'),\
+	(173, '>> %s(%d) has been banned by %s [Reason: %s]', '>> Игрок %s(%d) был заблокирован администратором %s [Причина: %s]'),\
+	(174, '>> %s has been banned [Reason: %s]', 'Игрок %s был заблокирован [Причина: %s]'),\
+	(175, '>> You have been in afk too long, your team has been changed to zombies', '>> Вы находились в АФК слишком долго, ваша команда изменена на зомби'),\
+	(176, '>> %s has been kicked [Reason: Exceeding the allowed ping limit]', '>> Игрок %s был кикнут [Причина: Превышение лимита допустимого пинга]'),\
+	(177, '>> %s has been kicked [Reason: Exceeding the limit of being in AFK]', '>> Игрок %s был кикнут [Причина: Превышение лимита нахождения в АФК]');\
+"
+
+#define PREDIFINED_LOCALIZATION_8 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(178, '>> Thank you for your assistance, you have been given additional points for helping the administration', '>> Спасибо за помощь, вам начислены дополнительные очки'),\
+	(179, '>> Wrong banned? Appeal at %s', '>> Хотите оспорить бан? Подайте заявку здесь: %s'),\
+	(180, '>> Create a screenshot of your ban by pressing F8 | (Documents/GTA San Andreas User Files/SAMP/screens)', '>> Создайте скриншот нажав F8 и перейдите в Documents/GTA San Andreas User Files/SAMP/screens'),\
+	(181, '>> By %s - {FF0000}Reason: %s', '>> Администратор: %s - {FF0000}Причина: %s'),\
+	(182, '>> At: %02dD/%02dM/%04dY', '>> Дата: %02dD/%02dM/%04dY'),\
+	(183, '>> %s has attempted to join the server whilst serving a ban', '>> Игрок %s пытался подключится, но был обнаружен забаненым'),\
+	(184, '>> %s has attempted to join the server whilst serving a temp ban', 'Игрок %s пытался подключится, но был обнаружен временно забаненым'),\
+	(185, '>> Account not found in ban list', '>> Аккаунт не найден в списке блокировок'),\
+	(186, '>> %s has unbanned an account %s', '>> Администратор %s разблокировал аккаунт %s');\
 "

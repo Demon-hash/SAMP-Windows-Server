@@ -24,6 +24,7 @@ enum MISC_DATA {
 	bool:mdIsLogged,
 	mdLastReportedId,
 	mdMuted,
+	mdAfk,
 	mdJailed,
     	Float:mdHealth,
     	Float:mdArmour,

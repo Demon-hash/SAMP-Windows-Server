@@ -218,7 +218,6 @@
 	`account_id` int(11) unsigned NOT NULL,\
 	`issued_id` int(11) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
-	`time` int(3) unsigned NOT NULL,\
 	`reason` varchar(128) NOT NULL,\
 	`target_ip` varchar(16) NOT NULL,\
 	`issued_ip` varchar(16) NOT NULL,\
@@ -790,8 +789,8 @@
 	(75, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47'),\
 	(76, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
 	(77, 'Master', 'Master all weapons', 'Мастер', 'Освойте все виды оружия'),\
-	(78, 'Hermitage', 'Be the one man who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался'),\
-	(79, 'The Virgin Mary', 'Be the one woman who evacuated', 'Одиночество Марии', 'Будьте единственым, кто эвакуировался'),\
+	(78, 'Hermitage', 'Be the one man who evacuated', 'Одиночество', 'Будьте единственым, кто эвакуировался (Муж)'),\
+	(79, 'The Virgin Mary', 'Be the one woman who evacuated', 'Одиночество Марии', 'Будьте единственым, кто эвакуировался (Жен)'),\
 	(80, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
 	(81, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
 "
@@ -929,7 +928,7 @@
 	(14, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
 	(15, '>> You can gain coins by completing /achievements!', '>> Вы можете получить монеты, выполняя достижения! (/achievements)'),\
 	(16, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
-	(17, '>> You can buy attachments, tags, color nicknames, skins by completing weekly activities! (/weekly)', '>> Вы можете покупать предметы одежды, тэги, цвета, скины за выполнение еженедельных заданий! (/weekly)')\
+	(17, '>> You can get attachments, tags, color nicknames, skins by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды, тэги, цветные ники, скины за выполнение еженедельных заданий! (/weekly)')\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
