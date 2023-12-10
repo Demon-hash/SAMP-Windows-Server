@@ -15,6 +15,7 @@
 #define LOAD_LOCALIZATION_QUERY "SELECT `%e` as text FROM `localization` WHERE 1;"
 #define LOAD_LOCALIZATION_TIPS_QUERY "SELECT `%e` as text FROM `random_messages` WHERE 1;"
 #define LOAD_SERVER_CFG_QUERY "SELECT * FROM config WHERE 1 LIMIT 1;"
+#define LOAD_WEEKLY_CFG_QUERY "SELECT * FROM weekly_cfg WHERE 1 LIMIT 1;"
 #define LOAD_ROUND_CFG_QUERY "SELECT * FROM round_config WHERE 1 LIMIT 1;"
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`=0;"
 #define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
@@ -36,6 +37,14 @@
 #define LOAD_ACHS_CFG_QUERY "SELECT * FROM `achievements_config` WHERE 1;"
 #define GET_RULES_QUERY "SELECT %e as text FROM `za_rules` WHERE 1;"
 #define GET_HELP_QUERY "SELECT %e as text FROM `za_help` WHERE 1;"
+
+#define CREATE_WEEKLY_ACTIVITIES_QUERY "\
+	(SELECT activity FROM weekly_activities_cfg WHERE type = 2 ORDER BY RAND() LIMIT 2)\n\
+	UNION\n\
+	(SELECT activity FROM weekly_activities_cfg WHERE type = 1 ORDER BY RAND() LIMIT 2)\n\
+	UNION\n\
+	(SELECT activity FROM weekly_activities_cfg WHERE type = 0 ORDER BY RAND() LIMIT 4);\
+"
 
 #define LOAD_ACHIEVEMENTS_PAGE "SELECT l.%e AS title, l.%e_desc AS description, c.type, c.count, c.reward, (\
 	SELECT COUNT( c.id ) \

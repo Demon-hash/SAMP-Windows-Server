@@ -24,7 +24,8 @@ static const sqlTemplates[][] = {
 	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
 	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
 	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE, SETTINGS_TEMPLATE,
-	RULES_TEMPLATE, HELP_TEMPLATE
+	RULES_TEMPLATE, HELP_TEMPLATE,
+	WEEKLY_TEMPLATE, WEEKLY_ACTIVITIES_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -42,7 +43,9 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_ACHS_LOCALIZATION_2,
 	PREDIFINED_ACHS_LOCALIZATION_3,
 	PREDIFINED_ACHS_LOCALIZATION_4,
-	PREDIFINED_ACHS_LOCALIZATION_5
+	PREDIFINED_ACHS_LOCALIZATION_5,
+	PREDIFINED_WEEKLY,
+	PREDIFINED_WEEKLY_ACTIVITIES
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -94,7 +97,8 @@ static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
-static WeeklyQuestsConfig[WEEKLY_QUESTS_DATA];
+static Weekly[MAX_PLAYERS][WEEKLY_MAX_ACTIVITIES];
+static WeeklyConfig[WEEKLY_CFG_DATA];
 
 static Votekick[VOTEKICK_DATA];
 
@@ -229,7 +233,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
 	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
 	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
-	// mysql_tquery(Database, LOAD_WEELKYQ_CFG_QUERY, "LoadWeeklyQuestsCfg");
+	mysql_tquery(Database, LOAD_WEEKLY_CFG_QUERY, "LoadWeeklyCfg");
 
 	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
@@ -853,6 +857,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    }
 		    return 1;
 		}
+		case DIALOG_WEEKLY: {
+		    if(response) {
+		        switch(listitem) {
+		            case 0: PrepareWeeklyActivities(playerid);
+		        }
+		    }
+			return 1;
+		}
 	}
 	
 	return 1;
@@ -984,7 +996,7 @@ custom LoadObjects() {
 }
 
 custom LoadMap() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         static buff[256];
 		static year, mounth, day, hours, minutes, seconds;
         
@@ -1368,7 +1380,7 @@ custom KickForAuthTimeout(const playerid) {
 }
 
 custom LoadServerCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new buff[256];
         cache_get_value_name_int(0, "preview_bot", ServerConfig[svCfgPreviewBot]);
         cache_get_value_name_int(0, "max_auth_timeout", ServerConfig[svCfgAuthTimeout]);
@@ -1432,8 +1444,33 @@ custom LoadServerCfg() {
 	return 0;
 }
 
+custom LoadWeeklyCfg() {
+    if(cache_num_rows()) {
+        new buff[64], frmt[16];
+        cache_get_value_name_int(0, "next_update", WeeklyConfig[wqdNextUpdate]);
+        cache_get_value_name_int(0, "period", WeeklyConfig[wqdPeriod]);
+        cache_get_value_name_int(0, "min_standing", WeeklyConfig[wqdMinStanding]);
+        cache_get_value_name_int(0, "med_standing", WeeklyConfig[wqdMedStanding]);
+        cache_get_value_name_int(0, "max_standing", WeeklyConfig[wqdMaxStanding]);
+        
+        cache_get_value_name(0, "activities", buff);
+        format(frmt, sizeof(frmt), "a<i>[%d]", WEEKLY_MAX_ACTIVITIES);
+        sscanf(buff, frmt, WeeklyConfig[wqdActivities]);
+
+        if(!WeeklyConfig[wqdNextUpdate]) {
+            mysql_tquery(Database, CREATE_WEEKLY_ACTIVITIES_QUERY, "CreateWeeklyActivities");
+        }
+        
+        printf("[x] Weekly configuration LOADED");
+        return 1;
+    }
+
+	printf("[ ] Weekly configuration FAILED");
+    return 0;
+}
+
 custom LoadGangsCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
         cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
         cache_get_value_name_int(0, "required", GangsConfig[gdCfgRequired]);
@@ -1459,7 +1496,7 @@ custom LoadGangsCfg() {
 }
 
 custom LoadRoundCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         cache_get_value_name_int(0, "survival_per", RoundConfig[rdCfgSurvivalPer]);
         cache_get_value_name_int(0, "cap", RoundConfig[rdCfgCap]);
         cache_get_value_name_int(0, "brutality_weapon", RoundConfig[rdCfgBrutalityWeapon]);
@@ -1482,7 +1519,7 @@ custom LoadRoundCfg() {
 }
 
 custom LoadEvacCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new buff[256];
         cache_get_value_name(0, "position", buff);
         cache_get_value_name_int(0, "interior", EvacuationConfig[ecdCfgInterior]);
@@ -1498,7 +1535,7 @@ custom LoadEvacCfg() {
 }
 
 custom LoadMapCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         cache_get_value_name_int(0, "total", MapConfig[mpCfgTotal]);
         cache_get_value_name_int(0, "update", MapConfig[mpCfgUpdate]);
         cache_get_value_name_int(0, "balance", MapConfig[mpCfgBalance]);
@@ -1529,7 +1566,7 @@ custom LoadMapCfg() {
 }
 
 custom LoadWeaponsCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new i, len = clamp(cache_num_rows(), 0, MAX_WEAPONS);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name_int(i, "type", WeaponsConfig[i][wdCfgType]);
@@ -1546,7 +1583,7 @@ custom LoadWeaponsCfg() {
 }
 
 custom LoadBalanceCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         cache_get_value_name_float(0, "min", ServerBalance[svbMinZombies]);
     	cache_get_value_name_float(0, "medium", ServerBalance[svbMediumZombies]);
     	cache_get_value_name_float(0, "max", ServerBalance[svbMaxZombies]);
@@ -1560,7 +1597,7 @@ custom LoadBalanceCfg() {
 }
 
 custom LoadTexturesCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new buff[128], i, len = clamp(cache_num_rows(), 0, MAX_SERVER_TEXTURES);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "position", buff);
@@ -1601,7 +1638,7 @@ custom LoadTexturesCfg() {
 }
 
 custom LoadAchievementsCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new i, len = clamp(cache_num_rows(), 0, MAX_ACHIEVEMENTS);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name_int(i, "id", AchievementsConfig[i][accgId]);
@@ -1621,7 +1658,7 @@ custom LoadAchievementsCfg() {
 }
 
 custom LoadClassesCfg() {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new buff[64];
         cache_get_value_name_int(0, "whopping_when", ClassesConfig[clsCfgWhoppingWhen]);
         cache_get_value_name_int(0, "spitter_effect", ClassesConfig[clsCfgSpitterWeapon]);
@@ -1698,41 +1735,10 @@ custom LoadGamemodeInfo(const playerid, const LOCALIZATION_DATA:id) {
 	return 1;
 }
 
-/*static const a[][] = {
-	"Kill 100 zombies", // (1000)
-	"Kill 100 humans", // (1000)
-	"Kill 50 zombies by headshot", // (1000)
-	"Infect 50 humans", // (500)
-	"Cure 50 humans" // (500),
-	"Evacuate 30 times" // (500),
-};
-
-wqdMin[3],
-	wqdMed[3],
-	wqdMax[3]
-
-custom LoadWeeklyQuestsCfg() {
-    if(cache_num_rows() > 0) {
-    	cache_get_value_name_int(0, "last", WeeklyQuestsConfig[wqdLastUpdate]);
-        cache_get_value_name_int(0, "next", WeeklyQuestsConfig[wqdNextUpdate]);
-        cache_get_value_name_int(0, "min_standing", WeeklyQuestsConfig[wqdMinStanding]);
-        cache_get_value_name_int(0, "med_standing", WeeklyQuestsConfig[wqdMedStanding]);
-        cache_get_value_name_int(0, "max_standing", WeeklyQuestsConfig[wqdMaxStanding]);
-        
-        // Misc[playerid][mdWeeklyStanding]
-    
-    	printf("|: Weekly Quests configuration LOADED");
-        return 1;
-    }
-    
-    printf("|: Weekly Quests configuration FAILED");
-    return 0;
-}*/
-
 custom LoginOrRegister(const playerid) {
 	Misc[playerid][mdKickForAuthTimeout] = (ServerConfig[svCfgAuthTimeout] * 60);
 
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new progress[256], form[16], login_ip[16], login_date, login_id;
     	cache_get_value_name_int(0, "id", Player[playerid][pAccountId]);
         cache_get_value_name_int(0, "language", Player[playerid][pLanguage]);
@@ -2053,7 +2059,7 @@ custom SavePlayerSign(const playerid) {
 }
 
 custom InitializeLocalization(const playerid, const type) {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         for( new i = 0; i < cache_num_rows(); i++ ) {
             cache_get_value_name(i, "text", Localization[playerid][LOCALIZATION_DATA:i]);
         }
@@ -2079,7 +2085,7 @@ custom InitializeLocalization(const playerid, const type) {
 }
 
 custom InitializeLocalizedTips(const playerid) {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new i, len = clamp(cache_num_rows(), 0, _:TIP_MSG_MAX);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "text", LocalizedTips[playerid][TIPS_DATA:i]);
@@ -2088,7 +2094,7 @@ custom InitializeLocalizedTips(const playerid) {
 }
 
 custom InitializeLocalizedQuestions(const playerid) {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         new i, len = clamp(cache_num_rows(), 0, _:RMD_MAX);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "text", LocalizedRandomQuestions[playerid][RANDOM_MESSAGES_DATA:i]);
@@ -2098,7 +2104,7 @@ custom InitializeLocalizedQuestions(const playerid) {
 }
 
 custom LoadFirstClassesTitles(const playerid) {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         cache_get_value_name(0, "title", Misc[playerid][mdZombieSelectionName]);
        	cache_get_value_name(1, "title", Misc[playerid][mdHumanSelectionName]);
        	
@@ -2115,7 +2121,7 @@ custom LoadFirstClassesTitles(const playerid) {
 
 
 custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
-    if(cache_num_rows() > 0) {
+    if(cache_num_rows()) {
         static const disabledTitlesColors[] = { 0xEC3013, 0xFF4D55 };
         static const enabledTitlesColors[] = { 0x009900, 0x75F0B0 };
         static const descriptionColors[] = { 0xFFFFFF, 0xA7A5A5 };
@@ -4866,6 +4872,22 @@ stock CreateTextureFromConfig(&Text:texid, const buffer) {
 	}
 }
 
+custom CreateWeeklyActivities() {
+	if(cache_num_rows()) {
+	    WeeklyConfig[wqdNextUpdate] = gettime() + WeeklyConfig[wqdPeriod];
+	    new len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES), i;
+	    for( i = 0; i < len; i++ ) {
+            cache_get_value_name_int(i, "activity", WeeklyConfig[wqdActivities][i]);
+	    }
+
+	 	printf("[x] Created Weekly Activities %d / %d", i, WEEKLY_MAX_ACTIVITIES);
+	    return 1;
+	}
+	
+	printf("[ ] Created Weekly Activities FAILED");
+	return 0;
+}
+
 stock PredictPreferedLocalization(const playerid) {
     new symbolPos = strfind(Misc[playerid][mdPlayerName], "_", true);
 	if(symbolPos != -1 && symbolPos + 1 < strlen(Misc[playerid][mdPlayerName])) {
@@ -5382,6 +5404,50 @@ CMD:settings(const playerid) {
 	return 1;
 }
 
+stock PrepareWeeklyActivities(const playerid) {
+    new ids[64], num[11];
+	for( new i = 0; i < WEEKLY_MAX_ACTIVITIES; i++ ) {
+	    if(i < WEEKLY_MAX_ACTIVITIES - 1) {
+	        format(num, sizeof(num), "%d,", WeeklyConfig[wqdActivities][i]);
+            strcat(ids, num);
+	    } else {
+            format(num, sizeof(num), "%d", WeeklyConfig[wqdActivities][i]);
+            strcat(ids, num);
+	    }
+	}
+
+    static const query[] = "SELECT %e as text, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)";
+    
+    new formated[sizeof(query) + LOCALIZATION_SIZE + 64], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], ids);
+	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
+}
+
+custom ShowWeeklyActivities(const playerid) {
+	if(cache_num_rows()) {
+		new i, total[256], text[96], buff[96], count, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
+
+		for(i = 0; i < len; i++ ) {
+			cache_get_value_name(i, "text", buff);
+	        cache_get_value_name_int(i, "count", count);
+
+	        format(text, sizeof(text), buff, count);
+	        strcat(text, "\n");
+	        strcat(total, text);
+        }
+        
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_SETTINGS,
+			DIALOG_STYLE_MSGBOX,
+		 	Localization[playerid][LD_DG_SETTINGS_TITLE],
+			total,
+			Localization[playerid][LD_BTN_SELECT],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+ 	}
+}
+
 CMD:weekly(const playerid) {
 	new title[128];
 	format(title, sizeof(title), "Weekly Activities - %d %s - %.0f Reputation", Player[playerid][pCoins], Localization[playerid][LD_MSG_COINS], Player[playerid][pStanding]);
@@ -5394,12 +5460,34 @@ CMD:weekly(const playerid) {
 	);
 	
 	// Rewards:
-	// Attachements - 1 coins + 2,500 rep + 1,000 points,
-	// Custom Tag - 5 coins + 5,000 rep + 10,000 points,
-	// Color For Nickname - 10 coins + 10,000 rep ( Yellow, White, Pink, Red, Orange ) + 25,000 points,
-	// Skin - 15 coins + 25,000 rep + 100,000 points
+	// 10,000 rep = 1 coin
+	// Attachements - 1 coins + 4,000 rep
+	// Custom Tag - 5 coins + 20,000 rep
+	// Color For Nickname - 10 coins + 50,000 rep ( Yellow, White, Pink, Red, Orange )
+	// Skin - 15 coins + 50,000 rep
 	
+	
+	// DIALOG_WEEKLY_ACTIVITIES
 	// DIALOG_WEEKLY_REWARDS
+	
+	/*
+		"Kill 10 human bosses" - 7000
+		"Achieve 100 killstreaks in a row", - 7000
+		"Kill 500 players", - 7000
+		"Bloodrush - Draw first blood 10 times" - 7000
+
+		"Kill 10 zombie bosses" - 4500
+		"Kill 50 humans" - 4500
+		"Kill 200 zombies" - 4500
+		"Collect 5000 points" - 4500
+
+		"Infect 100 humans" - 1000
+		"Cure 100 humans" - 1000
+		"Use ability 300 times" - 1000
+		"Collect 100 meats" - 1000
+		"Evacuate 5 times" - 1000
+		"Jump 500 times" - 1000
+	*/
 	
 	return 1;
 }

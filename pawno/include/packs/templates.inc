@@ -678,6 +678,29 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define WEEKLY_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS weekly_cfg (\
+	`id` int(11) unsigned NOT NULL,\
+	`next_update` int(11) unsigned NOT NULL default '0',\
+	`period` int(6) unsigned NOT NULL default '604800',\
+	`min_standing` int(4) unsigned NOT NULL default '1000',\
+	`med_standing` int(4) unsigned NOT NULL default '4500',\
+	`max_standing` int(4) unsigned NOT NULL default '7000',\
+	`activities` varchar(64) NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define WEEKLY_ACTIVITIES_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS weekly_activities_cfg (\
+	`id` int(11) unsigned NOT NULL,\	
+	`activity` int(6) unsigned NOT NULL default '0',\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
+	`count` int(4) unsigned NOT NULL default '0',\
+	`type` int(6) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\
@@ -928,6 +951,23 @@
 	(1, 'The Village', 'Деревня');\
 "
 
+#define PREDIFINED_WEEKLY_ACTIVITIES "INSERT IGNORE INTO weekly_activities_cfg (id, activity, english, russian, type, count) VALUES \
+	(1, 0, 'Kill %d human boses', 'Убейте %d героев', 2, 10),\
+	(2, 1, 'Achieve %d killstreaks in a row', 'Достигните серии из %d убийств подряд', 2, 100),\
+	(3, 2, 'Kill %d players', 'Убейте %d игроков', 2, 500),\
+	(4, 3, 'Draw First Blood %d times', 'Пустите первую кровь %d раз', 2, 10),\
+	(5, 4, 'Kill %d zombie bosses', 'Убейте %d зомби боссов', 1, 10),\
+	(6, 5, 'Kill %d humans', 'Убейте %d людей', 1, 50),\
+	(7, 6, 'Kill %d zombies', 'Убейте %d зомби', 1, 200),\
+	(8, 7, 'Collect %d points', 'Получите %d очков', 1, 5000),\
+	(9, 8, 'Infect %d humans', 'Заразите %d людей', 0, 100),\
+	(10, 9, 'Cure %d humans', 'Выличите %d людей', 0, 100),\
+	(11, 10, 'Use ability %d times', 'Используйте способности %d раз', 0, 300),\
+	(12, 11, 'Collect %d meats', 'Соберите %d мяса с зомби', 0, 100),\
+	(13, 12, 'Evacuate %d times', 'Эвакуируйтесь %d раз', 0, 5),\
+	(14, 13, 'Jump %d times', 'Прыгните %d раз', 0, 500);\
+"
+
 #define PREDIFINED_LOCALE_CLASSES_10 "INSERT IGNORE INTO classes_localization (id, english_title, russian_title, english_desc, russian_desc) VALUES \
 	(1, 'Civillian', 'Гражданский', 'Silinced Pistol', 'Пистолет с глушитилем'),\
 	(2, 'Gangster', 'Гангстер', 'Deagle, Spraycan', 'Дигл, Аэрозоль'),\
@@ -1086,3 +1126,5 @@
 	(16, 39, 10, 20, 2),\
 	(17, 41, 100, 1500, 250);\
 "
+
+#define PREDIFINED_WEEKLY "INSERT IGNORE INTO weekly_cfg (id) VALUES (1)"

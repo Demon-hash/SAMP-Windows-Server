@@ -3,14 +3,33 @@
 #endif
 #define _weekly_quests_pack_included
 
-enum WEEKLY_QUESTS_DATA {
-	wqdLastUpdate,
+#define WEEKLY_MAX_ACTIVITIES 8
+
+enum WEEKLY_ACTIVITIES {
+	WEEKLY_HUMAN_BOSSES,
+	WEEKLY_KILLSTREAKS,
+	WEEKLY_KILL_PLAYERS,
+	WEEKLY_BLOODRUSH,
+	
+	WEEKLY_ZOMBIE_BOSSES,
+	WEEKLY_KILL_HUMANS,
+	WEEKLY_KILL_ZOMBIES,
+	WEEKLY_COLLECT_EXP,
+	
+	WEEKLY_INFECT,
+	WEEKLY_CURE,
+	WEEKLY_ABILITIES,
+	WEEKLY_COLLECT_MEATS,
+	WEEKLY_EVACUATE,
+	WEEKLY_JUMP,
+	WEEKLY_HEADSHOTS,
+}
+
+enum WEEKLY_CFG_DATA {
+	wqdPeriod,
 	wqdNextUpdate,
 	wqdMinStanding,
 	wqdMedStanding,
 	wqdMaxStanding,
-
-	wqdMin[3],
-	wqdMed[3],
-	wqdMax[3],
+	wqdActivities[WEEKLY_MAX_ACTIVITIES],
 }
