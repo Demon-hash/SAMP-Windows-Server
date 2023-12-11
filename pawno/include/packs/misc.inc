@@ -23,7 +23,6 @@ enum MISC_DATA {
 	mdLastIssuedReason,
 	bool:mdIsLogged,
 	mdLastReportedId,
-	mdMuted,
 	mdAfk,
 	mdJailed,
     	Float:mdHealth,
@@ -51,4 +50,8 @@ enum MISC_DATA {
 	PlayerText3D:mdFlagText,
 	mdGameplayWarns,
 	mdSign[16],
+	mdMute,
+	bool:mdIsSpecing[MAX_PLAYERS],
+	bool:mdIsBeingSpeced[MAX_PLAYERS],
+	mdSpectatorId,
 };

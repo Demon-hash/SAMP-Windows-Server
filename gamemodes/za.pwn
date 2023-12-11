@@ -287,6 +287,15 @@ public OnPlayerDisconnect(playerid, reason) {
         SendClientMessage(i, COLOR_CONNECTIONS, formated);
     }
     
+    if(Misc[playerid][mdIsBeingSpeced]) {
+        foreach(Admins, i) {
+            if(Misc[i][mdSpectatorId] == playerid) {
+                GameTextForPlayer(i, "~r~~n~Player is disconnected", 2000, 6);
+                TogglePlayerSpectating(i, 0);
+            }
+        }
+    }
+    
     if(Votekick[vkIsStarted] && Votekick[vkBreaker] == playerid) {
 		foreach(Player, i) {
 			SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_VOTEKICK_FAIL]);
@@ -300,6 +309,49 @@ public OnPlayerDisconnect(playerid, reason) {
     ResetValuesOnDisconnect(playerid);
 	return 1;
 }
+
+public OnPlayerStateChange(playerid, newstate, oldstate) {
+	if(Misc[playerid][mdIsBeingSpeced]) {
+	    foreach(Admins, i) {
+            if(Misc[i][mdSpectatorId] == playerid) {
+                switch(newstate) {
+                    case PLAYER_STATE_DRIVER, PLAYER_STATE_PASSENGER: PlayerSpectateVehicle(i, GetPlayerVehicleID(playerid));
+                    case PLAYER_STATE_ONFOOT: PlayerSpectatePlayer(i, playerid);
+                }
+            }
+	    }
+	}
+	return 1;
+}
+
+public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid) {
+    if(Misc[playerid][mdIsBeingSpeced]) {
+        foreach(Admins, i) {
+            if(Misc[i][mdSpectatorId] == playerid) {
+                SetPlayerInterior(i, GetPlayerInterior(playerid));
+                SetPlayerVirtualWorld(i, GetPlayerVirtualWorld(playerid));
+            }
+        }
+    }
+	return 1;
+}
+
+public OnPlayerClickPlayer(playerid, clickedplayerid, source) {
+    if(!HasAdminPermission(playerid)) {
+		return 1;
+  	}
+  	
+    if(clickedplayerid == playerid) {
+ 		cmd::specoff(playerid);
+   		return 1;
+	}
+
+	new str[MAX_ID_LENGTH];
+	format(str, sizeof(str), "%d", clickedplayerid);
+	cmd::spec(playerid, str);
+	return 1;
+}
+
 
 public OnPlayerRequestClass(playerid, classid) {
     SetPlayerVirtualWorld(playerid, 1000 + playerid);
@@ -333,6 +385,12 @@ public OnPlayerRequestSpawn(playerid) {
 public OnPlayerSpawn(playerid) {
 	if(!IsLogged(playerid)) {
 	    return 1;
+	}
+	
+	if(Misc[playerid][mdIsSpecing]) {
+        Misc[playerid][mdIsSpecing] = false;
+        Misc[Misc[playerid][mdSpectatorId]][mdIsBeingSpeced] = false;
+		Misc[playerid][mdSpectatorId] = -1;
 	}
 	
 	if(Misc[playerid][mdJailed] > -1) {
@@ -694,7 +752,7 @@ public OnPlayerEnterCheckpoint(playerid) {
 }
 
 public OnPlayerText(playerid, text[]) {
-	if(!IsLogged(playerid)) {
+	if(!IsLogged(playerid) || Misc[playerid][mdMute] > -1) {
 	    return 0;
 	}
 
@@ -759,6 +817,11 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
     if(KEY(KEY_WALK)) {
         ProceedClassAbilityActivation(playerid);
         return 1;
+	}
+	
+	if(KEY(KEY_YES)) {
+	    cmd::class(playerid);
+	    return 1;
 	}
 	
 	if(KEY(KEY_JUMP)) {
@@ -993,6 +1056,10 @@ custom Update() {
                     UnjailPlayer(playerid);
                 }
             }
+            
+            if(Misc[playerid][mdMute] > -1) {
+                --Misc[playerid][mdMute];
+            }
 	    }
 	}
 	
@@ -1197,13 +1264,16 @@ custom StartMap() {
 	    ClearPlayerRoundData(i);
     	DisablePlayerCheckpoint(i);
     	
+    	if(Misc[i][mdIsSpecing]) {
+        	Misc[i][mdIsSpecing] = false;
+        	Misc[Misc[i][mdSpectatorId]][mdIsBeingSpeced] = false;
+			Misc[i][mdSpectatorId] = -1;
+			TogglePlayerSpectating(i, 0);
+		}
+    	
     	if(IsPlayerInAnyVehicle(i)) {
     		RemovePlayerFromVehicle(i);
     	}
-    	
-    	if(GetPlayerState(i) == PLAYER_STATE_SPECTATING) {
-    	    TogglePlayerSpectating(i, 0);
-		}
 		
 		if(strlen(Map[mpAuthor])) {
     		format(author, sizeof(author), Localization[i][LD_MSG_MAP_AUTHOR], Map[mpAuthor]);
@@ -2930,8 +3000,8 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdKillstreak] = 0;
-	Misc[playerid][mdMuted] = -1;
 	Misc[playerid][mdJailed] = -1;
+	Misc[playerid][mdMute] = -1;
 	Misc[playerid][mdGameplayWarns] = 0;
 	Misc[playerid][mdBlindTimeout] = -1;
 	Misc[playerid][mdDialogId] = -1;
@@ -2951,6 +3021,12 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdMimicry][2] = -1;
     Misc[playerid][mdMimicryStats][0] = 100.0;
     Misc[playerid][mdMimicryStats][1] = 0.0;
+    
+    if(Misc[playerid][mdIsSpecing]) {
+    	Misc[playerid][mdIsSpecing] = false;
+    	Misc[Misc[playerid][mdSpectatorId]][mdIsBeingSpeced] = false;
+		Misc[playerid][mdSpectatorId] = -1;
+	}
     
     for( new i = 0; i < MAX_PLAYER_TEAMS; i++ ) {
 	    Misc[playerid][mdCurrentClass][i] = 0;
@@ -5276,6 +5352,21 @@ stock SaveToJailLog(const playerid, const issued_id, const reason[]) {
 	mysql_tquery(Database, formated, "");
 }
 
+stock SaveToWarnLog(const playerid, const issued_id, const reason[]) {
+    static const query[] = CREATE_WARN_LOG;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3) + 64 + (MAX_PLAYER_IP * 2)];
+
+    mysql_format(Database, formated, sizeof(formated), query,
+		Player[playerid][pAccountId],
+		Player[issued_id][pAccountId],
+		gettime(),
+		reason,
+		Misc[playerid][mdIp],
+		Misc[issued_id][mdIp]
+	);
+	mysql_tquery(Database, formated, "");
+}
+
 stock SaveToBanLog(const playerid, const issued_id, const reason[], const time = 0, const permanent = 1) {
     static const query[] = CREATE_BAN_LOG;
     new formated[sizeof(query) + (MAX_ID_LENGTH * 6) + 64 + (MAX_PLAYER_IP * 2)];
@@ -6000,6 +6091,7 @@ CMD:ban(const playerid, const params[]) {
  	SendClientMessage(params[0], COLOR_INFO, Localization[params[0]][LD_MSG_BANNED_SCREENSHOT]);
  	
  	SaveToBanLog(params[0], playerid, params[1]);
+ 	BlockIpAddress(Misc[params[0]][mdIp], 900000);
 	KickPlayer(params[0]);
 	
 	foreach(Player, i) {
@@ -6030,7 +6122,175 @@ CMD:unban(const playerid, const params[]) {
 	return 1;
 }
 
-/*CMD:warn(const playerid, const params[]) {
+CMD:tban(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+
+    if(sscanf(params, "iis[64]", params[0], params[1], params[2])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ban (id) (hours) (reason)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0]) || params[1] <= 0 || !strlen(params[2]) || Player[params[0]][pAccountId] == 1) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ban (id) (hours) (reason)");
+ 		return 1;
+   	}
+
+   	new str[(MAX_PLAYER_NAME * 2) + 96];
+   	foreach(Player, i) {
+	    if(HasAdminPermission(i) || i == params[0]) format(str, sizeof(str), Localization[i][LD_MSG_ADMIN_TBANNED_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], params[1], params[2]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_ADMIN_TBANNED], Misc[params[0]][mdPlayerName], params[1], params[2]);
+	 	SendClientMessage(i, COLOR_ADMIN, str);
+ 	}
+
+ 	format(str, sizeof(str), Localization[params[0]][LD_MSG_WRONG_BANNED], ServerConfig[svCfgDiscord]);
+ 	SendClientMessage(params[0], COLOR_ABILITY, str);
+ 	SendClientMessage(params[0], COLOR_INFO, Localization[params[0]][LD_MSG_BANNED_SCREENSHOT]);
+
+ 	SaveToBanLog(params[0], playerid, params[1], gettime() + (params[1] * 3600), 0);
+	KickPlayer(params[0]);
+
+	foreach(Player, i) {
+	    if(Misc[i][mdLastReportedId] == params[0]) {
+	        SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_REPORT_HELP]);
+	        ProceedAchievementProgress(i, ACH_TYPE_REPORT);
+	        Misc[i][mdLastReportedId] = -1;
+	    }
+	}
+
+	return 1;
+}
+
+CMD:spec(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+
+	if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /spec (id)");
+		return 1;
+	}
+	
+	if(!IsPlayerConnected(params[0]) || GetPlayerState(params[0]) == PLAYER_STATE_SPECTATING || params[0] == playerid) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /spec (id)");
+		return 1;
+	}
+	
+	SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(params[0]));
+	SetPlayerInterior(playerid, GetPlayerInterior(params[0]));
+	TogglePlayerSpectating(playerid, 1);
+	PlayerSpectatePlayer(playerid, params[0]);
+	
+	Misc[playerid][mdIsSpecing] = true;
+	Misc[params[0]][mdIsBeingSpeced] = false;
+	Misc[playerid][mdSpectatorId] = params[0];
+	
+	new str[96];
+	foreach(Admins, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_SPECTATE_START], Misc[playerid][mdPlayerName], Misc[params[0]][mdPlayerName], params[0]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+	
+ 	SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /specoff");
+	return 1;
+}
+
+CMD:specoff(const playerid) {
+    if(!HasAdminPermission(playerid)) return 0;
+	if(!Misc[playerid][mdIsSpecing]) return 0;
+	
+	new str[96];
+	foreach(Admins, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_SPECTATE_END], Misc[playerid][mdPlayerName], Misc[Misc[playerid][mdSpectatorId]][mdPlayerName], Misc[playerid][mdSpectatorId]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+	
+	Misc[playerid][mdIsSpecing] = false;
+	Misc[Misc[playerid][mdSpectatorId]][mdIsBeingSpeced] = false;
+	Misc[playerid][mdSpectatorId] = -1;
+	TogglePlayerSpectating(playerid, 0);
+	return 1;
+}
+
+CMD:time(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 3)) return 0;
+	
+	if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /weather (id)");
+		return 1;
+	}
+	
+	Map[mpTime] = params[0];
+	SetWorldTime(params[0]);
+	
+	new str[48];
+	foreach(Admins, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_TIME_SET], Misc[playerid][mdPlayerName], params[0]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+	return 1;
+}
+
+CMD:weather(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 3)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /weather (id)");
+		return 1;
+	}
+
+	Map[mpWeather] = params[0];
+	SetWeather(params[0]);
+
+    new str[48];
+	foreach(Admins, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_WEATHER_SET], Misc[playerid][mdPlayerName], params[0]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+	return 1;
+}
+
+CMD:goto(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+    
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /goto (id)");
+		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /goto (id)");
+		return 1;
+	}
+    
+    new Float:pos[3];
+    SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(params[0]));
+	SetPlayerInterior(playerid, GetPlayerInterior(params[0]));
+    GetPlayerPos(params[0], pos[0], pos[1], pos[2]);
+    SetPlayerPos(playerid, pos[0] + 0.3, pos[1] + 0.3, pos[2]);
+	return 1;
+}
+
+CMD:get(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /get (id)");
+		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /get (id)");
+		return 1;
+	}
+
+    new Float:pos[3];
+	SetPlayerVirtualWorld(params[0], GetPlayerVirtualWorld(playerid));
+	SetPlayerInterior(params[0], GetPlayerInterior(playerid));
+	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+    SetPlayerPos(params[0], pos[0] + 0.3, pos[1] + 0.3, pos[2]);
+	return 1;
+}
+
+
+CMD:warn(const playerid, const params[]) {
     if(!HasAdminPermission(playerid)) return 0;
 
 	new reason[64];
@@ -6038,26 +6298,35 @@ CMD:unban(const playerid, const params[]) {
         SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warn (id) (reason)");
         return 1;
     }
-
+    
 	if(!IsPlayerConnected(params[0]) || !strlen(reason) || Player[params[0]][pAccountId] == 1) {
  		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warn (id) (reason)");
  		return 1;
    	}
 
 	++Misc[params[0]][mdGameplayWarns];
+	SaveToWarnLog(params[0], playerid, reason);
 	
 	new str[((MAX_PLAYER_NAME + MAX_ID_LENGTH) * 2) + 128];
 	foreach(Player, i) {
-	    if(HasAdminPermission(i)) format(str, sizeof(str), ">> %s(%d) has been warned by %s [Reason: %s] (%d / 3)", Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], reason, Misc[params[0]][mdGameplayWarns]);
-		else format(str, sizeof(str), ">> %s has been warned [Reason: %s] (%d / 3)", Misc[params[0]][mdPlayerName], reason, Misc[params[0]][mdGameplayWarns]);
+	    if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_WARNED_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], Misc[params[0]][mdGameplayWarns], reason);
+		else format(str, sizeof(str), Localization[i][LD_MSG_WARNED], Misc[params[0]][mdPlayerName], Misc[params[0]][mdGameplayWarns], reason);
 	 	SendClientMessage(i, COLOR_ADMIN, str);
+	 	
+	 	if(Misc[params[0]][mdGameplayWarns] >= 3) {
+	 	    format(str, sizeof(str), Localization[i][LD_MSG_WARNED_KICK], Misc[params[0]][mdPlayerName]);
+	 	    SendClientMessage(i, COLOR_ADMIN, str);
+	 	}
  	}
  	
-	ShowPlayerDialog(params[0], DIALOG_INFO, DIALOG_STYLE_MSGBOX, "WARNING", reason, Localization[params[0]][LD_BTN_CLOSE], "");
-	return 1;
-}*/
+	ShowPlayerDialog(params[0], DIALOG_INFO, DIALOG_STYLE_MSGBOX, Localization[params[0]][LD_DG_WARNED_TITLE], reason, Localization[params[0]][LD_BTN_CLOSE], "");
 
-/*
+	if(Misc[params[0]][mdGameplayWarns] >= 3) {
+	    KickPlayer(params[0]);
+	}
+	return 1;
+}
+
 CMD:unwarn(const playerid, const params[]) {
     if(!HasAdminPermission(playerid)) return 0;
     
@@ -6066,35 +6335,83 @@ CMD:unwarn(const playerid, const params[]) {
 		return 1;
 	}
 
-    if(IsPlayerConnected(params[0])) {
-        new targetid = params[0];
-        
-	 	if(Misc[targetid][mdGameplayWarns]) {
-	 	    new message[(MAX_PLAYER_NAME * 2) + 64];
-		 	format(message, sizeof(message), "[WARN]: %s(%d) has been unwarned by %s", Misc[targetid][mdPlayerName], targetid, Misc[playerid][mdPlayerName]);
-		 	SendAdminMessage(COLOR_ADMIN, message);
-		 	
-	 		--Misc[targetid][mdGameplayWarns];
-	 		return 1;
+    if(!IsPlayerConnected(params[0])) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unwarn (id)");
+		return 1;
+    }
+    
+    new targetid = params[0];
+ 	if(Misc[targetid][mdGameplayWarns]) {
+ 	    new str[(MAX_PLAYER_NAME * 2) + 64];
+ 	    foreach(Admins, i) {
+	 		format(str, sizeof(str), Localization[i][LD_MSG_UNWARN_BY], Misc[targetid][mdPlayerName], targetid, Misc[playerid][mdPlayerName]);
+            SendClientMessage(i, COLOR_ADMIN, str);
 	 	}
 	 	
-	 	SendClientMessage(playerid, COLOR_ADMIN, ">> The player does not have warns!");
-	 	return 1;
+ 		--Misc[targetid][mdGameplayWarns];
+ 		return 1;
+ 	}
+	 	
+ 	SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_NO_WARNS]);
+ 	return 1;
+}
+
+CMD:mute(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+
+	new reason[64];
+    if(sscanf(params, "iis[64]", params[0], params[1], reason)) {
+	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /mute (id) (time) (reason)");
+		return 1;
 	}
+	
+	if(!IsPlayerConnected(params[0]) || params[1] < 1 || !strlen(reason)) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /mute (id) (time) (reason)");
+ 		return 1;
+   	}
+   	
+ 	new str[(MAX_PLAYER_NAME * 2) + 128];
+   	foreach(Player, i) {
+	    if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_MUTED_BY], Misc[params[0]][mdPlayerName], params[0], params[1], Misc[playerid][mdPlayerName], reason);
+		else format(str, sizeof(str), Localization[i][LD_MSG_MUTED], Misc[params[0]][mdPlayerName], params[1], reason);
+	 	SendClientMessage(i, COLOR_ADMIN, str);
+ 	}
+   	
+   	Misc[params[1]][mdMute] = params[2] * 60;
+	return 1;
+}
 
-    return 1;
-}*/
+CMD:unmute(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "i", params[0])) {
+	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unmute (id)");
+		return 1;
+	}
+	
+	new str[(MAX_PLAYER_NAME * 2) + 128];
+   	foreach(Player, i) {
+	    if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_UNMUTED_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_UNMUTED], Misc[params[0]][mdPlayerName]);
+	 	SendClientMessage(i, COLOR_ADMIN, str);
+ 	}
+    
+    Misc[params[0]][mdMute] = -1;
+	return 1;
+}
 
-// /spec /(un)mute /(un)warn
-// /tban /banip /warn /mute
+// 		/votekicklog	/jaillog   /banlog   /warnlog   /mutelog
 
-// LVL 1: /cc /kick /apm /answer /getip /sync /slap /makezombie /getid /(un)jail
-// LVL 2: /ban /unban
+// /checkip /offban /offtban /namelog
+// /banip /unbanip /offtban /skip
+
+
+// LVL 1: /spec(off) /cc /kick /apm /answer /getip /sync /slap /makezombie /getid /(un)jail /tban /(un)warn /(un)mute
+// LVL 2: /ban /unban /goto /get
+// LVL 3: /time /weather
 
 CMD:acmds(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/tban /spec /(un)mute /checkip /muwa /waja /goto /checkip");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/offban /offtban /time /weather /get /(un)banip");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /warnlog /jaillog /mutelog /banlog /namelog");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/tban /spec /(un)mute /checkip /muwa /waja/checkip");
     return 1;
 }

@@ -199,6 +199,22 @@ enum LOCALIZATION_DATA {
 	LD_MSG_TEMP_BANNED,
 	LD_MSG_UNBAN_NONE,
 	LD_MSG_UNBAN_BY,
+	LD_MSG_ADMIN_TBANNED_BY,
+	LD_MSG_ADMIN_TBANNED,
+	LD_MSG_SPECTATE_START,
+	LD_MSG_SPECTATE_END,
+	LD_MSG_TIME_SET,
+	LD_MSG_WEATHER_SET,
+	LD_MSG_WARNED_BY,
+	LD_MSG_WARNED,
+	LD_DG_WARNED_TITLE,
+	LD_MSG_WARNED_KICK,
+	LD_MSG_UNWARN_BY,
+	LD_MSG_NO_WARNS,
+	LD_MSG_MUTED_BY,
+	LD_MSG_MUTED,
+	LD_MSG_UNMUTED_BY,
+	LD_MSG_UNMUTED,
 	LD_ENDF,
 };
 
@@ -409,5 +425,21 @@ enum LOCALIZATION_DATA {
 	(183, '>> %s has attempted to join the server whilst serving a ban', '>> Игрок %s пытался подключится, но был обнаружен забаненым'),\
 	(184, '>> %s has attempted to join the server whilst serving a temp ban', 'Игрок %s пытался подключится, но был обнаружен временно забаненым'),\
 	(185, '>> Account not found in ban list', '>> Аккаунт не найден в списке блокировок'),\
-	(186, '>> %s has unbanned an account %s', '>> Администратор %s разблокировал аккаунт %s');\
+	(186, '>> %s has unbanned an account %s', '>> Администратор %s разблокировал аккаунт %s'),\
+	(187, '>> %s(%d) has been banned by %s for %d hour(s) [Reason: %s]', '>> Игрок %s(%d) был заблокирован администратором %s на %d час(а/ов) [Причина: %s]'),\
+	(188, '>> %s has been banned for %d hour(s) [Reason: %s]', 'Игрок %s был заблокирован на %d час(а/ов) [Причина: %s]'),\
+	(189, '>> %s has started to spectating for %s(%d)', 'Администратор %s начал слежку за %s(%d)'),\
+	(190, '>> %s has stopped spectating for %s(%d)', 'Администратор %s прекратил слежку за %s(%d)'),\
+	(191, '>> %s has changed time to %d', 'Администратор %s изменил время на %d'),\
+	(192, '>> %s has changed weather to %d', 'Администратор %s изменил погоду на %d'),\
+	(193, '>> %s(%d) has been warned by %s (%d / 3) [Reason: %s]', '>> %s(%d) получил предупреждение от администратора %s (%d / 3) [Причина: %s]'),\
+	(194, '>> %s has been warned (%d / 3) [Reason: %s]', '>> %s получил предупреждение (%d / 3) [Причина: %s]'),\
+	(195, 'WARNING', 'ПРЕДУПРЕЖДЕНИЕ'),\
+	(196, '>> %s has been kicked [Reason: Maximum number of warnings reached]', '>> Игрок %s был кикнут [Причина: Достигнуто максимальное количество предупреждений]'),\
+	(197, '>> %s(%d) has been unwarned by %s', '>> Предупреждение с игрока %s(%d) было снято администратором %s'),\
+	(198, '>> The player does not have warns!', '>> У игрока нету предупреждений'),\
+	(199, '>> %s(%d) has been muted for %d minutes by %s [Reason: %s]', '>> %s(%d) получил мут на %d минут(а/ы) от администратора %s [Причина: %s]'),\
+	(200, '>> %s has been muted for %d minutes [Reason: %s]', '>> %s получил мут на %d минут(а/ы) [Причина: %s]'),\
+	(201, '>> %s(%d) has been unmuted by %s', '>> Игрок %s(%d) получил размут от администратора %s'),\
+	(202, '>> %s has been unmuted', '>> Игрок %s получил размут');\
 "
