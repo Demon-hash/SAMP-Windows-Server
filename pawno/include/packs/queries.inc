@@ -296,3 +296,7 @@
 	ORDER BY l.date DESC\n\
 	LIMIT 1\
 "
+
+#define IPRANGE_QUERY "SELECT DISTINCT `ip` FROM `login_log` WHERE `account_id` = '%d' LIMIT 30;"
+#define IPID_QUERY "SELECT DISTINCT `account_id` AS id FROM `login_log` WHERE `ip` = '%e' ORDER BY date DESC LIMIT 30;"
+#define HASH_QUERY "SELECT DISTINCT `key` FROM `login_log` WHERE `account_id` = '%d' LIMIT 30;"

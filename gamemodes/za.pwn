@@ -116,8 +116,7 @@ static
 	Iterator:SupportPlayers<MAX_PLAYERS>,
 	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>,
 	Iterator:Admins<MAX_PLAYERS>,
-	joinedPlayers = 0,
-	gangZone;
+	joinedPlayers = 0;
 
 /*
 	MAIN
@@ -260,8 +259,6 @@ public OnGameModeInit() {
 	ApplyActorAnimation(CreateActor(140, 960.8099,-57.6722,1001.9324,182.4359), "STRIP", "STRIP_C", 4.1, true, false, false, true, false);
 	ApplyActorAnimation(CreateActor(170, 964.4001,-54.7689,1001.1172,91.5684), "SMOKING", "M_SMKLEAN_LOOP", 2.1, true, false, false, true, false);
 	ApplyActorAnimation(CreateActor(107, 969.3779,-44.7992,1001.1172,83.8942), "BAR", "DNK_STNDM_LOOP", 2.1, true, false, false, true, false);
-	
-	gangZone = GangZoneCreate(566.1334, -409.3286, 852.9569, -677.8293);
 	return 1;
 }
 
@@ -2345,6 +2342,57 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         return 1;
     }
  	return 1;
+}
+
+custom ShowAccountHashes(const playerid) {
+	if(cache_num_rows()) {
+	    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
+	    new i, key[65], buff[80];
+	    for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name(i, "key", key);
+	    	format(buff, sizeof(buff), ">> HASH: %s", key);
+	    	SendClientMessage(playerid, COLOR_INFO, buff);
+	    }
+
+	    return 1;
+	}
+
+	SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_MATCHES_NONE]);
+	return 1;
+}
+
+custom ShowAccountIds(const playerid) {
+	if(cache_num_rows()) {
+	    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
+	    new i, id, buff[24];
+	    for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name_int(i, "id", id);
+	    	format(buff, sizeof(buff), ">> ID: %d", id);
+	    	SendClientMessage(playerid, COLOR_INFO, buff);
+	    }
+
+	    return 1;
+	}
+
+	SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_MATCHES_NONE]);
+	return 1;
+}
+
+custom ShowAccountIpRange(const playerid) {
+	if(cache_num_rows()) {
+	    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
+	    new i, ip[MAX_PLAYER_IP], buff[24];
+	    for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name(i, "ip", ip);
+	    	format(buff, sizeof(buff), ">> IP: %s", ip);
+	    	SendClientMessage(playerid, COLOR_INFO, buff);
+	    }
+
+	    return 1;
+	}
+
+	SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_MATCHES_NONE]);
+	return 1;
 }
 
 custom GetAchievementsList(const playerid, const offset) {
@@ -5352,6 +5400,7 @@ stock SetTeams() {
 	    if(current < required) {
 	        SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_CHOSEN_AS_ZOMBIE]);
   			SendClientMessage(playerid, COLOR_ALERT, Localization[playerid][LD_MSG_CHOSEN_ZOMBIE_ABILITY]);
+  			TogglePlayerControllable(playerid, 1);
 	        SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
             ++current;
             
@@ -5508,6 +5557,27 @@ stock SaveToNameLog(const playerid, const name[], const old[]) {
 		Misc[playerid][mdIp]
 	);
 	mysql_tquery(Database, formated, "");
+}
+
+stock PrepareIpRange(const playerid, const id) {
+    static const query[] = IPRANGE_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, id);
+    mysql_tquery(Database, formated, "ShowAccountIpRange", "i", playerid);
+}
+
+stock PrepareIpId(const playerid, const ip[]) {
+    static const query[] = IPID_QUERY;
+    new formated[sizeof(query) + MAX_PLAYER_IP];
+    mysql_format(Database, formated, sizeof(formated), query, ip);
+    mysql_tquery(Database, formated, "ShowAccountIds", "i", playerid);
+}
+
+stock PrepareHashId(const playerid, const id) {
+    static const query[] = HASH_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, id);
+    mysql_tquery(Database, formated, "ShowAccountHashes", "i", playerid);
 }
 
 stock PrepareChangename(const playerid, const name[], const old[]) {
@@ -6192,6 +6262,54 @@ CMD:makezombie(const playerid, const params[]) {
 	return 1;
 }
 
+CMD:freeze(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "is[64]", params[0], params[1])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /freeze (id) (reason)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0]) || !strlen(params[1])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /freeze (id) (reason)");
+ 		return 1;
+   	}
+   	
+   	new str[128];
+    foreach(Player, i) {
+        if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_FREEZE_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName], params[1]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_FREEZE], Misc[params[0]][mdPlayerName], params[1]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+   	
+   	TogglePlayerControllable(params[0], 0);
+	return 1;
+}
+
+CMD:unfreeze(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unfreeze (id)");
+  		return 1;
+	}
+
+	if(!IsPlayerConnected(params[0])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unfreeze (id)");
+ 		return 1;
+   	}
+
+   	new str[128];
+    foreach(Player, i) {
+        if(HasAdminPermission(i)) format(str, sizeof(str), Localization[i][LD_MSG_UNFREEZE_BY], Misc[params[0]][mdPlayerName], params[0], Misc[playerid][mdPlayerName]);
+		else format(str, sizeof(str), Localization[i][LD_MSG_UNFREEZE], Misc[params[0]][mdPlayerName]);
+		SendClientMessage(i, COLOR_ADMIN, str);
+	}
+
+   	TogglePlayerControllable(params[0], 1);
+	return 1;
+}
+
 CMD:getid(const playerid, const params[]) {
     if(!HasAdminPermission(playerid)) return 0;
     
@@ -6719,77 +6837,6 @@ CMD:getinfo(const playerid, const params[]) {
 	return 1;
 }
 
-CMD:banlog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-    
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id)");
-		return 1;
-	}
-	
-	static const query[] = "\
-        SELECT u.login AS target, b.valid_till, b.permanent, b.reason, b.target_ip, b.issued_ip, b.date,\n\
-		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin,\n\
-		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.unbanned_id), '') as unbanner\n\
-		FROM `ban_log` b\n\
-	 	LEFT JOIN users u\n\
-	  	ON u.id = b.account_id\n\
-		WHERE b.account_id = '%d'\n\
-		ORDER BY b.date DESC\n\
-		LIMIT 30;\
-	";
-	
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
-    mysql_tquery(Database, formated, "ShowBanlog", "i", playerid);
-    
-	return 1;
-}
-
-custom ShowBanlog(const playerid) {
-    if(cache_num_rows()) {
-        new i, target[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], unbanner[MAX_PLAYER_NAME];
-		new tip[MAX_PLAYER_IP], iip[MAX_PLAYER_IP], reason[64], log[1024], str[128];
-		new valid_till, permanent, date;
-		new year, mounth, day, hours, minutes, seconds;
-
-        for( i = 0; i < cache_num_rows(); i++ ) {
-            cache_get_value_name(i, "target", target);
-            cache_get_value_name(i, "admin", admin);
-            cache_get_value_name(i, "unbanner", unbanner);
-            cache_get_value_name(i, "target_ip", tip);
-            cache_get_value_name(i, "issued_ip", iip);
-            cache_get_value_name(i, "reason", reason);
-            cache_get_value_name_int(i, "date", date);
-            
-    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-            format(str, sizeof(str), "%s (%s) has been banned by %s (%s) at %02d/%02d/%04d [Reason: %s]\n", target, tip, admin, iip, day, mounth, year, reason);
-            strcat(log, str);
-        }
-        
-        ShowPlayerDialog(
-			playerid,
-			DIALOG_INFO,
-			DIALOG_STYLE_MSGBOX,
-			Localization[playerid][LD_DG_CLASSES_TITLE],
-			log,
-			Localization[playerid][LD_BTN_CLOSE],
-			""
-		);
-        return 1;
-    }
-    
-    ShowPlayerDialog(playerid,
-		DIALOG_INFO,
-		DIALOG_STYLE_MSGBOX,
-		Localization[playerid][LD_DG_ACHS_TITLE],
-		Localization[playerid][LD_DG_EMPTY],
-		Localization[playerid][LD_BTN_CLOSE],
-		""
-	);
-	return 1;
-}
-
 CMD:banip(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 3)) return 0;
 
@@ -6826,36 +6873,318 @@ CMD:unbanip(const playerid, const params[]) {
 	return 1;
 }
 
-CMD:t(playerid) {
-    GangZoneShowForAll(gangZone, 0xFFFFFF55);
+CMD:iprange(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+	if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /iprange (account id)");
+		return 1;
+	}
+
+	PrepareIpRange(playerid, params[0]);
+	return 1;
+}
+
+CMD:ipid(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+	new ip[MAX_PLAYER_IP];
+	if(sscanf(params, "s[16]", ip)) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ipid (ip)");
+		return 1;
+	}
+
+    PrepareIpId(playerid, ip);
+	return 1;
+}
+
+CMD:hash(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+	if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /hash (account id)");
+		return 1;
+	}
+
+	PrepareHashId(playerid, params[0]);
+	return 1;
+}
+
+CMD:banlog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id)");
+		return 1;
+	}
+
+	static const query[] = "\
+        SELECT u.login AS target, b.reason, b.target_ip, b.date,\n\
+		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin,\n\
+		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.unbanned_id), '') as unbanner\n\
+		FROM `ban_log` b\n\
+	 	LEFT JOIN users u\n\
+	  	ON u.id = b.account_id\n\
+		WHERE b.account_id = '%d'\n\
+		ORDER BY b.date DESC\n\
+		LIMIT 30;\
+	";
+
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0]);
+    mysql_tquery(Database, formated, "ShowBanlog", "i", playerid);
+
+	return 1;
+}
+
+CMD:baniplog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+	static const query[] = "\
+        SELECT u.login, b.date, b.reason, b.ip\n\
+		FROM `banip_log` b\n\
+	 	LEFT JOIN users u\n\
+	  	ON u.id = b.account_id\n\
+		WHERE 1\n\
+		LIMIT 30;\
+	";
+
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0]);
+    mysql_tquery(Database, formated, "ShowBanIplog", "i", playerid);
+
+	return 1;
+}
+
+CMD:warnlog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id)");
+		return 1;
+	}
+
+	static const query[] = "\
+        SELECT u.login, b.reason, b.date,\n\
+		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
+		FROM `warns_log` b\n\
+	 	LEFT JOIN users u\n\
+	  	ON u.id = b.account_id\n\
+		WHERE b.account_id = '%d'\n\
+		ORDER BY b.date DESC\n\
+		LIMIT 30;\
+	";
+
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0]);
+    mysql_tquery(Database, formated, "ShowWarnlog", "i", playerid);
+
+	return 1;
+}
+
+CMD:namelog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id)");
+		return 1;
+	}
+
+	static const query[] = "\
+        SELECT current_name, last_name, ip, date\n\
+		FROM `name_log`\n\
+		WHERE account_id = '%d'\n\
+		ORDER BY date DESC\n\
+		LIMIT 30;\
+	";
+
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0]);
+    mysql_tquery(Database, formated, "ShowNamelog", "i", playerid);
+
+	return 1;
+}
+
+custom ShowNamelog(const playerid) {
+    if(cache_num_rows()) {
+        new i, name[MAX_PLAYER_NAME], old[MAX_PLAYER_NAME], ip[MAX_PLAYER_IP], log[1024], str[128];
+		new date, year, mounth, day, hours, minutes, seconds;
+
+        strcat(log, "New\tOld\tIP\tDate\n");
+        for( i = 0; i < cache_num_rows(); i++ ) {
+            cache_get_value_name(i, "current_name", name);
+            cache_get_value_name(i, "last_name", old);
+            cache_get_value_name(i, "ip", ip);
+            cache_get_value_name_int(i, "date", date);
+
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s\t%s\t%s\t%02d/%02d/%04d\n", name, old, ip, day, mounth, year);
+            strcat(log, str);
+        }
+
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_CLASSES_TITLE],
+			log,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+        return 1;
+    }
     
-    // GangZoneFlashForAll(t, COLOR_ALERT);
+   	ShowPlayerDialog(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_ACHS_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+	return 1;
+}
+
+custom ShowWarnlog(const playerid) {
+    if(cache_num_rows()) {
+        new i, login[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], reason[64], log[1024], str[128];
+		new date, year, mounth, day, hours, minutes, seconds;
+
+        strcat(log, "Player\tWarned by\tReason\tDate\n");
+        for( i = 0; i < cache_num_rows(); i++ ) {
+            cache_get_value_name(i, "login", login);
+            cache_get_value_name(i, "admin", admin);
+            cache_get_value_name(i, "reason", reason);
+            cache_get_value_name_int(i, "date", date);
+
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s\t%s\t%s\t%02d/%02d/%04d\n", login, admin, reason, day, mounth, year);
+            strcat(log, str);
+        }
+
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_CLASSES_TITLE],
+			log,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+        return 1;
+    }
     
+	ShowPlayerDialog(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_ACHS_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
     return 1;
 }
 
-CMD:r(playerid) {
-    GangZoneFlashForAll(gangZone, 0xFF000055);
+custom ShowBanIplog(const playerid) {
+    if(cache_num_rows()) {
+    	new i, login[MAX_PLAYER_NAME], ip[MAX_PLAYER_IP], reason[64], log[1024], str[128];
+		new date, year, mounth, day, hours, minutes, seconds;
+
+        strcat(log, "IP\tBanned by\tReason\tDate\n");
+        for( i = 0; i < cache_num_rows(); i++ ) {
+            cache_get_value_name(i, "login", login);
+            cache_get_value_name(i, "ip", ip);
+            cache_get_value_name(i, "reason", reason);
+            cache_get_value_name_int(i, "date", date);
+
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s\t%s\t%s\t%02d/%02d/%04d\n", ip, login, reason, day, mounth, year);
+            strcat(log, str);
+        }
+
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_CLASSES_TITLE],
+			log,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+    
+        return 1;
+    }
+    
+    ShowPlayerDialog(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_ACHS_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+    return 1;
 }
 
-// 		/votekicklog	/jaillog   /banlog   /warnlog   /mutelog /baniplog /namelog
+custom ShowBanlog(const playerid) {
+    if(cache_num_rows()) {
+        new i, target[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], unbanner[MAX_PLAYER_NAME];
+		new tip[MAX_PLAYER_IP], reason[64], log[1024], str[128];
+		new date, year, mounth, day, hours, minutes, seconds;
 
-// 		/aduty
-//		/makeadmin /offmakeadmin /freeze /unfreeze
+        strcat(log, "Player\tBan / Unban by\tReason\tDate\n");
+        for( i = 0; i < cache_num_rows(); i++ ) {
+            cache_get_value_name(i, "target", target);
+            cache_get_value_name(i, "admin", admin);
+            cache_get_value_name(i, "unbanner", unbanner);
+            cache_get_value_name(i, "target_ip", tip);
+            cache_get_value_name(i, "reason", reason);
+            cache_get_value_name_int(i, "date", date);
+
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s (%s)\t%s / %s\t%s\t%02d/%02d/%04d\n", target, tip, admin, unbanner, reason, day, mounth, year);
+            strcat(log, str);
+        }
+
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_CLASSES_TITLE],
+			log,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+        return 1;
+    }
+
+    ShowPlayerDialog(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_ACHS_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+	return 1;
+}
+
+// 		/votekicklog	/jaillog  /mutelog
+//		/makeadmin /offmakeadmin
 
 
 CMD:acmds(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/spec(off) /cc /kick /apm /answer /getip /sync /slap /getinfo /atext");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/makezombie /getid /(un)jail /tban /(un)warn /(un)mute /jetpack");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/makezombie /getid /(un)jail /tban /(un)warn /(un)mute /jetpack /(un)freeze");
 
 	if(HasAdminPermission(playerid, 2)) {
-        SendClientMessage(playerid, COLOR_CONNECTIONS, "/(off/un)ban /offtban /goto /get /skip /time /weather");
+        SendClientMessage(playerid, COLOR_CONNECTIONS, "/(off/un)ban /offtban /goto /get /skip /time /weather /iprange /ipid /hash");
         SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /jaillog /banlog /warnlog /mutelog /baniplog /namelog");
     }
     
     if(HasAdminPermission(playerid, 3)) {
-        SendClientMessage(playerid, COLOR_CONNECTIONS, "/banip /unbanip /(off)makeadmin");
+        SendClientMessage(playerid, COLOR_CONNECTIONS, "/banip /unbanip");
     }
     return 1;
 }

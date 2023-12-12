@@ -236,6 +236,10 @@ enum LOCALIZATION_DATA {
 	LD_MSG_IP_ALREADY_BAN,
 	LD_MSG_IP_NOT_BAN,
 	LD_MSG_UNBANIP,
+	LD_MSG_FREEZE_BY,
+	LD_MSG_FREEZE,
+	LD_MSG_UNFREEZE_BY,
+	LD_MSG_UNFREEZE,
 	LD_ENDF,
 };
 
@@ -486,5 +490,9 @@ enum LOCALIZATION_DATA {
 	(220, '>> IP %s has been banned by %s [Reason: %s]', '>> IP %s был заблокирован администратором %s [Причина: %s]'),\
 	(221, '>> This IP is already banned', '>> Этот IP уже заблокирован'),\
 	(222, '>> This IP is not banned', '>> Этот IP не заблокирован'),\
-	(223, '>> IP %s has been unbanned by %s', '>> IP %s был разблокирован администратором %s');\
+	(223, '>> IP %s has been unbanned by %s', '>> IP %s был разблокирован администратором %s'),\
+	(224, '>> %s(%d) has been frozen by %s [Reason: %s]', '>> Игрок %s(%d) был заморожен администратором %s [Причина: %s]'),\
+	(225, '>> %s has been frozen [Reason: %s]', '>> Игрок %s был заморожен [Причина: %s]'),\
+	(226, '>> %s(%d) has been unfrozen by %s', '>> Игрок %s(%d) был разморожен администратором %s'),\
+	(227, '>> %s has been unfrozen', '>> Игрок %s был разморожен');\
 "
