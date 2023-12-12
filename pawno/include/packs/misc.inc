@@ -29,6 +29,7 @@ enum MISC_DATA {
     	Float:mdArmour,
 	Float:mdMimicryStats[2],
 	mdGang,
+	bool:mdInDuel,
 	mdGangRank,
 	mdGangWarns,
 	mdPassword[MAX_PLAYER_PASSWORD],

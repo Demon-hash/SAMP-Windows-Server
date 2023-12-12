@@ -30,6 +30,7 @@
 #include <packs/lottery>
 #include <packs/settings>
 #include <packs/votekick>
+#include <packs/duels>
 #include <packs/weekly_quests>
 
 #include <dependencies/jit>

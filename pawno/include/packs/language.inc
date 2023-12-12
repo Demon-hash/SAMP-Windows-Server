@@ -10,6 +10,8 @@
 #define LOCALIZATION_LINE_SIZE 320
 #define RUSSIAN_LOCALE "russian"
 #define ENGLISH_LOCALE "english"
+#define SPANISH_LOCALE "spanish"
+#define ARABIC_LOCALE "arabic"
 
 enum LOCALIZATION_DATA {
 	LD_DG_LOGIN_TITLE,
@@ -240,6 +242,26 @@ enum LOCALIZATION_DATA {
 	LD_MSG_FREEZE,
 	LD_MSG_UNFREEZE_BY,
 	LD_MSG_UNFREEZE,
+	LD_DG_INFO_TITLE,
+	LD_DG_ALOG_TITLE,
+	LD_DG_NLOG_TITLE,
+	LD_DG_BILOG_TITLE,
+	LD_MSG_ADMIN_APPOINTMENT,
+	LD_DISPLAY_DUEL_INVITE,
+	LD_MSG_DUEL_ACCEPTED,
+	LD_MSG_DUEL_REQ_ACCEPTED,
+	LD_MSG_DUEL_DENIED,
+	LD_MSG_DUEL_REQ_DENIED,
+	LD_MSG_DUEL_POINTS,
+	LD_MSG_DUEL_BLOCKED,
+	LD_MSG_DUEL_ARMOUR,
+	LD_MSG_DUEL_BET,
+	LD_MSG_DUEL_REQUEST,
+	LD_MSG_DUEL_REQ_OPTS,
+	LD_MSG_DUEL_REQ_SENT,
+	LD_MSG_DUEL_STARTED,
+	LD_MSG_NO_IN_DUEL,
+	LD_MSG_WON_DUEL,
 	LD_ENDF,
 };
 
@@ -486,7 +508,7 @@ enum LOCALIZATION_DATA {
 	(216, '>> This nickname does not fit, come up with another one', '>> Этот ник не подходит, попробуйте другой'),\
 	(217, '>> This nickname is already taken, come up with another one', '>> Этот ник уже занят, попробуйте другой'),\
 	(218, '>> Your nickname has successfully changed to %s, the fee for changing is %d', '>> Ваш ник успешно изменён на %s, плата за смену составила %d'),\
-	(219, '>> %s is now known as %s!', '>> Игрок %s сменил ник на %s!'),\
+	(219, '[ADMIN]: %s is now known as %s!', '[ADMIN]: Игрок %s сменил ник на %s!'),\
 	(220, '>> IP %s has been banned by %s [Reason: %s]', '>> IP %s был заблокирован администратором %s [Причина: %s]'),\
 	(221, '>> This IP is already banned', '>> Этот IP уже заблокирован'),\
 	(222, '>> This IP is not banned', '>> Этот IP не заблокирован'),\
@@ -494,5 +516,28 @@ enum LOCALIZATION_DATA {
 	(224, '>> %s(%d) has been frozen by %s [Reason: %s]', '>> Игрок %s(%d) был заморожен администратором %s [Причина: %s]'),\
 	(225, '>> %s has been frozen [Reason: %s]', '>> Игрок %s был заморожен [Причина: %s]'),\
 	(226, '>> %s(%d) has been unfrozen by %s', '>> Игрок %s(%d) был разморожен администратором %s'),\
-	(227, '>> %s has been unfrozen', '>> Игрок %s был разморожен');\
+	(227, '>> %s has been unfrozen', '>> Игрок %s был разморожен'),\
+	(228, 'Information', 'Информация'),\
+	(229, 'Player\tBy\tReason\tDate\n', 'Игрок\tКем\tПричина\tДата\n'),\
+	(230, 'New\tOld\tIP\tDate\n', 'Новый\tСтарый\tIP\tДата\n'),\
+	(231, 'IP\tBy\tReason\tDate\n', 'IP\tКем\tПричина\tДата\n'),\
+	(232, '[ADMIN]: %s has set admin rank of %s to %d!', '[ADMIN]: Администратор %s установил админ ранг игрока %s на %d уровень!'),\
+	(233, '~y~REQUEST FOR A DUEL', '~y~ЗАПРОС НА ДУЭЛЬ'),\
+	(234, '>> You have accepted the duel!', '>> Вы приняли дуэль!'),\
+	(235, '>> The player accepted your request!', '>> Игрок принял ваш запрос на дуэль!'),\
+	(236, '>> You have denied the duel!', '>> Вы отклонили дуэль!'),\
+	(237, '>> The player denied your request!', '>> Игрок отклонил ваш запрос на дуэль!'),\
+	(238, '>> Not enough points from one of sides', '>> Недостаточно очков с одной из сторон'),\
+	(239, '>> You cannot send a request to this person', '>> Вы не можете запросить дуэль с этим человеком');\
+"
+
+#define PREDIFINED_LOCALIZATION_10 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(240, ' (Armour: %d)', ' (Броня: %d)'),\
+	(241, ' (Points: %d)', ' (Очки: %d)'),\
+	(242, '>> %s is inviting you to duel with weapon: %s (ID %d)%s%s', '>> Игрок %s приглашает вас на дуэль с оружием %s (ID %d)%s%s'),\
+	(243, '>> Type /y to agree and /n to deny', '>> Введите /y для согласия и /n для отказа'),\
+	(244, '>> You sent a duel request to %s!', '>> Вам запрос на дуэль отправлен игроку %s'),\
+	(245, '>> %s has started a duel with %s (%s) (ID %d)%s%s', '>> Игрок %s начал дуэль с игроком %s (%s) (ID %d)%s%s'),\
+	(246, '>> You are not in duel!', '>> Вы не в дуэле!'),\
+	(247, '[DUEL]: %s has won the duel against %s!%s', '[ДУЭЛЬ]: Игрок %s выграл дуэль против игрока %s!%s');\
 "

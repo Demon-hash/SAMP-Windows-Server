@@ -21,6 +21,7 @@ enum CONFIG_DATA {
 	Float:svCfgSpawnRange,
 	Float:svCfgZombieFistsDamage,
 	Float:svCfgCurseDamage,
+	Float:svCfgTaxes,
 	svCfgName[MAX_SERVER_CONFIG_NAME_LEN],
 	svCfgMode[MAX_SERVER_CONFIG_NAME_LEN],
 	svCfgDiscord[MAX_SERVER_CONFIG_NAME_LEN],
