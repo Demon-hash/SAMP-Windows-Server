@@ -1,7 +1,6 @@
 #include <packs/core>
 #include <packs/developer>
 
-//  Use Flash Zombie Ability and Chicken Class in the first 20 Seconds. (till timer reach 280)
 // Votekick min xp
 // Weekly Missions - Standing
 
@@ -21,7 +20,7 @@ static const sqlTemplates[][] = {
 	BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
 	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
 	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
-	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE, OBJECTS_TEMPLATE,
+	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE,
 	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
 	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE, SETTINGS_TEMPLATE,
 	RULES_TEMPLATE, HELP_TEMPLATE,
@@ -36,7 +35,7 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS, PREDIFINED_LOCAL_MAPS,
 	PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
 	PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
-	PREDIFINED_RND_MSGS, PREDIFINED_OBJECTS,
+	PREDIFINED_RND_MSGS,
 	PREDIFINED_ACHS_CFG,
 	PREDIFINED_RND_QUESTIONS,
 	PREDIFINED_ACHS_LOCALIZATION_1,
@@ -117,7 +116,8 @@ static
 	Iterator:SupportPlayers<MAX_PLAYERS>,
 	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>,
 	Iterator:Admins<MAX_PLAYERS>,
-	joinedPlayers = 0;
+	joinedPlayers = 0,
+	gangZone;
 
 /*
 	MAIN
@@ -230,6 +230,7 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_7);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_9);
 	
 	mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
@@ -246,12 +247,21 @@ public OnGameModeInit() {
 
 	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
-	mysql_tquery(Database, LOAD_OBJECTS_QUERY, "LoadObjects");
 	
  	mysql_log(SQL_LOG_LEVEL);
  	printf("|: MySQL status: %d", mysql_errno(Database));
-	
 	updateTimerId = SetTimer("Update", 1000, true);
+	
+	CreateObject(19362, 968.50067, -53.24604, 1001.84027,   0.00000, 0.00000, 0.00000);
+	ApplyActorAnimation(CreateActor(145, 943.6370,-61.3398,1001.7664,354.8270), "SUNBATHE", "LAY_BAC_IN", 4.1, false, false, false, true, false);
+	ApplyActorAnimation(CreateActor(140, 952.5502,-44.6634,1001.8738,179.6720), "SUNBATHE", "LAY_BAC_IN", 4.1, false, false, false, true, false);
+	ApplyActorAnimation(CreateActor(140, 944.9414,-42.3983,1001.7666,181.5520), "SUNBATHE", "LAY_BAC_IN", 4.1, false, false, false, true, false);
+	ApplyActorAnimation(CreateActor(172, 970.8369,-48.6355,1001.1172,91.2550), "BAR", "BARSERVE_LOOP", 4.1, true, false, false, true, false);
+	ApplyActorAnimation(CreateActor(140, 960.8099,-57.6722,1001.9324,182.4359), "STRIP", "STRIP_C", 4.1, true, false, false, true, false);
+	ApplyActorAnimation(CreateActor(170, 964.4001,-54.7689,1001.1172,91.5684), "SMOKING", "M_SMKLEAN_LOOP", 2.1, true, false, false, true, false);
+	ApplyActorAnimation(CreateActor(107, 969.3779,-44.7992,1001.1172,83.8942), "BAR", "DNK_STNDM_LOOP", 2.1, true, false, false, true, false);
+	
+	gangZone = GangZoneCreate(566.1334, -409.3286, 852.9569, -677.8293);
 	return 1;
 }
 
@@ -752,7 +762,14 @@ public OnPlayerEnterCheckpoint(playerid) {
 }
 
 public OnPlayerText(playerid, text[]) {
-	if(!IsLogged(playerid) || Misc[playerid][mdMute] > -1) {
+	if(!IsLogged(playerid)) {
+	    return 0;
+	}
+	
+	if(Misc[playerid][mdMute] > -1) {
+	    new str[64];
+        format(str, sizeof(str), Localization[playerid][LD_MSG_YOURE_MUTED], Misc[playerid][mdMute]);
+		SendClientMessage(playerid, COLOR_INFO, str);
 	    return 0;
 	}
 
@@ -996,6 +1013,11 @@ custom Update() {
 
 	foreach(Player, playerid) {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
+        if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_USEJETPACK && !HasAdminPermission(playerid)) {
+			Kick(playerid);
+			continue;
+		}
+	    
 	    CheckAndNormalizeACValues(playerid, hp, armour);
 	    
 	    if(IsLogged(playerid)) {
@@ -1008,7 +1030,7 @@ custom Update() {
 	        }
 	        
 	        if(Misc[playerid][mdAfk] == 300) {
-	            new str[64];
+	            new str[96];
 	            foreach(Player, i) {
 	                format(str, sizeof(str), Localization[i][LD_MSG_AFK_KICK], Misc[playerid][mdPlayerName]);
 	                SendClientMessage(i, COLOR_ADMIN, str);
@@ -1019,7 +1041,7 @@ custom Update() {
 			}
 	        
 	        if(GetPlayerPing(playerid) > 400) {
-	            new str[64];
+	            new str[96];
 	            foreach(Player, i) {
 	                format(str, sizeof(str), Localization[i][LD_MSG_PING_KICK], Misc[playerid][mdPlayerName]);
 	                SendClientMessage(i, COLOR_ADMIN, str);
@@ -1106,29 +1128,6 @@ custom LoadClasses() {
     
     printf("[ ] Loading classes failed");
 	return 0;
-}
-
-custom LoadObjects() {
-	if(cache_num_rows()) {
-	    new i, len = cache_num_rows(), model, position[6], buff[96];
-    	for( i = 0; i < len; i++ ) {
-    	    cache_get_value_name(i, "coords", buff);
-    		cache_get_value_name_int(i, "model", model);
-    		sscanf(buff, "p<,>a<f>[6]", position);
-			
-			CreateObject(
-				model,
-				position[0], position[1], position[2],
-				position[3], position[4], position[5]
-			);
-		}
-		
-		printf("[x] Loaded %d objects", len);
-		return 1;
- 	}
- 	
- 	printf("[ ] Loaded objects FAILED");
- 	return 0;
 }
 
 custom LoadMap() {
@@ -1299,6 +1298,7 @@ custom StartMap() {
     Map[mpTimeoutBeforeCrystal] = false;
     Map[mpFirstBlood] = false;
     Map[mpKillTheLast] = false;
+    Map[mpSkipped] = false;
     
     Map[mpTimeoutIgnoreTick] = 0;
     Map[mpEvacuatedHumans] = 0;
@@ -1577,6 +1577,7 @@ custom LoadServerCfg() {
         cache_get_value_name_int(0, "ammo_chance", ServerConfig[svCfgAmmoChance]);
         cache_get_value_name_int(0, "antidote_chance", ServerConfig[svCfgAntidoteChance]);
         cache_get_value_name_int(0, "tip_per", ServerConfig[svCfgTipMessageCooldown]);
+        cache_get_value_name_int(0, "name_price", ServerConfig[svCfgChangeName]);
 
         cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
         cache_get_value_name_float(0, "curse_damage", ServerConfig[svCfgCurseDamage]);
@@ -2557,6 +2558,85 @@ stock UnlockAchievement(const playerid, const id, const reward) {
 	mysql_tquery(Database, formatedLoadAchNameQuery, "GetLocalizedTextForPlayers", "iii", playerid, reward, id);
 }
 
+stock PrepareWeeklyActivities(const playerid) {
+    static const query[] = PREPARE_WEEKLY_ACTIVITIES_QUERY;
+    new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_ACTIVITIES_LEN], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], weeklyActivitiesIds);
+	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
+}
+
+stock GetStandingByType(const type) {
+	switch(type) {
+	    case 0: return WeeklyConfig[wqdMinStanding];
+	    case 1: return WeeklyConfig[wqdMedStanding];
+	    case 2: return WeeklyConfig[wqdMaxStanding];
+	}
+	return 0;
+}
+
+custom ShowWeeklyActivities(const playerid) {
+	if(cache_num_rows()) {
+		new total[1024], text[96], buff[96];
+		new i, type, count, activity, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
+
+        strcat(total, "{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n");
+		for(i = 0; i < len; i++ ) {
+			cache_get_value_name(i, "text", buff);
+	        cache_get_value_name_int(i, "count", count);
+	        cache_get_value_name_int(i, "activity", activity);
+	        cache_get_value_name_int(i, "type", type);
+
+	        format(text, sizeof(text), buff, count);
+	        format(buff, sizeof(buff), "{FFFFFF}%s\t{FFFFFF}%d\t{FFFFFF}(%d / %d)\n", text, GetStandingByType(type), Weekly[playerid][WeeklyHashmap[WEEKLY_ACTIVITIES:activity]], count);
+	        strcat(total, buff);
+
+			if(i == 1 || i == 3) {
+			    strcat(total, "\n");
+			}
+        }
+
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+		 	Localization[playerid][LD_DG_WEEKLY_TITLE],
+			total,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+ 	}
+}
+
+custom ShowPlayerIdMatches(const playerid) {
+    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
+	if(cache_num_rows()) {
+	    new i, login[MAX_PLAYER_NAME], id, buff[MAX_PLAYER_NAME + MAX_ID_LENGTH + 16];
+	    for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name_int(i, "id", id);
+	    	cache_get_value_name(i, "login", login);
+
+	    	format(buff, sizeof(buff), ">> (ID: %d): %s", id, login);
+	    	SendClientMessage(playerid, COLOR_INFO, buff);
+	    }
+	    return 1;
+	}
+
+    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_MATCHES_NONE]);
+	return 0;
+}
+
+stock ProceedWeekly(const playerid, const WEEKLY_ACTIVITIES:activity, const count = 1) {
+	new id = WeeklyHashmap[WEEKLY_ACTIVITIES:activity];
+	if(id < 0 || id >= _:WEEKLY_ACTIVITIES) {
+	    return 0;
+	}
+
+	if(activity == WEEKLY_KILLSTREAKS) Weekly[playerid][id]  = count;
+	else Weekly[playerid][id] += count;
+
+    return 1;
+}
+
 custom GetLocalizedTextForPlayers(const playerid, const reward, const id) {
 	if(cache_num_rows()) {
 	    new index, name[32], str[128];
@@ -2644,6 +2724,22 @@ stock bool:IsMaleSkin(const playerid) {
 stock bool:HasAdminPermission(const playerid, const lvl = 1) {
 	if(!Misc[playerid][mdIsLogged]) return false;
 	return Privileges[playerid][prsAdmin] >= lvl;
+}
+
+stock bool:IsIp(const text[]) {
+	if(strfind(text, ".", true) != -1) {
+ 		new i_numcount, i_period, i_pos;
+  		while(text[i_pos]) {
+   			if('0' <= text[i_pos] <= '9') i_numcount ++;
+    		switch(text[i_pos]) {
+    			case '.': i_period ++;
+    		}
+			i_pos++;
+  		}
+  	
+   		if(i_numcount >= 5 && i_period >= 3) return true;
+   	}
+	return false;
 }
 
 stock ProceedClassSelection(const playerid, const selection, const showDialog) {
@@ -3190,6 +3286,7 @@ stock InitializeServerConfig() {
     ServerConfig[svCfgAmmoChance] = 0;
     ServerConfig[svCfgAntidoteChance] = 0;
     ServerConfig[svCfgTipMessageCooldown] = 120;
+    ServerConfig[svCfgChangeName] = 1500;
     ServerConfig[svCfgInfectionDamage] = 0.0;
     ServerConfig[svCfgCurseDamage] = 0.0;
     ServerConfig[svCfgVehicleDamage] = 0.0;
@@ -5385,18 +5482,167 @@ stock SaveToBanLog(const playerid, const issued_id, const reason[], const time =
 	mysql_tquery(Database, formated, "");
 }
 
-stock UnbanNickname(const playerid, const name[]) {
+stock SaveToMuteLog(const playerid, const issued_id, const reason[], const time) {
+	static const query[] = CREATE_MUTE_LOG;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 4) + 64 + (MAX_PLAYER_IP * 2)];
+    mysql_format(Database, formated, sizeof(formated), query,
+		Player[playerid][pAccountId],
+		Player[issued_id][pAccountId],
+		gettime(),
+		time,
+		reason,
+		Misc[playerid][mdIp],
+		Misc[issued_id][mdIp]
+	);
+	mysql_tquery(Database, formated, "");
+}
+
+stock SaveToNameLog(const playerid, const name[], const old[]) {
+	static const query[] = CREATE_NAME_LOG;
+	new formated[sizeof(query) + (MAX_ID_LENGTH * 2) + (MAX_PLAYER_NAME * 2) + MAX_PLAYER_IP];
+    mysql_format(Database, formated, sizeof(formated), query,
+		Player[playerid][pAccountId],
+		gettime(),
+		name,
+		old,
+		Misc[playerid][mdIp]
+	);
+	mysql_tquery(Database, formated, "");
+}
+
+stock PrepareChangename(const playerid, const name[], const old[]) {
+    static const query[] = CHANGENAME_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH + (MAX_PLAYER_NAME * 2)];
+    mysql_format(Database, formated, sizeof(formated), query, name, Player[playerid][pAccountId], name);
+    mysql_tquery(Database, formated, "ChangePlayerName", "iss", playerid, name, old);
+}
+
+custom ChangePlayerName(const playerid, const name[], const old[]) {
+    if(!cache_affected_rows()) {
+        SetPlayerName(playerid, old);
+        SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_NAME_TAKEN]);
+        return 1;
+    }
+    
+    new str[MAX_PLAYER_NAME + MAX_ID_LENGTH + 64];
+	GetPlayerName(playerid, Misc[playerid][mdPlayerName], MAX_PLAYER_NAME);
+	format(str, sizeof(str), Localization[playerid][LD_MSG_NAME_CHANGED], name, ServerConfig[svCfgChangeName]);
+	SendClientMessage(playerid, COLOR_INFO, str);
+	
+	foreach(Player, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_KNOWN_AS], old, name);
+	    SendClientMessage(i, COLOR_INFECTED, str);
+	}
+	
+	Player[playerid][pPoints] -= ServerConfig[svCfgChangeName];
+	SaveToNameLog(playerid, name, old);
+    return 1;
+}
+
+stock PrepareBanip(const playerid, const ip[], const reason[]) {
+    static const query[] = BANIP_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 2) + 64 + (MAX_PLAYER_IP * 3)];
+    mysql_format(Database, formated, sizeof(formated), query,
+        Player[playerid][pAccountId],
+		gettime(),
+		reason,
+		Misc[playerid][mdIp],
+		ip,
+		ip
+	);
+    mysql_tquery(Database, formated, "BanIp", "iss", playerid, ip, reason);
+}
+
+stock PrepareUnbanip(const playerid, const ip[]) {
+    static const query[] = UNBANIP_QUERY;
+    new formated[sizeof(query) + MAX_PLAYER_IP];
+    mysql_format(Database, formated, sizeof(formated), query, ip);
+    mysql_tquery(Database, formated, "UnbanIp", "is", playerid, ip);
+}
+
+custom UnbanIp(const playerid, const ip[]) {
+    if(!cache_affected_rows()) {
+        SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_IP_NOT_BAN]);
+        return 1;
+    }
+    
+    new str[128];
+    format(str, sizeof(str), "unbanip %s", ip);
+    SendRconCommand(str);
+    SendRconCommand("reloadbans");
+
+    foreach(Admins, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_UNBANIP], ip, Misc[playerid][mdPlayerName]);
+	    SendClientMessage(i, COLOR_ADMIN, str);
+	}
+    
+	return 1;
+}
+
+custom BanIp(const playerid, const ip[], const reason[]) {
+    if(!cache_affected_rows()) {
+        SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_IP_ALREADY_BAN]);
+        return 1;
+    }
+    
+    new str[128];
+    format(str, sizeof(str), "banip %s", ip);
+    SendRconCommand(str);
+    SendRconCommand("reloadbans");
+
+    foreach(Admins, i) {
+	    format(str, sizeof(str), Localization[i][LD_MSG_BANIP], ip, Misc[playerid][mdPlayerName], reason);
+	    SendClientMessage(i, COLOR_ADMIN, str);
+	}
+
+    return 1;
+}
+
+stock PrepareUnban(const playerid, const name[]) {
     static const query[] = UPDATE_BAN_LOG;
     new formated[sizeof(query) + MAX_ID_LENGTH + MAX_PLAYER_NAME];
     mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId], name);
-    mysql_tquery(Database, formated, "UnbanPlayerCallback", "is", playerid, name);
+    mysql_tquery(Database, formated, "UnbanPlayer", "is", playerid, name);
 }
 
-custom UnbanPlayerCallback(const playerid, const name[]) {
+stock PrepareOffban(const playerid, const name[], const reason[], const time = 0, const permanent = 1) {
+	new normalizedTime = (time == 0) ? 0 : gettime() + (time * 3600);
+
+    static const query[] = OFFLINE_BAN_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 6) + 64 + (MAX_PLAYER_IP * 2) + MAX_PLAYER_NAME];
+    mysql_format(Database, formated, sizeof(formated), query,
+        Player[playerid][pAccountId],
+        0,
+        gettime(),
+        normalizedTime,
+        permanent,
+        reason,
+        Misc[playerid][mdIp],
+        name
+	);
+	mysql_tquery(Database, formated, "OffbanPlayer", "issi", playerid, name, reason, time);
+}
+
+custom OffbanPlayer(const playerid, const name[], const reason[], time) {
+    if(cache_affected_rows()) {
+        new str[(MAX_PLAYER_NAME * 2) + 64];
+	    foreach(Admins, i) {
+	        if(time < 1) format(str, sizeof(str), Localization[i][LD_MSG_OFFBAN_BY], Misc[playerid][mdPlayerName], name, reason);
+	        else format(str, sizeof(str), Localization[i][LD_MSG_OFFTBAN_BY], Misc[playerid][mdPlayerName], name, time, reason);
+	        SendClientMessage(i, COLOR_ADMIN, str);
+	    }
+	    return 1;
+    }
+    
+    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_NO_ACCOUNT]);
+    return 1;
+}
+
+custom UnbanPlayer(const playerid, const name[]) {
 	if(cache_affected_rows()) {
 	    new str[(MAX_PLAYER_NAME * 2) + 64];
 	    foreach(Admins, i) {
-	        format(str, sizeof(str), Localization[i][LD_MSG_UNBAN_BY], Misc[playerid][mdPlayerName], name);
+	        format(str, sizeof(str), Localization[i][LD_MSG_UNBAN_BY], name, Misc[playerid][mdPlayerName]);
 	        SendClientMessage(i, COLOR_ADMIN, str);
 	    }
 	    return 1;
@@ -5677,7 +5923,7 @@ CMD:no(const playerid) {
 }
 
 CMD:cmds(const playerid) {
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio /language");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio /language /changename");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/ask /pm /settings /help /rules /report /votekick /weekly");
 	return 1;
 }
@@ -5719,83 +5965,27 @@ CMD:settings(const playerid) {
 	return 1;
 }
 
-stock PrepareWeeklyActivities(const playerid) {
-    static const query[] = PREPARE_WEEKLY_ACTIVITIES_QUERY;
-    new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_ACTIVITIES_LEN], index = Player[playerid][pLanguage];
-    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], weeklyActivitiesIds);
-	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
-}
-
-stock GetStandingByType(const type) {
-	switch(type) {
-	    case 0: return WeeklyConfig[wqdMinStanding];
-	    case 1: return WeeklyConfig[wqdMedStanding];
-	    case 2: return WeeklyConfig[wqdMaxStanding];
-	}
-	return 0;
-}
-
-custom ShowWeeklyActivities(const playerid) {
-	if(cache_num_rows()) {
-		new total[1024], text[96], buff[96];
-		new i, type, count, activity, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
-
-        strcat(total, "{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n");
-		for(i = 0; i < len; i++ ) {
-			cache_get_value_name(i, "text", buff);
-	        cache_get_value_name_int(i, "count", count);
-	        cache_get_value_name_int(i, "activity", activity);
-	        cache_get_value_name_int(i, "type", type);
-
-	        format(text, sizeof(text), buff, count);
-	        format(buff, sizeof(buff), "{FFFFFF}%s\t{FFFFFF}%d\t{FFFFFF}(%d / %d)\n", text, GetStandingByType(type), Weekly[playerid][WeeklyHashmap[WEEKLY_ACTIVITIES:activity]], count);
-	        strcat(total, buff);
-	        
-			if(i == 1 || i == 3) {
-			    strcat(total, "\n");
-			}
-        }
-        
-        ShowPlayerDialog(
-			playerid,
-			DIALOG_INFO,
-			DIALOG_STYLE_TABLIST_HEADERS,
-		 	Localization[playerid][LD_DG_WEEKLY_TITLE],
-			total,
-			Localization[playerid][LD_BTN_CLOSE],
-			""
-		);
- 	}
-}
-
-custom ShowPlayerIdMatches(const playerid) {
-    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
-	if(cache_num_rows()) {
-	    new i, login[MAX_PLAYER_NAME], id, buff[MAX_PLAYER_NAME + MAX_ID_LENGTH + 16];
-	    for( i = 0; i < cache_num_rows(); i++ ) {
-	    	cache_get_value_name_int(i, "id", id);
-	    	cache_get_value_name(i, "login", login);
-
-	    	format(buff, sizeof(buff), ">> (ID: %d): %s", id, login);
-	    	SendClientMessage(playerid, COLOR_INFO, buff);
-	    }
-	    return 1;
-	}
-
-    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_MATCHES_NONE]);
-	return 0;
-}
-
-stock ProceedWeekly(const playerid, const WEEKLY_ACTIVITIES:activity, const count = 1) {
-	new id = WeeklyHashmap[WEEKLY_ACTIVITIES:activity];
-	if(id < 0 || id >= _:WEEKLY_ACTIVITIES) {
-	    return 0;
+CMD:changename(const playerid, const params[]) {
+	new name[MAX_PLAYER_NAME];
+	if(sscanf(params, "s[24]", name)) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /changename (new name)");
+		return 1;
 	}
 	
-	if(activity == WEEKLY_KILLSTREAKS) Weekly[playerid][id]  = count;
-	else Weekly[playerid][id] += count;
-
-    return 1;
+	if(Player[playerid][pPoints] < ServerConfig[svCfgChangeName]) {
+	    new str[48];
+	    format(str, sizeof(str), Localization[playerid][LD_MSG_NOT_ENOUGH_FOR_CLASS], ServerConfig[svCfgChangeName], Localization[playerid][LD_MSG_POINTS]);
+     	SendClientMessage(playerid, COLOR_ALERT, str);
+	    return 1;
+	}
+	
+	switch(SetPlayerName(playerid, name)) {
+		case 1: PrepareChangename(playerid, name, Misc[playerid][mdPlayerName]);
+	    case -1: SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_INVALID_NAME]);
+	    case 0: SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_INVALID_NAME]);
+	}
+	
+	return 1;
 }
 
 CMD:weekly(const playerid) {
@@ -5835,6 +6025,33 @@ CMD:weekly(const playerid) {
 }
 
 // ADMIN COMMANDS
+CMD:jetpack(const playerid) {
+    if(!HasAdminPermission(playerid)) return 0;
+    SetPlayerSpecialAction(playerid, SPECIAL_ACTION_USEJETPACK);
+    return 1;
+}
+
+CMD:atext(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+    if(sscanf(params, "s[64]", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /atext (text)");
+  		return 1;
+	}
+   	
+   	if(!strlen(params[0])) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /atext (text)");
+ 		return 1;
+   	}
+    
+    new str[128];
+    SendClientMessageToAll(COLOR_ORANGE, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	format(str, sizeof(str), "%s", params[0]);
+	SendClientMessageToAll(COLOR_ORANGE, str);
+    SendClientMessageToAll(COLOR_ORANGE, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	return 1;
+}
+
 CMD:cc(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
     
@@ -6105,20 +6322,57 @@ CMD:ban(const playerid, const params[]) {
 	return 1;
 }
 
+CMD:offban(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+	new name[MAX_PLAYER_NAME], reason[64];
+    if(sscanf(params, "s[24]s[64]", name, reason)) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /offban (nickname) (reason)");
+  		return 1;
+	}
+
+	if(!strlen(name) || !strlen(reason)) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /offban (nickname) (reason)");
+ 		return 1;
+   	}
+   	
+   	PrepareOffban(playerid, name, reason);
+	return 1;
+}
+
+CMD:offtban(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+	new name[MAX_PLAYER_NAME], reason[64], time;
+    if(sscanf(params, "s[24]is[64]", name, time, reason)) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /offtban (nickname) (time) (reason)");
+  		return 1;
+	}
+
+	if(!strlen(name) || !strlen(reason) || time < 0 || time > 999) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /offtban (nickname) (time) (reason)");
+ 		return 1;
+   	}
+
+   	PrepareOffban(playerid, name, reason, time, 0);
+	return 1;
+}
+
 CMD:unban(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
     
-    if(sscanf(params, "s[24]", params[0])) {
+    new name[MAX_PLAYER_NAME];
+    if(sscanf(params, "s[24]", name)) {
 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unban (nickname)");
   		return 1;
 	}
 	
-	if(!strlen(params[0])) {
+	if(!strlen(name)) {
  		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unban (nickname)");
  		return 1;
    	}
    	
-   	UnbanNickname(playerid, params[0]);
+   	PrepareUnban(playerid, name);
 	return 1;
 }
 
@@ -6130,7 +6384,7 @@ CMD:tban(const playerid, const params[]) {
   		return 1;
 	}
 
-	if(!IsPlayerConnected(params[0]) || params[1] <= 0 || !strlen(params[2]) || Player[params[0]][pAccountId] == 1) {
+	if(!IsPlayerConnected(params[0]) || params[1] <= 0 || params[1] > 999 || !strlen(params[2]) || Player[params[0]][pAccountId] == 1) {
  		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /ban (id) (hours) (reason)");
  		return 1;
    	}
@@ -6210,7 +6464,7 @@ CMD:specoff(const playerid) {
 }
 
 CMD:time(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 3)) return 0;
+    if(!HasAdminPermission(playerid, 2)) return 0;
 	
 	if(sscanf(params, "i", params[0])) {
 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /weather (id)");
@@ -6229,7 +6483,7 @@ CMD:time(const playerid, const params[]) {
 }
 
 CMD:weather(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 3)) return 0;
+    if(!HasAdminPermission(playerid, 2)) return 0;
 
     if(sscanf(params, "i", params[0])) {
 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /weather (id)");
@@ -6377,7 +6631,8 @@ CMD:mute(const playerid, const params[]) {
 	 	SendClientMessage(i, COLOR_ADMIN, str);
  	}
    	
-   	Misc[params[1]][mdMute] = params[2] * 60;
+   	SaveToMuteLog(params[0], playerid, reason, params[1]);
+   	Misc[params[0]][mdMute] = params[1] * 60;
 	return 1;
 }
 
@@ -6400,18 +6655,207 @@ CMD:unmute(const playerid, const params[]) {
 	return 1;
 }
 
-// 		/votekicklog	/jaillog   /banlog   /warnlog   /mutelog
+CMD:skip(const playerid) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+    
+    if(Map[mpTimeout] >= (MapConfig[mpCfgTotal] - MapConfig[mpCfgGreatTime])) {
+        GameTextForPlayer(playerid, RusToGame(Localization[playerid][LD_DISPLAY_UNABLE_TO_USE]), 1000, 5);
+        return 1;
+    }
+    
+	if(Map[mpSkipped]) {
+		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_CMD_USED]);
+	    return 1;
+	}
+	
+	Map[mpSkipped] = true;
+	Map[mpTimeout] = 5;
+	return 1;
+}
 
-// /checkip /offban /offtban /namelog
-// /banip /unbanip /offtban /skip
+CMD:getinfo(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid)) return 0;
+    
+	if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /getinfo (id)");
+		return 1;
+	}
+	
+	if(!IsPlayerConnected(params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /getinfo (id)");
+		return 1;
+	}
+	
+	new str[96], GunName[47][20] = {
+	    "Fist","Brass Knuckles","Golf Club","Nightstick","Knife","Basebal Bat","Shovel","Pool Cue","Katana","Chainsaw","Double-ended Dildo","Dildo","Vibrator",
+	    "Silver Vibrator","Flowers","Cane","Grenade","Tear Gas","Molotv Cocktail","?","?","?","9mm","Silenced 9mm","Desert Eagle","Shotgun","Sawnoff-Shotgun",
+	    "Combat Shotgun","Micro-SMG","MP5","Ak-47","M4","Tec9","Country Rifle","Sniper Rifle","RPG","HS-RPG","Flame-Thrower","Minigun","Satchel Charge","Detonator",
+	    "Spray Can","Fire Extinguisher","Camera","Night Goggles","Thermal Goggles","Parachute"
+	};
+	
+	format(str, sizeof(str), Localization[playerid][LD_MSG_GI_NIP], Misc[params[0]][mdPlayerName], Misc[params[0]][mdIp]);
+	SendClientMessage(playerid, COLOR_ADMIN, str);
+	
+	format(str, sizeof(str), Localization[playerid][LD_MSG_GI_HA], GetPlayerHealthEx(params[0]), GetPlayerArmourEx(params[0]));
+	SendClientMessage(playerid, COLOR_CONNECTIONS, str);
+	
+	format(str, sizeof(str), Localization[playerid][LD_MSG_GI_PM], Player[params[0]][pPoints], Achievements[params[0]][achTotalPoints], GetPlayerMoney(params[0]));
+ 	SendClientMessage(playerid, COLOR_CONNECTIONS, str);
+ 	
+ 	if(GetPlayerTeamEx(params[0]) == TEAM_ZOMBIE) format(str, sizeof(str), Localization[playerid][LD_MSG_GI_TZ], Misc[params[0]][mdZombieSelectionName]);
+ 	else format(str, sizeof(str), Localization[playerid][LD_MSG_GI_TH], Misc[params[0]][mdHumanSelectionName]);
+    SendClientMessage(playerid, COLOR_CONNECTIONS, str);
+    
+    for ( new weap[14], ammo[14], slot = 0; slot < sizeof(weap); slot++ ) {
+        GetPlayerWeaponData(params[0], slot, weap[slot], ammo[slot]);
+        if(ammo[slot]) {
+            format(str, sizeof(str), Localization[playerid][LD_MSG_GI_WA], GunName[weap[slot]], ammo[slot]);
+			SendClientMessage(playerid, COLOR_CONNECTIONS, str);
+		}
+	}
+	
+	format(str, sizeof(str), Localization[playerid][LD_MSG_GI_PL], NetStats_PacketLossPercent(params[0]));
+	SendClientMessage(playerid, COLOR_CONNECTIONS, str);
+	return 1;
+}
 
+CMD:banlog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+    
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id)");
+		return 1;
+	}
+	
+	static const query[] = "\
+        SELECT u.login AS target, b.valid_till, b.permanent, b.reason, b.target_ip, b.issued_ip, b.date,\n\
+		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin,\n\
+		COALESCE((SELECT `login` FROM `users` WHERE `id` = b.unbanned_id), '') as unbanner\n\
+		FROM `ban_log` b\n\
+	 	LEFT JOIN users u\n\
+	  	ON u.id = b.account_id\n\
+		WHERE b.account_id = '%d'\n\
+		ORDER BY b.date DESC\n\
+		LIMIT 30;\
+	";
+	
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0]);
+    mysql_tquery(Database, formated, "ShowBanlog", "i", playerid);
+    
+	return 1;
+}
 
-// LVL 1: /spec(off) /cc /kick /apm /answer /getip /sync /slap /makezombie /getid /(un)jail /tban /(un)warn /(un)mute
-// LVL 2: /ban /unban /goto /get
-// LVL 3: /time /weather
+custom ShowBanlog(const playerid) {
+    if(cache_num_rows()) {
+        new i, target[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], unbanner[MAX_PLAYER_NAME];
+		new tip[MAX_PLAYER_IP], iip[MAX_PLAYER_IP], reason[64], log[1024], str[128];
+		new valid_till, permanent, date;
+		new year, mounth, day, hours, minutes, seconds;
+
+        for( i = 0; i < cache_num_rows(); i++ ) {
+            cache_get_value_name(i, "target", target);
+            cache_get_value_name(i, "admin", admin);
+            cache_get_value_name(i, "unbanner", unbanner);
+            cache_get_value_name(i, "target_ip", tip);
+            cache_get_value_name(i, "issued_ip", iip);
+            cache_get_value_name(i, "reason", reason);
+            cache_get_value_name_int(i, "date", date);
+            
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s (%s) has been banned by %s (%s) at %02d/%02d/%04d [Reason: %s]\n", target, tip, admin, iip, day, mounth, year, reason);
+            strcat(log, str);
+        }
+        
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_MSGBOX,
+			Localization[playerid][LD_DG_CLASSES_TITLE],
+			log,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+        return 1;
+    }
+    
+    ShowPlayerDialog(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_ACHS_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+	return 1;
+}
+
+CMD:banip(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 3)) return 0;
+
+	new ip[16], reason[64];
+	if(sscanf(params, "s[16]s[64]", ip, reason)) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banip (ip) (reason)");
+		return 1;
+	}
+	
+	if(!strlen(ip) || !strlen(reason)) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banip (ip) (reason)");
+ 		return 1;
+   	}
+	
+	PrepareBanip(playerid, ip, reason);
+	return 1;
+}
+
+CMD:unbanip(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 3)) return 0;
+
+	new ip[16];
+	if(sscanf(params, "s[16]", ip)) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unbanip (ip)");
+		return 1;
+	}
+
+	if(!strlen(ip)) {
+ 		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /unbanip (ip)");
+ 		return 1;
+   	}
+
+	PrepareUnbanip(playerid, ip);
+	return 1;
+}
+
+CMD:t(playerid) {
+    GangZoneShowForAll(gangZone, 0xFFFFFF55);
+    
+    // GangZoneFlashForAll(t, COLOR_ALERT);
+    
+    return 1;
+}
+
+CMD:r(playerid) {
+    GangZoneFlashForAll(gangZone, 0xFF000055);
+}
+
+// 		/votekicklog	/jaillog   /banlog   /warnlog   /mutelog /baniplog /namelog
+
+// 		/aduty
+//		/makeadmin /offmakeadmin /freeze /unfreeze
+
 
 CMD:acmds(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/tban /spec /(un)mute /checkip /muwa /waja/checkip");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/spec(off) /cc /kick /apm /answer /getip /sync /slap /getinfo /atext");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/makezombie /getid /(un)jail /tban /(un)warn /(un)mute /jetpack");
+
+	if(HasAdminPermission(playerid, 2)) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, "/(off/un)ban /offtban /goto /get /skip /time /weather");
+        SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /jaillog /banlog /warnlog /mutelog /baniplog /namelog");
+    }
+    
+    if(HasAdminPermission(playerid, 3)) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, "/banip /unbanip /(off)makeadmin");
+    }
     return 1;
 }

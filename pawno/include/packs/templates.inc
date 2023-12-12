@@ -133,11 +133,10 @@
 	CREATE TABLE IF NOT EXISTS banip_log (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`account_id` int(11) unsigned NOT NULL,\
-	`issued_id` int(11) unsigned NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	`reason` varchar(128) NOT NULL,\
-	`issued_ip` varchar(16) NOT NULL,\
 	`target_ip` varchar(16) NOT NULL,\
+	`ip` varchar(16) NOT NULL,\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -420,6 +419,7 @@
 	`evacuation` int(6) unsigned NOT NULL default '15',\
 	`cure` int(6) unsigned NOT NULL default '1',\
 	`ability` int(6) unsigned NOT NULL default '1',\
+	`name_price` int(6) unsigned NOT NULL default '1500',\
 	`infection_damage` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`curse_damage` DECIMAL(9,2) unsigned NOT NULL default '4.0',\
 	`fists_damage` DECIMAL(9,2) unsigned NOT NULL default '5.0',\
@@ -616,14 +616,6 @@
 	`id` int(11) unsigned NOT NULL,\
 	`english` TEXT NOT NULL default '',\
 	`russian` TEXT NOT NULL default '',\
-	PRIMARY KEY (`id`)\
-);"
-
-#define OBJECTS_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS objects (\
-	`id` int(11) unsigned NOT NULL,\
-	`model` int(11) unsigned NOT NULL default '0',\
-	`coords` varchar(96) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -900,15 +892,6 @@
 	(18, 'Every day, the Earth adds 400 tons in weight. Due to what?', 'Каждый день Земля прибавляет в весе 400 тонн. Из-за чего?', 'Cosmic dust', 'Космическая пыль'),\
 	(19, 'What stones are not in the sea?', 'Каких камней нет в море?', 'Dry', 'Сухих'),\
 	(20, 'Which wheel does not spin in a right turn?', 'Какое колесо не вращается при правом развороте?', 'Spare wheel', 'Запасное');\
-"
-
-#define PREDIFINED_OBJECTS "INSERT IGNORE INTO `objects` (id, model, coords) VALUES \
-	(1, 1685, '965.69617,-53.67023,1000.79242,0.00000,0.00000,0.00000'),\
-	(2, 1685, '965.69623,-51.91020,1000.79242,0.00000,0.00000,0.00000'),\
-	(3, 1685, '965.69623,-53.67020,1002.26691,0.00000,0.00000,0.00000'),\
-	(4, 1685, '965.70428,-51.91020,1002.26691,0.00000,0.00000,0.00000'),\
-	(5, 1685, '965.69623,-53.67020,1003.46661,0.00000,0.00000,0.00000'),\
-	(6, 1685, '965.70428,-51.91020,1003.46661,0.00000,0.00000,0.00000');\
 "
 
 #define PREDIFINED_RND_MSGS "INSERT IGNORE INTO random_messages (id, english, russian) VALUES \

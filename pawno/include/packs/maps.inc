@@ -25,6 +25,7 @@ enum MAP_DATA {
 	mpInterior,
 	mpEvacuatedHumans,
 	mpTime,
+	bool:mpSkipped,
 	mpGang,
 	mpTimeout,
 	mpTimeoutBeforeStart,

@@ -215,6 +215,27 @@ enum LOCALIZATION_DATA {
 	LD_MSG_MUTED,
 	LD_MSG_UNMUTED_BY,
 	LD_MSG_UNMUTED,
+	LD_MSG_YOURE_MUTED,
+	LD_MSG_CMD_USED,
+	LD_DISPLAY_UNABLE_TO_USE,
+	LD_MSG_OFFBAN_BY,
+	LD_MSG_NO_ACCOUNT,
+	LD_MSG_OFFTBAN_BY,
+	LD_MSG_GI_NIP,
+	LD_MSG_GI_HA,
+	LD_MSG_GI_PM,
+	LD_MSG_GI_TZ,
+	LD_MSG_GI_TH,
+	LD_MSG_GI_WA,
+	LD_MSG_GI_PL,
+	LD_MSG_INVALID_NAME,
+	LD_MSG_NAME_TAKEN,
+	LD_MSG_NAME_CHANGED,
+	LD_MSG_KNOWN_AS,
+	LD_MSG_BANIP,
+	LD_MSG_IP_ALREADY_BAN,
+	LD_MSG_IP_NOT_BAN,
+	LD_MSG_UNBANIP,
 	LD_ENDF,
 };
 
@@ -272,7 +293,7 @@ enum LOCALIZATION_DATA {
 	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
 	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после спавна!'),\
 	(47, 'points', 'очков'),\
-	(48, '>> You need %d %s to use this class!', '>> Вам нужно %d %s чтобы использовать этот класс!'),\
+	(48, '>> You need %d %s!', '>> Вам нужно %d %s!'),\
 	(49, 'MISS', 'ПРОМАХ'),\
 	(50, '~g~Found:~w~ %d ammo', '~g~Поднято:~w~ %d патрон(ов)');\
 "
@@ -425,7 +446,7 @@ enum LOCALIZATION_DATA {
 	(183, '>> %s has attempted to join the server whilst serving a ban', '>> Игрок %s пытался подключится, но был обнаружен забаненым'),\
 	(184, '>> %s has attempted to join the server whilst serving a temp ban', 'Игрок %s пытался подключится, но был обнаружен временно забаненым'),\
 	(185, '>> Account not found in ban list', '>> Аккаунт не найден в списке блокировок'),\
-	(186, '>> %s has unbanned an account %s', '>> Администратор %s разблокировал аккаунт %s'),\
+	(186, '>> %s has been unbanned by %s', '>> Аккаунт %s был разблокирован администратором %s'),\
 	(187, '>> %s(%d) has been banned by %s for %d hour(s) [Reason: %s]', '>> Игрок %s(%d) был заблокирован администратором %s на %d час(а/ов) [Причина: %s]'),\
 	(188, '>> %s has been banned for %d hour(s) [Reason: %s]', 'Игрок %s был заблокирован на %d час(а/ов) [Причина: %s]'),\
 	(189, '>> %s has started to spectating for %s(%d)', 'Администратор %s начал слежку за %s(%d)'),\
@@ -441,5 +462,29 @@ enum LOCALIZATION_DATA {
 	(199, '>> %s(%d) has been muted for %d minutes by %s [Reason: %s]', '>> %s(%d) получил мут на %d минут(а/ы) от администратора %s [Причина: %s]'),\
 	(200, '>> %s has been muted for %d minutes [Reason: %s]', '>> %s получил мут на %d минут(а/ы) [Причина: %s]'),\
 	(201, '>> %s(%d) has been unmuted by %s', '>> Игрок %s(%d) получил размут от администратора %s'),\
-	(202, '>> %s has been unmuted', '>> Игрок %s получил размут');\
+	(202, '>> %s has been unmuted', '>> Игрок %s получил размут'),\
+	(203, '>> You are muted, %d seconds left', '>> У вас мут, осталось подождать %d секунд');\
+"
+
+#define PREDIFINED_LOCALIZATION_9 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(204, '>> This CMD has already been used!', '>> Эта команда уже была использована!'),\
+	(205, 'You need to wait', 'Подождите'),\
+	(206, '>> %s has been banned by %s [Reason: %s] (OFFLINE)', '>> Аккаунт %s был заблокирован администратором %s [Причина: %s] (ОФФЛАЙН)'),\
+	(207, '>> Account not found!', '>> Аккаунт не найден!'),\
+	(208, '>> %s has been banned by %s for %d hour(s) [Reason: %s] (OFFLINE)', '>> Аккаунт %s был заблокирован администратором %s на %d час(а/ов) [Причина: %s] (ОФФЛАЙН)'),\
+	(209, '>> Name: %s - IP: %s', '>> Ник: %s - IP: %s'),\
+	(210, '>> Health: %.2f% - Armour: %.2f', '>> Здоровье: %.2f - Броня: %.2f'),\
+	(211, '>> Points: %d / %d - Money: %d', '>> Очки: %d / %d - Деньги: %d'),\
+	(212, '>> Team: Zombie - Class: %s', '>> Команда: Зомби - Класс: %s'),\
+	(213, '>> Team: Human - Class: %s', '>> Команда: Люди - Класс: %s'),\
+	(214, '>> Weapon: %s - Ammo: %d', '>> Оружие: %s - Патроны: %d'),\
+	(215, '>> Packets lost: %.2f', '>> Потерянно сетевых пакетов: %.2f'),\
+	(216, '>> This nickname does not fit, come up with another one', '>> Этот ник не подходит, попробуйте другой'),\
+	(217, '>> This nickname is already taken, come up with another one', '>> Этот ник уже занят, попробуйте другой'),\
+	(218, '>> Your nickname has successfully changed to %s, the fee for changing is %d', '>> Ваш ник успешно изменён на %s, плата за смену составила %d'),\
+	(219, '>> %s is now known as %s!', '>> Игрок %s сменил ник на %s!'),\
+	(220, '>> IP %s has been banned by %s [Reason: %s]', '>> IP %s был заблокирован администратором %s [Причина: %s]'),\
+	(221, '>> This IP is already banned', '>> Этот IP уже заблокирован'),\
+	(222, '>> This IP is not banned', '>> Этот IP не заблокирован'),\
+	(223, '>> IP %s has been unbanned by %s', '>> IP %s был разблокирован администратором %s');\
 "

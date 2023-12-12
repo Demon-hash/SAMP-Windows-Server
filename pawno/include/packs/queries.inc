@@ -263,6 +263,36 @@
 #define CREATE_VOTEKICK_LOG "INSERT INTO `votekick_log` (account_id, target_id, date, reason, ip, target_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
 #define CREATE_JAIL_LOG "INSERT INTO `jails_log` (account_id, issued_id, date, reason, target_ip, issued_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
 #define CREATE_WARN_LOG "INSERT INTO `warns_log` (account_id, issued_id, date, reason, target_ip, issued_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
+#define CREATE_MUTE_LOG "INSERT INTO `mutes_log` (account_id, issued_id, date, time, reason, target_ip, issued_ip) VALUES (%d, %d, %d, %d, '%e', '%e', '%e')"
+#define CREATE_NAME_LOG "INSERT INTO `name_log` (account_id, date, current_name, last_name, ip) VALUES (%d, %d, '%e', '%e', '%e')"
 
 #define CREATE_BAN_LOG "INSERT INTO `ban_log` (account_id, issued_id, unbanned_id, date, valid_till, permanent, reason, target_ip, issued_ip) VALUES (%d, %d, %d, %d, %d, %d, '%e', '%e', '%e')"
 #define UPDATE_BAN_LOG "UPDATE `ban_log` SET `unbanned_id` = %d WHERE `account_id` = (SELECT `id` FROM `users` WHERE `login` = '%e')"
+
+#define CHANGENAME_QUERY "\
+	UPDATE `users` SET `login` = '%e' WHERE `id` = '%d'\n\
+	AND (NOT EXISTS (SELECT * FROM (SELECT * FROM `users`) AS temp WHERE temp.login = '%e'))\
+"
+
+#define BANIP_QUERY "\
+	INSERT INTO `banip_log` (account_id, date, reason, target_ip, ip)\n\
+	SELECT '%d', '%d', '%e', '%e', '%e'\n\
+	FROM config\n\
+	WHERE (NOT EXISTS (SELECT * FROM (SELECT * FROM `banip_log`) AS temp WHERE temp.ip = '%e'))\
+"
+
+#define UNBANIP_QUERY "\
+	DELETE FROM `banip_log`\n\
+	WHERE `ip`='%e'\
+"
+
+#define OFFLINE_BAN_QUERY "\
+	INSERT INTO `ban_log` (account_id, issued_id, unbanned_id, `date`, valid_till, permanent, reason, target_ip, issued_ip)\n\
+	SELECT u.id, '%d', '%d', '%d', '%d', '%d', '%e', l.ip, '%e'\n\
+	FROM `users` u\n\
+	LEFT JOIN `login_log` l\n\
+	ON u.id = l.id\n\
+	WHERE `login` = '%e'\n\
+	ORDER BY l.date DESC\n\
+	LIMIT 1\
+"

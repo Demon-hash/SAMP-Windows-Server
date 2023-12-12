@@ -44,4 +44,5 @@ enum CONFIG_DATA {
 	svCfgLotteryJackpotPerPlayer,
 	svCfgLastLotteryCooldown,
 	svCfgQuizReset,
+	svCfgChangeName,
 };
