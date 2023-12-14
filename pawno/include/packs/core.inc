@@ -31,6 +31,7 @@
 #include <packs/settings>
 #include <packs/votekick>
 #include <packs/duels>
+#include <packs/payments>
 #include <packs/weekly_quests>
 
 #include <dependencies/jit>

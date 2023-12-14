@@ -166,11 +166,12 @@
 #define PAYLOG_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS pay_log (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
-	`target_id` int(11) unsigned NOT NULL,\
-	`issued_id` int(11) unsigned NOT NULL,\
+	`to_id` int(11) unsigned NOT NULL,\
+	`from_id` int(11) unsigned NOT NULL,\
 	`amount` int(6) unsigned NOT NULL,\
-	`target_ip` varchar(16) NOT NULL,\
-	`issued_ip` varchar(16) NOT NULL,\
+	`type` int(3) unsigned NOT NULL,\
+	`to_ip` varchar(16) NOT NULL,\
+	`from_ip` varchar(16) NOT NULL,\
 	`date` int(11) unsigned NOT NULL,\
 	PRIMARY KEY (`id`)\
 );"
@@ -405,6 +406,15 @@
 	`russian_title` TEXT NOT NULL default '',\
 	`english_desc` TEXT NOT NULL default '',\
 	`russian_desc` TEXT NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define DUELS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS duels_config (\
+	`id` int(11) unsigned NOT NULL,\
+	`interior` int(6) unsigned NOT NULL default '1',\
+	`skins` varchar(24) NOT NULL DEFAULT '106,104',\
+	`coords` varchar(128) NOT NULL DEFAULT '1409.0046, -17.8430, 1000.9226, 90.0, 1372.6814, -16.9314, 1000.9219, 270.0',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -912,7 +922,8 @@
 	(14, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
 	(15, '>> You can gain coins by completing /achievements!', '>> Вы можете получить монеты, выполняя достижения! (/achievements)'),\
 	(16, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
-	(17, '>> You can get attachments, tags, color nicknames, skins by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды, тэги, цветные ники, скины за выполнение еженедельных заданий! (/weekly)')\
+	(17, '>> You can get attachments, tags, color nicknames by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды, тэги, цветные ники за выполнение еженедельных заданий! (/weekly)'),\
+	(18, '>> You can improve your weapon skills faster by winning duels for points!', '>> Вы можете улучшать навыки владения оружием быстрее побеждая в дуэлях на очки!');\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
@@ -923,6 +934,7 @@
 #define PREDIFINED_MAP_CONFIG "INSERT IGNORE INTO map_config (id) VALUES (1);"
 #define PREDIFINED_BALANCE_CONFIG "INSERT IGNORE INTO balance_config (id) VALUES (1);"
 #define PREDIFINED_CLASSES_CONFIG "INSERT IGNORE INTO classes_config (id) VALUES (1);"
+#define PREDIFINED_DUELS_CONFIG "INSERT IGNORE INTO duels_config (id) VALUES (1);"
 
 #define PREDIFINED_MAPS "INSERT IGNORE INTO \
 	`maps` (`id`, `filename`, `author`, `polygon`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \

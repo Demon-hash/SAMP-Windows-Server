@@ -4,3 +4,9 @@ enum DUEL_DATA {
 	ddArmour,
 	ddPoints,
 }
+
+enum DUEL_CFG_DATA {
+	dcInterior,
+	dcSkin[2],
+	Float:dcPosition[8],
+}

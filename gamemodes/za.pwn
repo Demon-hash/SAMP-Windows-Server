@@ -1,53 +1,54 @@
 #include <packs/core>
 #include <packs/developer>
 
-// Votekick min xp
-// Weekly Missions - Standing
+// 		/paylog ..., better cursor pagination
+// 		Votekick min xp
+// 		Weekly Missions - Standing
 
-#if defined DEBUG_MODE
-	static const sqlTemplates[][] = {
-	    REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
-		GANGS_TEMPLATE, GANGS_USERS_TEMPLATE, GANGS_REQUESTS_TEMPLATE,
-		GANGS_WARNS_TEMPLATE, GANGS_BLACKLISTED_TEMPLATE,
-		GANGS_CONFIG_TEMPLATE, MAPS_TEMPLATE, WEAPONS_CONFIG_TEMPLATE,
-		LANGUAGES_TEMPLATE, CLASSES_TEMPLATE, BANLOG_TEMPLATE,
-		NAMELOG_TEMPLATE, LOGINLOG_TEMPLATE, PAYLOG_TEMPLATE,
-		AUCTIONLOG_TEMPLATE, WARNSLOG_TEMPLATE, MUTESLOG_TEMPLATE,
-		MUTESLOG_TEMPLATE, JAILSLOG_TEMPLATE, GANGPAYLOG_TEMPLATE,
-		AUCTION_TEMPLATE, AUCTION_CASHBACK_TEMPLATE,
-		CONFIG_TEMPLATE, STATS_TEMPLATE,
-		ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
-		ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
-		BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
-		MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
-		BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
-		RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE,
-		RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
-		ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE, SETTINGS_TEMPLATE,
-		RULES_TEMPLATE, HELP_TEMPLATE,
-		WEEKLY_TEMPLATE, WEEKLY_ACTIVITIES_TEMPLATE
-	};
+static const sqlTemplates[][] = {
+    REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
+	GANGS_TEMPLATE, GANGS_USERS_TEMPLATE, GANGS_REQUESTS_TEMPLATE,
+	GANGS_WARNS_TEMPLATE, GANGS_BLACKLISTED_TEMPLATE,
+	GANGS_CONFIG_TEMPLATE, MAPS_TEMPLATE, WEAPONS_CONFIG_TEMPLATE,
+	LANGUAGES_TEMPLATE, CLASSES_TEMPLATE, BANLOG_TEMPLATE,
+	NAMELOG_TEMPLATE, LOGINLOG_TEMPLATE, PAYLOG_TEMPLATE,
+	AUCTIONLOG_TEMPLATE, WARNSLOG_TEMPLATE, MUTESLOG_TEMPLATE,
+	MUTESLOG_TEMPLATE, JAILSLOG_TEMPLATE, GANGPAYLOG_TEMPLATE,
+	AUCTION_TEMPLATE, AUCTION_CASHBACK_TEMPLATE,
+	CONFIG_TEMPLATE, STATS_TEMPLATE,
+	ANTICHEAT_TEMPLATE, ACHIEVEMENTS_CONFIG_TEMPLATE, ROUND_SESSION_TEMPLATE,
+	ROUND_CONFIG_TEMPLATE, EVAC_CONFIG_TEMPLATE, MAP_CONFIG_TEMPLATE,
+	BALANCE_CONFIG_TEMPLATE, TEXTURES_CONFIG_TEMPLATE,
+	MAPS_LOCALIZATION_TEMPLATE, CLASSES_LOCALIZATION_TEMPLATE,
+	BANIP_LOG_TEMPLATE, VOTEKICK_LOG_TEMPLATE, CLASSES_CONFIG_TEMPLATE,
+	RANDOM_MESSAGES_TEMPLATE, RANDOM_MESSAGES_TEMPLATE,
+	RANDOM_QUESTION_TEMPLATE, ACHIEVEMENTS_LOCALIZATION_TEMPLATE,
+	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE, SETTINGS_TEMPLATE,
+	RULES_TEMPLATE, HELP_TEMPLATE,
+	WEEKLY_TEMPLATE, WEEKLY_ACTIVITIES_TEMPLATE,
+	DUELS_TEMPLATE
+};
 
-	static const sqlPredifinedValues[][] = {
-	    PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
-	    PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG,
-	   	PREDIFINED_BALANCE_CONFIG, PREDIFINED_CLASSES_CONFIG,
-		PREDIFINED_MAPS, PREDIFINED_TEXTURES, PREDIFINED_HUMANS,
-		PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS, PREDIFINED_LOCAL_MAPS,
-		PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
-		PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
-		PREDIFINED_RND_MSGS,
-		PREDIFINED_ACHS_CFG,
-		PREDIFINED_RND_QUESTIONS,
-		PREDIFINED_ACHS_LOCALIZATION_1,
-		PREDIFINED_ACHS_LOCALIZATION_2,
-		PREDIFINED_ACHS_LOCALIZATION_3,
-		PREDIFINED_ACHS_LOCALIZATION_4,
-		PREDIFINED_ACHS_LOCALIZATION_5,
-		PREDIFINED_WEEKLY,
-		PREDIFINED_WEEKLY_ACTIVITIES
-	};
-#endif
+static const sqlPredifinedValues[][] = {
+    PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
+    PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG,
+   	PREDIFINED_BALANCE_CONFIG, PREDIFINED_CLASSES_CONFIG,
+	PREDIFINED_MAPS, PREDIFINED_TEXTURES, PREDIFINED_HUMANS,
+	PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS, PREDIFINED_LOCAL_MAPS,
+	PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
+	PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
+	PREDIFINED_RND_MSGS,
+	PREDIFINED_ACHS_CFG,
+	PREDIFINED_RND_QUESTIONS,
+	PREDIFINED_ACHS_LOCALIZATION_1,
+	PREDIFINED_ACHS_LOCALIZATION_2,
+	PREDIFINED_ACHS_LOCALIZATION_3,
+	PREDIFINED_ACHS_LOCALIZATION_4,
+	PREDIFINED_ACHS_LOCALIZATION_5,
+	PREDIFINED_WEEKLY,
+	PREDIFINED_WEEKLY_ACTIVITIES,
+	PREDIFINED_DUELS_CONFIG
+};
 
 static const LOCALIZATION_TABLES[][] = {
     ENGLISH_LOCALE, RUSSIAN_LOCALE,
@@ -103,8 +104,10 @@ static WeeklyConfig[WEEKLY_CFG_DATA];
 static Weekly[MAX_PLAYERS][WEEKLY_MAX_ACTIVITIES];
 static WeeklyHashmap[WEEKLY_ACTIVITIES];
 
-static Votekick[VOTEKICK_DATA];
 static Duels[MAX_PLAYERS][DUEL_DATA];
+static DuelConfig[DUEL_CFG_DATA];
+
+static Votekick[VOTEKICK_DATA];
 
 static
 	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
@@ -125,7 +128,6 @@ static
 /*
 	MAIN
 	- Achievements - Required
-	- Admin Commands - Required
 	
 	- Weekly Quests > Attachements & Inventory > Shop (Reputation + Coin)
 	- Collections > Coins gain
@@ -1143,9 +1145,7 @@ custom LoadClasses() {
 
 custom LoadMap() {
     if(cache_num_rows()) {
-        static buff[256];
-		static year, mounth, day, hours, minutes, seconds;
-        
+        new buff[256];
         strmid(Map[mpAuthor], "", 0, MAX_PLAYER_NAME);
         
 	    cache_get_value_name_int(0, "weather", Map[mpWeather]);
@@ -1229,9 +1229,10 @@ custom LoadMap() {
 		
 		DestroyObjectEx(Map[mpCrystal]);
 		DestroyObjectEx(Map[mpFlag]);
-		// Delete3DTextLabelEx(Map[mpFlagText]);
+		//Delete3DTextLabelEx(Map[mpFlagText]);
 		
-		if(Map[mpGang]) {
+		/*if(Map[mpGang]) {
+		    new year, mounth, day, hours, minutes, seconds;
             TimestampToDate(Map[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
 			Map[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
 			   	Map[mpFlagCoords][0], Map[mpFlagCoords][1],
@@ -1239,7 +1240,7 @@ custom LoadMap() {
 	     		Map[mpFlagCoords][4], Map[mpFlagCoords][5], 50.0
 			);
 
-			/*new text[768];
+			new text[768];
 			format(text, sizeof(text), GANG_CONTROL_TEXT,
 		  		Map[mpName],
 				Gangs[Map[mpGang]][gdName],
@@ -1252,9 +1253,8 @@ custom LoadMap() {
 				GangsConfig[gdCfgPerAssist]
 			);
 			
-			Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
-			*/
-		}
+			Map[mdFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+		}*/
 	 }
 }
 
@@ -1584,7 +1584,7 @@ custom LoadDuelsCfg() {
 		cache_get_value_name_int(0, "interior", DuelConfig[dcInterior]);
         printf("[x] Duel configuration LOADED");
         return 1;
-    }
+	}
     
     printf("[ ] Duel configuration FAILED");
 	return 0;
@@ -2468,6 +2468,59 @@ custom ShowAdminsActivity(const playerid) {
     return 1;
 }
 
+custom ShowPayLog(const playerid) {
+    if(cache_num_rows()) {
+        new to[MAX_PLAYER_NAME], from[MAX_PLAYER_NAME];
+        new to_ip[MAX_PLAYER_IP], from_ip[MAX_PLAYER_IP];
+		new log[2048], str[128], withType[16];
+		new i, amount, type, date;
+		new year, mounth, day, hours, minutes, seconds;
+
+        strcat(log, "To\tFrom\tAmount & Type\tDate\n");
+        for( i = 0; i < cache_num_rows(); i++ ) {
+            cache_get_value_name(i, "to", to);
+            cache_get_value_name(i, "from", from);
+            cache_get_value_name(i, "to_ip", to_ip);
+            cache_get_value_name(i, "from_ip", from_ip);
+
+            cache_get_value_name_int(i, "amount", amount);
+            cache_get_value_name_int(i, "type", type);
+            cache_get_value_name_int(i, "date", date);
+            
+            switch(type) {
+                case PAY_TYPE_POINTS: strmid(withType, "Pay", 0, 16);
+                case PAY_TYPE_DUEL: strmid(withType, "Duel", 0, 16);
+                case PAY_TYPE_NAME: strmid(withType, "Name change", 0, 16);
+            }
+
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s (%s)\t%s (%s)\t%d (%s)\t%02d/%02d/%04d\n", to, to_ip, from, from_ip, amount, withType, day, mounth, year);
+            strcat(log, str);
+        }
+
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_INFO,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_INFO_TITLE],
+			log,
+			Localization[playerid][LD_BTN_CLOSE],
+			""
+		);
+        return 1;
+    }
+    
+	ShowPlayerDialog(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+    return 1;
+}
+
 custom ShowLog(const playerid) {
     if(cache_num_rows()) {
         new i, login[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], reason[64], log[1024], str[128];
@@ -2954,6 +3007,28 @@ stock GetAchievementProgressByType(const playerid, const type) {
 	return Achievements[playerid][index];
 }
 
+stock PrepareForDuel(const playerid, const virtualWorld, const armour, const weaponid, const skin, const index) {
+    SetPlayerInterior(playerid, DuelConfig[dcInterior]);
+	SetPlayerVirtualWorld(playerid, virtualWorld);
+	SetPlayerTime(playerid, 12, 0);
+	SetPlayerWeather(playerid, 0);
+
+	SetPlayerHealthAC(playerid, 100.0);
+    SetPlayerArmourAC(playerid, float(armour));
+    SetPlayerTeamAC(playerid, NO_TEAM);
+
+	ResetWeapons(playerid);
+	SetPlayerColor(playerid, COLOR_DUELER);
+	SetPlayerSkin(playerid, skin);
+
+	new id = (index * 4);
+	SetPlayerPos(playerid, DuelConfig[dcPosition][id], DuelConfig[dcPosition][id + 1], DuelConfig[dcPosition][id + 2]);
+	SetPlayerFacingAngle(playerid, DuelConfig[dcPosition][id + 3]);
+
+	GivePlayerWeaponAC(playerid, weaponid, 9999);
+	Misc[playerid][mdInDuel] = true;
+}
+
 stock UnjailPlayer(const playerid) {
     Misc[playerid][mdJailed] = -1;
    	SetSpawnInfo(playerid, TEAM_ZOMBIE, 252, Map[mpZombieSpawnX][0], Map[mpZombieSpawnY][0], Map[mpZombieSpawnZ][0], 0.0, 0, 0, 0, 0, 0, 0);
@@ -3080,6 +3155,8 @@ stock bool:OnDuelEnd(const playerid) {
     	Player[target][pPoints] += final;
     	IncreaseWeaponSkillLevel(target, Duels[playerid][ddWeapon], Duels[playerid][ddPoints] / 10);
     	ProceedAchievementProgress(target, ACH_TYPE_DUELS);
+    	
+    	SaveToPayLog(target, playerid, Duels[playerid][ddPoints], PAY_TYPE_DUEL);
     }
 
     Achievements[target][achRank] = clamp(++Achievements[target][achRank], 0, 1000);
@@ -5812,6 +5889,28 @@ custom KickPL(const playerid) {
 	Kick(playerid);
 }
 
+stock SaveToPayLog(const playerid, const from, const exp, const type) {
+	new account, ip[MAX_PLAYER_IP]="";
+	
+	if(IsPlayerConnected(playerid)) {
+	    account = Player[playerid][pAccountId];
+	    strmid(ip, Misc[playerid][mdIp], 0, MAX_PLAYER_IP);
+	}
+	
+	static const query[] = CREATE_PAY_LOG;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 5) + (MAX_PLAYER_IP * 2)];
+   	mysql_format(Database, formated, sizeof(formated), query,
+		account,
+		Player[from][pAccountId],
+		exp,
+		type,
+		ip,
+		Misc[from][mdIp],
+		gettime()
+	);
+	mysql_tquery(Database, formated);
+}
+
 stock SaveToVotekickLog() {
     static const query[] = CREATE_VOTEKICK_LOG;
     new formated[sizeof(query) + (MAX_ID_LENGTH * 3) + MAX_VOTEKICK_REASON_LEN + (MAX_PLAYER_IP * 2)];
@@ -5950,6 +6049,7 @@ custom ChangePlayerName(const playerid, const name[], const old[]) {
 	
 	Player[playerid][pPoints] -= ServerConfig[svCfgChangeName];
 	SaveToNameLog(playerid, name, old);
+	SaveToPayLog(-1, playerid, ServerConfig[svCfgChangeName], PAY_TYPE_NAME);
     return 1;
 }
 
@@ -6336,39 +6436,108 @@ CMD:no(const playerid) {
 	return 1;
 }
 
-CMD:cmds(const playerid) {
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio /language /changename");
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/ask /pm /settings /help /rules /report /votekick /weekly /duel /dleave");
+stock HASH(const text[]) {
+	new i, ret;
+	for( i = 0; i < strlen(text); i++ ) {
+	    ret = ret * 31 + text[i];
+    	ret |= 0;
+	}
+
+	return ret;
+}
+
+CMD:gang(const playerid, const params[]) {
+	new command[16], action[16], value[11];
+	sscanf(params, "s[16]S()[16]S()[11]", command, action, value);
+	
+	switch(HASH(command)) {
+	    case GANG_COMMAND_NONE: {
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang help");
+	        return 1;
+	    }
+	    
+	    case GANG_COMMAND_HELP: {
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| accept, alliance, applications, ban");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| close, create, delete, demote, deposit");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| fire, help, info, join");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| leave, list, members, pay");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, settings, terminate, unban");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| war, warn");
+            return 1;
+	    }
+	    
+	    case GANG_COMMAND_LIST: {
+            new query[] = "\
+	            SELECT g.name, g.tag, u.login AS founder,\n\
+				COALESCE(GROUP_CONCAT((SELECT `%e` FROM `maps_localization` l WHERE l.id = m.id LIMIT 5)), '') AS `maps`,\n\
+				COALESCE((SELECT COUNT(*) FROM `gangs_users` gu WHERE gu.gang_id = g.id), 0) AS `members`\n\
+				FROM gangs g\n\
+				LEFT JOIN users u ON g.leader_id = u.id\n\
+				LEFT JOIN maps m ON g.game_id = m.gang\n\
+				WHERE g.disabled = 0\n\
+				ORDER BY COUNT(m.gang) DESC\
+	        ";
+
+			new formated[sizeof(query) + LOCALIZATION_SIZE], index = Player[playerid][pLanguage];
+    		mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index]);
+	        mysql_tquery(Database, formated, "ShowGangsList", "i", playerid);
+	        return 1;
+	    }
+	}
+	
 	return 1;
 }
 
-stock PrepareForDuel(const playerid, const virtualWorld, const armour, const weaponid, const skin, const index) {
-    SetPlayerInterior(playerid, 1);
-	SetPlayerVirtualWorld(playerid, virtualWorld);
-	SetPlayerTime(playerid, 12, 0);
-	SetPlayerWeather(playerid, 0);
-
-	SetPlayerHealthAC(playerid, 100.0);
-    SetPlayerArmourAC(playerid, float(armour));
-    SetPlayerTeamAC(playerid, NO_TEAM);
-
-	ResetWeapons(playerid);
-	SetPlayerColor(playerid, COLOR_DUELER);
-	SetPlayerSkin(playerid, skin);
+custom ShowGangsList(const playerid) {
+	if(cache_num_rows()) {
+	    new founder[MAX_PLAYER_NAME], name[MAX_GANG_NAME], tag[MAX_GANG_TAG], maps[256];
+	    new i, members, str[128];
+	    
+	    for( i = 0; i < cache_num_rows(); i++ ) {
+			cache_get_value_name(i, "founder", founder);
+			cache_get_value_name(i, "name", name);
+			cache_get_value_name(i, "tag", tag);
+			cache_get_value_name(i, "maps", maps);
+			cache_get_value_name_int(i, "members", members);
+			
+			format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_LIST], tag, name, founder, members, maps);
+			SendClientMessage(playerid, COLOR_MEDIC, str);
+	    }
+	    return 1;
+	}
 	
-	// 106, 104
-	// DuelConfig[dcPosition]
+	return 1;
+}
 
-	new Float:pos[2][4] = {
-	    {1409.0046, -17.8430, 1000.9226, 90.0},
-	    {1372.6814, -16.9314, 1000.9219, 270.0}
-	};
+CMD:cmds(const playerid) {
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/language /changename /ask /pm /settings /help /rules");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/report /votekick /weekly /duel /dleave /pay /gang");
+	return 1;
+}
 
-	SetPlayerPos(playerid, pos[index][0], pos[index][1], pos[index][2]);
-	SetPlayerFacingAngle(playerid, pos[index][3]);
-
-	GivePlayerWeaponAC(playerid, weaponid, 9999);
-	Misc[playerid][mdInDuel] = true;
+CMD:pay(const playerid, const params[]) {
+    if(sscanf(params, "ii", params[0], params[1])) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /pay (id) (points)");
+	    return 1;
+	}
+	
+	if(!IsPlayerConnected(params[0]) || params[1] < 1 || params[1] > Player[playerid][pPoints] || params[0] == playerid) {
+        SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /pay (id) (points)");
+        return 1;
+    }
+    
+    new final = CalculateWithTaxes(params[1]), str[96];
+    Player[playerid][pPoints] -= params[1];
+    Player[params[0]][pPoints] += final;
+    
+    foreach(Player, i) {
+    	format(str, sizeof(str), Localization[i][LD_MSG_PAY_TO], Misc[playerid][mdPlayerName], params[1], Misc[params[0]][mdPlayerName], final);
+		SendClientMessage(i, COLOR_LIME, str);
+	}
+    
+    SaveToPayLog(params[0], playerid, params[1], PAY_TYPE_POINTS);
+	return 1;
 }
 
 CMD:duel(const playerid, const params[]) {
@@ -7389,16 +7558,107 @@ CMD:hash(const playerid, const params[]) {
 CMD:banlog(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
 
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id)");
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id) [page = 0]");
 		return 1;
 	}
 
 	static const query[] = GET_BANLOG_QUERY;
     new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
     mysql_tquery(Database, formated, "ShowBanlog", "i", playerid);
 	return 1;
+}
+
+CMD:namelog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /namelog (account id) [page = 0]");
+		return 1;
+	}
+
+	static const query[] = GET_NAMELOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
+    mysql_tquery(Database, formated, "ShowNamelog", "i", playerid);
+	return 1;
+}
+
+CMD:warnlog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id) [page = 0]");
+		return 1;
+	}
+
+	static const query[] = GET_WARNLOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
+    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+	return 1;
+}
+
+CMD:jaillog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jaillog (account id) [page = 0]");
+		return 1;
+	}
+
+	static const query[] = GET_JAILLOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
+    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+	return 1;
+}
+
+CMD:mutelog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /mutelog (account id) [page = 0]");
+		return 1;
+	}
+
+	static const query[] = GET_MUTELOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
+    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+	return 1;
+}
+
+CMD:votekicklog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /votekicklog (account id) [page = 0]");
+		return 1;
+	}
+
+	static const query[] = GET_VOTEKICKLOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
+    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+	return 1;
+}
+
+CMD:paylog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /paylog (account id) [page = 0]");
+		return 1;
+	}
+
+	static const query[] = GET_PAYLOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, params[0], params[0], params[1] * 15);
+    mysql_tquery(Database, formated, "ShowPayLog", "i", playerid);
+	return 1;
+	
 }
 
 CMD:baniplog(const playerid, const params[]) {
@@ -7408,81 +7668,6 @@ CMD:baniplog(const playerid, const params[]) {
     new formated[sizeof(query) + MAX_ID_LENGTH];
     mysql_format(Database, formated, sizeof(formated), query, params[0]);
     mysql_tquery(Database, formated, "ShowBanIplog", "i", playerid);
-	return 1;
-}
-
-CMD:namelog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id)");
-		return 1;
-	}
-
-	static const query[] = GET_NAMELOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
-    mysql_tquery(Database, formated, "ShowNamelog", "i", playerid);
-	return 1;
-}
-
-CMD:warnlog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id)");
-		return 1;
-	}
-
-	static const query[] = GET_WARNLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
-	return 1;
-}
-
-CMD:jaillog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id)");
-		return 1;
-	}
-
-	static const query[] = GET_JAILLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
-	return 1;
-}
-
-CMD:mutelog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /mutelog (account id)");
-		return 1;
-	}
-
-	static const query[] = GET_MUTELOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
-	return 1;
-}
-
-CMD:votekicklog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "i", params[0])) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /votekicklog (account id)");
-		return 1;
-	}
-
-	static const query[] = GET_VOTEKICKLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0]);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
 	return 1;
 }
 
@@ -7524,7 +7709,7 @@ CMD:makeadmin(const playerid, const params[]) {
     return 1;
 }
 
-// /duels, /pay / 15 maps = 50 armour
+// / 15 maps = 50 armour
 // Exchange Pistol = Deagle, Ak47 = M4, Shotgun = Spaz 12
 
 CMD:acmds(const playerid) {
@@ -7534,7 +7719,7 @@ CMD:acmds(const playerid) {
 
 	if(HasAdminPermission(playerid, 2)) {
         SendClientMessage(playerid, COLOR_CONNECTIONS, "/(off/un)ban /offtban /goto /get /skip /time /weather /iprange /ipid /hash");
-        SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /jaillog /banlog /warnlog /mutelog /baniplog /namelog");
+        SendClientMessage(playerid, COLOR_CONNECTIONS, "/votekicklog /jaillog /banlog /warnlog /mutelog /baniplog /namelog /paylog");
     }
     
     if(HasAdminPermission(playerid, 3)) {

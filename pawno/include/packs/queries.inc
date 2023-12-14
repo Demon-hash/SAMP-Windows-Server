@@ -26,6 +26,7 @@
 #define LOAD_EVAC_CFG_QUERY "SELECT * FROM evac_config WHERE 1 LIMIT 1;"
 #define LOAD_MAP_CFG_QUERY "SELECT * FROM map_config WHERE 1 LIMIT 1;"
 #define LOAD_WEAPONS_CFG_QUERY "SELECT * FROM weapons_config WHERE 1;"
+#define LOAD_DUELS_CFG_QUERY "SELECT * FROM duels_config WHERE 1;"
 #define LOAD_BALANCE_CFG_QUERY "SELECT * FROM balance_config WHERE 1 LIMIT 1;"
 #define LOAD_TEXTURES_CFG_QUERY "SELECT * FROM textures_config WHERE 1;"
 #define LOAD_LOCALIZED_CLASSES_QUERY "SELECT c.id, c.points, COALESCE(l.%e_title, '') as title, COALESCE(l.%e_desc, '') as description FROM `classes` c LEFT JOIN `classes_localization` l ON l.id = c.id WHERE c.disabled = 0 AND c.team = %d ORDER BY c.points ASC;"
@@ -265,6 +266,7 @@
 #define CREATE_WARN_LOG "INSERT INTO `warns_log` (account_id, issued_id, date, reason, target_ip, issued_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
 #define CREATE_MUTE_LOG "INSERT INTO `mutes_log` (account_id, issued_id, date, time, reason, target_ip, issued_ip) VALUES (%d, %d, %d, %d, '%e', '%e', '%e')"
 #define CREATE_NAME_LOG "INSERT INTO `name_log` (account_id, date, current_name, last_name, ip) VALUES (%d, %d, '%e', '%e', '%e')"
+#define CREATE_PAY_LOG "INSERT INTO `pay_log` (to_id, from_id, amount, type, to_ip, from_ip, date) VALUES (%d, %d, %d, %d, '%e', '%e', %d)"
 
 #define CREATE_BAN_LOG "INSERT INTO `ban_log` (account_id, issued_id, unbanned_id, date, valid_till, permanent, reason, target_ip, issued_ip) VALUES (%d, %d, %d, %d, %d, %d, '%e', '%e', '%e')"
 #define UPDATE_BAN_LOG "UPDATE `ban_log` SET `unbanned_id` = %d WHERE `account_id` = (SELECT `id` FROM `users` WHERE `login` = '%e')"
@@ -308,9 +310,9 @@
 	FROM `ban_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d'\n\
+	WHERE b.account_id = '%d' AND b.id > %d\n\
 	ORDER BY b.date DESC\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "
 
 #define GET_BANIPLOG_QUERY "\
@@ -319,7 +321,7 @@
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
 	WHERE 1\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "
 
 #define GET_WARNLOG_QUERY "\
@@ -328,17 +330,17 @@
 	FROM `warns_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d'\n\
+	WHERE b.account_id = '%d' AND b.id > %d\n\
 	ORDER BY b.date DESC\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "
 
 #define GET_NAMELOG_QUERY "\
         SELECT current_name, last_name, ip, date\n\
 	FROM `name_log`\n\
-	WHERE account_id = '%d'\n\
+	WHERE account_id = '%d' AND id > %d\n\
 	ORDER BY date DESC\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "
 
 #define GET_JAILLOG_QUERY "\
@@ -347,9 +349,9 @@
 	FROM `jails_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d'\n\
+	WHERE b.account_id = '%d' AND b.id > %d\n\
 	ORDER BY b.date DESC\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "
 
 #define GET_MUTELOG_QUERY "\
@@ -358,9 +360,9 @@
 	FROM `mutes_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d'\n\
+	WHERE b.account_id = '%d' AND b.id > %d\n\
 	ORDER BY b.date DESC\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "
 
 #define GET_VOTEKICKLOG_QUERY "\
@@ -369,9 +371,19 @@
 	FROM `votekick_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.target_id\n\
-	WHERE b.target_id = '%d'\n\
+	WHERE b.target_id = '%d' AND b.id > %d\n\
 	ORDER BY b.date DESC\n\
-	LIMIT 30;\
+	LIMIT 15;\
+"
+
+#define GET_PAYLOG_QUERY "\
+        SELECT COALESCE(u.login, 'System') AS `to`, b.amount, b.type, b.to_ip, b.from_ip, b.date,\n\
+	COALESCE((SELECT `login`FROM `users` WHERE `id` = b.from_id), 'System') AS `from`\n\
+	FROM `pay_log` b\n\
+	LEFT JOIN users u ON u.id = b.to_id\n\
+	WHERE (b.to_id = '%d' OR b.from_id = '%d') AND b.id > %d\n\
+	ORDER BY b.date DESC\n\
+	LIMIT 15;\
 "
 
 #define GET_ADMINS_ACTIVITY "\
@@ -380,5 +392,5 @@
 	LEFT JOIN users u ON p.id = u.id\n\
 	WHERE p.admin > 0\n\
 	GROUP BY u.id\n\
-	LIMIT 30;\
+	LIMIT 15;\
 "

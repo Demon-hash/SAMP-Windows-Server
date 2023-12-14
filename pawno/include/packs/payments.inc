@@ -1,0 +1,5 @@
+enum {
+	PAY_TYPE_POINTS,
+	PAY_TYPE_DUEL,
+	PAY_TYPE_NAME,
+}

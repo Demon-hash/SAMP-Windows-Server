@@ -262,6 +262,8 @@ enum LOCALIZATION_DATA {
 	LD_MSG_DUEL_STARTED,
 	LD_MSG_NO_IN_DUEL,
 	LD_MSG_WON_DUEL,
+	LD_MSG_PAY_TO,
+	LD_MSG_GANG_LIST,
 	LD_ENDF,
 };
 
@@ -539,5 +541,7 @@ enum LOCALIZATION_DATA {
 	(244, '>> You sent a duel request to %s!', '>> Вам запрос на дуэль отправлен игроку %s'),\
 	(245, '>> %s has started a duel with %s (%s) (ID %d)%s%s', '>> Игрок %s начал дуэль с игроком %s (%s) (ID %d)%s%s'),\
 	(246, '>> You are not in duel!', '>> Вы не в дуэле!'),\
-	(247, '[DUEL]: %s has won the duel against %s!%s', '[ДУЭЛЬ]: Игрок %s выграл дуэль против игрока %s!%s');\
+	(247, '[DUEL]: %s has won the duel against %s!%s', '[ДУЭЛЬ]: Игрок %s выграл дуэль против игрока %s!%s'),\
+	(248, '>> %s paid %d points to %s. With taxes: %d', '>> Игрок %s передал %d очков игроку %s. Итоговое значение с налогом: %d'),\
+	(249, '[%s] %s by {FFFFFF}%s (Members: %d) (Control over: %s)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d) (Контроль над: %s)');\
 "
