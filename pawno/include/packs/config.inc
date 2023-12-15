@@ -37,6 +37,7 @@ enum CONFIG_DATA {
 	svCfgLastQuiz,
 	svCfgQuizResetTime,
 	svCfgLotteryResetTime,
+	svCfgGangCreate,
 	svCfgLastLottery,
 	svCfgLotteryReset,
 	svCfgQuizPoints,

@@ -63,6 +63,7 @@
 	`mary` int(1) unsigned NOT NULL default '0',\
 	`gang` int(3) unsigned NOT NULL default '0',\
 	`evacuations` int(3) unsigned NOT NULL default '0',\
+	`vehicles` int(6) unsigned NOT NULL default '0',\
 	`progress` varchar(256) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
@@ -421,6 +422,7 @@
 	`cure` int(6) unsigned NOT NULL default '1',\
 	`ability` int(6) unsigned NOT NULL default '1',\
 	`name_price` int(6) unsigned NOT NULL default '1500',\
+	`gang_price` int(6) unsigned NOT NULL default '50000',\
 	`taxes` DECIMAL(9,2) unsigned NOT NULL default '0.35',\
 	`infection_damage` DECIMAL(9,2) unsigned NOT NULL default '1.0',\
 	`curse_damage` DECIMAL(9,2) unsigned NOT NULL default '4.0',\
@@ -791,9 +793,12 @@
 	(82, 'Gang Player', 'Join a gang', 'Задира', 'Вступите в банду'),\
 	(83, 'Gang Deputy', 'Get 5 rank in a gang', 'Проныра', 'Получите 5 ранг в банде'),\
 	(84, 'Gang Boss', 'Get 6 rank in a gang', 'Криминальный авторитет', 'Получите 6 ранг в банде'),\
-	(85, 'Spine chills', 'Evacuate 5 times in a row (Min. 10 players)', 'Мурашки по спине', 'Эвакуируйтесь 5 раз не умирая'),\
-	(86, 'By a thread', 'Evacuate 10 times in a row (Min. 10 players)', 'На волоске', 'Эвакуируйтесь 10 раз не умирая'),\
-	(87, 'Schizophrenia', 'Evacuate 15 times in a row (Min. 10 players)', 'Шизофрения', 'Эвакуируйтесь 15 раз не умирая');\
+	(85, 'Spine chills', 'Evacuate 5 times in a row (Min. 10 players)', 'Мурашки по спине', 'Эвакуируйтесь 5 раз не умирая (Мин. 10 игроков)'),\
+	(86, 'By a thread', 'Evacuate 10 times in a row (Min. 10 players)', 'На волоске', 'Эвакуируйтесь 10 раз не умирая (Мин. 10 игроков)'),\
+	(87, 'Schizophrenia', 'Evacuate 15 times in a row (Min. 10 players)', 'Шизофрения', 'Эвакуируйтесь 15 раз не умирая (Мин. 10 игроков)'),\
+	(88, 'In the oncoming lane', 'Deal 100,000 damage to vehicles', 'На встречной полосе', 'Нанесите 100,000 урона технике'),\
+	(89, 'Road accident', 'Deal 350,000 damage to vehicles', 'ДТП', 'Нанесите 350,000 урона технике'),\
+	(90, 'Taken apart', 'Deal 500,000 damage to vehicles', 'На запчасти', 'Нанесите 500,000 урона технике');\
 "
 
 #define PREDIFINED_ACHS_CFG "INSERT IGNORE INTO `achievements_config` (id, type, count, reward, disabled) VALUES \
@@ -883,7 +888,10 @@
 	(84, 37, 6, 1, 0),\
 	(85, 38, 5, 1, 0),\
 	(86, 38, 10, 1, 0),\
-	(87, 38, 15, 1, 0);\
+	(87, 38, 15, 1, 0),\
+	(88, 39, 100000, 1, 0),\
+	(89, 39, 350000, 1, 0),\
+	(90, 39, 500000, 1, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \

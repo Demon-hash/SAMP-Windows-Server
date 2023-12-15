@@ -171,6 +171,7 @@
 		`blood`='%d',\
 		`mary`='%d',\
 		`gang`='%d',\
+		`vehicles`='%d',\
 		`total_points`='%d',\
 		`ran`='%f',\
 		`progress`='%e'\n\
@@ -221,6 +222,7 @@
 		COALESCE(a.blood, 0) as blood,\n\
 		COALESCE(a.mary, 0) as mary,\n\
 		COALESCE(a.gang, 0) as ach_gang,\n\
+		COALESCE(a.vehicles, 0) as vehicles,\n\
 		COALESCE(a.progress, '') as progress,\n\
 		COALESCE(p.admin, 0) as admin,\n\
 		COALESCE(p.vip, 0) as vip,\n\

@@ -275,6 +275,9 @@ enum LOCALIZATION_DATA {
 	LD_MSG_GANG_REQ_ACCEPTED,
 	LD_MSG_GANG_HOW_CHAT,
 	LD_MSG_GANG_LIST,
+	LD_MSG_GANG_NO_SLOTS,
+	LD_MSG_GANG_CREATED,
+	LD_MSG_PRED_GANG_RANKS,
 	LD_ENDF,
 };
 
@@ -521,7 +524,7 @@ enum LOCALIZATION_DATA {
 	(216, '>> This nickname does not fit, come up with another one', '>> Этот ник не подходит, попробуйте другой'),\
 	(217, '>> This nickname is already taken, come up with another one', '>> Этот ник уже занят, попробуйте другой'),\
 	(218, '>> Your nickname has successfully changed to %s, the fee for changing is %d', '>> Ваш ник успешно изменён на %s, плата за смену составила %d'),\
-	(219, '[ADMIN]: %s is now known as %s!', '[ADMIN]: Игрок %s сменил ник на %s!'),\
+	(219, '[ADMIN]: %s is now known as %s!', '[АДМИН]: Игрок %s сменил ник на %s!'),\
 	(220, '>> IP %s has been banned by %s [Reason: %s]', '>> IP %s был заблокирован администратором %s [Причина: %s]'),\
 	(221, '>> This IP is already banned', '>> Этот IP уже заблокирован'),\
 	(222, '>> This IP is not banned', '>> Этот IP не заблокирован'),\
@@ -534,7 +537,7 @@ enum LOCALIZATION_DATA {
 	(229, 'Player\tBy\tReason\tDate\n', 'Игрок\tКем\tПричина\tДата\n'),\
 	(230, 'New\tOld\tIP\tDate\n', 'Новый\tСтарый\tIP\tДата\n'),\
 	(231, 'IP\tBy\tReason\tDate\n', 'IP\tКем\tПричина\tДата\n'),\
-	(232, '[ADMIN]: %s has set admin rank of %s to %d!', '[ADMIN]: Администратор %s установил админ ранг игрока %s на %d уровень!'),\
+	(232, '[ADMIN]: %s has set admin rank of %s to %d!', '[АДМИН]: Администратор %s установил админ ранг игрока %s на %d уровень!'),\
 	(233, '~y~REQUEST FOR A DUEL', '~y~ЗАПРОС НА ДУЭЛЬ'),\
 	(234, '>> You have accepted the duel!', '>> Вы приняли дуэль!'),\
 	(235, '>> The player accepted your request!', '>> Игрок принял ваш запрос на дуэль!'),\
@@ -565,5 +568,8 @@ enum LOCALIZATION_DATA {
 	(257, '>> %s has been accepted to your gang by %s!', '>> Игрок %s был принят в вашу банду игроком %s!'),\
 	(258, '>> Your gang request has been accepted!', '>> Ваша заявка в банду была одобрена!'),\
 	(259, '>> Put ! at the beginning of the message to send a message to the gang!', 'Поставтье ! в начале сообщения чтобы отправить сообщение в банду!'),\
-	(260, '[%s] %s by {FFFFFF}%s (Members: %d)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d)');\
+	(260, '[%s] %s by {FFFFFF}%s (Members: %d)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d)'),\
+	(261, '>> All slots are occupied, it is impossible to create a gang', '>> Все слоты заняты, создать банду невозможно'),\
+	(262, '[ADMIN] %s has created a new gang %s (ID %d)', '[АДМИН] Игрок %s создал новую банду %s (ID %d)'),\
+	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'Новичек,Полицейский,Скаут,Агент,Директор,Босс');\
 "
