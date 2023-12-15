@@ -7,84 +7,88 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[22:23:28] 
-[22:23:28] Server Plugins
-[22:23:28] --------------
-[22:23:28]  Loading plugin: mysql
-[22:23:28]  >> plugin.mysql: R41-4 successfully loaded.
-[22:23:28]   Loaded.
-[22:23:28]  Loading plugin: dc_cmd
-[22:23:28]   Daniel's CMD plugin v2.8
-[22:23:28]     (c) 2014 Daniel_Cortez
-[22:23:28] 	www.pro-pawn.ru
-[22:23:28]   Loaded.
-[22:23:28]  Loading plugin: sscanf
-[22:23:28] 
-[22:23:28]  ===============================
-[22:23:28] 
-[22:23:28]       sscanf plugin loaded.     
-[22:23:28] 
-[22:23:28]          Version: 2.13.8
-[22:23:28] 
-[22:23:28]    (c) 2022 Alex "Y_Less" Cole  
-[22:23:28] 
-[22:23:28]  ===============================
-[22:23:28] 
-[22:23:28]   Loaded.
-[22:23:28]  Loading plugin: crashdetect
-[22:23:28]   CrashDetect plugin 4.19.4
-[22:23:28]   Loaded.
-[22:23:28]  Loaded 4 plugins.
+[04:08:53] 
+[04:08:53] Server Plugins
+[04:08:53] --------------
+[04:08:53]  Loading plugin: mysql
+[04:08:53]  >> plugin.mysql: R41-4 successfully loaded.
+[04:08:53]   Loaded.
+[04:08:53]  Loading plugin: dc_cmd
+[04:08:53]   Daniel's CMD plugin v2.8
+[04:08:53]     (c) 2014 Daniel_Cortez
+[04:08:53] 	www.pro-pawn.ru
+[04:08:53]   Loaded.
+[04:08:53]  Loading plugin: sscanf
+[04:08:53] 
+[04:08:53]  ===============================
+[04:08:53] 
+[04:08:53]       sscanf plugin loaded.     
+[04:08:53] 
+[04:08:53]          Version: 2.13.8
+[04:08:53] 
+[04:08:53]    (c) 2022 Alex "Y_Less" Cole  
+[04:08:53] 
+[04:08:53]  ===============================
+[04:08:53] 
+[04:08:53]   Loaded.
+[04:08:53]  Loading plugin: crashdetect
+[04:08:53]   CrashDetect plugin 4.19.4
+[04:08:53]   Loaded.
+[04:08:53]  Loaded 4 plugins.
 
-[22:23:28] 
-[22:23:28] Ban list
-[22:23:28] --------
-[22:23:28]  Loaded: samp.ban
-[22:23:28] 
-[22:23:28] 
-[22:23:28] Filterscripts
-[22:23:28] ---------------
-[22:23:28]   Loading filterscript 'aview.amx'...
-[22:23:28] 
+[04:08:53] 
+[04:08:53] Ban list
+[04:08:53] --------
+[04:08:53]  Loaded: samp.ban
+[04:08:53] 
+[04:08:53] 
+[04:08:53] Filterscripts
+[04:08:53] ---------------
+[04:08:53]   Loading filterscript 'aview.amx'...
+[04:08:53] 
          Animation Browser
-[22:23:28]               v1.0
-[22:23:28]              SoNik))
+[04:08:53]               v1.0
+[04:08:53]              SoNik))
 
-[22:23:28]   Loaded 1 filterscripts.
+[04:08:53]   Loaded 1 filterscripts.
 
-[22:23:28] |: JIT is not present
-[22:23:28] |: Started at 23:23:28 on 14/12/2023...
-[22:23:28] [x] Clear Server config on load
-[22:23:28] [x] Clear Round config on load
-[22:23:28] [x] Clear Map config on load
-[22:23:28] [x] Clear Balance config on load
-[22:23:28] [x] Clear Achievements data on load
-[22:23:28] [x] Clear Classes Config data on load
-[22:23:28] [x] Clear Evacuation config on load
-[22:23:28] [x] Clear Textures data on load
-[22:23:28] [x] Clear Classes data on load
-[22:23:28] [x] Clear Weapons data on load
-[22:23:28] [x] Clear Default values on load
-[22:23:36] |: MySQL status: 0
-[22:23:36] Number of vehicle models: 0
-[22:23:36] weburl = "site"  (string)
-[22:23:36] [x] Server configuration LOADED
-[22:23:36] [x] Gangs configuration LOADED
-[22:23:36] [x] Round configuration LOADED
-[22:23:36] [x] Evacuation configuration LOADED
-[22:23:36] [x] Map configuration LOADED
-[22:23:36] [x] Weapons configuration LOADED (17 / 17)
-[22:23:36] [x] Balance configuration LOADED
-[22:23:36] [x] Duel configuration LOADED
-[22:23:36] [x] Textures configuration LOADED (8 / 8)
-[22:23:36] [x] Classes configuration LOADED
-[22:23:36] [x] Achievements configuration LOADED (81 / 81)
-[22:23:36] [x] Weekly configuration LOADED
-[22:23:36] [x] Classes loaded (55 / 55)
-[22:23:36] [x] Loaded 1 maps in total
-[22:23:36] [x] Created Weekly Activities 8 / 8
-[22:23:39] [connection] 127.0.0.1:52394 requests connection cookie.
-[22:23:40] [connection] incoming connection: 127.0.0.1:52394 id: 0
-[22:23:40] [join] Taxa has joined the server (0:127.0.0.1)
-[22:23:41]   Filterscript 'village.amx' unload failed.
-[22:23:41]   Filterscript 'village.amx' loaded.
+[04:08:53] |: JIT is not present
+[04:08:53] |: Started at 05:08:53 on 15/12/2023...
+[04:08:53] [x] Clear Server config on load
+[04:08:53] [x] Clear Round config on load
+[04:08:53] [x] Clear Map config on load
+[04:08:53] [x] Clear Balance config on load
+[04:08:53] [x] Clear Achievements data on load
+[04:08:53] [x] Clear Classes Config data on load
+[04:08:53] [x] Clear Evacuation config on load
+[04:08:53] [x] Clear Textures data on load
+[04:08:53] [x] Clear Classes data on load
+[04:08:53] [x] Clear Weapons data on load
+[04:08:53] [x] Clear Default values on load
+[04:09:01] |: MySQL status: 0
+[04:09:01] Number of vehicle models: 0
+[04:09:01] weburl = "site"  (string)
+[04:09:01] language = "English / Russian"  (string)
+[04:09:01] [x] Server configuration LOADED
+[04:09:01] [x] Gangs configuration LOADED
+[04:09:01] [x] Round configuration LOADED
+[04:09:01] [x] Evacuation configuration LOADED
+[04:09:01] [x] Map configuration LOADED
+[04:09:01] [x] Weapons configuration LOADED (17 / 17)
+[04:09:01] [x] Balance configuration LOADED
+[04:09:01] [x] Duel configuration LOADED
+[04:09:01] [x] Textures configuration LOADED (8 / 8)
+[04:09:01] [x] Classes configuration LOADED
+[04:09:01] [x] Achievements configuration LOADED (87 / 87)
+[04:09:01] [x] Weekly configuration LOADED
+[04:09:01] [x] Classes loaded (55 / 55)
+[04:09:01] [x] Loaded 1 maps in total
+[04:09:01] [x] Created Weekly Activities 8 / 8
+[04:09:15] [connection] 127.0.0.1:52003 requests connection cookie.
+[04:09:16] [connection] incoming connection: 127.0.0.1:52003 id: 0
+[04:09:16] [join] Taxa has joined the server (0:127.0.0.1)
+[04:09:18]   Filterscript 'village.amx' unload failed.
+[04:09:18]   Filterscript 'village.amx' loaded.
+[04:15:00]   Filterscript 'village.amx' unloaded.
+[04:15:00]   Filterscript 'village.amx' loaded.
+[04:18:39] [part] Taxa has left the server (0:1)

@@ -39,6 +39,8 @@ enum MISC_DATA {
 	mdWeeklyStanding,
 	mdSelectionTeam,
 	mdKillstreak,
+	mdEvacuations,
+	mdGangRequest,
 	mdBlindTimeout,
 	mdNextPage,
 	mdHumanSelectionName[MAX_CLASS_NAME],

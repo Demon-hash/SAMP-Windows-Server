@@ -98,6 +98,17 @@
 		WHERE `id`='%d'\
 "
 
+#define SET_GANG_USER_QUERY "\
+	UPDATE `gangs_users` \n\
+	SET \n\
+	`warns`='0',\
+	`joined_at`='%d',\
+	`accepted_by`='%d'\n\
+	WHERE `id`='%d'\	
+"
+
+#define DELETE_GANG_USER_WARNS "DELETE FROM `gangs_warns` WHERE `account_id` = '%d' AND `gang_id` = '%d'"
+
 #define UPDATE_PRIVILAGES_QUERY "\
 	UPDATE `privileges` \n\
 	SET \n\
@@ -159,6 +170,7 @@
 		`session`='%d',\
 		`blood`='%d',\
 		`mary`='%d',\
+		`gang`='%d',\
 		`total_points`='%d',\
 		`ran`='%f',\
 		`progress`='%e'\n\
@@ -208,6 +220,7 @@
 		COALESCE(a.session, 0) as session,\n\
 		COALESCE(a.blood, 0) as blood,\n\
 		COALESCE(a.mary, 0) as mary,\n\
+		COALESCE(a.gang, 0) as ach_gang,\n\
 		COALESCE(a.progress, '') as progress,\n\
 		COALESCE(p.admin, 0) as admin,\n\
 		COALESCE(p.vip, 0) as vip,\n\
@@ -297,6 +310,23 @@
 	WHERE `login` = '%e'\n\
 	ORDER BY l.date DESC\n\
 	LIMIT 1\
+"
+
+#define GET_GANGS_LIST_QUERY "\
+	SELECT g.name, g.tag, u.login AS founder,\n\
+	COALESCE(GROUP_CONCAT((SELECT `%e` FROM `maps_localization` l WHERE l.id = m.id LIMIT 3)), '') AS `maps`,\n\
+	COALESCE((SELECT COUNT(*) FROM `gangs_users` gu WHERE gu.gang_id = g.id), 0) AS `members`\n\
+	FROM gangs g\n\
+	LEFT JOIN users u ON g.leader_id = u.id\n\
+	LEFT JOIN maps m ON g.game_id = m.gang\n\
+	WHERE g.disabled = 0\n\
+	ORDER BY COUNT(m.gang) DESC\
+"
+
+#define GET_BLACKLIST_QUERY "\
+	SELECT `reason`\n\
+	FROM `gangs_blacklisted`\n\
+	WHERE `gang_id` = '%d' AND `account_id` = '%d'\
 "
 
 #define IPRANGE_QUERY "SELECT DISTINCT `ip` FROM `login_log` WHERE `account_id` = '%d' LIMIT 30;"

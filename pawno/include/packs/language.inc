@@ -264,6 +264,16 @@ enum LOCALIZATION_DATA {
 	LD_MSG_WON_DUEL,
 	LD_MSG_PAY_TO,
 	LD_MSG_GANG_LIST,
+	LD_MSG_PLAYER_BLACKLISTED,
+	LD_MSG_ALREADY_IN_GANG,
+	LD_MSG_GANG_CLOSED,
+	LD_MSG_JOIN_REQUEST,
+	LD_MSG_ACCEPT_REQUEST,
+	LD_MSG_GANG_REQUEST_SENT,
+	LD_MSG_LOW_GANG_RIGHTS,
+	LD_MSG_GANG_REQ_ACPT_BY,
+	LD_MSG_GANG_REQ_ACCEPTED,
+	LD_MSG_GANG_HOW_CHAT,
 	LD_ENDF,
 };
 
@@ -543,5 +553,15 @@ enum LOCALIZATION_DATA {
 	(246, '>> You are not in duel!', '>> Вы не в дуэле!'),\
 	(247, '[DUEL]: %s has won the duel against %s!%s', '[ДУЭЛЬ]: Игрок %s выграл дуэль против игрока %s!%s'),\
 	(248, '>> %s paid %d points to %s. With taxes: %d', '>> Игрок %s передал %d очков игроку %s. Итоговое значение с налогом: %d'),\
-	(249, '[%s] %s by {FFFFFF}%s (Members: %d) (Control over: %s)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d) (Контроль над: %s)');\
+	(249, '[%s] %s by {FFFFFF}%s (Members: %d) (Control over: %s)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d) (Контроль над: %s)'),\
+	(250, '>> You are blacklisted from this gang [Reason: %s]', '>> Вы в чёрном списке этой банды [Причина: %s]'),\
+	(251, '>> You have to leave your gang first! (/gang leave)', '>> Вы должны покинуть вашу текущую банду! (/gang leave)'),\
+	(252, '>> This gang is not currently accepting requests!', '>> Эта банда пока не принимает заявки!'),\
+	(253, '>> %s sent a request to join your gang!', '>> Игрок %s прислал заявку на вступление в вашу банду!'),\
+	(254, '>> Use /gang accept %d to accept!', '>> Используйте /gang accept %d для одобрения заявки!'),\
+	(255, '>> You have sent a request to join %s (ID %d)', '>> Вы отправили заявку на вступление в %s (ID %d)'),\
+	(256, '>> Insufficient rights to use this command!', '>> Недостаточно прав для использования команды!'),\
+	(257, '>> %s has been accepted to your gang by %s!', '>> Игрок %s был принят в вашу банду игроком %s!'),\
+	(258, '>> Your gang request has been accepted!', '>> Ваша заявка в банду была одобрена!'),\
+	(259, '>> Put ! at the beginning of the message to send a message to the gang!', 'Поставтье ! в начале сообщения чтобы отправить сообщение в банду!');\
 "

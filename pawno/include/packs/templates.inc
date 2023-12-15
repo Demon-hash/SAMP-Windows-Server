@@ -61,6 +61,8 @@
 	`session` int(2) unsigned NOT NULL default '0',\
 	`blood` int(6) unsigned NOT NULL default '0',\
 	`mary` int(1) unsigned NOT NULL default '0',\
+	`gang` int(3) unsigned NOT NULL default '0',\
+	`evacuations` int(3) unsigned NOT NULL default '0',\
 	`progress` varchar(256) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
@@ -168,7 +170,7 @@
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`to_id` int(11) unsigned NOT NULL,\
 	`from_id` int(11) unsigned NOT NULL,\
-	`amount` int(6) unsigned NOT NULL,\
+	`amount` int(6) NOT NULL,\
 	`type` int(3) unsigned NOT NULL,\
 	`to_ip` varchar(16) NOT NULL,\
 	`from_ip` varchar(16) NOT NULL,\
@@ -255,7 +257,7 @@
 #define GANGS_USERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS gangs_users (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
-	`gang_id` int(3) unsigned NOT NULL default '0',\
+	`gang_id` int(3) NOT NULL default '-1',\
 	`rank` int(2) unsigned NOT NULL default '0',\
 	`warns` int(2) unsigned NOT NULL default '0',\
 	`joined_at` int(11) unsigned NOT NULL default '0',\
@@ -263,24 +265,14 @@
 	PRIMARY KEY (`id`)\
 );"
 
-#define GANGS_REQUESTS_TEMPLATE "\
-	CREATE TABLE IF NOT EXISTS gangs_requests (\
-	`id` int(11) unsigned NOT NULL auto_increment,\
-	`account_id` int(11) unsigned NOT NULL,\
-	`gang_id` int(3) unsigned NOT NULL,\
-	`request_at` int(11) unsigned NOT NULL,\
-	`valid_till` int(11) unsigned NOT NULL,\
-	PRIMARY KEY (`id`)\
-);"
-
 #define GANGS_WARNS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS gangs_warns (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
 	`gang_id` int(3) unsigned NOT NULL,\
+	`account_id` int(11) unsigned NOT NULL,\
 	`issued_id` int(11) unsigned NOT NULL,\
 	`reason` varchar(255) NOT NULL,\
 	`given_at` int(11) unsigned NOT NULL,\
-	`valid_till` int(11) unsigned NOT NULL,\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -788,6 +780,7 @@
 	(73, 'Sergeant', 'Master Combat Shotgun', 'Сержант', 'Освойте Скорострельный Дробовик'),\
 	(74, 'A Lot, A Little', 'Master Tec-9', 'Много, по немногу', 'Освойте Tec-9');\
 "
+
 #define PREDIFINED_ACHS_LOCALIZATION_5 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(75, 'From Russia with love', 'Master Ak47', 'Из России с Любовью', 'Освойте Ak47'),\
 	(76, 'An Eagle Eye', 'Master M4', 'Орлиный Глаз', 'Освойте M4'),\
@@ -795,7 +788,13 @@
 	(78, 'Hermitage', 'Be the one man who evacuated', 'Одиночество', 'Будьте единственым мужчиной, который эвакуировался'),\
 	(79, 'The Virgin Mary', 'Be the one woman who evacuated', 'Одиночество Марии', 'Будьте единственой женщиной, которая эвакуировалась'),\
 	(80, 'Last Hope', 'Only a woman and a man alive', 'Последняя надежда', 'Лишь женщина и мужчина выжили'),\
-	(81, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков');\
+	(81, 'Terrorist', 'Kill %d players', 'Террорист', 'Убейте %d игроков'),\
+	(82, 'Gang Player', 'Join a gang', 'Задира', 'Вступите в банду'),\
+	(83, 'Gang Deputy', 'Get 5 rank in a gang', 'Проныра', 'Получите 5 ранг в банде'),\
+	(84, 'Gang Boss', 'Get 6 rank in a gang', 'Криминальный авторитет', 'Получите 6 ранг в банде'),\
+	(85, 'Spine chills', 'Evacuate 5 times in a row (Min. 10 players)', 'Мурашки по спине', 'Эвакуируйтесь 5 раз не умирая'),\
+	(86, 'By a thread', 'Evacuate 10 times in a row (Min. 10 players)', 'На волоске', 'Эвакуируйтесь 10 раз не умирая'),\
+	(87, 'Schizophrenia', 'Evacuate 15 times in a row (Min. 10 players)', 'Шизофрения', 'Эвакуируйтесь 15 раз не умирая');\
 "
 
 #define PREDIFINED_ACHS_CFG "INSERT IGNORE INTO `achievements_config` (id, type, count, reward, disabled) VALUES \
@@ -879,7 +878,13 @@
 	(78, 33, 1, 1, 0),\
 	(79, 34, 1, 1, 0),\
 	(80, 35, 1, 1, 0),\
-	(81, 36, 10000, 1, 0);\
+	(81, 36, 10000, 1, 0),\
+	(82, 37, 1, 1, 0),\
+	(83, 37, 1, 1, 0),\
+	(84, 37, 1, 1, 0),\
+	(85, 38, 5, 1, 0),\
+	(86, 38, 10, 1, 0),\
+	(87, 38, 15, 1, 0);\
 "
 
 #define PREDIFINED_RND_QUESTIONS "INSERT IGNORE INTO `random_question` (id, english, russian, english_answer, russian_answer) VALUES \

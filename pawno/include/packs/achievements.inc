@@ -3,7 +3,7 @@
 #endif
 #define _achievements_pack_included
 
-#define MAX_ACHIEVEMENTS 81
+#define MAX_ACHIEVEMENTS 87
 #define MAX_ACHIEVEMENT_ACTIVITIES 3
 
 enum ACHIEVEMENT_HASHMAP {
@@ -61,6 +61,8 @@ enum ACHIEVEMENTS_DATA {
 	achSession,
 	achBlood,
 	achMary,
+	achGang,
+	achEvacuationRow,
 };
 
 enum ACHIEVEMENTS_TYPES {
@@ -101,4 +103,6 @@ enum ACHIEVEMENTS_TYPES {
 	ACH_TYPE_MARY,
 	ACH_TYPE_LAST_HOPE,
 	ACH_TYPE_TERRORIST,
+	ACH_TYPE_GANG,
+	ACH_TYPE_EVACUATION_ROW,
 };
