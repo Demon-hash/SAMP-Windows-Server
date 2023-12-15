@@ -1295,7 +1295,7 @@ custom StartMap() {
     		format(author, sizeof(author), Localization[i][LD_MSG_MAP_AUTHOR], Map[mpAuthor]);
  		}
 
- 		if(Map[mpGang]) {
+ 		if(Map[mpGang] > -1) {
  	    	format(controlled, sizeof(controlled), Localization[i][LD_MSG_MAP_GANG], Gangs[Map[mpGang]][gdName]);
  		}
     	
@@ -2428,21 +2428,23 @@ custom JoinGang(const playerid, const gang) {
 custom ShowGangsList(const playerid) {
 	if(cache_num_rows()) {
 	    new founder[MAX_PLAYER_NAME], name[MAX_GANG_NAME], tag[MAX_GANG_TAG], maps[96];
-	    new i, members, str[128];
+	    new i, id, str[128];
 
 	    for( i = 0; i < cache_num_rows(); i++ ) {
 			cache_get_value_name(i, "founder", founder);
 			cache_get_value_name(i, "name", name);
 			cache_get_value_name(i, "tag", tag);
 			cache_get_value_name(i, "maps", maps);
-			cache_get_value_name_int(i, "members", members);
-
-			format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_LIST], tag, name, founder, members, maps);
+			cache_get_value_name_int(i, "game_id", id);
+			
+			if(strlen(maps)) format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_LIST_MAPS], tag, name, founder, Gangs[id][gdMembers], maps);
+			else format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_LIST], tag, name, founder, Gangs[id][gdMembers]);
 			SendClientMessage(playerid, COLOR_MEDIC, str);
 	    }
 	    return 1;
 	}
 
+    SendClientMessage(playerid, COLOR_MEDIC, Localization[playerid][LD_MSG_MATCHES_NONE]);
 	return 1;
 }
 
@@ -2910,7 +2912,7 @@ stock ProceedAchievementProgress(const playerid, const ACHIEVEMENTS_TYPES:type, 
 	
 	switch(type) {
 		case ACH_TYPE_RUN: Achievements[playerid][achRan] += 0.00001;
-		case ACH_TYPE_KILLSTREAK, ACH_TYPE_EVACUATION_ROW: {
+		case ACH_TYPE_KILLSTREAK, ACH_TYPE_EVACUATION_ROW, ACH_TYPE_GANG: {
 		    if(Achievements[playerid][index] < count) {
 		        Achievements[playerid][index] = count;
 		    }
@@ -6392,6 +6394,7 @@ CMD:pm(const playerid, const params[]) {
 	new str[128];
 	format(str, sizeof(str), "[PM] %s: {FFFFFF}%s", Misc[playerid][mdPlayerName], params[1]);
 	SendClientMessage(params[0], COLOR_RANDOM_QUESTION, str);
+	PlayerPlaySound(params[0], 1056, 0.0, 0.0, 0.0);
 	
 	format(str, sizeof(str), "[<<]{FFFFFF} %s", params[1]);
 	SendClientMessage(playerid, COLOR_RANDOM_QUESTION, str);
@@ -6413,6 +6416,7 @@ CMD:report(const playerid, const params[]) {
     foreach(Admins, i) {
         format(str, sizeof(str), Localization[i][LD_MSG_REPORT], Misc[playerid][mdPlayerName], Misc[params[0]][mdPlayerName], params[0], params[1]);
         SendClientMessage(i, COLOR_ORANGE, str);
+        PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
     }
     
     SendClientMessage(playerid, COLOR_ADMIN, Localization[playerid][LD_MSG_REPORT_SENT]);
@@ -6455,6 +6459,7 @@ CMD:votekick(const playerid, const params[]) {
 		format(str, sizeof(str), Localization[i][LD_MSG_VOTEKICK], Misc[params[0]][mdPlayerName], params[0], params[1], Misc[playerid][mdPlayerName]);
 		SendClientMessage(i, COLOR_INFO, str);
 		SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_VOTEKICK_OPTS]);
+		PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
 	}
 	
 	cmd::yes(playerid);
@@ -6517,10 +6522,53 @@ stock HASH(const text[]) {
 
 	return ret;
 }
+			
+custom CreateGang(const playerid, const gang, const name[]) {
+	new id = cache_insert_id();
+	if(id > 0) {
+	    new str[128];
+	    format(str, sizeof(str), "[ADMIN] %s has created a new gang %s (ID %d)", Misc[playerid][mdPlayerName], name, gang + 1);
+	    SendClientMessage(playerid, COLOR_GANG, str);
+	    
+	    Gangs[gang][gdColumnId] = cache_insert_id();
+	    Gangs[gang][gdOwnerId] = Player[playerid][pAccountId];
+
+	    Gangs[gang][gdSettings][GANG_SETTING_PANEL] = 6;
+	    Gangs[gang][gdSettings][GANG_SETTING_WARN] = 5;
+	    Gangs[gang][gdSettings][GANG_SETTING_PAYDAY] = 5;
+	    Gangs[gang][gdSettings][GANG_SETTING_BAN] = 5;
+	    Gangs[gang][gdSettings][GANG_SETTING_PROMOTE] = 5;
+	    Gangs[gang][gdSettings][GANG_SETTING_JOIN] = 3;
+	    Gangs[gang][gdSettings][GANG_SETTING_CLOSED] = 0;
+	    Gangs[gang][gdSettings][GANG_SETTING_RANK_JOIN] = 0;
+
+	    Gangs[gang][gdPot] = 0;
+	    Gangs[gang][gdMembers] = 1;
+	    Gangs[gang][gdCapacity] = 5;
+
+	    for( new i = 0; i < MAX_GANGS; i++ ) {
+	        Gangs[gang][gdWar][i] = 0;
+	        Gangs[gang][gdAlliance][i] = 0;
+	    }
+
+	    strmid(Gangs[gang][gdName], name, 0, MAX_GANG_NAME);
+	    strmid(Gangs[gang][gdTag], "GANG", 0, MAX_GANG_TAG);
+	    strmid(Gangs[gang][gdRanks], "Peon,Policeman,Scout,Agent,Director,Boss", 0, MAX_GANG_RANK_LEN);
+
+	    Misc[playerid][mdGang] = gang;
+	    Misc[playerid][mdGangRank] = 6;
+
+	    ProceedAchievementProgress(playerid, ACH_TYPE_GANG, Misc[playerid][mdGangRank]);
+	    return 1;
+	}
+	
+	SendClientMessage(playerid, COLOR_INFO, ">> Data processing error, try again");
+	return 1;
+}
 
 CMD:gang(const playerid, const params[]) {
-	new command[16], action[11];
-	sscanf(params, "s[16]S()[11]", command, action);
+	new command[16], action[32];
+	sscanf(params, "s[16]S()[32]", command, action);
 	
 	switch(HASH(command)) {
 	    case GANG_COMMAND_NONE: {
@@ -6529,7 +6577,7 @@ CMD:gang(const playerid, const params[]) {
 	    }
 	    
 	    case GANG_COMMAND_HELP: {
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| accept, alliance, applications, ban, create, delete");
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| accept, alliance, ban, create, delete");
 			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| demote, help, info, join, leave, list, members, pay");
 			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, settings, unban, war, warn");
             return 1;
@@ -6559,6 +6607,31 @@ CMD:gang(const playerid, const params[]) {
             new formated[sizeof(query) + (MAX_ID_LENGTH * 2)];
     		mysql_format(Database, formated, sizeof(formated), query, (gang - 1), Player[playerid][pAccountId]);
 	        mysql_tquery(Database, formated, "JoinGang", "ii", playerid, gang - 1);
+	        return 1;
+	    }
+	    
+	    case GANG_COMMAND_CREATE: {
+	        if(IsPlayerInGang(playerid)) {
+	    		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_ALREADY_IN_GANG]);
+	    		return 1;
+			}
+
+			if(!strlen(action)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang create (name)");
+			    return 1;
+			}
+			
+			for( new i = 0; i < MAX_GANGS; i++ ) {
+			    if(!Gangs[i][gdOwnerId]) {
+			        new query[] = "INSERT INTO `gangs` (name, tag, game_id, leader_id, date) VALUES ('%e', '%e', %d, %d, %d)";
+            		new formated[sizeof(query) + MAX_GANG_TAG + MAX_GANG_NAME + (MAX_ID_LENGTH * 3)];
+    				mysql_format(Database, formated, sizeof(formated), query, action, "GANG", i, Player[playerid][pAccountId], gettime());
+	        		mysql_tquery(Database, formated, "CreateGang", "iis", playerid, i, action);
+			        return 1;
+			    }
+			}
+
+			SendClientMessage(playerid, COLOR_INFO, ">> All slots are occupied, it is impossible to create a gang");
 	        return 1;
 	    }
 	    
@@ -6605,6 +6678,8 @@ CMD:gang(const playerid, const params[]) {
 	        new formatedDelete[sizeof(deleteQuery) + (MAX_ID_LENGTH * 2)];
 	        mysql_format(Database, formatedDelete, sizeof(formatedDelete), deleteQuery, Player[target][pAccountId], gang);
 	        mysql_tquery(Database, formatedDelete);
+	        
+	        ProceedAchievementProgress(target, ACH_TYPE_GANG);
 			return 1;
 	    }
 	}

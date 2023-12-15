@@ -245,9 +245,8 @@
 	`date` int(11) unsigned NOT NULL,\
 	`name` varchar(32) NOT NULL default '',\
 	`tag` varchar(6) NOT NULL default '',\
-	`level` int(3) unsigned NOT NULL default '0',\
+	`capacity` int(6) unsigned NOT NULL default '5',\
 	`points` int(6) unsigned NOT NULL default '0',\
-	`house` int(1) unsigned NOT NULL default '0',\
 	`disabled` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
@@ -318,7 +317,7 @@
 	`gates_ids` varchar(24) NOT NULL default '',\
 	`gates_speed` DECIMAL(9,2) NOT NULL default '1.0',\
 	`time` int(2) unsigned NOT NULL default '12',\
-	`gang` int(3) unsigned NOT NULL default '0',\
+	`gang` int(3) NOT NULL default '-1',\
 	`water` int(1) unsigned NOT NULL default '1',\
 	`humans_coords` TEXT NOT NULL default '',\
 	`zombies_coords` TEXT NOT NULL default '',\
@@ -880,8 +879,8 @@
 	(80, 35, 1, 1, 0),\
 	(81, 36, 10000, 1, 0),\
 	(82, 37, 1, 1, 0),\
-	(83, 37, 1, 1, 0),\
-	(84, 37, 1, 1, 0),\
+	(83, 37, 5, 1, 0),\
+	(84, 37, 6, 1, 0),\
 	(85, 38, 5, 1, 0),\
 	(86, 38, 10, 1, 0),\
 	(87, 38, 15, 1, 0);\
@@ -928,7 +927,9 @@
 	(15, '>> You can gain coins by completing /achievements!', '>> Вы можете получить монеты, выполняя достижения! (/achievements)'),\
 	(16, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
 	(17, '>> You can get attachments, tags, color nicknames by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды, тэги, цветные ники за выполнение еженедельных заданий! (/weekly)'),\
-	(18, '>> You can improve your weapon skills faster by winning duels for points!', '>> Вы можете улучшать навыки владения оружием быстрее побеждая в дуэлях на очки!');\
+	(18, '>> You can improve your weapon skills faster by winning duels for points!', '>> Вы можете улучшать навыки владения оружием быстрее побеждая в дуэлях на очки!'),\
+	(19, '>> The gang that captured the map will always be spawned as a human and also has 50 armor and better weapons!', '>> Банда, захватившая карту будет всегда заспавнена человеком, а также имеет 50 брони и улучшеное оружие!'),\
+	(20, '>> Gain and lose ranks by competing in duels!', '>> Получайте и теряйте ранги соревнуясь в дуэлях!');\
 "
 
 #define PREDIFINED_GANGS_CONFIG "INSERT IGNORE INTO gangs_config (id) VALUES (1);"
@@ -944,7 +945,7 @@
 #define PREDIFINED_MAPS "INSERT IGNORE INTO \
 	`maps` (`id`, `filename`, `author`, `polygon`, `interior`, `weather`, `checkpoint_size`, `gates_ids`, `gates_speed`, `time`, `gang`, `water`, `humans_coords`, `zombies_coords`, `camera_coords`, `checkpoint_coords`, `gates_coords`, `gates_move_coords`, `crystal_coords`, `flag_coords`, `flag_coords_text`, `near_crystal_coords`, `disabled`) \
 	VALUES \
-	(1, 'village', 0, '584.1251, -648.7808, 584.3012, -392.5939, 838.9903, -392.6798, 839.0605, -675.1257', 0, 6, '15.000', '', '1.000', 23, 0, 1, '681.7961,-557.6867,16.1875,1.3275,655.5219,-546.1632,16.3359,357.2775,661.8522,-460.3403,16.3359,180.6026', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
+	(1, 'village', 0, '584.1251, -648.7808, 584.3012, -392.5939, 838.9903, -392.6798, 839.0605, -675.1257', 0, 6, '15.000', '', '1.000', 23, -1, 1, '681.7961,-557.6867,16.1875,1.3275,655.5219,-546.1632,16.3359,357.2775,661.8522,-460.3403,16.3359,180.6026', '741.9293,-549.5023,17.0694,354.7242,623.4771,-506.2735,16.3525,88.4586,611.7243,-601.8662,17.2266,272.0502', '676.6566,-460.0044,27.1080,676.7922,-460.9932,26.9030', '681.8102,-508.0689,16.1875', '', '', '681.7691,-603.2256,15.0,1.0143', '672.4241,-540.2498,17.5474,0.0000,290.0000,347.5840', '673.0986,-540.4794,18.4757', '681.2228,-590.5868,16.1946,183.2756', 0);\
 "
 
 #define PREDIFINED_LOCAL_MAPS "INSERT IGNORE INTO maps_localization (id, english, russian) VALUES \

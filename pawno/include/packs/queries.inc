@@ -284,6 +284,8 @@
 #define CREATE_BAN_LOG "INSERT INTO `ban_log` (account_id, issued_id, unbanned_id, date, valid_till, permanent, reason, target_ip, issued_ip) VALUES (%d, %d, %d, %d, %d, %d, '%e', '%e', '%e')"
 #define UPDATE_BAN_LOG "UPDATE `ban_log` SET `unbanned_id` = %d WHERE `account_id` = (SELECT `id` FROM `users` WHERE `login` = '%e')"
 
+#define CREATE_GANG_QUERY "INSERT INTO `gangs` (name, tag, game_id, leader_id, date) VALUES ('%e', '%e', %d, %d, %d)"
+
 #define CHANGENAME_QUERY "\
 	UPDATE `users` SET `login` = '%e' WHERE `id` = '%d'\n\
 	AND (NOT EXISTS (SELECT * FROM (SELECT * FROM `users`) AS temp WHERE temp.login = '%e'))\
@@ -313,13 +315,13 @@
 "
 
 #define GET_GANGS_LIST_QUERY "\
-	SELECT g.name, g.tag, u.login AS founder,\n\
-	COALESCE(GROUP_CONCAT((SELECT `%e` FROM `maps_localization` l WHERE l.id = m.id LIMIT 3)), '') AS `maps`,\n\
-	COALESCE((SELECT COUNT(*) FROM `gangs_users` gu WHERE gu.gang_id = g.id), 0) AS `members`\n\
+	SELECT g.name, g.tag, g.game_id, u.login AS founder,\n\
+	COALESCE(GROUP_CONCAT((SELECT `%e` FROM `maps_localization` l WHERE l.id = m.id LIMIT 3)), '') AS `maps`\n\
 	FROM gangs g\n\
 	LEFT JOIN users u ON g.leader_id = u.id\n\
 	LEFT JOIN maps m ON g.game_id = m.gang\n\
-	WHERE g.disabled = 0\n\
+	WHERE g.disabled = 0 AND g.leader_id > 0\n\
+	GROUP BY g.id\n\
 	ORDER BY COUNT(m.gang) DESC\
 "
 
