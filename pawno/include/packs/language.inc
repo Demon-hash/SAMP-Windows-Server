@@ -278,6 +278,11 @@ enum LOCALIZATION_DATA {
 	LD_MSG_GANG_NO_SLOTS,
 	LD_MSG_GANG_CREATED,
 	LD_MSG_PRED_GANG_RANKS,
+	LD_DG_WEEKLY_REWARD_TITLE,
+	LD_DG_WEEKLY_REWARD_ATT,
+	LD_DG_WEEKLY_REWARD_TAG,
+	LD_DG_WEEKLY_REWARD_CLR,
+	LD_DG_WEEKLY_TARGETS,
 	LD_ENDF,
 };
 
@@ -571,5 +576,10 @@ enum LOCALIZATION_DATA {
 	(260, '[%s] %s by {FFFFFF}%s (Members: %d)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d)'),\
 	(261, '>> All slots are occupied, it is impossible to create a gang', '>> Все слоты заняты, создать банду невозможно'),\
 	(262, '[ADMIN] %s has created a new gang %s (ID %d)', '[АДМИН] Игрок %s создал новую банду %s (ID %d)'),\
-	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'Новичек,Полицейский,Скаут,Агент,Директор,Босс');\
+	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'Новичек,Полицейский,Скаут,Агент,Директор,Босс'),\
+	(264, 'Reward\tCoins (%d)\tEmblems (%d)\n', 'Награда\tМонеты (%d)\tЭмблемы (%d)\n'),\
+	(265, 'Attachement\t%d\t%d\n', 'Предмет одежды\t%d\t%d\n'),\
+	(266, 'Custom Tag\t%d\t%d\n', 'Тэг\t%d\t%d\n'),\
+	(267, 'Color Nickname\t%d\t%d\n', 'Цветной ник\t%d\t%d\n'),\
+	(268, '{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n', '{FFFFFF}Цель\t{FFFFFF}Репутация\t{FFFFFF}Прогресс\n');\
 "

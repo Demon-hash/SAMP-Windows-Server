@@ -1001,11 +1001,29 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    }
 		    return 1;
 		}
+		
 		case DIALOG_WEEKLY: {
 		    if(response) {
 		        switch(listitem) {
 		            case 0: PrepareWeeklyActivities(playerid);
+		            case 1: ShowWeeklyRewards(playerid);
 		        }
+		    }
+			return 1;
+		}
+		
+		case DIALOG_WEEKLY_ACTIVITIES: {
+		    if(response || !response) {
+		        cmd::weekly(playerid);
+		        return 1;
+		    }
+			return 1;
+		}
+		
+		case DIALOG_WEEKLY_REWARDS: {
+		    if(!response) {
+		        cmd::weekly(playerid);
+		        return 1;
 		    }
 			return 1;
 		}
@@ -1686,6 +1704,15 @@ custom LoadWeeklyCfg() {
         cache_get_value_name_int(0, "min_standing", WeeklyConfig[wqdMinStanding]);
         cache_get_value_name_int(0, "med_standing", WeeklyConfig[wqdMedStanding]);
         cache_get_value_name_int(0, "max_standing", WeeklyConfig[wqdMaxStanding]);
+        
+        cache_get_value_name(0, "attachment", buff);
+        sscanf(buff, "p<,>a<i>[2]", WeeklyConfig[wqdAttachement]);
+        
+        cache_get_value_name(0, "tag", buff);
+        sscanf(buff,  "p<,>a<i>[2]", WeeklyConfig[wqdTag]);
+        
+        cache_get_value_name(0, "nickname", buff);
+        sscanf(buff, "p<,>a<i>[2]", WeeklyConfig[wqdNickname]);
         
         cache_get_value_name(0, "activities", buff);
         format(frmt, sizeof(frmt), "a<i>[%d]", WEEKLY_MAX_ACTIVITIES);
@@ -2465,6 +2492,33 @@ custom ShowGangsList(const playerid) {
 	return 1;
 }
 
+stock ShowWeeklyRewards(const playerid) {
+    new str[128], log[256];
+    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_TITLE], Player[playerid][pCoins], Player[playerid][pStanding]);
+    strcat(log, str);
+
+    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_ATT], WeeklyConfig[wqdAttachement][0], WeeklyConfig[wqdAttachement][1]);
+    strcat(log, str);
+
+    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_TAG], WeeklyConfig[wqdTag][0], WeeklyConfig[wqdTag][1]);
+    strcat(log, str);
+
+    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_CLR], WeeklyConfig[wqdNickname][0], WeeklyConfig[wqdNickname][1]);
+    strcat(log, str);
+
+	ShowPlayerDialog(
+		playerid,
+		DIALOG_WEEKLY_REWARDS,
+		DIALOG_STYLE_TABLIST_HEADERS,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		log,
+		Localization[playerid][LD_BTN_SELECT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
+
+	return 1;
+}
+
 custom ShowAccountHashes(const playerid) {
 	if(cache_num_rows()) {
 	    SendClientMessage(playerid, COLOR_LIME, Localization[playerid][LD_MSG_MATCHES]);
@@ -3010,7 +3064,7 @@ custom ShowWeeklyActivities(const playerid) {
 		new total[1024], text[96], buff[96];
 		new i, type, count, activity, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
 
-        strcat(total, "{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n");
+        strcat(total, Localization[playerid][LD_DG_WEEKLY_TARGETS]);
 		for(i = 0; i < len; i++ ) {
 			cache_get_value_name(i, "text", buff);
 	        cache_get_value_name_int(i, "count", count);
@@ -3028,14 +3082,27 @@ custom ShowWeeklyActivities(const playerid) {
 
         ShowPlayerDialog(
 			playerid,
-			DIALOG_INFO,
+			DIALOG_WEEKLY_ACTIVITIES,
 			DIALOG_STYLE_TABLIST_HEADERS,
 		 	Localization[playerid][LD_DG_WEEKLY_TITLE],
 			total,
 			Localization[playerid][LD_BTN_CLOSE],
 			""
 		);
+		
+		return 1;
  	}
+ 	
+	ShowPlayerDialog(
+	  	playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+ 	return 1;
 }
 
 custom ShowPlayerIdMatches(const playerid) {
@@ -6670,7 +6737,33 @@ CMD:gang(const playerid, const params[]) {
 	    
 	    // Rank required
 	    
-	    case GANG_COMMAND_WAR: {
+	    /*case GANG_COMMAND_SETTINGS: {
+	        new gang = Misc[playerid][mdGang];
+	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
+	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
+	            return 1;
+	        }
+					    "Gang state: Opened"
+					   "Rank is needed to send request"
+					    "Rank that can accept members",
+					    
+					"Rank that can promote/demote members", "Confirm", "Close");
+					
+					"Rank that can warn members", "Confirm", "Close");
+					"Rank that can use /gang pay", "Confirm", "Close");
+					"Rank that can use /gang ban", "Confirm", "Close");
+					"Rank that can use /gang settings"
+					
+					Gangs[gang][gdSettings][GANG_SETTING_PANEL] = 6;
+	    Gangs[gang][gdSettings][GANG_SETTING_WARN] = 5;
+	    Gangs[gang][gdSettings][GANG_SETTING_PROMOTE] = 5;
+	    Gangs[gang][gdSettings][GANG_SETTING_JOIN] = 3;
+	        
+	        ShowPlayerDialog(playerid, DIALOG_GANG_SETTINGS, DIALOG_STYLE_TABLIST_HEADERS, "Settings", info, "Change", "Close");
+	        return 1;
+	    }*/
+	    
+	    /*case GANG_COMMAND_WAR: {
 	        new gang = Misc[playerid][mdGang];
 	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
 	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
@@ -6717,7 +6810,7 @@ CMD:gang(const playerid, const params[]) {
 		    }
 	        
 	        return 1;
-	    }
+	    }*/
 	    
 	    case GANG_COMMAND_ACCEPT: {
 	        new gang = Misc[playerid][mdGang];
@@ -6973,33 +7066,11 @@ CMD:weekly(const playerid) {
 		Localization[playerid][LD_BTN_SELECT],
 		Localization[playerid][LD_BTN_CLOSE]
 	);
-	
-	// Rewards:
-	// 3 coins + 15,000 rep = Chest:
-	// 				Dobule Points Chest
-	// 				Dobule Kills Chest
-	// 				Attachements Chest
-	// 				Color Chest ( Yellow, White, Pink, Red, Orange )
-	// 				Skin Chest
-	
-	/*
-		"Kill 10 zombie bosses" - 4500
-		"Kill 50 humans" - 4500
-		"Kill 200 zombies" - 4500
-		"Collect 5000 points" - 4500
-
-		"Infect 100 humans" - 1000
-		"Cure 100 humans" - 1000
-		"Use ability 300 times" - 1000
-		"Collect 100 meats" - 1000
-		"Evacuate 5 times" - 1000
-		"Jump 500 times" - 1000
-	*/
-	
 	return 1;
 }
 
 // ADMIN COMMANDS
+
 CMD:jetpack(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
     SetPlayerSpecialAction(playerid, SPECIAL_ACTION_USEJETPACK);

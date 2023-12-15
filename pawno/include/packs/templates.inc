@@ -678,9 +678,12 @@
 	`id` int(11) unsigned NOT NULL,\
 	`next_update` int(11) unsigned NOT NULL default '0',\
 	`period` int(6) unsigned NOT NULL default '604800',\
-	`min_standing` int(4) unsigned NOT NULL default '1000',\
+	`min_standing` int(4) unsigned NOT NULL default '2000',\
 	`med_standing` int(4) unsigned NOT NULL default '4500',\
 	`max_standing` int(4) unsigned NOT NULL default '7000',\
+	`attachment` varchar(24) NOT NULL default '1,1',\
+	`tag` varchar(24) NOT NULL default '15,6',\
+	`nickname` varchar(24) NOT NULL default '25,12',\
 	`activities` varchar(64) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"

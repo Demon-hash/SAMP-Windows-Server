@@ -32,4 +32,7 @@ enum WEEKLY_CFG_DATA {
 	wqdMedStanding,
 	wqdMaxStanding,
 	wqdActivities[WEEKLY_MAX_ACTIVITIES],
+	wqdAttachement[2],
+	wqdTag[2],
+	wqdNickname[2],
 }
