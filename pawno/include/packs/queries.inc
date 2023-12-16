@@ -88,10 +88,14 @@
 		WHERE `id`='%d'\
 "
 
+#define CREATE_WEEKLY_PLAYER_QUERY "INSERT IGNORE INTO `weekly` (id) VALUES (%d)"
 #define UPDATE_WEEKLY_QUERY "\
 	UPDATE `weekly`\n\
 	SET\n\
 	`standing`='%d',\
+	`coins`='%d',\
+	`progress`='%e'\n\
+	WHERE `id`='%d'\
 "
 
 #define UPDATE_GANG_USER_QUERY "\
@@ -240,6 +244,9 @@
 		COALESCE(s.duels, 0) as set_duels,\n\
 		COALESCE(s.ability, 0) as set_ability,\n\
 		COALESCE(s.auto_login, 0) as set_auto_login,\n\
+		COALESCE(w.standing, 0) as w_standing,\n\
+		COALESCE(w.coins, 0) as w_coins,\n\
+		COALESCE(w.progress, '') as w_progress,\n\
 		COALESCE(l.ip, 'NULL') as login_ip,\n\
 		COALESCE(l.date, 0) as login_date,\n\
 		COALESCE(l.account_id, -1) as login_id,\n\
@@ -261,6 +268,7 @@
 		LEFT JOIN `settings` s ON u.id = s.id\n\
 		LEFT JOIN `round_session` r ON u.id = r.account_id\n\
 		LEFT JOIN `login_log` l ON u.id = l.account_id\n\
+		LEFT JOIN `weekly` w ON u.id = w.id\n\
 		WHERE u.login = '%e'\n\
 		ORDER BY l.date DESC\n\
 		LIMIT 1\

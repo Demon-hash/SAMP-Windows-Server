@@ -2051,7 +2051,10 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_int(0, "evacuations", Achievements[playerid][achEvacuationRow]);
 		cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
 		cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
+		
 		cache_get_value_name(0, "progress", progress);
+        format(form, sizeof(form), "p<,>a<i>[%d]", MAX_ACHIEVEMENTS);
+		sscanf(progress, form, AchievementsProgress[playerid]);
 		
 		cache_get_value_name_int(0, "set_pm", Settings[playerid][sdPMsBlocked]);
 		cache_get_value_name_int(0, "set_ding", Settings[playerid][sdDing]);
@@ -2074,16 +2077,12 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_float(0, "rnd_brutality", RoundSession[playerid][rsdBrutality]);
 		cache_get_value_name_float(0, "rnd_undead", RoundSession[playerid][rsdDeaths]);
 		cache_get_value_name_float(0, "rnd_additional", RoundSession[playerid][rdAdditionalPoints]);
-        
-        format(form, sizeof(form), "p<,>a<i>[%d]", MAX_ACHIEVEMENTS);
-		sscanf(progress, form, AchievementsProgress[playerid]);
-        
-        SetPVarInt(playerid, "auto-log", 0);
-		if(gettime() < login_date + MAX_AUTOLOG_HOURS) {
-		    if(Player[playerid][pAccountId] == login_id && !strcmp(Misc[playerid][mdIp], login_ip)) {
-				SetPVarInt(playerid, "auto-log", 1);
-			}
-		}
+		
+		cache_get_value_name_int(0, "w_standing", Weekly[playerid][wqpdStanding]);
+		cache_get_value_name_int(0, "w_coins", Weekly[playerid][wqpdCoins]);
+		cache_get_value_name(0, "w_progress", progress);
+		format(form, sizeof(form), "p<,>a<i>[%d]", WEEKLY_MAX_ACTIVITIES);
+		sscanf(progress, form, Weekly[playerid][wqpdProgress]);
         
         SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, Achievements[playerid][achSilinced]);
 		SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, Achievements[playerid][achColt45]);
@@ -2095,11 +2094,19 @@ custom LoginOrRegister(const playerid) {
         SetPlayerSkillLevel(playerid, WEAPONSKILL_MICRO_UZI, Achievements[playerid][achTec9]);
         SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, Achievements[playerid][achAk47]);
         SetPlayerSkillLevel(playerid, WEAPONSKILL_M4, Achievements[playerid][achM4]);
+        
+        SetPVarInt(playerid, "auto-log", 0);
+		if(gettime() < login_date + MAX_AUTOLOG_HOURS) {
+		    if(Player[playerid][pAccountId] == login_id && !strcmp(Misc[playerid][mdIp], login_ip)) {
+				SetPVarInt(playerid, "auto-log", 1);
+			}
+		}
 
         PreloadDefaultLocalizedTitles(playerid);
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
         CheckForLoadedRound(playerid);
         CheckForBan(playerid);
+		CreateWeeklyPlayer(playerid);
         return 1;
     }
    	
@@ -2203,14 +2210,8 @@ custom SavePlayerWeeklyData(const playerid) {
     	progress,
 		Player[playerid][pAccountId]
 	);
+	mysql_tquery(Database, formated);
 }
-
-/*
-`id` int(11) unsigned NOT NULL,\
-	`standing` int(11) unsigned NOT NULL default '0',\
-	`coins` int(11) unsigned NOT NULL default '0',\
-	`progress` varchar(32) NOT NULL default '',\
-*/
 
 custom SavePlayerAchievementsData(const playerid) {
 	new progress[256], num[4];
@@ -5865,6 +5866,13 @@ stock CreateTextureFromConfig(&Text:texid, const buffer) {
 	}
 }
 
+stock CreateWeeklyPlayer(const playerid) {
+    static const query[] = CREATE_WEEKLY_PLAYER_QUERY;
+	new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId]);
+	mysql_tquery(Database, formated);
+}
+
 custom CreateWeeklyActivities() {
 	if(cache_num_rows()) {
 	    new activity, count, type, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
@@ -5882,8 +5890,6 @@ custom CreateWeeklyActivities() {
             WeeklyHashmap[whpId][activity] = i;
             WeeklyHashmap[whpCount][activity] = count;
             WeeklyHashmap[whpType][activity] = type;
-            
-            printf("%d | %d | %d | %d", i, activity, WeeklyHashmap[whpCount][activity], WeeklyHashmap[whpType][activity]);
 	    }
 
         WeeklyConfig[wqdNextUpdate] = gettime() + WeeklyConfig[wqdPeriod];

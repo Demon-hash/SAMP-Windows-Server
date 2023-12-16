@@ -11,7 +11,7 @@
 	`password` varchar(32) NOT NULL,\
 	`language` int(2) unsigned NOT NULL default '0',\
 	`coins` int(6) unsigned NOT NULL default '0',\
-	`points` int(6) unsigned NOT NULL default '0'\
+	`points` int(6) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
 
