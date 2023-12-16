@@ -32,7 +32,7 @@
 #include <packs/votekick>
 #include <packs/duels>
 #include <packs/payments>
-#include <packs/weekly_quests>
+#include <packs/weekly>
 
 #include <dependencies/jit>
 #include <dependencies/foreach>

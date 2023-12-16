@@ -6,7 +6,7 @@
 #define WEEKLY_MAX_ACTIVITIES 8
 #define WEEKLY_MAX_ACTIVITIES_LEN 64
 
-enum WEEKLY_ACTIVITIES {
+enum {
 	WEEKLY_HUMAN_BOSSES,
 	WEEKLY_KILLSTREAKS,
 	WEEKLY_KILL_PLAYERS,
@@ -23,6 +23,20 @@ enum WEEKLY_ACTIVITIES {
 	WEEKLY_COLLECT_MEATS,
 	WEEKLY_EVACUATE,
 	WEEKLY_JUMP,
+	WEEKLY_EOF,
+}
+
+enum WEEKLY_HASHMAP {
+	whpId[WEEKLY_EOF],
+	whpCount[WEEKLY_EOF],
+	whpType[WEEKLY_EOF],
+}
+
+enum WEEKLY_DATA {
+	wqpdStanding,
+	wqpdCoins,
+	wqpdActivity[WEEKLY_MAX_ACTIVITIES],
+	wqpdProgress[WEEKLY_MAX_ACTIVITIES],
 }
 
 enum WEEKLY_CFG_DATA {
@@ -31,8 +45,9 @@ enum WEEKLY_CFG_DATA {
 	wqdMinStanding,
 	wqdMedStanding,
 	wqdMaxStanding,
-	wqdActivities[WEEKLY_MAX_ACTIVITIES],
+	wqdStandingPerLevel,
 	wqdAttachement[2],
-	wqdTag[2],
 	wqdNickname[2],
+	wqdActivitiesDataId[WEEKLY_MAX_ACTIVITIES_LEN],
+	wqdActivitiesDataCount[WEEKLY_MAX_ACTIVITIES_LEN],
 }

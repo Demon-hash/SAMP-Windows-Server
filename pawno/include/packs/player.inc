@@ -8,5 +8,4 @@ enum PLAYER_DATA {
 	pLanguage,
 	pCoins,
 	pPoints,
-	pStanding,
 };

@@ -42,11 +42,11 @@
 #define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
 
 #define CREATE_WEEKLY_ACTIVITIES_QUERY "\
-	(SELECT activity FROM weekly_activities_cfg WHERE type = 2 ORDER BY RAND() LIMIT 2)\n\
+	(SELECT `activity`, `count`, `type` FROM weekly_activities_cfg WHERE type = 2 ORDER BY RAND() LIMIT 2)\n\
 	UNION\n\
-	(SELECT activity FROM weekly_activities_cfg WHERE type = 1 ORDER BY RAND() LIMIT 2)\n\
+	(SELECT `activity`, `count`, `type` FROM weekly_activities_cfg WHERE type = 1 ORDER BY RAND() LIMIT 2)\n\
 	UNION\n\
-	(SELECT activity FROM weekly_activities_cfg WHERE type = 0 ORDER BY RAND() LIMIT 4);\
+	(SELECT `activity`, `count`, `type` FROM weekly_activities_cfg WHERE type = 0 ORDER BY RAND() LIMIT 4);\
 "
 
 #define LOAD_ACHIEVEMENTS_PAGE "SELECT l.%e AS title, l.%e_desc AS description, c.type, c.count, c.reward, (\
@@ -84,9 +84,14 @@
 	SET \n\
 		`language`='%d',\
 		`points`='%d',\
-		`standing`='%d',\
 		`coins`='%d'\n\
 		WHERE `id`='%d'\
+"
+
+#define UPDATE_WEEKLY_QUERY "\
+	UPDATE `weekly`\n\
+	SET\n\
+	`standing`='%d',\
 "
 
 #define UPDATE_GANG_USER_QUERY "\

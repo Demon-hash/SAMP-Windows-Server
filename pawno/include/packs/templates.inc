@@ -3,7 +3,7 @@
 #endif
 #define _templates_pack_included
 
-#define USER_COLUMNS 5
+#define USER_COLUMNS 4
 #define USERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS users (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -11,12 +11,11 @@
 	`password` varchar(32) NOT NULL,\
 	`language` int(2) unsigned NOT NULL default '0',\
 	`coins` int(6) unsigned NOT NULL default '0',\
-	`points` int(6) unsigned NOT NULL default '0',\
-	`standing` int(6) unsigned NOT NULL default '0',\
+	`points` int(6) unsigned NOT NULL default '0'\
 	PRIMARY KEY (`id`)\
 );"
 
-#define ACHIEVEMENTS_COLUMNS 44
+#define ACHIEVEMENTS_COLUMNS 46
 #define ACHIEVEMENTS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS achievements (\
 	`id` int(11) unsigned NOT NULL auto_increment,\
@@ -681,8 +680,8 @@
 	`min_standing` int(4) unsigned NOT NULL default '2000',\
 	`med_standing` int(4) unsigned NOT NULL default '4500',\
 	`max_standing` int(4) unsigned NOT NULL default '7000',\
+	`per_level` int(5) unsigned NOT NULL default '10000',\
 	`attachment` varchar(24) NOT NULL default '1,1',\
-	`tag` varchar(24) NOT NULL default '15,6',\
 	`nickname` varchar(24) NOT NULL default '25,12',\
 	`activities` varchar(64) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
@@ -696,6 +695,16 @@
 	`russian` TEXT NOT NULL default '',\
 	`count` int(4) unsigned NOT NULL default '0',\
 	`type` int(6) unsigned NOT NULL default '0',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define WEEKLY_COLUMNS 3
+#define WEEKLY_PLAYERS_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS weekly (\
+	`id` int(11) unsigned NOT NULL,\
+	`standing` int(11) unsigned NOT NULL default '0',\
+	`coins` int(11) unsigned NOT NULL default '0',\
+	`progress` varchar(32) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
