@@ -279,10 +279,12 @@ enum LOCALIZATION_DATA {
 	LD_MSG_GANG_CREATED,
 	LD_MSG_PRED_GANG_RANKS,
 	LD_DG_WEEKLY_REWARD_TITLE,
-	LD_DG_WEEKLY_REWARD_ATT,
+	LD_DG_WEEKLY_BUY_REQ,
 	LD_DG_WEEKLY_COMPLETED,
-	LD_DG_WEEKLY_REWARD_CLR,
+	LD_BTN_YES,
 	LD_DG_WEEKLY_TARGETS,
+	LD_DG_REWARD_NO_MONEY,
+	LD_MSG_REWARD_BOUGHT,
 	LD_ENDF,
 };
 
@@ -578,8 +580,10 @@ enum LOCALIZATION_DATA {
 	(262, '[ADMIN] %s has created a new gang %s (ID %d)', '[АДМИН] Игрок %s создал новую банду %s (ID %d)'),\
 	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'Новичек,Полицейский,Скаут,Агент,Директор,Босс'),\
 	(264, '{FFFFFF}Set or Accessory\t{FFFFFF}Spiral knots (%d)\t{FFFFFF}Coins (%d)\n', '{FFFFFF}Набор или Аксессуар\t{FFFFFF}Спиральные узлы (%d)\t{FFFFFF}Монеты (%d)\n'),\
-	(265, 'Attachement\t%d\t%d\n', 'Предмет одежды\t%d\t%d\n'),\
+	(265, 'Are you sure want to buy %s for %d Spiral knots and %d Coins?', 'Вы точно хотите купить %s за %d Спиральных узлов и %d Монет(у)'),\
 	(266, 'Completed', 'Выполнено'),\
-	(267, 'Color Nickname\t%d\t%d\n', 'Цветной ник\t%d\t%d\n'),\
-	(268, '{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n', '{FFFFFF}Цель\t{FFFFFF}Репутация\t{FFFFFF}Прогресс\n');\
+	(267, 'Yes', 'Да'),\
+	(268, '{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n', '{FFFFFF}Цель\t{FFFFFF}Репутация\t{FFFFFF}Прогресс\n'),\
+	(269, '{FFFFFF}Not enough currency to purchase', '{FFFFFF}Недостаточно валюты для покупки'),\
+	(270, '>> You bought %s!', 'Вы купили %s!');\
 "

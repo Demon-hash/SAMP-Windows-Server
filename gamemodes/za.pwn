@@ -28,7 +28,8 @@ static const sqlTemplates[][] = {
 	RULES_TEMPLATE, HELP_TEMPLATE,
 	WEEKLY_TEMPLATE, WEEKLY_ACTIVITIES_TEMPLATE,
 	DUELS_TEMPLATE, WEEKLY_PLAYERS_TEMPLATE,
-	CLOTHES_CFG_TEMPLATE, CLOTHES_LOCALIZATION_TEMPLATE
+	CLOTHES_CFG_TEMPLATE, CLOTHES_LOCALIZATION_TEMPLATE,
+	CLOTHES_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -106,6 +107,7 @@ static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
 static WeeklyConfig[WEEKLY_CFG_DATA];
 static Weekly[MAX_PLAYERS][WEEKLY_DATA];
+static WeeklyClothes[MAX_PLAYERS][WEEKLY_CLOTHES];
 static WeeklyHashmap[WEEKLY_HASHMAP];
 
 static Duels[MAX_PLAYERS][DUEL_DATA];
@@ -159,7 +161,7 @@ static
     	* Evac (0.5%)
 */
 
-// ShowPlayerDialog
+// ShowPlayerDialogAC
 // SendClientMessage
 // format
 // CreatePlayer3DTextLabel
@@ -889,6 +891,12 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
+    if(dialogid != Misc[playerid][mdDialogId]) {
+        return 0;
+    }
+    
+    Misc[playerid][mdDialogId] = -1;
+    
 	switch(dialogid) {
 	    case DIALOG_REGISTER: {
 	        if(!response) {
@@ -973,7 +981,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 			    GetAchievementsPage(playerid, ++Misc[playerid][mdNextPage]);
 			    return 1;
 			}
-
+			
 			Misc[playerid][mdNextPage] = -1;
 			return 1;
 		}
@@ -1002,7 +1010,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    }
 		    return 1;
 		}
-		
 		case DIALOG_WEEKLY: {
 		    if(response) {
 		        switch(listitem) {
@@ -1012,7 +1019,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    }
 			return 1;
 		}
-		
 		case DIALOG_WEEKLY_ACTIVITIES: {
 		    if(response || !response) {
 		        cmd::weekly(playerid);
@@ -1020,12 +1026,22 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    }
 			return 1;
 		}
-		
 		case DIALOG_WEEKLY_REWARDS: {
 		    if(!response) {
 		        cmd::weekly(playerid);
 		        return 1;
 		    }
+		    
+		    PrepareToBuyClothes(playerid, listitem);
+			return 1;
+		}
+		case DIALOG_BUY_CLOTHES: {
+			if(!response) {
+                PrepareWeeklyRewards(playerid);
+			    return 1;
+			}
+			
+			BuyWeeklyRewardCloth(playerid);
 			return 1;
 		}
 	}
@@ -1969,7 +1985,7 @@ custom LoadGamemodeInfo(const playerid, const LOCALIZATION_DATA:id) {
 	    new text[1024];
 	    cache_get_value_name(0, "text", text);
 
-	    ShowPlayerDialog(
+	    ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_MSGBOX,
@@ -1981,7 +1997,7 @@ custom LoadGamemodeInfo(const playerid, const LOCALIZATION_DATA:id) {
 	    return 1;
 	}
 
-	ShowPlayerDialog(playerid,
+	ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][id],
@@ -2479,7 +2495,7 @@ custom ShowClassesSelection(const playerid, const teamId, const showDialog) {
         Misc[playerid][mdSelectionTeam] = teamId;
         
         if(showDialog) {
-	        ShowPlayerDialog(
+	        ShowPlayerDialogAC(
 				playerid, DIALOG_SELECTION,
 				DIALOG_STYLE_TABLIST_HEADERS,
 				Localization[playerid][LD_DG_CLASSES_TITLE],
@@ -2554,45 +2570,68 @@ custom ShowGangsList(const playerid) {
 	return 1;
 }
 
-stock PrepareWeeklyRewards(const playerid) {
-	new query[] = "SELECT `%e` AS `text`, `coins`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e) LIMIT 4;";
-	new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_REWARDS_LEN], index = Player[playerid][pLanguage];
-    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdRewards]);
-	mysql_tquery(Database, formated, "ShowWeeklyRewards", "i", playerid);
-	return 1;
-}
-
-CMD:t(const playerid) {
-    new query[] = "SELECT * FROM `clothes_cfg` WHERE `kit` = '%d';";
-	new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, 9);
-	mysql_tquery(Database, formated, "AttachPlayerClothes", "i", playerid);
-}
-
 custom AttachPlayerClothes(const playerid) {
     if(cache_num_rows()) {
         ClearPlayerAttachedObjects(playerid);
-        
+
 		new i, slot, bone, model, Float:coords[9], buff[128];
 		for( i = 0; i < cache_num_rows(); i++ ) {
 	    	cache_get_value_name_int(i, "slot", slot);
 	    	cache_get_value_name_int(i, "bone", bone);
 	    	cache_get_value_name_int(i, "model", model);
-	    	
+
 	    	cache_get_value_name(i, "coords", buff);
 			sscanf(buff, "p<,>a<f>[9]", coords);
 			SetPlayerAttachedObject(playerid, slot, model, bone, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], coords[6], coords[7], coords[8]);
 		}
         return 1;
     }
-    
+
     return 0;
+}
+
+custom ShowPlayerBuyClothes(const playerid) {
+    if(cache_num_rows()) {
+    	new str[128];
+        cache_get_value_name(0, "text", WeeklyClothes[playerid][wdcsText]);
+        cache_get_value_name_int(0, "kit", WeeklyClothes[playerid][wdcsKit]);
+		cache_get_value_name_int(0, "coins", WeeklyClothes[playerid][wdcsCoins]);
+		cache_get_value_name_int(0, "emblems", WeeklyClothes[playerid][wdcsEmblems]);
+		
+		if(Player[playerid][pCoins] < WeeklyClothes[playerid][wdcsCoins] || Weekly[playerid][wqpdCoins] < WeeklyClothes[playerid][wdcsEmblems]) {
+  			ShowPlayerDialogAC(
+				playerid,
+				DIALOG_INFO,
+				DIALOG_STYLE_MSGBOX,
+				Localization[playerid][LD_DG_INFO_TITLE],
+				Localization[playerid][LD_DG_REWARD_NO_MONEY],
+				Localization[playerid][LD_BTN_CLOSE],
+				""
+			);
+   			return 1;
+		}
+
+		format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_BUY_REQ], WeeklyClothes[playerid][wdcsText], WeeklyClothes[playerid][wdcsEmblems], WeeklyClothes[playerid][wdcsCoins]);
+        ShowPlayerDialogAC(
+			playerid,
+			DIALOG_BUY_CLOTHES,
+			DIALOG_STYLE_MSGBOX,
+			Localization[playerid][LD_DG_INFO_TITLE],
+			str,
+			Localization[playerid][LD_BTN_YES],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+
+        return 1;
+    }
+    
+    return 1;
 }
 
 custom ShowWeeklyRewards(const playerid) {
     if(cache_num_rows()) {
         new i, str[64], text[128], log[1024];
-        new coins, emblems;
+        new coins, emblems, kit;
         
         format(text, sizeof(text), 	Localization[playerid][LD_DG_WEEKLY_REWARD_TITLE], Weekly[playerid][wqpdCoins], Player[playerid][pCoins]);
         strcat(log, text);
@@ -2601,12 +2640,14 @@ custom ShowWeeklyRewards(const playerid) {
 	    	cache_get_value_name(i, "text", text);
 	    	cache_get_value_name_int(i, "coins", coins);
 	    	cache_get_value_name_int(i, "emblems", emblems);
+	    	cache_get_value_name_int(i, "kit", kit);
 	    	
+	    	WeeklyConfig[wqdKit][i] = kit;
 	    	format(str, sizeof(str), "%s\t%d\t%d\n", text, emblems, coins);
 	    	strcat(log, str);
 	    }
 	    
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_WEEKLY_REWARDS,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2618,7 +2659,7 @@ custom ShowWeeklyRewards(const playerid) {
         return 1;
     }
     
-    ShowPlayerDialog(
+    ShowPlayerDialogAC(
 		playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
@@ -2697,7 +2738,7 @@ custom ShowAdminsActivity(const playerid) {
             strcat(log, str);
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2709,7 +2750,7 @@ custom ShowAdminsActivity(const playerid) {
         return 1;
 	}
   	
-	ShowPlayerDialog(
+	ShowPlayerDialogAC(
 		playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
@@ -2752,7 +2793,7 @@ custom ShowPayLog(const playerid) {
             strcat(log, str);
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2764,7 +2805,7 @@ custom ShowPayLog(const playerid) {
         return 1;
     }
     
-	ShowPlayerDialog(playerid,
+	ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_INFO_TITLE],
@@ -2792,7 +2833,7 @@ custom ShowLog(const playerid) {
             strcat(log, str);
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2804,7 +2845,7 @@ custom ShowLog(const playerid) {
         return 1;
     }
 
-	ShowPlayerDialog(playerid,
+	ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_INFO_TITLE],
@@ -2832,7 +2873,7 @@ custom ShowNamelog(const playerid) {
             strcat(log, str);
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2844,7 +2885,7 @@ custom ShowNamelog(const playerid) {
         return 1;
     }
 
-   	ShowPlayerDialog(playerid,
+   	ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_INFO_TITLE],
@@ -2872,7 +2913,7 @@ custom ShowBanIplog(const playerid) {
             strcat(log, str);
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2885,7 +2926,7 @@ custom ShowBanIplog(const playerid) {
         return 1;
     }
 
-    ShowPlayerDialog(playerid,
+    ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_INFO_TITLE],
@@ -2916,7 +2957,7 @@ custom ShowBanlog(const playerid) {
             strcat(log, str);
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_INFO,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -2928,7 +2969,7 @@ custom ShowBanlog(const playerid) {
         return 1;
     }
 
-    ShowPlayerDialog(playerid,
+    ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_INFO_TITLE],
@@ -2973,7 +3014,7 @@ custom GetAchievementsList(const playerid, const offset) {
 
 	    if((total - (offset + len)) > 0) {
 	        format(formated, sizeof(formated), "{66ccff}%s", Localization[playerid][LD_DG_ACHS_TITLE]);
-	        ShowPlayerDialog(playerid,
+	        ShowPlayerDialogAC(playerid,
 				DIALOG_ACHIEVEMENTS,
 				DIALOG_STYLE_TABLIST_HEADERS,
 				formated,
@@ -2984,7 +3025,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	        return 1;
 	    }
 
-     	ShowPlayerDialog(playerid,
+     	ShowPlayerDialogAC(playerid,
 		 	DIALOG_INFO,
 			 DIALOG_STYLE_TABLIST_HEADERS,
 			 Localization[playerid][LD_DG_ACHS_TITLE],
@@ -2995,7 +3036,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	 	return 1;
     }
 
-    ShowPlayerDialog(playerid,
+    ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_ACHS_TITLE],
@@ -3194,7 +3235,7 @@ custom ShowWeeklyActivities(const playerid) {
 			}
         }
 
-        ShowPlayerDialog(
+        ShowPlayerDialogAC(
 			playerid,
 			DIALOG_WEEKLY_ACTIVITIES,
 			DIALOG_STYLE_TABLIST_HEADERS,
@@ -3207,7 +3248,7 @@ custom ShowWeeklyActivities(const playerid) {
 		return 1;
  	}
  	
-	ShowPlayerDialog(
+	ShowPlayerDialogAC(
 	  	playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
@@ -3345,6 +3386,43 @@ stock SpawnPlayerInJail(const playerid) {
 
 stock CalculateWithTaxes(const number) {
 	return number - floatround(number * ServerConfig[svCfgTaxes], floatround_floor);
+}
+
+stock PrepareToAttachPlayerClothes(const playerid, const id) {
+    new query[] = LOAD_CLOTHES_DATA_QUERY;
+	new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, id);
+	mysql_tquery(Database, formated, "AttachPlayerClothes", "i", playerid);
+	return 1;
+}
+
+stock BuyWeeklyRewardCloth(const playerid) {
+	new str[128];
+	format(str, sizeof(str), Localization[playerid][LD_MSG_REWARD_BOUGHT], WeeklyClothes[playerid][wdcsText]);
+	SendClientMessage(playerid, COLOR_INFO, str);
+
+	Player[playerid][pCoins] -= WeeklyClothes[playerid][wdcsCoins];
+	Weekly[playerid][wqpdCoins] -= WeeklyClothes[playerid][wdcsEmblems];
+
+	new query[] = BUY_WEEKLY_CLOTH_QUERY;
+	new formated[sizeof(query) + (MAX_ID_LENGTH * 2)];
+	mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId], WeeklyClothes[playerid][wdcsKit]);
+ 	mysql_tquery(Database, formated);
+}
+
+stock PrepareWeeklyRewards(const playerid) {
+	new query[] = PREPARE_WEEKLY_REWARD_QUERY;
+	new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_REWARDS_LEN], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdRewards]);
+	mysql_tquery(Database, formated, "ShowWeeklyRewards", "i", playerid);
+	return 1;
+}
+
+stock PrepareToBuyClothes(const playerid, const listitem) {
+    new query[] = PREPARE_CLOTH_INFO_QUERY;
+	new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_REWARDS_LEN], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdKit][listitem]);
+	mysql_tquery(Database, formated, "ShowPlayerBuyClothes", "i", playerid);
 }
 
 stock SetPlayerDuelInfo(const playerid, const targetid, const weaponid, const armour, const points) {
@@ -3585,7 +3663,7 @@ stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 		Misc[playerid][mdKickForAuthTries]
 	);
 	
-    ShowPlayerDialog(
+    ShowPlayerDialogAC(
 		playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD,
 		Localization[playerid][LD_DG_LOGIN_TITLE], formated,
 		Localization[playerid][LD_BTN_LOGIN],
@@ -3594,13 +3672,18 @@ stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 }
 
 stock ShowRegisterDialog(const playerid, const type = DIALOG_NOERROR) {
-    ShowPlayerDialog(
+    ShowPlayerDialogAC(
 		playerid, DIALOG_REGISTER, DIALOG_STYLE_INPUT,
 		Localization[playerid][LD_DG_REG_TITLE],
 		Localization[playerid][LD_DG_REG_DEFAULT + LOCALIZATION_DATA:type],
 		Localization[playerid][LD_BTN_REGISTER],
 		Localization[playerid][LD_BTN_QUIT]
 	);
+}
+
+stock ShowPlayerDialogAC(playerid, dialogid, style, caption[], info[], button1[], button2[]) {
+    Misc[playerid][mdDialogId] = dialogid;
+    ShowPlayerDialog(playerid, dialogid, style, caption, info, button1, button2);
 }
 
 stock AfterAuthorization(const playerid) {
@@ -3841,6 +3924,7 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdGang] = -1;
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
+	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdKillstreak] = 0;
 	Misc[playerid][mdEvacuations] = 0;
 	Misc[playerid][mdGangRequest] = -1;
@@ -6504,7 +6588,7 @@ CMD:lottery(const playerid, const params[]) {
 }
 
 CMD:class(const playerid) {
-    ShowPlayerDialog(
+    ShowPlayerDialogAC(
 		playerid,
 		DIALOG_CLASSES,
 		DIALOG_STYLE_LIST,
@@ -6568,7 +6652,7 @@ CMD:radio(const playerid) {
 }
 
 CMD:language(const playerid) {
-	ShowPlayerDialog(playerid,
+	ShowPlayerDialogAC(playerid,
 		DIALOG_LANGUAGES,
 		DIALOG_STYLE_LIST,
 		Localization[playerid][LD_DG_LANGUAGES_TITLE],
@@ -6895,7 +6979,7 @@ CMD:gang(const playerid, const params[]) {
 	    Gangs[gang][gdSettings][GANG_SETTING_PROMOTE] = 5;
 	    Gangs[gang][gdSettings][GANG_SETTING_JOIN] = 3;
 	        
-	        ShowPlayerDialog(playerid, DIALOG_GANG_SETTINGS, DIALOG_STYLE_TABLIST_HEADERS, "Settings", info, "Change", "Close");
+	        ShowPlayerDialogAC(playerid, DIALOG_GANG_SETTINGS, DIALOG_STYLE_TABLIST_HEADERS, "Settings", info, "Change", "Close");
 	        return 1;
 	    }*/
 	    
@@ -6999,7 +7083,7 @@ CMD:gang(const playerid, const params[]) {
 }
 
 CMD:cmds(const playerid) {
-    SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio");
+    SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio /clothes");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/language /changename /ask /pm /settings /help /rules");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/report /votekick /weekly /duel /dleave /pay /gang");
 	return 1;
@@ -7156,7 +7240,7 @@ CMD:settings(const playerid) {
     }
 
     format(str, sizeof(str), Localization[playerid][LD_DG_SETTINGS_OPTS], setting[0], setting[1], setting[2], setting[3], setting[4]);
-	ShowPlayerDialog(
+	ShowPlayerDialogAC(
 		playerid,
 		DIALOG_SETTINGS,
 		DIALOG_STYLE_TABLIST_HEADERS,
@@ -7193,7 +7277,7 @@ CMD:changename(const playerid, const params[]) {
 }
 
 CMD:weekly(const playerid) {
-    ShowPlayerDialog(
+    ShowPlayerDialogAC(
 		playerid,
 		DIALOG_WEEKLY,
 		DIALOG_STYLE_LIST,
@@ -7803,7 +7887,7 @@ CMD:warn(const playerid, const params[]) {
 	 	}
  	}
  	
-	ShowPlayerDialog(params[0], DIALOG_INFO, DIALOG_STYLE_MSGBOX, Localization[params[0]][LD_DG_WARNED_TITLE], reason, Localization[params[0]][LD_BTN_CLOSE], "");
+	ShowPlayerDialogAC(params[0], DIALOG_INFO, DIALOG_STYLE_MSGBOX, Localization[params[0]][LD_DG_WARNED_TITLE], reason, Localization[params[0]][LD_BTN_CLOSE], "");
 
 	if(Misc[params[0]][mdGameplayWarns] >= 3) {
 	    KickPlayer(params[0]);

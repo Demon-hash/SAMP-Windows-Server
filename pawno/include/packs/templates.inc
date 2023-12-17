@@ -731,6 +731,14 @@
 	PRIMARY KEY (`id`)\
 );"
 
+#define CLOTHES_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS clothes (\
+	`id` int(11) unsigned NOT NULL auto_increment,\
+	`account_id` int(11) unsigned NOT NULL,\
+	`kit` int(6) unsigned NOT NULL,\
+	PRIMARY KEY (`id`)\
+);"
+
 #define PREDIFINED_ACHS_LOCALIZATION_1 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
 	(1, 'Trainee', 'Use your class ability %d times', 'Разминка', 'Используйте свою способность %d раз'),\
 	(2, 'Semi Experienced', 'Use your class ability %d times', 'Упражнения', 'Используйте свою способность %d раз'),\
@@ -969,7 +977,7 @@
 	(14, '>> Используйте /language, чтобы сменить язык', '>> You can change language by using /language'),\
 	(15, '>> You can gain coins by completing /achievements!', '>> Вы можете получить монеты, выполняя достижения! (/achievements)'),\
 	(16, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
-	(17, '>> You can get attachments, tags, color nicknames by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды, тэги, цветные ники за выполнение еженедельных заданий! (/weekly)'),\
+	(17, '>> You can get attachments by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды за выполнение еженедельных заданий! (/weekly)'),\
 	(18, '>> You can improve your weapon skills faster by winning duels for points!', '>> Вы можете улучшать навыки владения оружием быстрее побеждая в дуэлях на очки!'),\
 	(19, '>> The gang that captured the map will always be spawned as a human and also has 50 armor and better weapons!', '>> Банда, захватившая карту будет всегда заспавнена человеком, а также имеет 50 брони и улучшеное оружие!'),\
 	(20, '>> Gain and lose ranks by competing in duels!', '>> Получайте и теряйте ранги соревнуясь в дуэлях!');\

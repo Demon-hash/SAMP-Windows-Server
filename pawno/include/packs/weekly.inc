@@ -29,6 +29,13 @@ enum {
 	WEEKLY_EOF,
 }
 
+enum WEEKLY_CLOTHES {
+	wdcsKit,
+	wdcsCoins,
+	wdcsEmblems,
+	wdcsText[64],
+}
+
 enum WEEKLY_HASHMAP {
 	whpId[WEEKLY_EOF],
 	whpCount[WEEKLY_EOF],
@@ -49,6 +56,7 @@ enum WEEKLY_CFG_DATA {
 	wqdMedStanding,
 	wqdMaxStanding,
 	wqdStandingPerLevel,
+	wqdKit[4],
 	wqdActivities[WEEKLY_MAX_ACTIVITIES_LEN],
 	wqdTypes[WEEKLY_MAX_TYPES_LEN],
 	wqdCount[WEEKLY_MAX_COUNT_LEN],

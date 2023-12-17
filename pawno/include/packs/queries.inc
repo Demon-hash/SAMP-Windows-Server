@@ -41,6 +41,11 @@
 #define PREPARE_WEEKLY_ACTIVITIES_QUERY "SELECT %e as text, activity, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)"
 #define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
 
+#define PREPARE_CLOTH_INFO_QUERY "SELECT `%e` AS `text`, `coins`, `emblems`, `kit` FROM `clothes_locale` WHERE `kit` = '%d'"
+#define PREPARE_WEEKLY_REWARD_QUERY "SELECT `%e` AS `text`, `coins`, `kit`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e)"
+#define LOAD_CLOTHES_DATA_QUERY "SELECT * FROM `clothes_cfg` WHERE `kit` = '%d';"
+#define BUY_WEEKLY_CLOTH_QUERY "INSERT INTO `clothes` (account_id, kit) VALUES (%d, %d)"
+
 #define UPDATE_WEEKLY_CFG_QUERY "UPDATE `weekly_cfg` SET `next_update`='%d',`activities`='%e',`types`='%e',`count`='%e',`rewards`='%e' WHERE 1;"
 
 #define SET_WEEKLY_VARIABLE_QUERY "\
@@ -52,7 +57,7 @@
 "
 
 #define CREATE_WEEKLY_ACTIVITIES_QUERY "\
-	SELECT (SELECT SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY RAND()), ',', 4) FROM clothes_locale WHERE 1) as rewards,\n\
+	SELECT (SELECT SUBSTRING_INDEX(GROUP_CONCAT(kit ORDER BY RAND()), ',', 4) FROM clothes_locale WHERE 1) as rewards,\n\
 	@weekly AS `activities`,\n\
 	(SELECT GROUP_CONCAT(type ORDER BY FIND_IN_SET(w.activity, @weekly)) FROM weekly_activities_cfg w WHERE FIND_IN_SET (w.activity, @weekly)) as `types`,\n\
 	(SELECT GROUP_CONCAT(count ORDER BY FIND_IN_SET(w.activity, @weekly)) FROM weekly_activities_cfg w WHERE FIND_IN_SET (w.activity, @weekly)) as `count`\n\
