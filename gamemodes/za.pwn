@@ -2591,10 +2591,12 @@ custom AttachPlayerClothes(const playerid) {
 
 custom ShowWeeklyRewards(const playerid) {
     if(cache_num_rows()) {
-        new i, str[64], text[64], log[1024];
+        new i, str[64], text[128], log[1024];
         new coins, emblems;
         
-        strcat(log, "Accessory / Set\tEmblems\tCoins\n");
+        format(text, sizeof(text), 	Localization[playerid][LD_DG_WEEKLY_REWARD_TITLE], Weekly[playerid][wqpdCoins], Player[playerid][pCoins]);
+        strcat(log, text);
+        
         for( i = 0; i < cache_num_rows(); i++ ) {
 	    	cache_get_value_name(i, "text", text);
 	    	cache_get_value_name_int(i, "coins", coins);
@@ -5984,8 +5986,6 @@ stock ReloadWeeklyHashmap(const activities[], const types[], const count[]) {
 	sscanf(count, output, c);
 
 	for( i = 0; i < WEEKLY_MAX_ACTIVITIES; i++ ) {
-	    printf("activity: %d = slot: %d (count: %d) (type: %d)", a[i], i, c[i], t[i]);
-	
         WeeklyHashmap[whpId][a[i]] = i;
         WeeklyHashmap[whpCount][a[i]] = c[i];
         WeeklyHashmap[whpType][a[i]] = t[i];

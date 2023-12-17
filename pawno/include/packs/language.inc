@@ -577,7 +577,7 @@ enum LOCALIZATION_DATA {
 	(261, '>> All slots are occupied, it is impossible to create a gang', '>> Все слоты заняты, создать банду невозможно'),\
 	(262, '[ADMIN] %s has created a new gang %s (ID %d)', '[АДМИН] Игрок %s создал новую банду %s (ID %d)'),\
 	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'Новичек,Полицейский,Скаут,Агент,Директор,Босс'),\
-	(264, '{FFFFFF}Reward\t{FFFFFF}Coins (%d)\t{FFFFFF}Emblems (%d)\n', '{FFFFFF}Награда\t{FFFFFF}Монеты (%d)\t{FFFFFF}Эмблемы (%d)\n'),\
+	(264, '{FFFFFF}Set or Accessory\t{FFFFFF}Spiral knots (%d)\t{FFFFFF}Coins (%d)\n', '{FFFFFF}Набор или Аксессуар\t{FFFFFF}Спиральные узлы (%d)\t{FFFFFF}Монеты (%d)\n'),\
 	(265, 'Attachement\t%d\t%d\n', 'Предмет одежды\t%d\t%d\n'),\
 	(266, 'Completed', 'Выполнено'),\
 	(267, 'Color Nickname\t%d\t%d\n', 'Цветной ник\t%d\t%d\n'),\

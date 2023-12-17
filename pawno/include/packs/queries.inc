@@ -192,6 +192,7 @@
 		`blood`='%d',\
 		`mary`='%d',\
 		`gang`='%d',\
+		`evacuations`='%d',\
 		`vehicles`='%d',\
 		`total_points`='%d',\
 		`ran`='%f',\
