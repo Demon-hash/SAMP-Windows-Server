@@ -19,30 +19,25 @@ stock toUpper(const text[]) {
 }
 
 main(){
-
+/*
 	new values[][] = {
 	    "help",
         "accept",
-		"applications",
 		"alliance",
 		"list",
 		"leave",
 	 	"members",
 	 	"pay",
-	 	"deposit",
 	 	"demote",
 	 	"delete",
 	  	"info",
 	   	"join",
 	   	"promote",
-		"fire",
 		"ban",
 		"create",
 		"settings",
 		"warn",
-		"close",
 		"unban",
-		"terminate",
 		"war"
  	};
 
@@ -51,5 +46,5 @@ main(){
 	for( new i = 0; i < sizeof(values); i++ ) {
 	    printf("GANG_COMMAND_%s = %d,", toUpper(values[i]), hash(values[i]));
 	}
-	printf("}");
+	printf("}");*/
 }

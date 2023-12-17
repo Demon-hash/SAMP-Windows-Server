@@ -681,9 +681,10 @@
 	`med_standing` int(4) unsigned NOT NULL default '4500',\
 	`max_standing` int(4) unsigned NOT NULL default '7000',\
 	`per_level` int(5) unsigned NOT NULL default '10000',\
-	`attachment` varchar(24) NOT NULL default '1,1',\
-	`nickname` varchar(24) NOT NULL default '25,12',\
 	`activities` varchar(64) NOT NULL default '',\
+	`types` varchar(48) NOT NULL default '',\
+	`count` varchar(96) NOT NULL default '',\
+	`rewards` varchar(24) NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -698,13 +699,35 @@
 	PRIMARY KEY (`id`)\
 );"
 
-#define WEEKLY_COLUMNS 3
 #define WEEKLY_PLAYERS_TEMPLATE "\
 	CREATE TABLE IF NOT EXISTS weekly (\
 	`id` int(11) unsigned NOT NULL,\
 	`standing` int(11) unsigned NOT NULL default '0',\
 	`coins` int(11) unsigned NOT NULL default '0',\
+	`activities` varchar(128) NOT NULL default '',\
 	`progress` varchar(32) NOT NULL default '',\
+	PRIMARY KEY (`id`)\
+);"
+
+#define CLOTHES_CFG_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS clothes_cfg (\
+	`id` int(11) unsigned NOT NULL,\
+	`kit` int(6) unsigned NOT NULL,\
+	`slot` int(1) unsigned NOT NULL default '0',\
+	`model` int(11) unsigned NOT NULL,\
+	`bone` int(2) unsigned NOT NULL,\
+	`coords` varchar(128) NOT NULL,\
+	PRIMARY KEY (`id`)\
+);"
+
+#define CLOTHES_LOCALIZATION_TEMPLATE "\
+	CREATE TABLE IF NOT EXISTS clothes_locale (\
+	`id` int(11) unsigned NOT NULL,\
+	`kit` int(6) unsigned NOT NULL,\
+	`coins` int(3) unsigned NOT NULL default '1',\
+	`emblems` int(3) unsigned NOT NULL default '1',\
+	`english` TEXT NOT NULL default '',\
+	`russian` TEXT NOT NULL default '',\
 	PRIMARY KEY (`id`)\
 );"
 
@@ -1146,6 +1169,37 @@
 	(15, 37, 1, 500, 150),\
 	(16, 39, 10, 50, 2),\
 	(17, 41, 100, 1500, 250);\
+"
+
+#define PREDIFINED_CLOTHES "INSERT IGNORE INTO `clothes_cfg` (id, kit, slot, model, bone, coords) VALUES \
+	(1, 1, 0, 2036,  1, '0.150, -0.125, -0.069, 85.400, -4.000, -20.300, 1.000, 1.000, 1.000'),\
+	(2, 2, 0, 2035,  1, '0.095, -0.081, 0.015, 89.299, -3.800, 153.199, 1.000, 1.000, 1.000'),\
+	(3, 3, 0, 19317, 1, '0.147, -0.093, -0.037, 0.000, 115.700, 0.000, 0.535, 1.000, 0.503'),\
+	(4, 4, 0, 2406,  1, '0.093, -0.114, -0.011, 0.000, 126.199, 0.000, 0.509, 1.000, 0.322'),\
+	(5, 5, 0, 1210,  5, '0.282, 0.068, -0.035, 0.000, -85.200, 7.499, 1.000, 1.000, 1.000'),\
+	(6, 6, 0, 19559, 1, '0.095, -0.046, 0.000, 1.199, 90.800, -1.100, 0.795, 1.000, 1.000'),\
+	(7, 7, 0, 19528, 2, '0.134, 0.000, 0.000, 0.000, 0.000, 0.000, 1.000, 1.000, 1.000'),\
+	(8, 7, 1, 19527, 1, '0.000, -0.213, -0.020, 45.300, 87.999, 0.000, 0.275, 0.256, 0.322'),\
+	(9, 7, 2, 19320, 1, '0.263, -0.220, -0.015, 0.000, 83.299, 0.000, 0.132, 0.105, 0.193'),\
+	(10, 8, 0, 19064, 2, '0.136, 0.000, 0.000, 0.000, 89.699, 93.499, 1.000, 1.000, 1.000'),\
+	(11, 8, 1, 19054, 1, '0.168, -0.189, 0.000, -7.999, 92.900, 5.300, 0.207, 0.214, 0.276'),\
+	(12, 9, 0, 342, 7, '0.047, 0.083, -0.006, -58.299, -60.499, 116.899, 1.000, 1.000, 1.000'),\
+	(13, 9, 1, 353, 8, '0.000, -0.074, 0.099, -92.299, 19.800, 0.000, 1.000, 1.000, 1.000'),\
+	(14, 9, 2, 358, 1, '0.000, -0.131, -0.146, 0.000, 4.899, 0.000, 1.000, 1.000, 1.000'),\
+	(15, 9, 3, 355, 1, '0.219, -0.135, 0.149, 0.000, -179.400, 0.000, 1.000, 1.000, 1.000'),\
+	(16, 9, 4, 19101, 2, '0.155, 0.000, 0.000, 0.000, 0.000, 0.000, 1.000, 1.000, 1.000')\
+"
+
+#define PREDIFINED_CLOTHES_LOCALE "INSERT IGNORE INTO `clothes_locale` (id, kit, coins, emblems, english, russian) VALUES \
+	(1, 1, 5, 1, 'Accessory: Sniper', 'Аксессуар: Снайперская винтовка'),\
+	(2, 2, 5, 1, 'Accessory: Ak47', 'Аксессуар: Ak47'),\
+	(3, 3, 5, 1, 'Accessory: Guitar', 'Аксессуар: Гитара'),\
+	(4, 4, 5, 1, 'Accessory: Surfboard', 'Аксессуар: Доска для серфинга'),\
+	(5, 5, 5, 1, 'Accessory: Money case', 'Аксессуар: Денежный ящик'),\
+	(6, 6, 5, 1, 'Accessory: Backpack', 'Аксессуар: Рюкзак'),\
+	(7, 7, 5, 2, 'Haloween Set', 'Набор одежды: Хэллоуин'),\
+	(8, 8, 5, 2, 'Christmas Set', 'Набор одежды: Новый год'),\
+	(9, 9, 5, 3, 'Army Set', 'Набор одежды: Армия')\
 "
 
 #define PREDIFINED_WEEKLY "INSERT IGNORE INTO weekly_cfg (id) VALUES (1)"

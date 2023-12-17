@@ -5,6 +5,7 @@
 // 		Votekick min xp
 // 		Weekly Missions - Standing
 
+
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
 	GANGS_TEMPLATE, GANGS_USERS_TEMPLATE,
@@ -26,7 +27,8 @@ static const sqlTemplates[][] = {
 	ACHIEVEMENTS_TEMPLATE, SIGNS_TEMPLATE, SETTINGS_TEMPLATE,
 	RULES_TEMPLATE, HELP_TEMPLATE,
 	WEEKLY_TEMPLATE, WEEKLY_ACTIVITIES_TEMPLATE,
-	DUELS_TEMPLATE, WEEKLY_PLAYERS_TEMPLATE
+	DUELS_TEMPLATE, WEEKLY_PLAYERS_TEMPLATE,
+	CLOTHES_CFG_TEMPLATE, CLOTHES_LOCALIZATION_TEMPLATE
 };
 
 static const sqlPredifinedValues[][] = {
@@ -47,7 +49,9 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_ACHS_LOCALIZATION_5,
 	PREDIFINED_WEEKLY,
 	PREDIFINED_WEEKLY_ACTIVITIES,
-	PREDIFINED_DUELS_CONFIG
+	PREDIFINED_DUELS_CONFIG,
+	PREDIFINED_CLOTHES,
+	PREDIFINED_CLOTHES_LOCALE
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -224,22 +228,20 @@ public OnGameModeInit() {
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
 	mysql_set_charset(GLOBAL_CHARSET);
 	
-	#if defined DEBUG_MODE
-		new i;
-		for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
-		for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
+	new i;
+	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
+	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
 
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_4);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_7);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_9);
-		mysql_tquery(Database, PREDIFINED_LOCALIZATION_10);
- 	#endif
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_4);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_7);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_9);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_10);
  	
 	mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
@@ -1005,7 +1007,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    if(response) {
 		        switch(listitem) {
 		            case 0: PrepareWeeklyActivities(playerid);
-		            case 1: ShowWeeklyRewards(playerid);
+		            case 1: PrepareWeeklyRewards(playerid);
 		        }
 		    }
 			return 1;
@@ -1697,7 +1699,6 @@ custom LoadServerCfg() {
 
 custom LoadWeeklyCfg() {
     if(cache_num_rows()) {
-        new buff[64];
         cache_get_value_name_int(0, "next_update", WeeklyConfig[wqdNextUpdate]);
         cache_get_value_name_int(0, "period", WeeklyConfig[wqdPeriod]);
         cache_get_value_name_int(0, "min_standing", WeeklyConfig[wqdMinStanding]);
@@ -1705,14 +1706,16 @@ custom LoadWeeklyCfg() {
         cache_get_value_name_int(0, "max_standing", WeeklyConfig[wqdMaxStanding]);
         cache_get_value_name_int(0, "per_level", WeeklyConfig[wqdStandingPerLevel]);
         
-        cache_get_value_name(0, "attachment", buff);
-        sscanf(buff, "p<,>a<i>[2]", WeeklyConfig[wqdAttachement]);
-        
-        cache_get_value_name(0, "nickname", buff);
-        sscanf(buff, "p<,>a<i>[2]", WeeklyConfig[wqdNickname]);
+        cache_get_value_name(0, "activities", WeeklyConfig[wqdActivities]);
+        cache_get_value_name(0, "rewards", WeeklyConfig[wqdRewards]);
+        cache_get_value_name(0, "types", WeeklyConfig[wqdTypes]);
+        cache_get_value_name(0, "count", WeeklyConfig[wqdCount]);
 
         if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
+            mysql_tquery(Database, SET_WEEKLY_VARIABLE_QUERY);
             mysql_tquery(Database, CREATE_WEEKLY_ACTIVITIES_QUERY, "CreateWeeklyActivities");
+        } else {
+            ReloadWeeklyHashmap(WeeklyConfig[wqdActivities], WeeklyConfig[wqdTypes], WeeklyConfig[wqdCount]);
         }
         
         printf("[x] Weekly configuration LOADED");
@@ -2051,7 +2054,6 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_int(0, "evacuations", Achievements[playerid][achEvacuationRow]);
 		cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
 		cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
-		
 		cache_get_value_name(0, "progress", progress);
         format(form, sizeof(form), "p<,>a<i>[%d]", MAX_ACHIEVEMENTS);
 		sscanf(progress, form, AchievementsProgress[playerid]);
@@ -2083,6 +2085,8 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name(0, "w_progress", progress);
 		format(form, sizeof(form), "p<,>a<i>[%d]", WEEKLY_MAX_ACTIVITIES);
 		sscanf(progress, form, Weekly[playerid][wqpdProgress]);
+		cache_get_value_name(0, "w_activities", progress);
+		sscanf(progress, form, Weekly[playerid][wqpdActivity]);
         
         SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, Achievements[playerid][achSilinced]);
 		SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, Achievements[playerid][achColt45]);
@@ -2194,19 +2198,63 @@ custom CheckForLoadedRound(const playerid) {
 	return 1;
 }
 
+custom CreateWeeklyActivities() {
+	if(cache_num_rows()) {
+	    new rewards[WEEKLY_MAX_REWARDS_LEN], activities[WEEKLY_MAX_ACTIVITIES_LEN], types[WEEKLY_MAX_TYPES_LEN], count[WEEKLY_MAX_COUNT_LEN];
+		cache_get_value_name(0, "rewards", rewards);
+        cache_get_value_name(0, "activities", activities);
+        cache_get_value_name(0, "types", types);
+        cache_get_value_name(0, "count", count);
+
+        ReloadWeeklyHashmap(activities, types, count);
+        strmid(WeeklyConfig[wqdActivities], activities, 0, WEEKLY_MAX_ACTIVITIES_LEN);
+        strmid(WeeklyConfig[wqdTypes], types, 0, WEEKLY_MAX_TYPES_LEN);
+        strmid(WeeklyConfig[wqdCount], count, 0, WEEKLY_MAX_COUNT_LEN);
+        strmid(WeeklyConfig[wqdRewards], rewards, 0, WEEKLY_MAX_REWARDS_LEN);
+        
+        WeeklyConfig[wqdNextUpdate] = gettime() + WeeklyConfig[wqdPeriod];
+
+        static const query[] = UPDATE_WEEKLY_CFG_QUERY;
+  		new formated[sizeof(query) + sizeof(activities) + sizeof(rewards) + MAX_ID_LENGTH];
+		mysql_format(Database, formated, sizeof(formated), query,
+			WeeklyConfig[wqdNextUpdate],
+			WeeklyConfig[wqdActivities],
+			WeeklyConfig[wqdTypes],
+			WeeklyConfig[wqdCount],
+			WeeklyConfig[wqdRewards]
+		);
+		mysql_tquery(Database, formated);
+	    return 1;
+	}
+
+	printf("[ ] Created Weekly Activities FAILED");
+	return 0;
+}
+
 custom SavePlayerWeeklyData(const playerid) {
-    new progress[32], num[4], i, prev = WEEKLY_MAX_ACTIVITIES - 1;
+    new progress[32], activities[128], num[11], i, prev = WEEKLY_MAX_ACTIVITIES - 1;
 	for( i = 0; i < WEEKLY_MAX_ACTIVITIES; i++ ) {
-	    if(i < prev) format(num, sizeof(num), "%d,", Weekly[playerid][wqpdProgress][i]);
-	    else format(num, sizeof(num), "%d", Weekly[playerid][wqpdProgress][i]);
-	    strcat(progress, num);
+	    if(i < prev) {
+			format(num, sizeof(num), "%d,", Weekly[playerid][wqpdProgress][i]);
+			strcat(progress, num);
+			
+			format(num, sizeof(num), "%d,", Weekly[playerid][wqpdActivity][i]);
+			strcat(activities, num);
+		} else {
+			format(num, sizeof(num), "%d", Weekly[playerid][wqpdProgress][i]);
+			strcat(progress, num);
+			
+			format(num, sizeof(num), "%d", Weekly[playerid][wqpdActivity][i]);
+			strcat(activities, num);
+		}
 	}
 	
 	static const query[] = UPDATE_WEEKLY_QUERY;
-	new formated[sizeof(query) + (WEEKLY_COLUMNS * MAX_ID_LENGTH) + sizeof(progress)];
+	new formated[sizeof(query) + (MAX_ID_LENGTH * 3) + sizeof(progress) + sizeof(activities)];
 	mysql_format(Database, formated, sizeof(formated), query,
 	    Weekly[playerid][wqpdStanding],
 	    Weekly[playerid][wqpdCoins],
+	    activities,
     	progress,
 		Player[playerid][pAccountId]
 	);
@@ -2506,28 +2554,78 @@ custom ShowGangsList(const playerid) {
 	return 1;
 }
 
-stock ShowWeeklyRewards(const playerid) {
-    new str[128], log[256];
-    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_TITLE], Player[playerid][pCoins], Weekly[playerid][wqpdCoins]);
-    strcat(log, str);
-
-    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_ATT], WeeklyConfig[wqdAttachement][0], WeeklyConfig[wqdAttachement][1]);
-    strcat(log, str);
-
-    format(str, sizeof(str), Localization[playerid][LD_DG_WEEKLY_REWARD_CLR], WeeklyConfig[wqdNickname][0], WeeklyConfig[wqdNickname][1]);
-    strcat(log, str);
-
-	ShowPlayerDialog(
-		playerid,
-		DIALOG_WEEKLY_REWARDS,
-		DIALOG_STYLE_TABLIST_HEADERS,
-		Localization[playerid][LD_DG_INFO_TITLE],
-		log,
-		Localization[playerid][LD_BTN_SELECT],
-		Localization[playerid][LD_BTN_CLOSE]
-	);
-
+stock PrepareWeeklyRewards(const playerid) {
+	new query[] = "SELECT `%e` AS `text`, `coins`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e) LIMIT 4;";
+	new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_REWARDS_LEN], index = Player[playerid][pLanguage];
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdRewards]);
+	mysql_tquery(Database, formated, "ShowWeeklyRewards", "i", playerid);
 	return 1;
+}
+
+CMD:t(const playerid) {
+    new query[] = "SELECT * FROM `clothes_cfg` WHERE `kit` = '%d';";
+	new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, 9);
+	mysql_tquery(Database, formated, "AttachPlayerClothes", "i", playerid);
+}
+
+custom AttachPlayerClothes(const playerid) {
+    if(cache_num_rows()) {
+        ClearPlayerAttachedObjects(playerid);
+        
+		new i, slot, bone, model, Float:coords[9], buff[128];
+		for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name_int(i, "slot", slot);
+	    	cache_get_value_name_int(i, "bone", bone);
+	    	cache_get_value_name_int(i, "model", model);
+	    	
+	    	cache_get_value_name(i, "coords", buff);
+			sscanf(buff, "p<,>a<f>[9]", coords);
+			SetPlayerAttachedObject(playerid, slot, model, bone, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], coords[6], coords[7], coords[8]);
+		}
+        return 1;
+    }
+    
+    return 0;
+}
+
+custom ShowWeeklyRewards(const playerid) {
+    if(cache_num_rows()) {
+        new i, str[64], text[64], log[1024];
+        new coins, emblems;
+        
+        strcat(log, "Accessory / Set\tEmblems\tCoins\n");
+        for( i = 0; i < cache_num_rows(); i++ ) {
+	    	cache_get_value_name(i, "text", text);
+	    	cache_get_value_name_int(i, "coins", coins);
+	    	cache_get_value_name_int(i, "emblems", emblems);
+	    	
+	    	format(str, sizeof(str), "%s\t%d\t%d\n", text, emblems, coins);
+	    	strcat(log, str);
+	    }
+	    
+        ShowPlayerDialog(
+			playerid,
+			DIALOG_WEEKLY_REWARDS,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_INFO_TITLE],
+			log,
+			Localization[playerid][LD_BTN_SELECT],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+        return 1;
+    }
+    
+    ShowPlayerDialog(
+		playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+    return 1;
 }
 
 custom ShowAccountHashes(const playerid) {
@@ -3057,7 +3155,7 @@ stock UnlockAchievement(const playerid, const id, const reward) {
 stock PrepareWeeklyActivities(const playerid) {
     static const query[] = PREPARE_WEEKLY_ACTIVITIES_QUERY;
     new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_ACTIVITIES_LEN], index = Player[playerid][pLanguage];
-    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdActivitiesDataId]);
+    mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdActivities]);
 	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
 }
 
@@ -3154,6 +3252,10 @@ stock ProceedWeekly(const playerid, const activity, const count = 1) {
 	
 	if(!Weekly[playerid][wqpdProgress][id] && Weekly[playerid][wqpdActivity][id] >= WeeklyHashmap[whpCount][activity]) {
 		Weekly[playerid][wqpdStanding] += GetStandingByType(WeeklyHashmap[whpType][activity]);
+		
+		new str[64];
+		format(str, sizeof(str), "%d / %d", Weekly[playerid][wqpdActivity][id], WeeklyHashmap[whpCount][activity]);
+		SendClientMessage(playerid, COLOR_ORANGE, str);
 
 		if(Weekly[playerid][wqpdStanding] >= WeeklyConfig[wqdStandingPerLevel]) {
 			++Weekly[playerid][wqpdCoins];
@@ -5873,32 +5975,23 @@ stock CreateWeeklyPlayer(const playerid) {
 	mysql_tquery(Database, formated);
 }
 
-custom CreateWeeklyActivities() {
-	if(cache_num_rows()) {
-	    new activity, count, type, len = clamp(cache_num_rows(), 0, WEEKLY_MAX_ACTIVITIES);
-		new i, num[4], prev = WEEKLY_MAX_ACTIVITIES - 1;
+stock ReloadWeeklyHashmap(const activities[], const types[], const count[]) {
+    new output[24], i, a[WEEKLY_MAX_ACTIVITIES], t[WEEKLY_MAX_ACTIVITIES], c[WEEKLY_MAX_ACTIVITIES];
 
-		for( i = 0; i < len; i++ ) {
-            cache_get_value_name_int(i, "activity", activity);
-            cache_get_value_name_int(i, "count", count);
-            cache_get_value_name_int(i, "type", type);
+	format(output, sizeof(output), "p<,>a<i>[%d]", WEEKLY_MAX_ACTIVITIES);
+	sscanf(activities, output, a);
+	sscanf(types, output, t);
+	sscanf(count, output, c);
 
-			if(i < prev) format(num, sizeof(num), "%d,", activity);
-            else format(num, sizeof(num), "%d", activity);
-            strcat(WeeklyConfig[wqdActivitiesDataId], num);
-            
-            WeeklyHashmap[whpId][activity] = i;
-            WeeklyHashmap[whpCount][activity] = count;
-            WeeklyHashmap[whpType][activity] = type;
-	    }
-
-        WeeklyConfig[wqdNextUpdate] = gettime() + WeeklyConfig[wqdPeriod];
-	 	printf("[x] Created Weekly Activities %d / %d", i, WEEKLY_MAX_ACTIVITIES);
-	    return 1;
+	for( i = 0; i < WEEKLY_MAX_ACTIVITIES; i++ ) {
+	    printf("activity: %d = slot: %d (count: %d) (type: %d)", a[i], i, c[i], t[i]);
+	
+        WeeklyHashmap[whpId][a[i]] = i;
+        WeeklyHashmap[whpCount][a[i]] = c[i];
+        WeeklyHashmap[whpType][a[i]] = t[i];
 	}
 	
-	printf("[ ] Created Weekly Activities FAILED");
-	return 0;
+	printf("[x] Created Weekly Activities %d / %d", i, WEEKLY_MAX_ACTIVITIES);
 }
 
 stock PredictPreferedLocalization(const playerid) {

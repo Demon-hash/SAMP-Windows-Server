@@ -5,6 +5,9 @@
 
 #define WEEKLY_MAX_ACTIVITIES 8
 #define WEEKLY_MAX_ACTIVITIES_LEN 64
+#define WEEKLY_MAX_REWARDS_LEN 24
+#define WEEKLY_MAX_TYPES_LEN 24
+#define WEEKLY_MAX_COUNT_LEN 96
 
 enum {
 	WEEKLY_HUMAN_BOSSES,
@@ -46,8 +49,8 @@ enum WEEKLY_CFG_DATA {
 	wqdMedStanding,
 	wqdMaxStanding,
 	wqdStandingPerLevel,
-	wqdAttachement[2],
-	wqdNickname[2],
-	wqdActivitiesDataId[WEEKLY_MAX_ACTIVITIES_LEN],
-	wqdActivitiesDataCount[WEEKLY_MAX_ACTIVITIES_LEN],
+	wqdActivities[WEEKLY_MAX_ACTIVITIES_LEN],
+	wqdTypes[WEEKLY_MAX_TYPES_LEN],
+	wqdCount[WEEKLY_MAX_COUNT_LEN],
+	wqdRewards[WEEKLY_MAX_REWARDS_LEN],
 }

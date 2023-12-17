@@ -41,12 +41,23 @@
 #define PREPARE_WEEKLY_ACTIVITIES_QUERY "SELECT %e as text, activity, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)"
 #define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
 
+#define UPDATE_WEEKLY_CFG_QUERY "UPDATE `weekly_cfg` SET `next_update`='%d',`activities`='%e',`types`='%e',`count`='%e',`rewards`='%e' WHERE 1;"
+
+#define SET_WEEKLY_VARIABLE_QUERY "\
+	SET @weekly = (SELECT CONCAT_WS(',',\n\
+		(SELECT SUBSTRING_INDEX(GROUP_CONCAT(activity ORDER BY RAND()), ',', 2) FROM weekly_activities_cfg WHERE type = 2),\n\
+		(SELECT SUBSTRING_INDEX(GROUP_CONCAT(activity ORDER BY RAND()), ',', 2) FROM weekly_activities_cfg WHERE type = 1),\n\
+		(SELECT SUBSTRING_INDEX(GROUP_CONCAT(activity ORDER BY RAND()), ',', 4) FROM weekly_activities_cfg WHERE type = 0)\n\
+	));\
+"
+
 #define CREATE_WEEKLY_ACTIVITIES_QUERY "\
-	(SELECT `activity`, `count`, `type` FROM weekly_activities_cfg WHERE type = 2 ORDER BY RAND() LIMIT 2)\n\
-	UNION\n\
-	(SELECT `activity`, `count`, `type` FROM weekly_activities_cfg WHERE type = 1 ORDER BY RAND() LIMIT 2)\n\
-	UNION\n\
-	(SELECT `activity`, `count`, `type` FROM weekly_activities_cfg WHERE type = 0 ORDER BY RAND() LIMIT 4);\
+	SELECT (SELECT SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY RAND()), ',', 4) FROM clothes_locale WHERE 1) as rewards,\n\
+	@weekly AS `activities`,\n\
+	(SELECT GROUP_CONCAT(type ORDER BY FIND_IN_SET(w.activity, @weekly)) FROM weekly_activities_cfg w WHERE FIND_IN_SET (w.activity, @weekly)) as `types`,\n\
+	(SELECT GROUP_CONCAT(count ORDER BY FIND_IN_SET(w.activity, @weekly)) FROM weekly_activities_cfg w WHERE FIND_IN_SET (w.activity, @weekly)) as `count`\n\
+	FROM config\n\
+	WHERE 1\
 "
 
 #define LOAD_ACHIEVEMENTS_PAGE "SELECT l.%e AS title, l.%e_desc AS description, c.type, c.count, c.reward, (\
@@ -94,6 +105,7 @@
 	SET\n\
 	`standing`='%d',\
 	`coins`='%d',\
+	`activities`='%e',\n\
 	`progress`='%e'\n\
 	WHERE `id`='%d'\
 "
@@ -247,6 +259,7 @@
 		COALESCE(w.standing, 0) as w_standing,\n\
 		COALESCE(w.coins, 0) as w_coins,\n\
 		COALESCE(w.progress, '') as w_progress,\n\
+		COALESCE(w.activities, '') as w_activities,\n\
 		COALESCE(l.ip, 'NULL') as login_ip,\n\
 		COALESCE(l.date, 0) as login_date,\n\
 		COALESCE(l.account_id, -1) as login_id,\n\
