@@ -1,11 +1,6 @@
 #include <packs/core>
 #include <packs/developer>
 
-// 		/paylog ..., better cursor pagination
-// 		Votekick min xp
-// 		Weekly Missions - Standing
-
-
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
 	GANGS_TEMPLATE, GANGS_USERS_TEMPLATE,
@@ -80,6 +75,9 @@ static Player[MAX_PLAYERS][PLAYER_DATA];
 static Privileges[MAX_PLAYERS][PRIVILEGES_DATA];
 static Settings[MAX_PLAYERS][SETTINGS_DATA];
 
+static Duels[MAX_PLAYERS][DUEL_DATA];
+static DuelConfig[DUEL_CFG_DATA];
+
 static Lottery[MAX_PLAYERS];
 static LotteryConfig[LOTTERY_CONFIG_DATA];
 
@@ -95,7 +93,12 @@ static RandomQuestions[RANDOM_MESSAGES_BUFFER];
 static LocalizedRandomQuestions[MAX_PLAYERS][RANDOM_MESSAGES_DATA][MAX_RANDOM_MESSAGE_LEN];
 static LocalizedRandomAnswers[MAX_PLAYERS][RANDOM_MESSAGES_DATA][MAX_RANDOM_ANSWER_LEN];
 
-static AnticheatConfig[1];
+static WeeklyConfig[WEEKLY_CFG_DATA];
+static Weekly[MAX_PLAYERS][WEEKLY_DATA];
+static WeeklyHashmap[WEEKLY_HASHMAP];
+static WeeklyClothes[MAX_PLAYERS][WEEKLY_CLOTHES];
+static WeeklyClothesList[MAX_PLAYERS][WEEKLY_MAX_CLOTHES_LIST];
+
 static ServerConfig[CONFIG_DATA];
 static ServerBalance[BALANCE_DATA];
 static Pickups[MAX_PICKUPS][PICKUP_DATA];
@@ -104,89 +107,20 @@ static WeaponsConfig[MAX_WEAPONS][WEAPONS_CONFIG_DATA];
 static Localization[MAX_PLAYERS][LOCALIZATION_DATA][LOCALIZATION_LINE_SIZE];
 static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
-static WeeklyConfig[WEEKLY_CFG_DATA];
-static Weekly[MAX_PLAYERS][WEEKLY_DATA];
-static WeeklyHashmap[WEEKLY_HASHMAP];
-static WeeklyClothes[MAX_PLAYERS][WEEKLY_CLOTHES];
-static WeeklyClothesList[MAX_PLAYERS][WEEKLY_MAX_CLOTHES_LIST];
-
-static Duels[MAX_PLAYERS][DUEL_DATA];
-static DuelConfig[DUEL_CFG_DATA];
-
 static Votekick[VOTEKICK_DATA];
+static Anticheat[MAX_PLAYERS][ANTICHEAT_DATA];
+static bool:PlayerDamagedPlayer[MAX_PLAYERS][MAX_PLAYERS];
 
 static
-	Float:Polygon[RECTANGLE][POINT] = { { 0.0, 0.0 }, ... },
-	MySQL:Database,
-	updateTimerId,
-	Iterator:Humans<MAX_PLAYERS>,
-	Iterator:Zombies<MAX_PLAYERS>,
-	Iterator:MutatedPlayers<MAX_PLAYERS>,
-	Iterator:RadioactivePlayers<MAX_PLAYERS>,
-	Iterator:NursePlayers<MAX_PLAYERS>,
-	Iterator:PriestPlayers<MAX_PLAYERS>,
-	Iterator:SupportPlayers<MAX_PLAYERS>,
-	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>,
-	Iterator:Admins<MAX_PLAYERS>,
-	joinedPlayers = 0;
+		MySQL:Database, 						updateTimerId,
+		joinedPlayers = 0,
+		Iterator:Humans<MAX_PLAYERS>, 			Iterator:Zombies<MAX_PLAYERS>,
+		Iterator:MutatedPlayers<MAX_PLAYERS>, 	Iterator:RadioactivePlayers<MAX_PLAYERS>,
+		Iterator:NursePlayers<MAX_PLAYERS>,		Iterator:PriestPlayers<MAX_PLAYERS>,
+		Iterator:SupportPlayers<MAX_PLAYERS>,	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>,
+		Iterator:Admins<MAX_PLAYERS>;
 
-/*
-	MAIN
-	- Achievements - Required
-	
-	- Weekly Quests > Attachements & Inventory > Shop (Reputation + Coin)
-	- Collections > Coins gain
-	- Commands & Gangs - Optional
-	- Anticheat - Optional
-*/
-
-/*
- - General Changes To Gameplay:
- - Gangs:
-    - Capacity is 10 members only,
-    - Create a gang required 25,000 points
- 	- Quests (5):
-		* Reach a total of 100,000 points (Reward: 10 Armour)
-		* Reach a total of 200,000 points (Reward: 20 Armour)
-		* Reach a total of 300,000 points (Reward: 30 Armour)
-		* Reach a total of 400,000 points (Reward: 40 Armour)
-		* Reach a total of 500,000 points (Reward: 50 Armour)
-	 - How to capture:
-    	* At the end of the round, gang players will receive weapons and must inflict the maximum possible damage on the spawned bot
-		* The map will be captured by the gang that deals the most damage
- - Maps:
-    * Captured map gives more points for killing (+2)
-    * The gang holding the map receives additional experience points for actions:
-    	* Infect / Ability / Cure (0.1%)
-    	* Evac (0.5%)
-*/
-
-// ShowPlayerDialogAC
-// SendClientMessage
-// format
-// CreatePlayer3DTextLabel
-
-#define GANG_CONTROL_TEXT "{FFFFFF}%s\n\
-		 {FFF000}Controlled by {FFFFFF}%s\n\
-		 {FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n\
-		 {FFF000}This gang dealt the most damage to capture the map\n\
-		 {FFF000}The gang members get extra points for the following actions:\n\n\
-		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n\
-		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n\
-		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n\
-		 {FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n\
-		 {FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist\n\n\
-		 >> All zombies have 200 HP <<\
-		 "
-		 
-#define CRYSTAL_STONE_TEXT "CRYSTAL STONE\n{FFFFFF}>> %.0f <<{FFF000}\nDestroy this crystal to capture the map, only gang members can deal damage\nDamage dealt depends on rank"
-
-#define DIALOG_ACHIEVEMENT_LOCKED "{d5d5c3}"
-#define DIALOG_ACHIEVEMENT_UNLOCKED "{66ccff}"
-
-main() {
-}
-
+main() {}
 public OnGameModeInit() {
     new year, mounth, day, hours, minutes, seconds;
     TimestampToDate(gettime(), year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
@@ -219,7 +153,7 @@ public OnGameModeInit() {
 	Iter_Clear(Zombies);
 	Iter_Clear(Admins);
 	
-	SetGameModeText("Zombies / Survival");
+	SetGameModeText("Zombies / Survival / TDM");
 	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
     ShowNameTags(1);
 	SetTeamCount(MAX_PLAYER_TEAMS);
@@ -228,49 +162,13 @@ public OnGameModeInit() {
 	AllowInteriorWeapons(1);
 	
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
-	mysql_set_charset(GLOBAL_CHARSET);
-	
-	new i;
-	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
-	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
-
-    mysql_tquery(Database, PREDIFINED_CLOTHES_LOCALE);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_4);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_7);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_9);
-	mysql_tquery(Database, PREDIFINED_LOCALIZATION_10);
-
- 	mysql_set_charset(LOCAL_CHARSET);
-	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
-	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsCfg");
-	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundCfg");
-	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacCfg");
-	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapCfg");
-	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsCfg");
-	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceCfg");
-	mysql_tquery(Database, LOAD_DUELS_CFG_QUERY, "LoadDuelsCfg");
-	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
-	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
-	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
-	mysql_tquery(Database, LOAD_WEEKLY_CFG_QUERY, "LoadWeeklyCfg");
-	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
-	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
+	PushDatabaseValues();
+	LoadConfigs();
+	CreateServerObjects();
 	
  	mysql_log(SQL_LOG_LEVEL);
  	printf("|: MySQL status: %d", mysql_errno(Database));
- 	
 	updateTimerId = SetTimer("Update", 1000, true);
-	CreateObject(19362, 968.50067, -53.24604, 1001.84027,   0.00000, 0.00000, 0.00000); // Evac wall
-	CreateObject(3571, 1389.5347, -17.7867, 1003.8270, 0.0000, 0.0000, 90.0); // Duel container
-	CreateObject(3571, 1390.7495, -17.8437, 1001.1542, 0.0000, 0.0000, 90.0); // Duel container
-	CreateObject(3571, 1388.1919, -17.7723, 1001.1542, 0.0000, 0.0000, 90.0); // Duel container
-	CreateObject(19362, 1417.13965, 7.58651, 1008.78302,   0.00000, 0.00000, 90.00000); // Duel wall
 	return 1;
 }
 
@@ -283,9 +181,26 @@ public OnGameModeExit() {
 }
 
 public OnPlayerConnect(playerid) {
-    ClearAllPlayerData(playerid);
-    CheckForAccount(playerid);
+    if(IsPlayerNPC(playerid)) {
+ 		BanByAnticheat(playerid, "Bot");
+        return 1;
+    }
     
+    ClearAllPlayerData(playerid);
+    if(IsInvalidSerial(Misc[playerid][mdSerial]) || IsIp(Misc[playerid][mdPlayerName])) {
+        Kick(playerid);
+        return 1;
+    }
+    
+    /*
+
+	if(AnticheatConfig[RESTRICT_RAPID_FIRE]) {
+
+	}
+	
+	*/
+
+    CheckForAccount(playerid);
     ++joinedPlayers;
     
     new formated[128];
@@ -332,16 +247,23 @@ public OnPlayerDisconnect(playerid, reason) {
 }
 
 public OnPlayerStateChange(playerid, newstate, oldstate) {
+	if(!HasAdminPermission(playerid)) {
+		switch(newstate) {
+		    case PLAYER_STATE_SPECTATING: return BanByAnticheat(playerid, "Ghost Mode");
+		    case PLAYER_STATE_DRIVER, PLAYER_STATE_PASSENGER: return BanByAnticheat(playerid, "Vehicle Hack");
+		}
+	}
+
 	if(Misc[playerid][mdIsBeingSpeced]) {
 	    foreach(Admins, i) {
             if(Misc[i][mdSpectatorId] == playerid) {
                 switch(newstate) {
-                    case PLAYER_STATE_DRIVER, PLAYER_STATE_PASSENGER: PlayerSpectateVehicle(i, GetPlayerVehicleID(playerid));
                     case PLAYER_STATE_ONFOOT: PlayerSpectatePlayer(i, playerid);
                 }
             }
 	    }
 	}
+	
 	return 1;
 }
 
@@ -383,7 +305,7 @@ public OnPlayerRequestClass(playerid, classid) {
 		0.0, 0, 0, 0, 0, 0, 0
 	);
 
-    SetPlayerPos(playerid, ServerConfig[svCfgPreviewBotPos][0],
+    SetPlayerPosAC(playerid, ServerConfig[svCfgPreviewBotPos][0],
 	ServerConfig[svCfgPreviewBotPos][1], ServerConfig[svCfgPreviewBotPos][2]);
 	SetPlayerFacingAngle(playerid, ServerConfig[svCfgPreviewBotPos][3]);
 
@@ -465,6 +387,11 @@ public OnPlayerDeath(playerid, killerid, reason) {
 	}
 	
 	if(IsPlayerConnected(killerid)) {
+	    if(!PlayerDamagedPlayer[playerid][killerid]) {
+	    	BanByAnticheat(playerid, "Fake Kill");
+	    	return 0;
+		}
+		
 	    IncreaseWeaponSkillLevel(killerid, reason);
 	    ProceedAchievementProgress(killerid, ACH_TYPE_TERRORIST);
 	    ProceedWeekly(killerid, WEEKLY_KILL_PLAYERS);
@@ -577,11 +504,15 @@ public OnPlayerDeath(playerid, killerid, reason) {
  	ClearPlayerRoundData(playerid);
 	CreateDropOnDeath(playerid, killerid);
 	ResetMapValuesOnDeath(playerid);
+
+	foreach(Player, i) {
+		PlayerDamagedPlayer[playerid][i] = false;
+	}
 	return 1;
 }
 
 public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: fY, Float: fZ) {
-    if(!(weaponid >= WEAPON_COLT45 && weaponid <= WEAPON_MINIGUN)) {
+    if(weaponid < WEAPON_COLT45 || weaponid > WEAPON_MINIGUN) {
 	    return 0;
 	}
 	
@@ -647,12 +578,10 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 }
 
 public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger) {
-    if(Privileges[playerid][prsAdmin] < 1) {
-        new Float:pos[3];
-        ClearAnimations(playerid);
-        GetPlayerVelocity(playerid, pos[0], pos[1], pos[2]);
-		SetPlayerVelocity(playerid, pos[0], pos[1], pos[2] + 0.2);
-    }
+    new Float:pos[3];
+    ClearAnimations(playerid);
+    GetPlayerVelocity(playerid, pos[0], pos[1], pos[2]);
+	SetPlayerVelocity(playerid, pos[0], pos[1], pos[2] + 0.2);
     return 1;
 }
 
@@ -660,6 +589,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	if(IsPlayerConnected(damagedid)) {
 	    Misc[damagedid][mdLastIssuedDamage] = playerid;
 	    Misc[damagedid][mdLastIssuedReason] = weaponid;
+	    PlayerDamagedPlayer[damagedid][playerid] = true;
 	
         if( weaponid == RoundConfig[rdCfgBrutalityWeapon] && GetPlayerTeamEx(playerid) == TEAM_ZOMBIE  && GetPlayerTeamEx(damagedid) == TEAM_HUMAN) {
 			if(GetPlayerArmourEx(damagedid) > 0.0) {
@@ -726,7 +656,7 @@ public OnPlayerEnterCheckpoint(playerid) {
 	}
 
 	PlayerPlaySound(playerid, EvacuationConfig[ecdCfgSound], 0.0, 0.0, 0.0);
-	SetPlayerPos(playerid, EvacuationConfig[ecdCfgPosition][0], EvacuationConfig[ecdCfgPosition][1], EvacuationConfig[ecdCfgPosition][2]);
+	SetPlayerPosAC(playerid, EvacuationConfig[ecdCfgPosition][0], EvacuationConfig[ecdCfgPosition][1], EvacuationConfig[ecdCfgPosition][2]);
 	SetPlayerFacingAngle(playerid, EvacuationConfig[ecdCfgPosition][3]);
 	SetCameraBehindPlayer(playerid);
 	SetPlayerInterior(playerid, EvacuationConfig[ecdCfgInterior]);
@@ -1103,12 +1033,35 @@ custom Update() {
 
 	foreach(Player, playerid) {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
+	    
+	    if(GetPlayerMoney(playerid)) {
+	        BanByAnticheat(playerid, "Money Hack");
+	        continue;
+	    }
+	    
         if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_USEJETPACK && !HasAdminPermission(playerid)) {
-			Kick(playerid);
+ 			BanByAnticheat(playerid, "Jetpack hack");
 			continue;
 		}
 	    
 	    CheckAndNormalizeACValues(playerid, hp, armour);
+	    
+	    if(Anticheat[playerid][acdIgnore]) {
+	        --Anticheat[playerid][acdIgnore];
+	    } else {
+	        if(!IsFalling(playerid) && floatround(GetPlayerDistanceFromPoint(playerid, Anticheat[playerid][acdPos][0], Anticheat[playerid][acdPos][1], Anticheat[playerid][acdPos][2])) > 14) {
+		        foreach(Admins, i) {
+	             	format(formated, sizeof(formated), ">> %s supposedly uses Teleport Hack", Misc[playerid][mdPlayerName]);
+	             	SendClientMessage(i, COLOR_ADMIN, formated);
+		        }
+	    	}
+	    }
+	    
+	    GetPlayerPos(playerid, Anticheat[playerid][acdPos][0], Anticheat[playerid][acdPos][1], Anticheat[playerid][acdPos][2]);
+   		if(GetPlayerAnimationIndex(playerid) == -1 && Anticheat[playerid][acdPos][2] > 0.0) {
+            BanByAnticheat(playerid, "Invalid Animation Hack");
+			continue;
+		}
 	    
 	    if(IsLogged(playerid)) {
 	        ++Misc[playerid][mdAfk];
@@ -1123,10 +1076,9 @@ custom Update() {
 	        }
 	        
 	        if(Misc[playerid][mdAfk] == 300) {
-	            new str[96];
 	            foreach(Player, i) {
-	                format(str, sizeof(str), Localization[i][LD_MSG_AFK_KICK], Misc[playerid][mdPlayerName]);
-	                SendClientMessage(i, COLOR_ADMIN, str);
+	                format(formated, sizeof(formated), Localization[i][LD_MSG_AFK_KICK], Misc[playerid][mdPlayerName]);
+	                SendClientMessage(i, COLOR_ADMIN, formated);
 	            }
 	            
 	            KickPlayer(playerid);
@@ -1134,10 +1086,9 @@ custom Update() {
 			}
 	        
 	        if(GetPlayerPing(playerid) > 400) {
-	            new str[96];
 	            foreach(Player, i) {
-	                format(str, sizeof(str), Localization[i][LD_MSG_PING_KICK], Misc[playerid][mdPlayerName]);
-	                SendClientMessage(i, COLOR_ADMIN, str);
+	                format(formated, sizeof(formated), Localization[i][LD_MSG_PING_KICK], Misc[playerid][mdPlayerName]);
+	                SendClientMessage(i, COLOR_ADMIN, formated);
 	            }
 	            
 	            KickPlayer(playerid);
@@ -1235,14 +1186,6 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "water", Map[mpWaterAllowed]);
 	    cache_get_value_name_int(0, "crystal_id", Map[mpGangCrystalId]);
 	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
-	    
-	    cache_get_value_name(0, "polygon", buff);
-	 	sscanf(buff, "p<,>ffffffff",
-		 	Polygon[0][_ptX_], Polygon[0][_ptY_],
-		 	Polygon[1][_ptX_], Polygon[1][_ptY_],
-		 	Polygon[2][_ptX_], Polygon[2][_ptY_],
-		 	Polygon[3][_ptX_], Polygon[3][_ptY_]
-		);
     	
     	cache_get_value_name(0, "login", Map[mpAuthor]);
         cache_get_value_name(0, "filename", Map[mpFilename]);
@@ -1644,7 +1587,7 @@ custom DestroyObjectEffectAndExplosion(const objectid, const Float:x, const Floa
 }
 
 custom MovePlayerAfterEffect(const playerid, const Float:x, const Float:y, const Float:z) {
-	SetPlayerPos(playerid, x, y, z);
+	SetPlayerPosAC(playerid, x, y, z);
 	ClearAnimations(playerid);
 }
 
@@ -1688,6 +1631,7 @@ custom LoadServerCfg() {
         cache_get_value_name_int(0, "tip_per", ServerConfig[svCfgTipMessageCooldown]);
         cache_get_value_name_int(0, "name_price", ServerConfig[svCfgChangeName]);
         cache_get_value_name_int(0, "gang_price", ServerConfig[svCfgGangCreate]);
+        cache_get_value_name_int(0, "votekick", ServerConfig[svCfgVotekick]);
 
         cache_get_value_name_float(0, "taxes", ServerConfig[svCfgTaxes]);
         cache_get_value_name_float(0, "infection_damage", ServerConfig[svCfgInfectionDamage]);
@@ -3070,7 +3014,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	if(cache_num_rows()) {
 	    new title[48], description[128], type, count, reward, index, value;
 		new normalized[128], formated[128], list[2048], i, total, len = cache_num_rows();
-		static const colors[][] = { DIALOG_ACHIEVEMENT_LOCKED, DIALOG_ACHIEVEMENT_UNLOCKED };
+		static const colors[] = { COLOR_ACHIEVEMENT_LOCKED, COLOR_ACHIEVEMENT_UNLOCKED };
 		
 		cache_get_value_name_int(0, "total", total);
 		strcat(list, Localization[playerid][LD_DG_ACHS_HEADERS]);
@@ -3085,10 +3029,10 @@ custom GetAchievementsList(const playerid, const offset) {
         	index = value >= count;
         	
         	format(normalized, sizeof(normalized), description, count);
-        	format(formated, sizeof(formated), "%s%s\t%s%s (%d/%d) - %d %s\n",
-				colors[index],
+        	format(formated, sizeof(formated), "{%06x}%s\t{%06x}%s (%d/%d) - %d %s\n",
+				colors[index] >>> 8,
 				title,
-				colors[index],
+				colors[index] >>> 8,
 				normalized,
 				min(value, count),
 				count,
@@ -3099,7 +3043,7 @@ custom GetAchievementsList(const playerid, const offset) {
 	    }
 
 	    if((total - (offset + len)) > 0) {
-	        format(formated, sizeof(formated), "{66ccff}%s", Localization[playerid][LD_DG_ACHS_TITLE]);
+	        format(formated, sizeof(formated), "{%06x}%s", COLOR_ACHIEVEMENT_UNLOCKED >>> 8, Localization[playerid][LD_DG_ACHS_TITLE]);
 	        ShowPlayerDialogAC(playerid,
 				DIALOG_ACHIEVEMENTS,
 				DIALOG_STYLE_TABLIST_HEADERS,
@@ -3523,7 +3467,7 @@ stock PrepareForDuel(const playerid, const virtualWorld, const armour, const wea
 	SetPlayerSkin(playerid, skin);
 
 	new id = (index * 4);
-	SetPlayerPos(playerid, DuelConfig[dcPosition][id], DuelConfig[dcPosition][id + 1], DuelConfig[dcPosition][id + 2]);
+	SetPlayerPosAC(playerid, DuelConfig[dcPosition][id], DuelConfig[dcPosition][id + 1], DuelConfig[dcPosition][id + 2]);
 	SetPlayerFacingAngle(playerid, DuelConfig[dcPosition][id + 3]);
 
 	GivePlayerWeaponAC(playerid, weaponid, 9999);
@@ -3540,7 +3484,7 @@ stock UnjailPlayer(const playerid) {
 stock SpawnPlayerInJail(const playerid) {
     SetPlayerSkin(playerid, 62);
 	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CUFFED);
-	SetPlayerPos(playerid, 264.1425, 77.4712, 1001.0391);
+	SetPlayerPosAC(playerid, 264.1425, 77.4712, 1001.0391);
 	SetPlayerFacingAngle(playerid, 263.0160);
 	SetPlayerInterior(playerid, 6);
 	SetPlayerTeamAC(playerid, TEAM_UNKNOWN);
@@ -3613,6 +3557,10 @@ stock bool:IsPlayerInGang(const playerid) {
     return Misc[playerid][mdGang] > -1;
 }
 
+stock bool:IsFalling(playerid) {
+	return GetPlayerAnimationIndex(playerid) == 960 || (GetPlayerAnimationIndex(playerid) >= 1128 && GetPlayerAnimationIndex(playerid) <= 1134);
+}
+
 stock bool:IsValidDuelWeapon(const weaponId) {
 	switch(weaponId) {
 	    case 16, 18, 22..39, 41, 42: return true;
@@ -3668,18 +3616,33 @@ stock bool:HasAdminPermission(const playerid, const lvl = 1) {
 	return Privileges[playerid][prsAdmin] >= lvl;
 }
 
+stock bool:IsInvalidSerial(const hash[]) {
+    new count, pos;
+ 	while(pos < strlen(hash)) {
+ 		if('0' <= hash[pos] <= '9') ++count;
+   		++pos;
+
+		if(count == 30) return true;
+		if(pos == 30) break;
+   	}
+
+	return false;
+}
+
 stock bool:IsIp(const text[]) {
 	if(strfind(text, ".", true) != -1) {
- 		new i_numcount, i_period, i_pos;
-  		while(text[i_pos]) {
-   			if('0' <= text[i_pos] <= '9') i_numcount ++;
-    		switch(text[i_pos]) {
-    			case '.': i_period ++;
+ 		new count, period, pos;
+  		while(text[pos]) {
+   			if('0' <= text[pos] <= '9') ++count;
+   			
+    		switch(text[pos]) {
+    			case '.': ++period;
     		}
-			i_pos++;
+    		
+			++pos;
+			
+			if(count >= 5 && period >= 3) return true;
   		}
-  	
-   		if(i_numcount >= 5 && i_period >= 3) return true;
    	}
 	return false;
 }
@@ -3822,6 +3785,52 @@ stock SetMapId() {
 	}
 }
 
+stock LoadConfigs() {
+    mysql_set_charset(LOCAL_CHARSET);
+	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
+	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsCfg");
+	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundCfg");
+	mysql_tquery(Database, LOAD_EVAC_CFG_QUERY, "LoadEvacCfg");
+	mysql_tquery(Database, LOAD_MAP_CFG_QUERY, "LoadMapCfg");
+	mysql_tquery(Database, LOAD_WEAPONS_CFG_QUERY, "LoadWeaponsCfg");
+	mysql_tquery(Database, LOAD_BALANCE_CFG_QUERY, "LoadBalanceCfg");
+	mysql_tquery(Database, LOAD_DUELS_CFG_QUERY, "LoadDuelsCfg");
+	mysql_tquery(Database, LOAD_TEXTURES_CFG_QUERY, "LoadTexturesCfg");
+	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
+	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
+	mysql_tquery(Database, LOAD_WEEKLY_CFG_QUERY, "LoadWeeklyCfg");
+	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
+	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
+}
+
+stock PushDatabaseValues() {
+    mysql_set_charset(GLOBAL_CHARSET);
+    
+	new i;
+	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
+	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
+
+    mysql_tquery(Database, PREDIFINED_CLOTHES_LOCALE);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_4);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_5);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_6);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_7);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_9);
+	mysql_tquery(Database, PREDIFINED_LOCALIZATION_10);
+}
+
+stock CreateServerObjects() {
+	CreateObject(19362, 968.50067, -53.24604, 1001.84027,   0.00000, 0.00000, 0.00000); 		// Evac wall
+	CreateObject(3571, 1389.5347, -17.7867, 1003.8270, 0.0000, 0.0000, 90.0); 					// Duel container
+	CreateObject(3571, 1390.7495, -17.8437, 1001.1542, 0.0000, 0.0000, 90.0); 					// Duel container
+	CreateObject(3571, 1388.1919, -17.7723, 1001.1542, 0.0000, 0.0000, 90.0); 					// Duel container
+	CreateObject(19362, 1417.13965, 7.58651, 1008.78302,   0.00000, 0.00000, 90.00000); 		// Duel wall
+}
+
 stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 	new formated[256];
 	format(formated, sizeof(formated),
@@ -3845,6 +3854,14 @@ stock ShowRegisterDialog(const playerid, const type = DIALOG_NOERROR) {
 		Localization[playerid][LD_BTN_REGISTER],
 		Localization[playerid][LD_BTN_QUIT]
 	);
+}
+
+stock SetPlayerPosAC(playerid, Float:x, Float:y, Float:z) {
+    Anticheat[playerid][acdIgnore] = 5;
+    Anticheat[playerid][acdPos][0] = x;
+	Anticheat[playerid][acdPos][1] = y;
+	Anticheat[playerid][acdPos][2] = z;
+    SetPlayerPos(playerid, x, y, z);
 }
 
 stock ShowPlayerDialogAC(playerid, dialogid, style, caption[], info[], button1[], button2[]) {
@@ -3980,6 +3997,10 @@ stock ClearAllPlayerData(const playerid) {
     
     SetPlayerHealthAC(playerid, 100.0);
     SetPlayerArmourAC(playerid, 0.0);
+
+	foreach(Player, i) {
+		PlayerDamagedPlayer[playerid][i] = false;
+	}
 }
 
 stock ClearAbilitiesTimers(const playerid) {
@@ -4299,7 +4320,8 @@ stock InitializeServerConfig() {
     ServerConfig[svCfgAntidoteChance] = 0;
     ServerConfig[svCfgTipMessageCooldown] = 120;
     ServerConfig[svCfgChangeName] = 1500;
-    ServerConfig[svCfgChangeName] = 50000;
+    ServerConfig[svCfgGangCreate] = 50000;
+    ServerConfig[svCfgVotekick] = 35000;
     ServerConfig[svCfgInfectionDamage] = 0.0;
     ServerConfig[svCfgCurseDamage] = 0.0;
     ServerConfig[svCfgTaxes] = 0.35;
@@ -4450,39 +4472,6 @@ stock IncreaseWeaponSkillLevel(const playerid, const weaponid, const count = 1) 
 	    case 31: ProceedAchievementProgress(playerid, ACH_TYPE_M4, count);
 	    case 33: ProceedAchievementProgress(playerid, ACH_TYPE_RIFLE, count);
 	}
-}
-
-stock bool:IsPlayerInsideMap(const playerid) {
-	if(GetPlayerInterior(playerid) > 0) {
-	    return true;
-	}
-
-	new Float:pos[3];
-    GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
-    return IsPointInPolygon(ToPolygonPoint(pos[0], pos[1]), Polygon);
-}
-
-stock CheckPlayerForOOM(const playerid) {
-	if(!IsLogged(playerid) || !Map[mpIsStarted] ||
-		Map[mpTimeout] <= 0 || Map[mpTimeout] >= (MapConfig[mpCfgTotal] - MapConfig[mpCfgGreatTime]) ||
-		GetPlayerState(playerid) != PLAYER_STATE_ONFOOT || Round[playerid][rdCheckForOOM] > gettime()) {
-	    return;
-	}
-	
-	Round[playerid][rdCheckForOOM] = gettime() + MapConfig[mpCfgOOMCheck];
-	
-    if(!IsPlayerInsideMap(playerid)) {
-		SetPlayerTeamAC(playerid, TEAM_ZOMBIE);
-		SpawnPlayer(playerid);
-
-		new formated[90];
-		foreach(Player, i) {
-		    format(formated, sizeof(formated), Localization[i][LD_MSG_PLAYER_OOM], Misc[playerid][mdPlayerName]);
-		    SendClientMessage(i, COLOR_ADMIN, formated);
-		}
-	}
-	
-	return;
 }
 
 stock bool:IsLogged(const playerid) {
@@ -4747,7 +4736,7 @@ stock SetByCurrentClass(const playerid) {
 	switch(GetPlayerTeamEx(playerid)) {
 	    case TEAM_ZOMBIE: {
 			SetZombie(playerid, current);
-			SetPlayerPos(playerid, 	Map[mpZombieSpawnX][point] + distance, Map[mpZombieSpawnY][point] + distance, Map[mpZombieSpawnZ][point]);
+			SetPlayerPosAC(playerid, 	Map[mpZombieSpawnX][point] + distance, Map[mpZombieSpawnY][point] + distance, Map[mpZombieSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpZombieSpawnA][point]);
 			Misc[playerid][mdSpawnProtection] = gettime() + MapConfig[mpCfgSpawnProtectionTime];
 			
@@ -4757,7 +4746,7 @@ stock SetByCurrentClass(const playerid) {
 		}
 	    case TEAM_HUMAN: {
 			SetHuman(playerid, current);
-			SetPlayerPos(playerid, 	Map[mpHumanSpawnX][point] + distance, Map[mpHumanSpawnY][point] + distance, Map[mpHumanSpawnZ][point]);
+			SetPlayerPosAC(playerid, 	Map[mpHumanSpawnX][point] + distance, Map[mpHumanSpawnY][point] + distance, Map[mpHumanSpawnZ][point]);
 			SetPlayerFacingAngle(playerid, Map[mpHumanSpawnA][point]);
 			
 			new formated[90];
@@ -5230,6 +5219,7 @@ stock StompHumans(const playerid, const classid, const abilityid) {
     foreach(Humans, targetid) {
         if(!IsAbleToBeStomped(targetid)) continue;
 		if(IsInAbilityRange(targetid, playerid, classid)) {
+		    Anticheat[targetid][acdIgnore] = 5;
         	GetPlayerVelocity(targetid, pos[0], pos[1], pos[2]);
 			SetPlayerVelocity(targetid, pos[0] * ClassesConfig[clsCfgStomp][0], pos[1] * ClassesConfig[clsCfgStomp][1], pos[2] + ClassesConfig[clsCfgStomp][2]);
 			++count;
@@ -5279,7 +5269,7 @@ stock FlashAttackOnHuman(const playerid, const classid, const abilityid) {
         GetPlayerPos(playerid, old[0], old[1], old[2]);
         GetPlayerPos(targetid, pos[0], pos[1], pos[2]);
         
-        SetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+        SetPlayerPosAC(playerid, pos[0], pos[1], pos[2]);
         GetXYInFrontOfPlayer(playerid, pos[0], pos[1], 1.0);
         
         objectid = CreateObject(ClassesConfig[clsCfgFlasherEffectId], pos[0], pos[1], pos[2] - 2.0, 0.0, 0.0, 0.0);
@@ -5556,6 +5546,8 @@ stock GiveSpitterWeapon(const playerid, const classid, const abilityid) {
 }
 
 stock HighJump(const playerid, const classid, const abilityid) {
+    Anticheat[playerid][acdIgnore] = 5;
+    
     new Float:pos[3];
     GetPlayerVelocity(playerid, pos[0], pos[1], pos[2]);
     SetPlayerVelocity(playerid,
@@ -5570,6 +5562,8 @@ stock HighJump(const playerid, const classid, const abilityid) {
 
 stock LongJump(const playerid, const classid) {
     if( Round[playerid][rdAbilityTimes] > 0) {
+        Anticheat[playerid][acdIgnore] = 5;
+        
 	    new Float:pos[3];
 	    GetPlayerCameraFrontVector(playerid, pos[0], pos[1], pos[2]);
 		SetPlayerVelocity(playerid,
@@ -5577,7 +5571,7 @@ stock LongJump(const playerid, const classid) {
 			pos[1] / ClassesConfig[clsCfgLongJump][1],
 			pos[2] + ClassesConfig[clsCfgLongJump][2]
 		);
-		
+
 		AbilitiesTimers[playerid][ABILITY_LONG_JUMPS] = gettime() + Classes[classid][cldCooldown];
 		Round[playerid][rdAbilityTimes]--;
 		AbilityUsed(playerid);
@@ -5595,7 +5589,8 @@ stock ProceedRecoveryLongJumps(const playerid) {
 		gettime() > AbilitiesTimers[playerid][ABILITY_LONG_JUMPS] &&
 		Round[playerid][rdAbilityTimes] < Classes[classid][cldAbilityCount]) {
 	    Round[playerid][rdAbilityTimes]++;
-	    AbilitiesTimers[playerid][ABILITY_LONG_JUMPS] = gettime() + Classes[classid][cldCooldown];
+
+		AbilitiesTimers[playerid][ABILITY_LONG_JUMPS] = gettime() + Classes[classid][cldCooldown];
 	}
 	
 	return 1;
@@ -6174,8 +6169,8 @@ stock SpawnCrystalOnMapEnd() {
 		Map[mpTimeoutBeforeCrystal] = true;
 		Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgBalance];
 
-		new text[256];
-		format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
+	//	new text[256];
+	//	format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
 	//	Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1], Map[mpGangCrystalSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 
 		foreach(Player, i) {
@@ -6183,7 +6178,7 @@ stock SpawnCrystalOnMapEnd() {
 		    if(Misc[i][mdGangRank]) {
                 SetPlayerInterior(i, 0);
 				DisablePlayerCheckpoint(i);
-				SetPlayerPos(i, Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1], Map[mpGangNearCrystalSpawn][2]);
+				SetPlayerPosAC(i, Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1], Map[mpGangNearCrystalSpawn][2]);
 				SetPlayerFacingAngle(i, Map[mpGangNearCrystalSpawn][3]);
 				SetUnknown(i);
 				SetPlayerVirtualWorld(i, 2500);
@@ -6498,6 +6493,17 @@ stock SaveToWarnLog(const playerid, const issued_id, const reason[]) {
 		Misc[issued_id][mdIp]
 	);
 	mysql_tquery(Database, formated, "");
+}
+
+stock BanByAnticheat(const playerid, const reason[]) {
+    static const query[] = CREATE_BAN_LOG;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3) + MAX_PLAYER_IP + 64];
+    mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId], 0, 0, gettime(), 0, 1, reason, Misc[playerid][mdIp], "");
+	mysql_tquery(Database, formated);
+	
+	BlockIpAddress(Misc[playerid][mdIp], 900000);
+	KickPlayer(playerid);
+	return 1;
 }
 
 stock SaveToBanLog(const playerid, const issued_id, const reason[], const time = 0, const permanent = 1) {
@@ -6895,6 +6901,13 @@ CMD:report(const playerid, const params[]) {
 }
 
 CMD:votekick(const playerid, const params[]) {
+    if(Achievements[playerid][achTotalPoints] < ServerConfig[svCfgVotekick]) {
+        new formated[48];
+    	format(formated, sizeof(formated), Localization[playerid][LD_MSG_NOT_ENOUGH_FOR_CLASS], ServerConfig[svCfgVotekick], Localization[playerid][LD_MSG_POINTS]);
+     	SendClientMessage(playerid, COLOR_ALERT, formated);
+      	return 1;
+	}
+
 	if(Iter_Count(Admins)) {
 	    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /report (id) (reason)");
 	    return 1;
@@ -8000,7 +8013,7 @@ CMD:goto(const playerid, const params[]) {
     SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(params[0]));
 	SetPlayerInterior(playerid, GetPlayerInterior(params[0]));
     GetPlayerPos(params[0], pos[0], pos[1], pos[2]);
-    SetPlayerPos(playerid, pos[0] + 0.3, pos[1] + 0.3, pos[2]);
+    SetPlayerPosAC(playerid, pos[0] + 0.3, pos[1] + 0.3, pos[2]);
 	return 1;
 }
 
@@ -8021,7 +8034,7 @@ CMD:get(const playerid, const params[]) {
 	SetPlayerVirtualWorld(params[0], GetPlayerVirtualWorld(playerid));
 	SetPlayerInterior(params[0], GetPlayerInterior(playerid));
 	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
-    SetPlayerPos(params[0], pos[0] + 0.3, pos[1] + 0.3, pos[2]);
+    SetPlayerPosAC(params[0], pos[0] + 0.3, pos[1] + 0.3, pos[2]);
 	return 1;
 }
 
@@ -8378,7 +8391,6 @@ CMD:baniplog(const playerid, const params[]) {
 
 CMD:activity(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 3)) return 0;
-
     mysql_tquery(Database, GET_ADMINS_ACTIVITY, "ShowAdminsActivity", "i", playerid);
 	return 1;
 }
@@ -8414,9 +8426,6 @@ CMD:makeadmin(const playerid, const params[]) {
     return 1;
 }
 
-// / 15 maps = 50 armour
-// Exchange Pistol = Deagle, Ak47 = M4, Shotgun = Spaz 12
-
 CMD:acmds(const playerid) {
     if(!HasAdminPermission(playerid)) return 0;
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/spec(off) /cc /kick /apm /answer /getip /sync /slap /getinfo /atext");
@@ -8431,4 +8440,32 @@ CMD:acmds(const playerid) {
         SendClientMessage(playerid, COLOR_CONNECTIONS, "/makeadmin /banip /unbanip /activity");
     }
     return 1;
+}
+
+// PawnRak.Net
+
+public OnIncomingPacket(playerid, packetid, BitStream:bs) {
+	switch(packetid) {
+	    case 207: {
+	        new onFootData[PR_OnFootSync];
+	        BS_IgnoreBits(bs, 8);
+	        BS_ReadOnFootSync(bs, onFootData);
+	        if(onFootData[PR_surfingVehicleId] != 0 && onFootData[PR_surfingVehicleId] != INVALID_VEHICLE_ID) {
+	            if((floatabs(onFootData[PR_surfingOffsets][0]) >= 50.0) || (floatabs(onFootData[PR_surfingOffsets][1]) >= 50.0) ||
+                  (floatabs(onFootData[PR_surfingOffsets][2]) >= 50.0)) {
+	                return 0;
+	            }
+	        }
+	    }
+	    case 203: {
+	        new aimData[PR_AimSync];
+		    BS_IgnoreBits(bs, 8);
+		    BS_ReadAimSync(bs, aimData);
+		    if(IsNaN(aimData[PR_aimZ])) {
+		        return 0;
+		    }
+	    }
+	}
+	
+	return 1;
 }

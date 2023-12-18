@@ -420,6 +420,7 @@
 	`evacuation` int(6) unsigned NOT NULL default '15',\
 	`cure` int(6) unsigned NOT NULL default '1',\
 	`ability` int(6) unsigned NOT NULL default '1',\
+	`votekick` int(6) unsigned NOT NULL default '35000',\
 	`name_price` int(6) unsigned NOT NULL default '1500',\
 	`gang_price` int(6) unsigned NOT NULL default '50000',\
 	`taxes` DECIMAL(9,2) unsigned NOT NULL default '0.35',\

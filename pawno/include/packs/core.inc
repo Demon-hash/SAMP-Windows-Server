@@ -33,6 +33,7 @@
 #include <packs/duels>
 #include <packs/payments>
 #include <packs/weekly>
+#include <packs/anticheat>
 
 #include <dependencies/jit>
 #include <dependencies/foreach>
@@ -40,6 +41,7 @@
 #include <dependencies/dc_cmd>
 #include <dependencies/a_mysql>
 #include <dependencies/date>
+#include <dependencies/Pawn.RakNet>
 
 #pragma warning disable 208
 #pragma warning disable 239
@@ -75,8 +77,16 @@
 	native SHA256_PassHash(password[], salt[], ret_hash[], ret_hash_len);
 #endif
 
+#if !defined SendClientCheck
+	native SendClientCheck(playerid, actionid, memaddr, memOffset, bytesCount);
+#endif
+
 #define custom%0(%1) forward%0(%1);public%0(%1)
 #define INVALID_VALUE 65535
+
+#if !defined IsNaN
+    #define IsNaN(%0) ((%0) != (%0))
+#endif
 
 enum {
 	DISCONNECT_TIMEOUT,

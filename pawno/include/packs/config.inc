@@ -15,6 +15,7 @@ enum CONFIG_DATA {
 	svCfgExcludedMirrorPart,
 	svCfgInfectionDrunkLevel,
 	svCfgPickupProtection,
+	svCfgVotekick,
 	Float:svCfgPreviewBotPos[4],
 	Float:svCfgPreviewCameraPos[6],
 	Float:svCfgVehicleDamage,
