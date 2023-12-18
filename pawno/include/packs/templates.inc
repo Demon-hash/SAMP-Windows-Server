@@ -1198,16 +1198,4 @@
 	(16, 9, 4, 19101, 2, '0.155, 0.000, 0.000, 0.000, 0.000, 0.000, 1.000, 1.000, 1.000')\
 "
 
-#define PREDIFINED_CLOTHES_LOCALE "INSERT IGNORE INTO `clothes_locale` (id, kit, coins, emblems, english, russian) VALUES \
-	(1, 1, 5, 1, 'Accessory: Sniper', 'Аксессуар: Снайперская винтовка'),\
-	(2, 2, 5, 1, 'Accessory: Ak47', 'Аксессуар: Ak47'),\
-	(3, 3, 5, 1, 'Accessory: Guitar', 'Аксессуар: Гитара'),\
-	(4, 4, 5, 1, 'Accessory: Surfboard', 'Аксессуар: Доска для серфинга'),\
-	(5, 5, 5, 1, 'Accessory: Money case', 'Аксессуар: Денежный ящик'),\
-	(6, 6, 5, 1, 'Accessory: Backpack', 'Аксессуар: Рюкзак'),\
-	(7, 7, 5, 2, 'Haloween Set', 'Набор одежды: Хэллоуин'),\
-	(8, 8, 5, 2, 'Christmas Set', 'Набор одежды: Новый год'),\
-	(9, 9, 5, 3, 'Army Set', 'Набор одежды: Армия')\
-"
-
 #define PREDIFINED_WEEKLY "INSERT IGNORE INTO weekly_cfg (id) VALUES (1)"

@@ -36,6 +36,7 @@ enum MISC_DATA {
 	mdIp[MAX_PLAYER_IP],
 	mdSerial[GPCI_LENGTH],
 	mdDialogId,
+	mdLastRowId,
 	mdWeeklyStanding,
 	mdSelectionTeam,
 	mdKillstreak,

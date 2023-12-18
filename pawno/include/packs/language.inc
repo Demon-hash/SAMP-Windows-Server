@@ -288,6 +288,18 @@ enum LOCALIZATION_DATA {
 	LD_ENDF,
 };
 
+#define PREDIFINED_CLOTHES_LOCALE "INSERT IGNORE INTO `clothes_locale` (id, kit, coins, emblems, english, russian) VALUES \
+	(1, 1, 5, 1, 'Accessory: Sniper', 'Аксессуар: Снайперская винтовка'),\
+	(2, 2, 5, 1, 'Accessory: Ak47', 'Аксессуар: Ak47'),\
+	(3, 3, 5, 1, 'Accessory: Guitar', 'Аксессуар: Гитара'),\
+	(4, 4, 5, 1, 'Accessory: Surfboard', 'Аксессуар: Доска для серфинга'),\
+	(5, 5, 5, 1, 'Accessory: Money case', 'Аксессуар: Денежный ящик'),\
+	(6, 6, 5, 1, 'Accessory: Backpack', 'Аксессуар: Рюкзак'),\
+	(7, 7, 5, 2, 'Haloween Set', 'Набор одежды: Хэллоуин'),\
+	(8, 8, 5, 2, 'Christmas Set', 'Набор одежды: Новый год'),\
+	(9, 9, 5, 3, 'Army Set', 'Набор одежды: Армия');\
+"
+
 #define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
 	(1, 'Login', 'Логин'),\
 	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Добро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
@@ -585,5 +597,5 @@ enum LOCALIZATION_DATA {
 	(267, 'Yes', 'Да'),\
 	(268, '{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n', '{FFFFFF}Цель\t{FFFFFF}Репутация\t{FFFFFF}Прогресс\n'),\
 	(269, '{FFFFFF}Not enough currency to purchase', '{FFFFFF}Недостаточно валюты для покупки'),\
-	(270, '>> You bought %s!', 'Вы купили %s!');\
+	(270, '>> You bought %s! (/clothes)', '>> Вы купили %s! (/clothes)');\
 "

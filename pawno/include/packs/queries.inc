@@ -45,6 +45,15 @@
 #define PREPARE_WEEKLY_REWARD_QUERY "SELECT `%e` AS `text`, `coins`, `kit`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e)"
 #define LOAD_CLOTHES_DATA_QUERY "SELECT * FROM `clothes_cfg` WHERE `kit` = '%d';"
 #define BUY_WEEKLY_CLOTH_QUERY "INSERT INTO `clothes` (account_id, kit) VALUES (%d, %d)"
+#define DELETE_PLAYER_WEEKLY_QUERY "DELETE FROM `weekly` WHERE 1;"
+#define PREPARE_CLOTHES_INV_QUERY "\
+	SELECT c.id, c.kit, cl.%e AS `text`\n\
+	FROM `clothes` c\n\
+	LEFT JOIN `clothes_locale` cl\n\
+	ON cl.kit = c.kit\n\
+	WHERE `account_id` = %d AND c.id > %d\n\
+	LIMIT %d\
+"
 
 #define UPDATE_WEEKLY_CFG_QUERY "UPDATE `weekly_cfg` SET `next_update`='%d',`activities`='%e',`types`='%e',`count`='%e',`rewards`='%e' WHERE 1;"
 
@@ -104,15 +113,14 @@
 		WHERE `id`='%d'\
 "
 
-#define CREATE_WEEKLY_PLAYER_QUERY "INSERT IGNORE INTO `weekly` (id) VALUES (%d)"
-#define UPDATE_WEEKLY_QUERY "\
-	UPDATE `weekly`\n\
-	SET\n\
-	`standing`='%d',\
-	`coins`='%d',\
-	`activities`='%e',\n\
-	`progress`='%e'\n\
-	WHERE `id`='%d'\
+#define CREATE_WEEKLY_PLAYER_QUERY "\
+	INSERT INTO `weekly` (id, standing, coins, activities, progress)\n\
+	VALUES(%d, %d, %d, '%e', '%e')\n\
+	ON DUPLICATE KEY UPDATE\n\
+	standing=%d,\ 
+	coins=%d,\
+	activities='%e',\
+	progress='%e'\
 "
 
 #define UPDATE_GANG_USER_QUERY "\

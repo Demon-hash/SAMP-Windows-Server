@@ -51,8 +51,7 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_WEEKLY,
 	PREDIFINED_WEEKLY_ACTIVITIES,
 	PREDIFINED_DUELS_CONFIG,
-	PREDIFINED_CLOTHES,
-	PREDIFINED_CLOTHES_LOCALE
+	PREDIFINED_CLOTHES
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -107,8 +106,9 @@ static LocalizedTips[MAX_PLAYERS][TIP_MSG_MAX][LOCALIZATION_LINE_SIZE];
 
 static WeeklyConfig[WEEKLY_CFG_DATA];
 static Weekly[MAX_PLAYERS][WEEKLY_DATA];
-static WeeklyClothes[MAX_PLAYERS][WEEKLY_CLOTHES];
 static WeeklyHashmap[WEEKLY_HASHMAP];
+static WeeklyClothes[MAX_PLAYERS][WEEKLY_CLOTHES];
+static WeeklyClothesList[MAX_PLAYERS][WEEKLY_MAX_CLOTHES_LIST];
 
 static Duels[MAX_PLAYERS][DUEL_DATA];
 static DuelConfig[DUEL_CFG_DATA];
@@ -234,6 +234,7 @@ public OnGameModeInit() {
 	for(i = 0; i < sizeof(sqlTemplates); i++) mysql_tquery(Database, sqlTemplates[i]);
 	for(i = 0; i < sizeof(sqlPredifinedValues); i++ ) mysql_tquery(Database, sqlPredifinedValues[i]);
 
+    mysql_tquery(Database, PREDIFINED_CLOTHES_LOCALE);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_1);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_2);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_3);
@@ -244,8 +245,8 @@ public OnGameModeInit() {
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_8);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_9);
 	mysql_tquery(Database, PREDIFINED_LOCALIZATION_10);
- 	
-	mysql_set_charset(LOCAL_CHARSET);
+
+ 	mysql_set_charset(LOCAL_CHARSET);
 	mysql_tquery(Database, LOAD_SERVER_CFG_QUERY, "LoadServerCfg");
 	mysql_tquery(Database, LOAD_GANGS_CFG_QUERY, "LoadGangsCfg");
 	mysql_tquery(Database, LOAD_ROUND_CFG_QUERY, "LoadRoundCfg");
@@ -258,7 +259,6 @@ public OnGameModeInit() {
 	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
 	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
 	mysql_tquery(Database, LOAD_WEEKLY_CFG_QUERY, "LoadWeeklyCfg");
-
 	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
 	
@@ -1044,6 +1044,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 			BuyWeeklyRewardCloth(playerid);
 			return 1;
 		}
+		case DIALOG_WEAR_CLOTHES: {
+		    if(response) {
+		        if(listitem == WEEKLY_MAX_CLOTHES_LIST) {
+		            PreparePlayerClothesInventory(playerid);
+		            return 1;
+		        }
+		
+		        PrepareToAttachPlayerClothes(playerid, WeeklyClothesList[playerid][listitem]);
+		        return 1;
+		    }
+		    
+		    return 1;
+		}
 	}
 	
 	return 1;
@@ -1075,6 +1088,10 @@ custom Update() {
 	tip = PrepareRandomTip();
 	question = PrepareRandomQuestion();
 	lottery = PrepareLottery();
+	
+	if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
+		RevalidateWeekly();
+	}
 
 	foreach(Player, playerid) {
 	    if(ProceedAuthTimeoutKick(playerid)) continue;
@@ -1726,14 +1743,13 @@ custom LoadWeeklyCfg() {
         cache_get_value_name(0, "rewards", WeeklyConfig[wqdRewards]);
         cache_get_value_name(0, "types", WeeklyConfig[wqdTypes]);
         cache_get_value_name(0, "count", WeeklyConfig[wqdCount]);
-
-        if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
-            mysql_tquery(Database, SET_WEEKLY_VARIABLE_QUERY);
-            mysql_tquery(Database, CREATE_WEEKLY_ACTIVITIES_QUERY, "CreateWeeklyActivities");
-        } else {
-            ReloadWeeklyHashmap(WeeklyConfig[wqdActivities], WeeklyConfig[wqdTypes], WeeklyConfig[wqdCount]);
-        }
         
+        if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
+    		RevalidateWeekly();
+    	} else {
+            ReloadWeeklyHashmap(WeeklyConfig[wqdActivities], WeeklyConfig[wqdTypes], WeeklyConfig[wqdCount]);
+    	}
+    	
         printf("[x] Weekly configuration LOADED");
         return 1;
     }
@@ -2126,7 +2142,6 @@ custom LoginOrRegister(const playerid) {
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
         CheckForLoadedRound(playerid);
         CheckForBan(playerid);
-		CreateWeeklyPlayer(playerid);
         return 1;
     }
    	
@@ -2240,6 +2255,9 @@ custom CreateWeeklyActivities() {
 			WeeklyConfig[wqdRewards]
 		);
 		mysql_tquery(Database, formated);
+		
+		foreach(Player, i) ClearPlayerWeeklyData(i);
+        mysql_tquery(Database, DELETE_PLAYER_WEEKLY_QUERY);
 	    return 1;
 	}
 
@@ -2265,14 +2283,18 @@ custom SavePlayerWeeklyData(const playerid) {
 		}
 	}
 	
-	static const query[] = UPDATE_WEEKLY_QUERY;
-	new formated[sizeof(query) + (MAX_ID_LENGTH * 3) + sizeof(progress) + sizeof(activities)];
+	static const query[] = CREATE_WEEKLY_PLAYER_QUERY;
+	new formated[sizeof(query) + (MAX_ID_LENGTH * 5) + ((sizeof(progress) + sizeof(activities)) * 2)];
 	mysql_format(Database, formated, sizeof(formated), query,
+	    Player[playerid][pAccountId],
 	    Weekly[playerid][wqpdStanding],
 	    Weekly[playerid][wqpdCoins],
 	    activities,
     	progress,
-		Player[playerid][pAccountId]
+		Weekly[playerid][wqpdStanding],
+	    Weekly[playerid][wqpdCoins],
+	    activities,
+    	progress
 	);
 	mysql_tquery(Database, formated);
 }
@@ -2588,6 +2610,46 @@ custom AttachPlayerClothes(const playerid) {
     }
 
     return 0;
+}
+
+custom ShowPlayerClothesInventory(const playerid) {
+	if(cache_num_rows()) {
+		new i, len = cache_num_rows(), name[64], str[96], log[1024];
+	    for( i = 0; i < len; i++ ) {
+	        cache_get_value_name(i, "text", name);
+	        cache_get_value_name_int(i, "kit", WeeklyClothesList[playerid][i]);
+
+	        format(str, sizeof(str), "{FFFFFF}%s\n", name);
+	        strcat(log, str);
+	    }
+
+	    if(len == WEEKLY_MAX_CLOTHES_LIST) {
+			strcat(log, Localization[playerid][LD_BTN_NEXT]);
+		}
+
+	    cache_get_value_name_int(len - 1, "id", Misc[playerid][mdLastRowId]);
+	    ShowPlayerDialogAC(
+			playerid,
+			DIALOG_WEAR_CLOTHES,
+			DIALOG_STYLE_LIST,
+			Localization[playerid][LD_DG_INFO_TITLE],
+			log,
+			Localization[playerid][LD_BTN_SELECT],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+	    return 1;
+	}
+
+	ShowPlayerDialogAC(
+		playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+	return 1;
 }
 
 custom ShowPlayerBuyClothes(const playerid) {
@@ -3195,11 +3257,20 @@ stock UnlockAchievement(const playerid, const id, const reward) {
 	mysql_tquery(Database, formatedLoadAchNameQuery, "GetLocalizedTextForPlayers", "iii", playerid, reward, id);
 }
 
+stock PreparePlayerClothesInventory(const playerid) {
+    new query[] = PREPARE_CLOTHES_INV_QUERY;
+    new formated[sizeof(query) + LOCALIZATION_SIZE + (MAX_ID_LENGTH * 2)], index = Player[playerid][pLanguage];
+ 	mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], Player[playerid][pAccountId], Misc[playerid][mdLastRowId], WEEKLY_MAX_CLOTHES_LIST);
+ 	mysql_tquery(Database, formated, "ShowPlayerClothesInventory", "i", playerid);
+ 	return 1;
+}
+
 stock PrepareWeeklyActivities(const playerid) {
     static const query[] = PREPARE_WEEKLY_ACTIVITIES_QUERY;
     new formated[sizeof(query) + LOCALIZATION_SIZE + WEEKLY_MAX_ACTIVITIES_LEN], index = Player[playerid][pLanguage];
     mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdActivities]);
 	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
+	return 1;
 }
 
 stock GetStandingByType(const type) {
@@ -3209,6 +3280,11 @@ stock GetStandingByType(const type) {
 	    case 2: return WeeklyConfig[wqdMaxStanding];
 	}
 	return 0;
+}
+
+stock RevalidateWeekly() {
+    mysql_tquery(Database, SET_WEEKLY_VARIABLE_QUERY);
+	mysql_tquery(Database, CREATE_WEEKLY_ACTIVITIES_QUERY, "CreateWeeklyActivities");
 }
 
 custom ShowWeeklyActivities(const playerid) {
@@ -3926,6 +4002,7 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdKillstreak] = 0;
+	Misc[playerid][mdLastRowId] = 0;
 	Misc[playerid][mdEvacuations] = 0;
 	Misc[playerid][mdGangRequest] = -1;
 	Misc[playerid][mdJailed] = -1;
@@ -6054,13 +6131,6 @@ stock CreateTextureFromConfig(&Text:texid, const buffer) {
 	}
 }
 
-stock CreateWeeklyPlayer(const playerid) {
-    static const query[] = CREATE_WEEKLY_PLAYER_QUERY;
-	new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, Player[playerid][pAccountId]);
-	mysql_tquery(Database, formated);
-}
-
 stock ReloadWeeklyHashmap(const activities[], const types[], const count[]) {
     new output[24], i, a[WEEKLY_MAX_ACTIVITIES], t[WEEKLY_MAX_ACTIVITIES], c[WEEKLY_MAX_ACTIVITIES];
 
@@ -7086,6 +7156,12 @@ CMD:cmds(const playerid) {
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio /clothes");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/language /changename /ask /pm /settings /help /rules");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/report /votekick /weekly /duel /dleave /pay /gang");
+	return 1;
+}
+
+CMD:clothes(const playerid) {
+    Misc[playerid][mdLastRowId] = 0;
+    PreparePlayerClothesInventory(playerid);
 	return 1;
 }
 
@@ -8169,16 +8245,22 @@ CMD:jaillog(const playerid, const params[]) {
 CMD:mutelog(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
 
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /mutelog (account id) [page = 0]");
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /mutelog (account id)");
 		return 1;
 	}
-
-	static const query[] = GET_MUTELOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+	
+	Misc[playerid][mdLastRowId] = 0;
+	ShowMutelog(params[0], playerid);
 	return 1;
+}
+
+stock ShowMutelog(const target, const playerid) {
+    static const query[] = GET_MUTELOG_QUERY;
+    new formated[sizeof(query) + MAX_ID_LENGTH];
+    mysql_format(Database, formated, sizeof(formated), query, target, Misc[playerid][mdLastRowId]);
+    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+    return 1;
 }
 
 CMD:votekicklog(const playerid, const params[]) {
