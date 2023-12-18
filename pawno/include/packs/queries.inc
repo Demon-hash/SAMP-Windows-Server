@@ -377,86 +377,86 @@
 #define IPID_QUERY "SELECT DISTINCT `account_id` AS id FROM `login_log` WHERE `ip` = '%e' ORDER BY date DESC LIMIT 30;"
 #define HASH_QUERY "SELECT DISTINCT `key` FROM `login_log` WHERE `account_id` = '%d' LIMIT 30;"
 
+#define GET_WARNLOG_QUERY "\
+        SELECT u.login, b.id, b.reason, b.date,\n\
+	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
+	FROM `warns_log` b\n\
+	LEFT JOIN users u\n\
+	ON u.id = b.account_id\n\
+	WHERE b.account_id = '%d' AND b.id < %d\n\
+	ORDER BY b.date DESC\n\
+	LIMIT %d;\
+"
+
+#define GET_JAILLOG_QUERY "\
+        SELECT u.login, b.id, b.reason, b.date,\n\
+	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
+	FROM `jails_log` b\n\
+	LEFT JOIN users u\n\
+	ON u.id = b.account_id\n\
+	WHERE b.account_id = '%d' AND b.id < %d\n\
+	ORDER BY b.date DESC\n\
+	LIMIT %d;\
+"
+
+#define GET_MUTELOG_QUERY "\
+        SELECT u.login, b.reason, b.id, b.date,\n\
+	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
+	FROM `mutes_log` b\n\
+	LEFT JOIN users u\n\
+	ON u.id = b.account_id\n\
+	WHERE b.account_id = '%d' AND b.id < %d\n\
+	ORDER BY b.date DESC\n\
+	LIMIT %d;\
+"
+
+#define GET_VOTEKICKLOG_QUERY "\
+        SELECT u.login, b.reason, b.id, b.date,\n\
+	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.account_id), '') as admin\n\
+	FROM `votekick_log` b\n\
+	LEFT JOIN users u\n\
+	ON u.id = b.target_id\n\
+	WHERE b.target_id = '%d' AND b.id < %d\n\
+	ORDER BY b.date DESC\n\
+	LIMIT %d;\
+"
+
+#define GET_NAMELOG_QUERY "\
+        SELECT current_name, last_name, ip, id, date\n\
+	FROM `name_log`\n\
+	WHERE account_id = '%d' AND id < %d\n\
+	ORDER BY date DESC\n\
+	LIMIT %d;\
+"
+
 #define GET_BANLOG_QUERY "\
-        SELECT u.login AS target, b.reason, b.target_ip, b.date,\n\
+        SELECT u.login AS target, b.id, b.reason, b.target_ip, b.date,\n\
 	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin,\n\
 	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.unbanned_id), '') as unbanner\n\
 	FROM `ban_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d' AND b.id > %d\n\
+	WHERE b.account_id = '%d' AND b.id < %d\n\
 	ORDER BY b.date DESC\n\
-	LIMIT 15;\
+	LIMIT %d;\
+"
+
+#define GET_PAYLOG_QUERY "\
+        SELECT COALESCE(u.login, 'System') AS `to`, b.amount, b.type, b.id, b.to_ip, b.from_ip, b.date,\n\
+	COALESCE((SELECT `login`FROM `users` WHERE `id` = b.from_id), 'System') AS `from`\n\
+	FROM `pay_log` b\n\
+	LEFT JOIN users u ON u.id = b.to_id\n\
+	WHERE (b.to_id = '%d' OR b.from_id = '%d') AND b.id < %d\n\
+	ORDER BY b.date DESC\n\
+	LIMIT %d;\
 "
 
 #define GET_BANIPLOG_QUERY "\
-	SELECT u.login, b.date, b.reason, b.ip\n\
+	SELECT u.login, b.id, b.date, b.reason, b.ip\n\
 	FROM `banip_log` b\n\
 	LEFT JOIN users u\n\
 	ON u.id = b.account_id\n\
 	WHERE 1\n\
-	LIMIT 15;\
-"
-
-#define GET_WARNLOG_QUERY "\
-        SELECT u.login, b.reason, b.date,\n\
-	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
-	FROM `warns_log` b\n\
-	LEFT JOIN users u\n\
-	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d' AND b.id > %d\n\
-	ORDER BY b.date DESC\n\
-	LIMIT 15;\
-"
-
-#define GET_NAMELOG_QUERY "\
-        SELECT current_name, last_name, ip, date\n\
-	FROM `name_log`\n\
-	WHERE account_id = '%d' AND id > %d\n\
-	ORDER BY date DESC\n\
-	LIMIT 15;\
-"
-
-#define GET_JAILLOG_QUERY "\
-        SELECT u.login, b.reason, b.date,\n\
-	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
-	FROM `jails_log` b\n\
-	LEFT JOIN users u\n\
-	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d' AND b.id > %d\n\
-	ORDER BY b.date DESC\n\
-	LIMIT 15;\
-"
-
-#define GET_MUTELOG_QUERY "\
-        SELECT u.login, b.reason, b.date,\n\
-	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.issued_id), '') as admin\n\
-	FROM `mutes_log` b\n\
-	LEFT JOIN users u\n\
-	ON u.id = b.account_id\n\
-	WHERE b.account_id = '%d' AND b.id > %d\n\
-	ORDER BY b.date DESC\n\
-	LIMIT 15;\
-"
-
-#define GET_VOTEKICKLOG_QUERY "\
-        SELECT u.login, b.reason, b.date,\n\
-	COALESCE((SELECT `login` FROM `users` WHERE `id` = b.account_id), '') as admin\n\
-	FROM `votekick_log` b\n\
-	LEFT JOIN users u\n\
-	ON u.id = b.target_id\n\
-	WHERE b.target_id = '%d' AND b.id > %d\n\
-	ORDER BY b.date DESC\n\
-	LIMIT 15;\
-"
-
-#define GET_PAYLOG_QUERY "\
-        SELECT COALESCE(u.login, 'System') AS `to`, b.amount, b.type, b.to_ip, b.from_ip, b.date,\n\
-	COALESCE((SELECT `login`FROM `users` WHERE `id` = b.from_id), 'System') AS `from`\n\
-	FROM `pay_log` b\n\
-	LEFT JOIN users u ON u.id = b.to_id\n\
-	WHERE (b.to_id = '%d' OR b.from_id = '%d') AND b.id > %d\n\
-	ORDER BY b.date DESC\n\
 	LIMIT 15;\
 "
 

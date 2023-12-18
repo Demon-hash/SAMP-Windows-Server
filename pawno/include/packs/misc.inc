@@ -37,6 +37,7 @@ enum MISC_DATA {
 	mdSerial[GPCI_LENGTH],
 	mdDialogId,
 	mdLastRowId,
+	mdLastLogs[2],
 	mdWeeklyStanding,
 	mdSelectionTeam,
 	mdKillstreak,

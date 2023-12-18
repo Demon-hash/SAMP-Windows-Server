@@ -951,6 +951,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	        ProceedClassSelection(playerid, listitem, 1);
 	        return 1;
 	    }
+	    case DIALOG_LOGS: {
+	        if(!response) {
+				return 1;
+			}
+	        
+         	ShowNextLogsPage(playerid);
+	        return 1;
+	    }
 	    case DIALOG_SELECTION: {
 	        if(!response || Misc[playerid][mdSelectionTeam] == -1) {
 	            Misc[playerid][mdSelectionTeam] = -1;
@@ -2824,16 +2832,16 @@ custom ShowAdminsActivity(const playerid) {
     return 1;
 }
 
-custom ShowPayLog(const playerid) {
+custom ShowPayLog(const playerid, const target, const logType) {
     if(cache_num_rows()) {
         new to[MAX_PLAYER_NAME], from[MAX_PLAYER_NAME];
         new to_ip[MAX_PLAYER_IP], from_ip[MAX_PLAYER_IP];
 		new log[2048], str[128], withType[16];
-		new i, amount, type, date;
+		new i, len = cache_num_rows(), amount, type, date;
 		new year, mounth, day, hours, minutes, seconds;
 
         strcat(log, "To\tFrom\tAmount & Type\tDate\n");
-        for( i = 0; i < cache_num_rows(); i++ ) {
+        for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "to", to);
             cache_get_value_name(i, "from", from);
             cache_get_value_name(i, "to_ip", to_ip);
@@ -2854,15 +2862,19 @@ custom ShowPayLog(const playerid) {
             format(str, sizeof(str), "%s (%s)\t%s (%s)\t%d (%s)\t%02d/%02d/%04d\n", to, to_ip, from, from_ip, amount, withType, day, mounth, year);
             strcat(log, str);
         }
+        
+        cache_get_value_name_int(len - 1, "id", Misc[playerid][mdLastRowId]);
+        Misc[playerid][mdLastLogs][0] = logType;
+        Misc[playerid][mdLastLogs][1] = target;
 
         ShowPlayerDialogAC(
 			playerid,
-			DIALOG_INFO,
+			DIALOG_LOGS,
 			DIALOG_STYLE_TABLIST_HEADERS,
 			Localization[playerid][LD_DG_INFO_TITLE],
 			log,
-			Localization[playerid][LD_BTN_CLOSE],
-			""
+			Localization[playerid][LD_BTN_NEXT],
+			Localization[playerid][LD_BTN_CLOSE]
 		);
         return 1;
     }
@@ -2878,31 +2890,35 @@ custom ShowPayLog(const playerid) {
     return 1;
 }
 
-custom ShowLog(const playerid) {
+custom ShowLog(const playerid, const target, const type) {
     if(cache_num_rows()) {
-        new i, login[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], reason[64], log[1024], str[128];
-		new date, year, mounth, day, hours, minutes, seconds;
+        new login[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], reason[64], log[1024], str[128];
+		new i, date, year, mounth, day, hours, minutes, seconds, len = cache_num_rows();
 
         strcat(log, Localization[playerid][LD_DG_ALOG_TITLE]);
-        for( i = 0; i < cache_num_rows(); i++ ) {
+        for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "login", login);
             cache_get_value_name(i, "admin", admin);
             cache_get_value_name(i, "reason", reason);
             cache_get_value_name_int(i, "date", date);
-
+            
     		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
             format(str, sizeof(str), "%s\t%s\t%s\t%02d/%02d/%04d\n", login, admin, reason, day, mounth, year);
             strcat(log, str);
         }
+        
+        cache_get_value_name_int(len - 1, "id", Misc[playerid][mdLastRowId]);
+        Misc[playerid][mdLastLogs][0] = type;
+        Misc[playerid][mdLastLogs][1] = target;
 
         ShowPlayerDialogAC(
 			playerid,
-			DIALOG_INFO,
+			DIALOG_LOGS,
 			DIALOG_STYLE_TABLIST_HEADERS,
 			Localization[playerid][LD_DG_INFO_TITLE],
 			log,
-			Localization[playerid][LD_BTN_CLOSE],
-			""
+			Localization[playerid][LD_BTN_NEXT],
+			Localization[playerid][LD_BTN_CLOSE]
 		);
         return 1;
     }
@@ -2918,13 +2934,13 @@ custom ShowLog(const playerid) {
     return 1;
 }
 
-custom ShowNamelog(const playerid) {
+custom ShowNamelog(const playerid, const target, const type) {
     if(cache_num_rows()) {
         new i, name[MAX_PLAYER_NAME], old[MAX_PLAYER_NAME], ip[MAX_PLAYER_IP], log[1024], str[128];
-		new date, year, mounth, day, hours, minutes, seconds;
+		new date, year, mounth, day, hours, minutes, seconds, len = cache_num_rows();
 
         strcat(log, Localization[playerid][LD_DG_NLOG_TITLE]);
-        for( i = 0; i < cache_num_rows(); i++ ) {
+        for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "current_name", name);
             cache_get_value_name(i, "last_name", old);
             cache_get_value_name(i, "ip", ip);
@@ -2934,20 +2950,71 @@ custom ShowNamelog(const playerid) {
             format(str, sizeof(str), "%s\t%s\t%s\t%02d/%02d/%04d\n", name, old, ip, day, mounth, year);
             strcat(log, str);
         }
+        
+        cache_get_value_name_int(len - 1, "id", Misc[playerid][mdLastRowId]);
+        Misc[playerid][mdLastLogs][0] = type;
+        Misc[playerid][mdLastLogs][1] = target;
 
         ShowPlayerDialogAC(
 			playerid,
-			DIALOG_INFO,
+			DIALOG_LOGS,
 			DIALOG_STYLE_TABLIST_HEADERS,
 			Localization[playerid][LD_DG_INFO_TITLE],
 			log,
-			Localization[playerid][LD_BTN_CLOSE],
-			""
+			Localization[playerid][LD_BTN_NEXT],
+			Localization[playerid][LD_BTN_CLOSE]
 		);
         return 1;
     }
 
    	ShowPlayerDialogAC(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+	return 1;
+}
+
+custom ShowBanlog(const playerid, const search, const type) {
+    if(cache_num_rows()) {
+        new i, target[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], unbanner[MAX_PLAYER_NAME];
+		new tip[MAX_PLAYER_IP], reason[64], log[1024], str[128];
+		new date, year, mounth, day, hours, minutes, seconds, len = cache_num_rows();
+
+        strcat(log, Localization[playerid][LD_DG_ALOG_TITLE]);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name(i, "target", target);
+            cache_get_value_name(i, "admin", admin);
+            cache_get_value_name(i, "unbanner", unbanner);
+            cache_get_value_name(i, "target_ip", tip);
+            cache_get_value_name(i, "reason", reason);
+            cache_get_value_name_int(i, "date", date);
+
+    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s (%s)\t%s / %s\t%s\t%02d/%02d/%04d\n", target, tip, admin, unbanner, reason, day, mounth, year);
+            strcat(log, str);
+        }
+        
+        cache_get_value_name_int(len - 1, "id", Misc[playerid][mdLastRowId]);
+        Misc[playerid][mdLastLogs][0] = type;
+        Misc[playerid][mdLastLogs][1] = search;
+
+        ShowPlayerDialogAC(
+			playerid,
+			DIALOG_LOGS,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_INFO_TITLE],
+			log,
+			Localization[playerid][LD_BTN_NEXT],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+        return 1;
+    }
+
+    ShowPlayerDialogAC(playerid,
 		DIALOG_INFO,
 		DIALOG_STYLE_MSGBOX,
 		Localization[playerid][LD_DG_INFO_TITLE],
@@ -2997,49 +3064,6 @@ custom ShowBanIplog(const playerid) {
 		""
 	);
     return 1;
-}
-
-custom ShowBanlog(const playerid) {
-    if(cache_num_rows()) {
-        new i, target[MAX_PLAYER_NAME], admin[MAX_PLAYER_NAME], unbanner[MAX_PLAYER_NAME];
-		new tip[MAX_PLAYER_IP], reason[64], log[1024], str[128];
-		new date, year, mounth, day, hours, minutes, seconds;
-
-        strcat(log, Localization[playerid][LD_DG_ALOG_TITLE]);
-        for( i = 0; i < cache_num_rows(); i++ ) {
-            cache_get_value_name(i, "target", target);
-            cache_get_value_name(i, "admin", admin);
-            cache_get_value_name(i, "unbanner", unbanner);
-            cache_get_value_name(i, "target_ip", tip);
-            cache_get_value_name(i, "reason", reason);
-            cache_get_value_name_int(i, "date", date);
-
-    		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-            format(str, sizeof(str), "%s (%s)\t%s / %s\t%s\t%02d/%02d/%04d\n", target, tip, admin, unbanner, reason, day, mounth, year);
-            strcat(log, str);
-        }
-
-        ShowPlayerDialogAC(
-			playerid,
-			DIALOG_INFO,
-			DIALOG_STYLE_TABLIST_HEADERS,
-			Localization[playerid][LD_DG_INFO_TITLE],
-			log,
-			Localization[playerid][LD_BTN_CLOSE],
-			""
-		);
-        return 1;
-    }
-
-    ShowPlayerDialogAC(playerid,
-		DIALOG_INFO,
-		DIALOG_STYLE_MSGBOX,
-		Localization[playerid][LD_DG_INFO_TITLE],
-		Localization[playerid][LD_DG_EMPTY],
-		Localization[playerid][LD_BTN_CLOSE],
-		""
-	);
-	return 1;
 }
 
 custom GetAchievementsList(const playerid, const offset) {
@@ -3271,6 +3295,72 @@ stock PrepareWeeklyActivities(const playerid) {
     mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index], WeeklyConfig[wqdActivities]);
 	mysql_tquery(Database, formated, "ShowWeeklyActivities", "i", playerid);
 	return 1;
+}
+
+stock ShowNextLogsPage(const playerid) {
+	new id = Misc[playerid][mdLastLogs][0], targetid = Misc[playerid][mdLastLogs][1];
+	switch(id) {
+	    case VOTEKICK_LOGS: PrepareVotekicklog(targetid, playerid);
+	    case WARN_LOGS: PrepareWarnlog(targetid, playerid);
+	    case MUTE_LOGS: PrepareMutelog(targetid, playerid);
+	    case JAIL_LOGS: PrepareJaillog(targetid, playerid);
+	    case PAY_LOGS: PreparePaylog(targetid, playerid);
+	    case NAME_LOGS: PrepareNamelog(targetid, playerid);
+	    case BAN_LOGS: PrepareBanlog(targetid, playerid);
+	}
+}
+
+stock PreparePaylog(const targetid, const playerid) {
+    static const query[] = GET_PAYLOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 4)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowPayLog", "iii", playerid, targetid, PAY_LOGS);
+}
+
+stock PrepareNamelog(const targetid, const playerid) {
+    static const query[] = GET_NAMELOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowNamelog", "iii", playerid, targetid, NAME_LOGS);
+}
+
+stock PrepareBanlog(const targetid, const playerid) {
+	static const query[] = GET_BANLOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowBanlog", "iii", playerid, targetid, BAN_LOGS);
+}
+
+stock PrepareVotekicklog(const targetid, const playerid) {
+    static const query[] = GET_VOTEKICKLOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowLog", "iii", playerid, targetid, VOTEKICK_LOGS);
+    return 1;
+}
+
+stock PrepareWarnlog(const targetid, const playerid) {
+    static const query[] = GET_WARNLOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowLog", "iii", playerid, targetid, WARN_LOGS);
+	return 1;
+}
+
+stock PrepareMutelog(const targetid, const playerid) {
+    static const query[] = GET_MUTELOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowLog", "iii", playerid, targetid, MUTE_LOGS);
+    return 1;
+}
+
+stock PrepareJaillog(const targetid, const playerid) {
+	static const query[] = GET_JAILLOG_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+    mysql_format(Database, formated, sizeof(formated), query, targetid, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowLog", "iii", playerid, targetid, JAIL_LOGS);
+    return 1;
 }
 
 stock GetStandingByType(const type) {
@@ -4001,6 +4091,8 @@ stock ClearPlayerMiscData(const playerid) {
 	Misc[playerid][mdGangRank] = 0;
 	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdDialogId] = -1;
+	Misc[playerid][mdLastLogs][0] = -1;
+	Misc[playerid][mdLastLogs][1] = -1;
 	Misc[playerid][mdKillstreak] = 0;
 	Misc[playerid][mdLastRowId] = 0;
 	Misc[playerid][mdEvacuations] = 0;
@@ -8182,63 +8274,29 @@ CMD:hash(const playerid, const params[]) {
 	return 1;
 }
 
-CMD:banlog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id) [page = 0]");
-		return 1;
-	}
-
-	static const query[] = GET_BANLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowBanlog", "i", playerid);
-	return 1;
-}
-
-CMD:namelog(const playerid, const params[]) {
-    if(!HasAdminPermission(playerid, 2)) return 0;
-
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /namelog (account id) [page = 0]");
-		return 1;
-	}
-
-	static const query[] = GET_NAMELOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowNamelog", "i", playerid);
-	return 1;
-}
-
 CMD:warnlog(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
 
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id) [page = 0]");
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /warnlog (account id)");
 		return 1;
 	}
 
-	static const query[] = GET_WARNLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+    Misc[playerid][mdLastRowId] = gettime();
+    PrepareWarnlog(params[0], playerid);
 	return 1;
 }
 
 CMD:jaillog(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
 
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jaillog (account id) [page = 0]");
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /jaillog (account id)");
 		return 1;
 	}
 
-	static const query[] = GET_JAILLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+    Misc[playerid][mdLastRowId] = gettime();
+    PrepareJaillog(params[0], playerid);
 	return 1;
 }
 
@@ -8250,46 +8308,60 @@ CMD:mutelog(const playerid, const params[]) {
 		return 1;
 	}
 	
-	Misc[playerid][mdLastRowId] = 0;
-	ShowMutelog(params[0], playerid);
+	Misc[playerid][mdLastRowId] = gettime();
+	PrepareMutelog(params[0], playerid);
 	return 1;
-}
-
-stock ShowMutelog(const target, const playerid) {
-    static const query[] = GET_MUTELOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, target, Misc[playerid][mdLastRowId]);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
-    return 1;
 }
 
 CMD:votekicklog(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
 
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /votekicklog (account id) [page = 0]");
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /votekicklog (account id)");
+		return 1;
+	}
+	
+	Misc[playerid][mdLastRowId] = gettime();
+	PrepareVotekicklog(params[0], playerid);
+	return 1;
+}
+
+CMD:banlog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "iI(0)", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /banlog (account id)");
 		return 1;
 	}
 
-	static const query[] = GET_VOTEKICKLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowLog", "i", playerid);
+    Misc[playerid][mdLastRowId] = gettime();
+    PrepareBanlog(params[0], playerid);
+	return 1;
+}
+
+CMD:namelog(const playerid, const params[]) {
+    if(!HasAdminPermission(playerid, 2)) return 0;
+
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /namelog (account id)");
+		return 1;
+	}
+	
+	Misc[playerid][mdLastRowId] = gettime();
+    PrepareNamelog(params[0], playerid);
 	return 1;
 }
 
 CMD:paylog(const playerid, const params[]) {
     if(!HasAdminPermission(playerid, 2)) return 0;
 
-    if(sscanf(params, "iI(0)", params[0], params[1]) || params[1] < 0) {
-		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /paylog (account id) [page = 0]");
+    if(sscanf(params, "i", params[0])) {
+		SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /paylog (account id)");
 		return 1;
 	}
 
-	static const query[] = GET_PAYLOG_QUERY;
-    new formated[sizeof(query) + MAX_ID_LENGTH];
-    mysql_format(Database, formated, sizeof(formated), query, params[0], params[0], params[1] * 15);
-    mysql_tquery(Database, formated, "ShowPayLog", "i", playerid);
+    Misc[playerid][mdLastRowId] = gettime();
+    PreparePaylog(params[0], playerid);
 	return 1;
 	
 }
