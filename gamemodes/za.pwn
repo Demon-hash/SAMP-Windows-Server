@@ -2028,7 +2028,7 @@ custom LoginOrRegister(const playerid) {
 		cache_get_value_name_int(0, "blood", Achievements[playerid][achBlood]);
 		cache_get_value_name_int(0, "mary", Achievements[playerid][achMary]);
 		cache_get_value_name_int(0, "ach_gang", Achievements[playerid][achGang]);
-		cache_get_value_name_int(0, "vehicle", Achievements[playerid][achVehicleDamage]);
+		cache_get_value_name_int(0, "vehicles", Achievements[playerid][achVehicleDamage]);
 		cache_get_value_name_int(0, "evacuations", Achievements[playerid][achEvacuationRow]);
 		cache_get_value_name_int(0, "total_points", Achievements[playerid][achTotalPoints]);
 		cache_get_value_name_float(0, "ran", Achievements[playerid][achRan]);
@@ -3006,7 +3006,7 @@ custom ShowBanIplog(const playerid) {
 custom GetAchievementsList(const playerid, const offset) {
 	if(cache_num_rows()) {
 	    new title[48], description[128], type, count, reward, index, value;
-		new normalized[128], formated[128], list[2048], i, total, len = cache_num_rows();
+		new normalized[128], formated[128], list[2500], i, total, len = cache_num_rows();
 		static const colors[] = { COLOR_ACHIEVEMENT_LOCKED, COLOR_ACHIEVEMENT_UNLOCKED };
 		
 		cache_get_value_name_int(0, "total", total);
