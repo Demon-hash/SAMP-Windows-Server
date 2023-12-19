@@ -8,6 +8,7 @@
 #define MAX_GANG_NAME 32
 #define MAX_GANG_SETTINGS 8
 #define MAX_GANG_RANK_LEN 144
+#define INVALID_GANG_ID -1
 
 enum {
 	GANG_SETTING_PANEL,

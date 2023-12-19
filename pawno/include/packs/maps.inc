@@ -38,6 +38,7 @@ enum MAP_DATA {
 	mpWaterAllowed,
 	mpFlag,
 	mpFlagDate,
+	mpGangPoints[MAX_GANGS],
 	bool:mpIsStarted,
 	bool:mpPaused,
 	Float:mpGateSpeed,

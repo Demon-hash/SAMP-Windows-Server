@@ -45,12 +45,11 @@ enum LOCALIZATION_DATA {
 	LD_MSG_MAP_ROUND_OVER,
 	LD_MSG_MAP_CRYSTAL_DAMAGE,
 	LD_DISPLAY_ALIVE_INFO,
-
 	LD_MAP_GANG_FLAP_PART_1,
 	LD_MAP_GANG_FLAP_PART_2,
-	LD_MAP_GANG_FLAP_PART_3,
-	LD_MAP_GANG_FLAP_PART_4,
-	LD_MAP_GANG_FLAP_PART_5,
+	LD_MSG_GANG_SCORE,
+	LD_MSG_GANG_RECAPTURED,
+	LD_MAP_GANG_CAN_CAPTURE,
 	LD_MAP_DONOT_SHOT_HERE,
 	LD_MAP_NAME,
 	LD_DG_CLASSES_TITLE,
@@ -285,317 +284,324 @@ enum LOCALIZATION_DATA {
 	LD_DG_WEEKLY_TARGETS,
 	LD_DG_REWARD_NO_MONEY,
 	LD_MSG_REWARD_BOUGHT,
+	LD_MSG_GANG_CAPTURED,
+	LD_MSG_GANG_UPDATED_SCORE,
 	LD_ENDF,
 };
 
 #define PREDIFINED_CLOTHES_LOCALE "INSERT IGNORE INTO `clothes_locale` (id, kit, coins, emblems, english, russian) VALUES \
-	(1, 1, 5, 1, 'Accessory: Sniper', 'РђРєСЃРµСЃСЃСѓР°СЂ: РЎРЅР°Р№РїРµСЂСЃРєР°СЏ РІРёРЅС‚РѕРІРєР°'),\
-	(2, 2, 5, 1, 'Accessory: Ak47', 'РђРєСЃРµСЃСЃСѓР°СЂ: Ak47'),\
-	(3, 3, 5, 1, 'Accessory: Guitar', 'РђРєСЃРµСЃСЃСѓР°СЂ: Р“РёС‚Р°СЂР°'),\
-	(4, 4, 5, 1, 'Accessory: Surfboard', 'РђРєСЃРµСЃСЃСѓР°СЂ: Р”РѕСЃРєР° РґР»СЏ СЃРµСЂС„РёРЅРіР°'),\
-	(5, 5, 5, 1, 'Accessory: Money case', 'РђРєСЃРµСЃСЃСѓР°СЂ: Р”РµРЅРµР¶РЅС‹Р№ СЏС‰РёРє'),\
-	(6, 6, 5, 1, 'Accessory: Backpack', 'РђРєСЃРµСЃСЃСѓР°СЂ: Р СЋРєР·Р°Рє'),\
-	(7, 7, 5, 2, 'Haloween Set', 'РќР°Р±РѕСЂ РѕРґРµР¶РґС‹: РҐСЌР»Р»РѕСѓРёРЅ'),\
-	(8, 8, 5, 2, 'Christmas Set', 'РќР°Р±РѕСЂ РѕРґРµР¶РґС‹: РќРѕРІС‹Р№ РіРѕРґ'),\
-	(9, 9, 5, 3, 'Army Set', 'РќР°Р±РѕСЂ РѕРґРµР¶РґС‹: РђСЂРјРёСЏ');\
+	(1, 1, 5, 1, 'Accessory: Sniper', 'Аксессуар: Снайперская винтовка'),\
+	(2, 2, 5, 1, 'Accessory: Ak47', 'Аксессуар: Ak47'),\
+	(3, 3, 5, 1, 'Accessory: Guitar', 'Аксессуар: Гитара'),\
+	(4, 4, 5, 1, 'Accessory: Surfboard', 'Аксессуар: Доска для серфинга'),\
+	(5, 5, 5, 1, 'Accessory: Money case', 'Аксессуар: Денежный ящик'),\
+	(6, 6, 5, 1, 'Accessory: Backpack', 'Аксессуар: Рюкзак'),\
+	(7, 7, 5, 2, 'Haloween Set', 'Набор одежды: Хэллоуин'),\
+	(8, 8, 5, 2, 'Christmas Set', 'Набор одежды: Новый год'),\
+	(9, 9, 5, 3, 'Army Set', 'Набор одежды: Армия');\
 "
 
 #define PREDIFINED_LOCALIZATION_1 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(1, 'Login', 'Р›РѕРіРёРЅ'),\
-	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ, РІР°С€ Р°РєРєР°СѓРЅС‚ СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ\nР’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ'),\
-	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', 'РќРµРІРµСЂРЅС‹Р№ РїР°СЂРѕР»СЊ, РѕСЃС‚Р°Р»РѕСЃСЊ %d / 3 РїРѕРїС‹С‚РѕРє\nР”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ, РІР°С€ Р°РєРєР°СѓРЅС‚ СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ\nР’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ'),\
-	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', 'РџРѕР»Рµ РїР°СЂРѕР»СЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!\nР”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ, РІР°С€ Р°РєРєР°СѓРЅС‚ СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ\nР’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ'),\				
-	(5, 'Register', 'Р РµРіРёСЃС‚СЂР°С†РёСЏ'),\
-	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', 'Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ, РІР°С€ Р°РєРєР°СѓРЅС‚ РЅРµ РЅР°Р№РґРµРЅ\nРџСЂРёРґСѓРјР°Р№С‚Рµ РїР°СЂРѕР»СЊ'),\
-	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', 'РџРѕР»Рµ РїР°СЂРѕР»СЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!\nР”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ, РІР°С€ Р°РєРєР°СѓРЅС‚ РЅРµ РЅР°Р№РґРµРЅ\nРџСЂРёРґСѓРјР°Р№С‚Рµ РїР°СЂРѕР»СЊ'),\
-	(8, 'Register', 'Р РµРіРёСЃС‚СЂР°С†РёСЏ'),\
-	(9, 'Login', 'Р›РѕРіРёРЅ'),\
-	(10, 'Quit', 'Р’С‹Р№С‚Рё'),\
-	(11, '*** %s has joined the server (ID %d) (Player %d)', '*** РРіСЂРѕРє %s РїРѕРґРєР»СЋС‡РёР»СЃСЏ Рє СЃРµСЂРІРµСЂСѓ (ID %d) (РРіСЂРѕРє %d)'),\
-	(12, '*** %s has left the server (%s)', '*** РРіСЂРѕРє %s РІС‹С€РµР» СЃ СЃРµСЂРІРµСЂР° (%s)'),\
-	(13, 'Timeout', 'Р Р°Р·СЂС‹РІ СЃРѕРµРґРёРЅРµРЅРёСЏ'),\
-	(14, 'Leave', 'Р’С‹С…РѕРґ'),\
-	(15, 'Kick', 'РљРёРєРЅСѓС‚'),\
-	(16, 'Unknown', 'РќРµРёР·РІРµСЃС‚РЅРѕ');\
+	(1, 'Login', 'Логин'),\
+	(2, 'Welcome back, your account is already registered\nEnter your password below to login', 'Добро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
+	(3, 'Wrong password, %d / 3 tries left\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Неверный пароль, осталось %d / 3 попыток\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\
+	(4, 'You have to type at least something!\n\nWelcome back, your account is already registered\nEnter your password below to login', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт уже зарегистрирован\nВведите пароль'),\				
+	(5, 'Register', 'Регистрация'),\
+	(6, 'Welcome to the server, your account was not found\nEnter your password below to complete registration', 'Добро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
+	(7, 'You have to type at least something!\n\nWelcome to the server, your account was not found\nEnter your password below to complete registration', 'Поле пароля не может быть пустым!\nДобро пожаловать, ваш аккаунт не найден\nПридумайте пароль'),\
+	(8, 'Register', 'Регистрация'),\
+	(9, 'Login', 'Логин'),\
+	(10, 'Quit', 'Выйти'),\
+	(11, '*** %s has joined the server (ID %d) (Player %d)', '*** Игрок %s подключился к серверу (ID %d) (Игрок %d)'),\
+	(12, '*** %s has left the server (%s)', '*** Игрок %s вышел с сервера (%s)'),\
+	(13, 'Timeout', 'Разрыв соединения'),\
+	(14, 'Leave', 'Выход'),\
+	(15, 'Kick', 'Кикнут'),\
+	(16, 'Unknown', 'Неизвестно');\
 "
 
 #define PREDIFINED_LOCALIZATION_2 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(17, 'Restarting', 'РџРµСЂРµР·Р°РіСЂСѓР·РєР°'),\
-	(18, '>> %s has made it to the evacuation point!', '>> РРіСЂРѕРє %s СЌРІР°РєСѓРёСЂРѕРІР°Р»СЃСЏ!'),\
-	(19, '>> ALL SURVIVORS EVACUATED!', '>> Р’СЃРµ РІС‹Р¶РёРІС€РёРµ РґРѕР±СЂР°Р»РёСЃСЊ РґРѕ РїСѓРЅРєС‚Р° СЌРІР°РєСѓР°С†РёРё!'),\
-	(20, '>> Under protection {FFFFFF}%d{FF0000} seconds left!', '>> РџРѕРґ Р·Р°С‰РёС‚РѕР№, РґРѕ СЃРЅСЏС‚РёСЏ {FFFFFF}%d{FF0000} СЃРµРєСѓРЅРґ'),\
-	(21, '(by %s)', '(Р°РІС‚РѕСЂ %s)'),\
-	(22, '(captured by %s)', '(РїРѕРґ РєРѕРЅС‚СЂРѕР»РµРј Сѓ %s)'),\
-	(23, '>> Entering The Map #%d (%s) %s %s', '>> Р—Р°РїСѓСЃРєР°РµРј РєР°СЂС‚Сѓ #%d (%s) %s %s'),\
-	(24, '>> Creating objects...', '>> РЎРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚РѕРІ...'),\
-	(25, '>> ZOMBIES WIN!', '>> Р—РћРњР‘Р РџРћР‘Р•Р”РР›Р!'),\
-	(26, '>> An evacuation has arrived for humans!', '>> Р­РІР°РєСѓР°С†РёСЏ РїСЂРёР±С‹Р»Р° РґР»СЏ Р»СЋРґРµР№!'),\
-	(27, '>> Humans get to the checkpoint within a minute!', '>> Р’С‹Р¶РёРІС€РёРµ, РґРѕР±РµСЂРёС‚РµСЃСЊ РґРѕ С‡РµРєРїРѕРёРЅС‚Р° Р·Р° РјРёРЅСѓС‚Сѓ!'),\
-	(28, '>> Beginning new a round...', '>> РќР°С‡РёРЅР°РµС‚СЃСЏ РЅРѕРІС‹Р№ СЂР°СѓРЅРґ!'),\
-	(29, '~r~ROUND OVER~n~~w~STARTING NEW ROUND...', '~r~РљРћРќР•Р¦ Р РђРЈРќР”Рђ~n~~w~РќРђР§РРќРђР•Рњ РќРћР’Р«Р™...'),\
-	(30, '>> Gang members, a crystal stone has appeared, deal as much damage as possible!', 'РЈС‡Р°СЃС‚РЅРёРєРё Р±Р°РЅРґ, РїРѕСЏРІРёР»СЃСЏ Р·Р°С‰РёС‚РЅС‹Р№ РєСЂРёСЃС‚Р°Р», РЅР°РЅРµСЃРёС‚Рµ РєР°Рє РјРѕР¶РЅРѕ Р±РѕР»СЊС€Рµ СѓСЂРѕРЅР°!'),\
-	(31, '~w~humans: %d~n~~r~zombies: %d', '~w~Р›Р®Р”Р: %d~n~~r~Р—РћРњР‘Р: %d');\
+	(17, 'Restarting', 'Перезагрузка'),\
+	(18, '>> %s has made it to the evacuation point!', '>> Игрок %s эвакуировался!'),\
+	(19, '>> ALL SURVIVORS EVACUATED!', '>> Все выжившие добрались до пункта эвакуации!'),\
+	(20, '>> Under protection {FFFFFF}%d{FF0000} seconds left!', '>> Под защитой, до снятия {FFFFFF}%d{FF0000} секунд'),\
+	(21, '(by %s)', '(автор %s)'),\
+	(22, '(captured by %s)', '(под контролем у %s)'),\
+	(23, '>> Entering The Map #%d (%s) %s %s', '>> Запускаем карту #%d (%s) %s %s'),\
+	(24, '>> Creating objects...', '>> Создание объектов...'),\
+	(25, '>> ZOMBIES WIN!', '>> ЗОМБИ ПОБЕДИЛИ!'),\
+	(26, '>> An evacuation has arrived for humans!', '>> Эвакуация прибыла для людей!'),\
+	(27, '>> Humans get to the checkpoint within a minute!', '>> Выжившие, доберитесь до чекпоинта за минуту!'),\
+	(28, '>> Beginning new a round...', '>> Начинается новый раунд!'),\
+	(29, '~r~ROUND OVER~n~~w~STARTING NEW ROUND...', '~r~КОНЕЦ РАУНДА~n~~w~НАЧИНАЕМ НОВЫЙ...'),\
+	(30, '>> Gang members, a crystal stone has appeared, deal as much damage as possible!', 'Участники банд, появился защитный кристал, нанесите как можно больше урона!'),\
+	(31, '~w~humans: %d~n~~r~zombies: %d', '~w~ЛЮДИ: %d~n~~r~ЗОМБИ: %d');\
 "
 
 #define PREDIFINED_LOCALIZATION_3 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(32, '{FFFFFF}%s {FFF000}(by %s)\n{FFF000}Score: {FFFFFF}%d\n\n{FFF000}+%d / +%d / +%d / +%d\n', '{FFFFFF}%s {FFF000}(РїРѕРґ РєРѕРЅС‚СЂРѕР»РµРј %s)\n{FFF000}РћС‡РєРѕРІ: {FFFFFF}%d\n\n{FFF000}+%d / +%d / +%d / +%d\n'),\ 
-	(33, 'Evacuating / Curing / Ability using / Killing players\n(Deagle, M4, Armour)', 'Р­РІР°РєСѓР°С†РёСЏ / Р›РµС‡РµРЅРёРµ / РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ СЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё / РЈР±РёР№СЃС‚РІРѕ РёРіСЂРѕРєРѕРІ\n(Deagle, M4, Р‘СЂРѕРЅСЏ)'),\
-	(34, '{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n', '{FFF000}РЈС‡Р°СЃС‚РЅРёРєРё Р±Р°РЅРґС‹ РїРѕР»СѓС‡Р°СЋС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РѕС‡РєРё Р·Р° СЃР»РµРґСѓСЋС‰РёРµ РґРµР№СЃС‚РІРёСЏ:\n\n{FFFFFF}+%.0f{FFF000} РѕС‡РєРѕРІ РІ РєР°Р·РЅСѓ РєР»Р°РЅР° Р·Р° СЌРІР°РєСѓР°С†РёСЋ\n'),\ 
-	(35, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n', '{FFFFFF}+%.0f{FFF000} РѕС‡РєРѕРІ РІ РєР°Р·РЅСѓ РєР»Р°РЅР° Р·Р° Р»РµС‡РµРЅРёРµ Р»СЋРґРµР№\n{FFFFFF}+%.0f{FFF000} РѕС‡РєРѕРІ РІ РєР°Р·РЅСѓ РєР»Р°РЅР° Р·Р° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РєС‚РёРІРЅС‹С… СЃРїРѕСЃРѕР±РЅРѕСЃС‚РµР№\n'),\
-	(36, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n{FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist', '{FFFFFF}+%.0f{FFF000} РѕС‡РєРѕРІ РІ РєР°Р·РЅСѓ РєР»Р°РЅР° Р·Р° СѓР±РёР№СЃС‚РІРѕ РёРіСЂРѕРєРѕРІ\n{FFFFFF}+%.2f{FFF000} РѕС‡РєРѕРІ РІ РєР°Р·РЅСѓ РєР»Р°РЅР° Р·Р° РїРѕРјРѕС‰СЊ РІ СѓР±РёР№СЃС‚РІРµ Р·РѕРјР±Рё'),\
-	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}РўРѕС‡РєР° РїРѕСЏРІР»РµРЅРёСЏ Р·РѕРјР±Рё\n{FF0000}РЅРµ СѓР±РёРІР°Р№С‚Рµ / СЃС‚СЂРµР»СЏР№С‚Рµ{FFFFFF} Р·РґРµСЃСЊ'),\
+	(32, '{FFFFFF}%s {FFF000}(by %s)\n{FFF000}Score: {FFFFFF}%d\n\n{FFF000}+%d / +%d / +%d / +%d\n', '{FFFFFF}%s {FFF000}(под контролем %s)\n{FFF000}Очков: {FFFFFF}%d\n\n{FFF000}+%d / +%d / +%d / +%d\n'),\ 
+	(33, 'Evacuating / Curing / Ability using / Killing players\n(Deagle, M4, Armour)', 'Эвакуация / Лечение / Использование способности / Убийство игроков\n(Deagle, M4, Броня)'),\
+	(34, '>> %s (Score %d)', '>> %s (Очков %d)'),\ 
+	(35, '>> %s has taken control of the map from %s with %d score!', '>> Банда %s отвоевала карту у банды %s со значением в %d очков!'),\
+	(36, '>> The map can be captured by a gang', '>> Карта может быть захвачена любой бандой'),\
+	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
 	(38, 'UNUSED', 'UNUSED'),\
-	(39, 'Classes', 'РљР»Р°СЃСЃС‹'),\
-	(40, 'Human Classes\nZombie Classes', 'РљР»Р°СЃСЃС‹ Р›СЋРґРµР№\nРљР»Р°СЃСЃС‹ Р—РѕРјР±Рё'),\
-	(41, 'Select', 'Р’С‹Р±СЂР°С‚СЊ'),\
-	(42, 'Close', 'Р—Р°РєСЂС‹С‚СЊ'),\
-	(43, 'POINTS', 'РћР§РљРћР’'),\
-	(44, '>> You have been spawned as a(n) %s. Use /class to change this', '>> Р’Р°С€ С‚РµРєСѓС‰РёР№ РєР»Р°СЃСЃ %s. РСЃРїРѕР»СЊР·СѓР№С‚Рµ /class С‡С‚РѕР±С‹ РёР·РјРµРЅРёС‚СЊ РµРіРѕ'),\
-	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Р’С‹ СѓСЃРїРµР»Рё СЃРјРµРЅРёС‚СЊ СЃРІРѕР№ РєР»Р°СЃСЃ РІ РїРѕРґС…РѕРґСЏС‰РµРµ РІСЂРµРјСЏ!'),\
-	(46, '>> Class set, will change next respawn!', '>> РљР»Р°СЃСЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅ, Р±СѓРґРµС‚ РёР·РјРµРЅРµРЅ РїРѕСЃР»Рµ СЃРїР°РІРЅР°!'),\
-	(47, 'points', 'РѕС‡РєРѕРІ'),\
-	(48, '>> You need %d %s!', '>> Р’Р°Рј РЅСѓР¶РЅРѕ %d %s!'),\
-	(49, 'MISS', 'РџР РћРњРђРҐ'),\
-	(50, '~g~Found:~w~ %d ammo', '~g~РџРѕРґРЅСЏС‚Рѕ:~w~ %d РїР°С‚СЂРѕРЅ(РѕРІ)');\
+	(39, 'Classes', 'Классы'),\
+	(40, 'Human Classes\nZombie Classes', 'Классы Людей\nКлассы Зомби'),\
+	(41, 'Select', 'Выбрать'),\
+	(42, 'Close', 'Закрыть'),\
+	(43, 'POINTS', 'ОЧКОВ'),\
+	(44, '>> You have been spawned as a(n) %s. Use /class to change this', '>> Ваш текущий класс %s. Используйте /class чтобы изменить его'),\
+	(45, '>> You have changed your class within the grace period and have been respawned instanlty!', '>> Вы успели сменить свой класс в подходящее время!'),\
+	(46, '>> Class set, will change next respawn!', '>> Класс установлен, будет изменен после спавна!'),\
+	(47, 'points', 'очков'),\
+	(48, '>> You need %d %s!', '>> Вам нужно %d %s!'),\
+	(49, 'MISS', 'ПРОМАХ'),\
+	(50, '~g~Found:~w~ %d ammo', '~g~Поднято:~w~ %d патрон(ов)');\
 "
 
 #define PREDIFINED_LOCALIZATION_4 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(51, '>> You were chosen as a zombie go and kill all the humans!', '>> Р’С‹ Р±С‹Р»Рё РІС‹Р±СЂР°РЅС‹ РєР°Рє Р·РѕРјР±Рё, СѓР±РµР№С‚Рµ РІСЃРµС… Р»СЋРґРµР№!'),\	
-	(52, '>> Use your abilities to make it faster (LEFT ALT)', '>> РСЃРїРѕР»СЊР·СѓР№С‚Рµ СЃРІРѕРё СЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё, С‡С‚РѕР±С‹ СѓСЃРєРѕСЂРёС‚СЊ СЌС‚Рѕ (Р›РµРІС‹Р№ РђР»СЊС‚)'),\
-	(53, '~r~TRY TO STAY~n~~w~ALIVE', '~r~РџРћРџР«РўРђР™РўР•РЎР¬ ~w~Р’Р«Р–РРўР¬'),\
-	(54, 'points', 'РѕС‡РєРё'),\
-	(55, '>> Player %s was chosen to be the Human Hero / Queen. Kill him(er) and get additional %s!', '>> РРіСЂРѕРє %s Р±С‹Р» РІС‹Р±СЂР°РЅ РєР°Рє Р“РµСЂРѕР№(РёРЅСЏ). РЈР±РµР№С‚Рµ РµРіРѕ(РµРµ) Рё РїРѕР»СѓС‡РёС‚Рµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ %s!'),\
-	(56, '>> Player %s has killed the Human Hero / Queen!', '>> РРіСЂРѕРє %s СѓР±РёР» Р“РµСЂРѕСЏ(РёРЅСЋ)!'),\
-	(57, '>> Player %s was chosen to be the Zombie Boss / Queen. Kill him(er) and get additional %s!', '>> РРіСЂРѕРє %s Р±С‹Р» РІС‹Р±СЂР°РЅ РєР°Рє Р—РѕРјР±Рё Р‘РѕСЃСЃ / РљРѕСЂРѕР»РµРІР°. РЈР±РµР№С‚Рµ РµРіРѕ(РµРµ) Рё РїРѕР»СѓС‡РёС‚Рµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ %s!'),\
-	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> РРіСЂРѕРє %s СѓР±РёР» Р—РѕРјР±Рё Р‘РѕСЃСЃР° / РљРѕСЂРѕР»РµРІСѓ!'),\
-	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [РџРµСЂРІР°СЏ РљСЂРѕРІСЊ] РРіСЂРѕРє %s {FF0000}РїСѓСЃС‚РёР» РїРµСЂРІСѓСЋ РєСЂРѕРІСЊ{FFFFFF} Рё РїРѕР»СѓС‡РёР» РґРѕРїРѕР»РЅРёРµР»СЊРЅС‹Рµ %s!'),\
-	(60, '>> Kill the last human and receive extra %s!', '>> РЈР±РµР№С‚Рµ РїРѕСЃР»РµРґРЅРµРіРѕ РІС‹Р¶РµРІС€РµРіРѕ Рё РїРѕР»СѓС‡РёС‚Рµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ %s!'),\
-	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> РРіСЂРѕРє %s СѓР±РёР» РїРѕСЃР»РµРґРЅРµРіРѕ РІС‹Р¶РёРІС€РµРіРѕ Рё РїРѕР»СѓС‡РёР» РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ %s!'),\
-	(62, '>> Player %s has been infected by standard zombie %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РѕР±С‹С‡РЅС‹Рј Р·РѕРјР±Рё %s!'),\
-	(63, '>> Player %s has been infected by mutated zombie %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РѕС‚ РјСѓС‚РёСЂРѕРІР°РЅРЅРѕРіРѕ Р·РѕРјР±Рё %s!'),\
-	(64, '>> Player %s has been infected by flesher zombie %s! (by meat)', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РіРЅРёР»С‹Рј Р·РѕРјР±Рё %s! (С‡РµСЂРµР· РјСЏСЃРѕ)'),\
-	(65, '>> Player %s has been infected by spore zombie %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ С‡РµСЂРµР· СЃРїРѕСЂС‹ РѕС‚ Р·РѕРјР±Рё %s!'),\
-	(66, '>> Player %s has been infected by spitter zombie %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РїР»РµРІРєРѕРј РѕС‚ Р·РѕРјР±Рё %s!'),\
-	(67, '>> Player %s has been infected by explosion from %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РІР·СЂС‹РІРѕРј РѕС‚ Р·РѕРјР±Рё %s!'),\
-	(68, '>> Player %s has blown up and infected{FFFFFF} %d human(s)!', '>> РРіСЂРѕРє %s РІР·РѕСЂРІР°Р»СЃСЏ Рё Р·Р°СЂР°Р·РёР» {FFFFFF} %d С‡РµР»РѕРІРµРє(Р°)!'),\
-	(69, '>> Player %s has blown up and infected{FFFFFF} WHOPPING{FF0000} %d human(s)!', '>> РРіСЂРѕРє %s РІР·РѕСЂРІР°Р»СЃСЏ Рё Р·Р°СЂР°Р·РёР» {FFFFFF} РќР•Р’Р•Р РћРЇРўРќРћ{FF0000} %d С‡РµР»РѕРІРµРє(Р°)!'),\
-	(70, '>> Player %s has been cured by cure field!', '>> РРіСЂРѕРє %s Р±С‹Р» РІС‹Р»РёС‡РµРЅ Р»РµС‡СЏС‰РµРј РїРѕР»РµРј!'),\
-	(71, '>> Player %s has been cured by %s! (shot)', '>> РРіСЂРѕРє %s Р±С‹Р» РІС‹Р»РёС‡РµРЅ РёРіСЂРѕРєРѕРј %s! (РІС‹СЃС‚СЂРµР»)'),\
-	(72, '~r~~h~Regeneration', '~r~~h~Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ'),\
-	(73, '~g~~h~Radioactive Field', '~g~~h~Р Р°РґРёРѕР°РєС‚РёРІРЅРѕРµ_РџРѕР»Рµ'),\
-	(74, '~g~Antidote', '~g~РђРЅС‚РёРґРѕС‚'),\
-	(75, '>> Player %s has stole an armour from player %s!', '>> РРіСЂРѕРє %s СѓРєСЂР°Р» Р±СЂРѕРЅСЋ РёРіСЂРѕРєР° %s!'),\
-	(76, '>> Player %s has been cursed by witch %s!', '>> РРіСЂРѕРє %s Р±С‹Р» РїСЂРѕРєР»СЏС‚ РІРµРґСЊРјРѕР№ %s!'),\
-	(77, '>> Priest %s absolved all sins of the player %s!', '>> РЎРІСЏС‰РµРЅРёРє %s РѕС‚РїСѓСЃС‚РёР» РІСЃРµ РіСЂРµС…Рё РёРіСЂРѕРєР° %s!'),\
-	(78, '~w~You are ~g~Cursed~n~~r~Abilities disabled', '~w~Р’С‹ ~g~РїСЂРѕРєР»СЏС‚С‹~n~~r~РЎРїРѕСЃРѕР±РЅРѕСЃС‚Рё РѕС‚РєР»СЋС‡РµРЅС‹');\
+	(51, '>> You were chosen as a zombie go and kill all the humans!', '>> Вы были выбраны как зомби, убейте всех людей!'),\	
+	(52, '>> Use your abilities to make it faster (LEFT ALT)', '>> Используйте свои способности, чтобы ускорить это (Левый Альт)'),\
+	(53, '~r~TRY TO STAY~n~~w~ALIVE', '~r~ПОПЫТАЙТЕСЬ ~w~ВЫЖИТЬ'),\
+	(54, 'points', 'очки'),\
+	(55, '>> Player %s was chosen to be the Human Hero / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Герой(иня). Убейте его(ее) и получите дополнительные %s!'),\
+	(56, '>> Player %s has killed the Human Hero / Queen!', '>> Игрок %s убил Героя(иню)!'),\
+	(57, '>> Player %s was chosen to be the Zombie Boss / Queen. Kill him(er) and get additional %s!', '>> Игрок %s был выбран как Зомби Босс / Королева. Убейте его(ее) и получите дополнительные %s!'),\
+	(58, '>> Player %s has killed the Zombie Boss / Queen!', '>> Игрок %s убил Зомби Босса / Королеву!'),\
+	(59, '>> [First Blood] Player %s has drawn {FF0000}first blood{FFFFFF} and gains additional %s!', '>> [Первая Кровь] Игрок %s {FF0000}пустил первую кровь{FFFFFF} и получил дополниельные %s!'),\
+	(60, '>> Kill the last human and receive extra %s!', '>> Убейте последнего выжевшего и получите дополнительные %s!'),\
+	(61, '>> Player %s killed the last survivor and got an additional %s!', '>> Игрок %s убил последнего выжившего и получил дополнительные %s!'),\
+	(62, '>> Player %s has been infected by standard zombie %s!', '>> Игрок %s был заражен обычным зомби %s!'),\
+	(63, '>> Player %s has been infected by mutated zombie %s!', '>> Игрок %s был заражен от мутированного зомби %s!'),\
+	(64, '>> Player %s has been infected by flesher zombie %s! (by meat)', '>> Игрок %s был заражен гнилым зомби %s! (через мясо)'),\
+	(65, '>> Player %s has been infected by spore zombie %s!', '>> Игрок %s был заражен через споры от зомби %s!'),\
+	(66, '>> Player %s has been infected by spitter zombie %s!', '>> Игрок %s был заражен плевком от зомби %s!'),\
+	(67, '>> Player %s has been infected by explosion from %s!', '>> Игрок %s был заражен взрывом от зомби %s!'),\
+	(68, '>> Player %s has blown up and infected{FFFFFF} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} %d человек(а)!'),\
+	(69, '>> Player %s has blown up and infected{FFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s взорвался и заразил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
+	(70, '>> Player %s has been cured by cure field!', '>> Игрок %s был выличен лечящем полем!'),\
+	(71, '>> Player %s has been cured by %s! (shot)', '>> Игрок %s был выличен игроком %s! (выстрел)'),\
+	(72, '~r~~h~Regeneration', '~r~~h~Восстановление'),\
+	(73, '~g~~h~Radioactive Field', '~g~~h~Радиоактивное_Поле'),\
+	(74, '~g~Antidote', '~g~Антидот'),\
+	(75, '>> Player %s has stole an armour from player %s!', '>> Игрок %s украл броню игрока %s!'),\
+	(76, '>> Player %s has been cursed by witch %s!', '>> Игрок %s был проклят ведьмой %s!'),\
+	(77, '>> Priest %s absolved all sins of the player %s!', '>> Священик %s отпустил все грехи игрока %s!'),\
+	(78, '~w~You are ~g~Cursed~n~~r~Abilities disabled', '~w~Вы ~g~прокляты~n~~r~Способности отключены');\
 "
 
 #define PREDIFINED_LOCALIZATION_5 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(79, '~r~This~w~ player is on your team', '~r~Р­С‚РѕС‚~w~ РёРіСЂРѕРє РІ РІР°С€РµР№ РєРѕРјР°РЅРґРµ'),\
-	(80, '~r~OFF', '~r~Р’Р«РљР›Р®Р§Р•РќРћ'),\
-	(81, '~g~ON', '~g~Р’РљР›Р®Р§Р•РќРћ'),\
-	(82, '~y~Radioactive Field is %s', '~y~Р Р°РґРёРѕР°РєС‚РёРІРЅРѕРµ РџРѕР»Рµ %s'),\
-	(83, '~y~Cure Field is %s', '~y~Р›РµС‡Р°С‰РёРµ РџРѕР»Рµ %s'),\
-	(84, '~y~Holy Field is %s', '~y~РЎРІСЏС‚РѕРµ РџРѕР»Рµ %s'),\
-	(85, '~y~Support Field is %s', '~y~РџРѕРґРґРµСЂР¶РёРІР°СЋС‰РёРµ РџРѕР»Рµ %s'),\
-	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РѕС‚ РёРіСЂРѕРєР° %s!{FFFFFF} (РїРѕ РІРѕР·РґСѓС…Сѓ)'),\
-	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> РРіСЂРѕРє %s Р±С‹Р» РІРѕР·СЂРѕР¶РґРµРЅ РєР°Рє Р—РѕРјР±Рё [РџСЂРёС‡РёРЅР°: Р’С‹С…РѕРґ Р·Р° РєР°СЂС‚Сѓ]'),\
-	(88, '>> Player %s froze{FFFFFF} %d human(s)!', '>> РРіСЂРѕРє %s Р·Р°РјРѕСЂРѕР·РёР» {FFFFFF} %d С‡РµР»РѕРІРµРє(Р°)!'),\
-	(89, '>> Player %s frozeFFFFFF} WHOPPING{FF0000} %d human(s)!', '>> РРіСЂРѕРє %s Р·Р°РјРѕСЂРѕР·РёР» {FFFFFF} РќР•Р’Р•Р РћРЇРўРќРћ{FF0000} %d С‡РµР»РѕРІРµРє(Р°)!'),\
-	(90, '~g~Wait some time', '~g~РџРѕРґРѕР¶РґРёС‚Рµ'),\
-	(91, '~r~Can not use', '~g~РќРµРІРѕР·РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ'),\
-	(92, '>> Player %s has been infected by misty zombie %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РѕС‚ С‚СѓРјР°РЅРЅРѕРіРѕ Р·РѕРјР±Рё %s!'),\
-	(93, '>> Player %s has been infected by blind zombie %s!', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°СЂР°Р¶РµРЅ РѕСЃР»РµРїР»СЏСЋС‰РёРј Р·РѕРјР±Рё %s!'),\
-	(94, '>> Player %s has stole ammo from player %s!', '>> РРіСЂРѕРє %s СѓРєСЂР°Р» РїР°С‚СЂРѕРЅС‹ РёРіСЂРѕРєР° %s!'),\
-	(95, '>> %s legs have been broken by %s!', '>> РќРѕРіРё РёРіСЂРѕРєР° %s Р±С‹Р»Рё СЃР»РѕРјР°РЅС‹ РёРіСЂРѕРєРѕРј %s!'),\
-	(96, '~y~Remove Weapons Field is %s', '~y~РџРѕР»Рµ РѕС‚РЅРёРјР°РЅРёСЏ РѕСЂСѓР¶РёСЏ %s'),\
-	(97, '~r~Weapons Removed', '~r~РћСЂСѓР¶РёРµ СѓР±СЂР°РЅРѕ'), \
-	(98, '>> Player %s has been poisoned by %s!', '>> РРіСЂРѕРє %s Р±С‹Р» РѕС‚СЂР°РІР»РµРЅ РёРіСЂРѕРєРѕРј %s!'),\
-	(99, '~r~Space starts damaging you', '~r~РџСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ РЅР°С‡РёРЅР°РµС‚ СЂР°Р·СЂС‹РІР°С‚СЊ РІР°СЃ'),\
-	(100, '|: Random Question for %d points: %s', '|: РЎР»СѓС‡Р°Р№РЅР°СЏ РІРёРєС‚РѕСЂРёРЅР° РЅР° %d РѕС‡РєРѕРІ: %s'),\
-	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> РРіСЂРѕРє %s Р±С‹Р» РїРµСЂРІС‹Рј, РєС‚Рѕ РѕС‚РІРµС‚РёР» РЅР° РІРѕРїСЂРѕСЃ (РћС‚РІРµС‚: %s) Рё РїРѕР»СѓС‡РёР» %d РѕС‡РєРѕРІ'),\
-	(102, 'Next', 'РЎР»РµРґСѓСЋС‰Р°СЏ'),\
-	(103, '{d5d5c3}Achievements', '{d5d5c3}Р”РѕСЃС‚РёР¶РµРЅРёСЏ'),\
-	(104, 'Nothing yet', 'РўСѓС‚ РїРѕРєР° РїСѓСЃС‚Рѕ'),\
-	(105, '{d5d5c3}Name\t{d5d5c3}Description\n', '{d5d5c3}РќР°Р·РІР°РЅРёРµ\t{d5d5c3}РћРїРёСЃР°РЅРёРµ\n'),\
-	(106, 'RANDOM QUESTION: No one answered!', 'РЎР»СѓС‡Р°Р№РЅР°СЏ РІРёРєС‚РѕСЂРёРЅР°: РЅРёРєС‚Рѕ РЅРµ РѕС‚РІРµС‚РёР»!'),\
-	(107, '>> Lottery: Number will be drawn soon. Use /lottery to get your own number', '>> Р›РѕС‚РµСЂРµСЏ: РќРѕРјРµСЂ СЃРєРѕСЂРѕ Р±СѓРґРµС‚ СЂР°Р·С‹РіСЂР°РЅ. РСЃРїРѕР»СЊР·СѓР№С‚Рµ /lottery Рё РІС‹Р±РµСЂРёС‚Рµ РІР°С€ РЅРѕРјРµСЂ!'),\
-	(108, '>> Lottery: Nobody won!{FF0000} Number: %d Jackpot: %d', '>> Р›РѕС‚РµСЂРµСЏ: РќРёРєС‚Рѕ РЅРµ РІС‹РіСЂР°Р»! {FF0000} РќРѕРјРµСЂ: %d Р”Р¶РµРєРїРѕС‚: %d'),\
-	(109, '>> Lottery: %s has won the lottery!{C659B6} Number: %d Jackpot: %d', '>> Р›РѕС‚РµСЂРµСЏ: РРіСЂРѕРє %s РІС‹РіСЂР°Р» Р»РѕС‚РµСЂРµСЋ! {C659B6} РќРѕРјРµСЂ: %d Р”Р¶РµРєРїРѕС‚: %d'),\
-	(110, '>> The lottery hasnt started yet', '>> Р›РѕС‚РµСЂРµСЏ РµС‰Рµ РЅРµ РЅР°С‡Р°Р»Р°СЃСЊ'),\
-	(111, '>> You have already chosen your number!', '>> Р’С‹ СѓР¶Рµ РІС‹Р±СЂР°Р»Рё СЃРІРѕР№ РЅРѕРјРµСЂ!'),\
-	(112, '>> Your number is %d', '>> Р’Р°С€ РЅРѕРјРµСЂ - %d');\
+	(79, '~r~This~w~ player is on your team', '~r~Этот~w~ игрок в вашей команде'),\
+	(80, '~r~OFF', '~r~ВЫКЛЮЧЕНО'),\
+	(81, '~g~ON', '~g~ВКЛЮЧЕНО'),\
+	(82, '~y~Radioactive Field is %s', '~y~Радиоактивное Поле %s'),\
+	(83, '~y~Cure Field is %s', '~y~Лечащие Поле %s'),\
+	(84, '~y~Holy Field is %s', '~y~Святое Поле %s'),\
+	(85, '~y~Support Field is %s', '~y~Поддерживающие Поле %s'),\
+	(86, '>> Player %s has been infected by %s!{FFFFFF} (by air)', '>> Игрок %s был заражен от игрока %s!{FFFFFF} (по воздуху)'),\
+	(87, '>> Player %s has been respawned as Zombie [Reason: Out Of Map]', '>> Игрок %s был возрожден как Зомби [Причина: Выход за карту]'),\
+	(88, '>> Player %s froze{FFFFFF} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} %d человек(а)!'),\
+	(89, '>> Player %s frozeFFFFFF} WHOPPING{FF0000} %d human(s)!', '>> Игрок %s заморозил {FFFFFF} НЕВЕРОЯТНО{FF0000} %d человек(а)!'),\
+	(90, '~g~Wait some time', '~g~Подождите'),\
+	(91, '~r~Can not use', '~g~Невозможно использовать'),\
+	(92, '>> Player %s has been infected by misty zombie %s!', '>> Игрок %s был заражен от туманного зомби %s!'),\
+	(93, '>> Player %s has been infected by blind zombie %s!', '>> Игрок %s был заражен ослепляющим зомби %s!'),\
+	(94, '>> Player %s has stole ammo from player %s!', '>> Игрок %s украл патроны игрока %s!'),\
+	(95, '>> %s legs have been broken by %s!', '>> Ноги игрока %s были сломаны игроком %s!'),\
+	(96, '~y~Remove Weapons Field is %s', '~y~Поле отнимания оружия %s'),\
+	(97, '~r~Weapons Removed', '~r~Оружие убрано'), \
+	(98, '>> Player %s has been poisoned by %s!', '>> Игрок %s был отравлен игроком %s!'),\
+	(99, '~r~Space starts damaging you', '~r~Пространство начинает разрывать вас'),\
+	(100, '|: Random Question for %d points: %s', '|: Случайная викторина на %d очков: %s'),\
+	(101, '>> %s was the first one answer the question (Answer : %s) and earns %d points!', '>> Игрок %s был первым, кто ответил на вопрос (Ответ: %s) и получил %d очков'),\
+	(102, 'Next', 'Следующая'),\
+	(103, '{d5d5c3}Achievements', '{d5d5c3}Достижения'),\
+	(104, 'Nothing yet', 'Тут пока пусто'),\
+	(105, '{d5d5c3}Name\t{d5d5c3}Description\n', '{d5d5c3}Название\t{d5d5c3}Описание\n'),\
+	(106, 'RANDOM QUESTION: No one answered!', 'Случайная викторина: никто не ответил!'),\
+	(107, '>> Lottery: Number will be drawn soon. Use /lottery to get your own number', '>> Лотерея: Номер скоро будет разыгран. Используйте /lottery и выберите ваш номер!'),\
+	(108, '>> Lottery: Nobody won!{FF0000} Number: %d Jackpot: %d', '>> Лотерея: Никто не выграл! {FF0000} Номер: %d Джекпот: %d'),\
+	(109, '>> Lottery: %s has won the lottery!{C659B6} Number: %d Jackpot: %d', '>> Лотерея: Игрок %s выграл лотерею! {C659B6} Номер: %d Джекпот: %d'),\
+	(110, '>> The lottery hasnt started yet', '>> Лотерея еще не началась'),\
+	(111, '>> You have already chosen your number!', '>> Вы уже выбрали свой номер!'),\
+	(112, '>> Your number is %d', '>> Ваш номер - %d');\
 "
 
 #define PREDIFINED_LOCALIZATION_6 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
 	(113, '~~~~~~~~~~~~~~ %s ~~~~~~~~~~~~~~', '~~~~~~~~~~~~~~ %s ~~~~~~~~~~~~~~'),\
-	(114, '>> Kills: %d - Killstreak: %d (best: %d)', '>> РЈР±РёР№СЃС‚РІ: %d - РЈР±РёР№СЃС‚РІ РїРѕРґСЂСЏРґ: %d (Р›СѓС‡С€РёР№ СЂРµР·СѓР»СЊС‚Р°С‚: %d)'),\
-	(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Р­РІР°РєСѓР°С†РёР№: %d - Duel Wins: %d - Rank: %d'),\
-	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Р’СЃРµРіРѕ РІ РёРіСЂРµ: %d Р§Р°СЃ(Р°/РѕРІ) - %d РњРёРЅСѓС‚(Р°/С‹) - %d РЎРµРєСѓРЅРґ(Р°/С‹)'),\
-	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Р‘Р°РЅРґР°: (РР” %d)(Р Р°РЅРі: %d) - {dfb7bc}ID РђРєРєР°СѓРЅС‚Р°: %d'),\
-	(118, '>> Date: %02dD/%02dM/%dY - Session: MD_%s', '>> Р”Р°С‚Р°: %02dD/%02dM/%dY - РЎРµСЃСЃРёСЏ: MD_%s'),\
-	(119, 'Coin(s)', 'РњРѕРЅРµС‚(Р°/С‹)'),\
-	(120, '>> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)', '>> РРіСЂРѕРє %s РѕС‚РєСЂС‹Р» РЅРѕРІРѕРµ РґРѕСЃС‚РёР¶РµРЅРёРµ{FFFFFF} %s +%d %s (/achievements)'),\
-	(121, '>> %s has achieved a %d killstreak!{FFFFFF} (+%d %s)', '>> РРіСЂРѕРє %s РґРѕСЃС‚РёРі СЃРµСЂРёРё РёР· %d СѓР±РёР№СЃС‚РІ!{FFFFFF} (+%d %s)'),\
-	(122, '>> %s earned %d %s for killing %s on {FFFFFF}%d killstreak!', '>> РРіСЂРѕРє %s Р·Р°СЂР°Р±РѕС‚Р°Р» %d %s Р·Р° СѓР±РёР№СЃС‚РІРѕ РёРіСЂРѕРєР° %s РЅР°{FFFFFF} СЃРµСЂРёРё РёР· %d СѓР±РёР№СЃС‚РІ!'),\
-	(123, '>> Points: %d - Total: %d', '>> РћС‡РєРё: %d - Р’СЃРµРіРѕ: %d'),\
-	(124, '>> You have saved your stats!', '>> Р’С‹ СЃРѕС…СЂР°РЅРёР»Рё СЃРІРѕСЋ СЃС‚Р°С‚РёСЃС‚РёРєСѓ!'),\
-	(125, 'Choose your language', 'Р’С‹Р±РµСЂРёС‚Рµ СЃРІРѕР№ СЏР·С‹Рє'),\
-	(126, 'English\nRussian', 'РђРЅРіР»РёР№СЃРєРёР№\nР СѓСЃСЃРєРёР№'),\
-	(127, '>> Language set!', '>> РЇР·С‹Рє РїРµСЂРµРєР»СЋС‡РµРЅ!'),\
-	(128, '[QUESTION]: %s asked a question:{FFFFFF} %s', '[Р’РћРџР РћРЎ]: РРіСЂРѕРє %s Р·Р°РґР°Р» РІРѕРїСЂРѕСЃ:{FFFFFF} %s'),\
-	(129, '>> The player has closed private messages!', '>> РРіСЂРѕРє Р·Р°РєСЂС‹Р» Р»РёС‡РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ!'),\
-	(130, '>> Setting disabled!', '>> РќР°СЃС‚СЂРѕР№РєР° РѕС‚РєР»СЋС‡РµРЅР°!'),\
-	(131, '>> Setting enabled!', '>> РќР°СЃС‚СЂРѕР№РєР° РІРєР»СЋС‡РµРЅР°!'),\
-	(132, 'Settings', 'РќР°СЃС‚СЂРѕР№РєРё'),\
-	(133, 'Setting Name\tState\nBlock PMs\t%s\nDing On Hit\t%s\nBlock Duel Requests\t%s\n\"Ability Is Ready\" notification\t%s\nAuto-Login\t%s', 'РќР°Р·РІР°РЅРёРµ\tРЎРѕСЃС‚РѕСЏРЅРёРµ\nР‘Р»РѕРєРёСЂРѕРІР°С‚СЊ Р›РЎ\t%s\nР—РІСѓРє РїСЂРё РїРѕРїР°РґР°РЅРёРё\t%s\nР‘Р»РѕРєРёСЂРѕРІР°С‚СЊ РґСѓСЌР»Рё\t%s\nРЈРІРµРґРѕРјР»РµРЅРёРµ \"РЎРїРѕСЃРѕР±РЅРѕСЃС‚СЊ Р“РѕС‚РѕРІР°\"\t%s\nРђРІС‚Рѕ-Р›РѕРіРёРЅ\t%s'),\
-	(134, '{009900}[ YES ]', '{009900}[ Р”Рђ ]'),\
-	(135, '{ff1a1a}[ NO ]', '{ff1a1a}[ РќР•Рў ]'),\
-	(136, '~y~ABILITY~w~ IS~g~ READY!', '~y~РЎРџРћРЎРћР‘РќРћРЎРўР¬~g~ Р“РћРўРћР’Рђ!'),\
-	(137, '>> Congratulations, {FF0000}you are banned!', '>> РџРѕР·РґСЂР°РІР»СЏРµРј, {FF0000}РІС‹ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅС‹!'),\
-	(138, 'Rules', 'РџСЂР°РІРёР»Р°'),\
-	(139, 'Help', 'РџРѕРјРѕС‰СЊ'),\
-	(140, '[REPORT] %s has reported %s(%d):{FFFFFF} %s', '[Р–РђР›РћР‘Рђ] РРіСЂРѕРє %s РѕС‚РїСЂР°РІРёР» Р¶Р°Р»РѕР±Сѓ РЅР° РёРіСЂРѕРєР° %s(%d):{FFFFFF} %s'),\
-	(141, 'Report sent!', 'Р–Р°Р»РѕР±Р° РѕС‚РїСЂР°РІР»РµРЅР°!'),\
-	(142, 'Unknown command. Check /cmds', 'РќРµРёР·РІРµСЃС‚РЅР°СЏ РєРѕРјР°РЅРґР°. РџСЂРѕСЃРјРѕС‚СЂРёС‚Рµ /cmds'),\
-	(143, '>> Voting is already underway!', '>> Р“РѕР»РѕСЃРѕРІР°РЅРёРµ СѓР¶Рµ РёРґС‘С‚!'),\
-	(144, '[VOTEKICK] Player %s(%d) will be kicked [Reason: %s]{FFFFFF} (by %s)', '[Р“РћР›РћРЎРћР’РђРќРР•] РРіСЂРѕРє %s(%d) Р±СѓРґРµС‚ РєРёРєРЅСѓС‚ [РџСЂРёС‡РёРЅР°: %s]{FFFFFF} (РёРЅРёС†РёР°С‚РѕСЂ %s)'),\
-	(145, '[VOTEKICK] Use /yes and /no for voting!', '[Р“РћР›РћРЎРћР’РђРќРР•] РСЃРїРѕР»СЊР·СѓР№С‚Рµ /yes Рё /no РґР»СЏ РіРѕР»РѕСЃРѕРІР°РЅРёСЏ!'),\
-	(146, '>> %s voted for a kick (%d / %d)', '>> РРіСЂРѕРє %s РїСЂРѕРіРѕР»РѕСЃРѕРІР°Р» Р·Р° РєРёРє (%d / %d)'),\
-	(147, '>> %s did not vote for a kick (%d / %d)', '>> РРіСЂРѕРє %s РїСЂРѕРіРѕР»РѕСЃРѕРІР°Р» РїСЂРѕС‚РёРІ (%d / %d)');\
+	(114, '>> Kills: %d - Killstreak: %d (best: %d)', '>> Убийств: %d - Убийств подряд: %d (Лучший результат: %d)'),\
+	(115, '>> Wins: %d - Duel Wins: %d - Rank: %d', '>> Эвакуаций: %d - Duel Wins: %d - Rank: %d'),\
+	(116, '>> Played: %d Hours - %d Minutes - %d Seconds', '>> Всего в игре: %d Час(а/ов) - %d Минут(а/ы) - %d Секунд(а/ы)'),\
+	(117, '>> Gang: (ID %d)(Rank: %d) - {dfb7bc}Account ID: %d', '>> Банда: (ИД %d)(Ранг: %d) - {dfb7bc}ID Аккаунта: %d'),\
+	(118, '>> Date: %02dD/%02dM/%dY - Session: MD_%s', '>> Дата: %02dD/%02dM/%dY - Сессия: MD_%s'),\
+	(119, 'Coin(s)', 'Монет(а/ы)'),\
+	(120, '>> %s has unlocked a New Achievement named{FFFFFF} %s +%d %s (/achievements)', '>> Игрок %s открыл новое достижение{FFFFFF} %s +%d %s (/achievements)'),\
+	(121, '>> %s has achieved a %d killstreak!{FFFFFF} (+%d %s)', '>> Игрок %s достиг серии из %d убийств!{FFFFFF} (+%d %s)'),\
+	(122, '>> %s earned %d %s for killing %s on {FFFFFF}%d killstreak!', '>> Игрок %s заработал %d %s за убийство игрока %s на{FFFFFF} серии из %d убийств!'),\
+	(123, '>> Points: %d - Total: %d', '>> Очки: %d - Всего: %d'),\
+	(124, '>> You have saved your stats!', '>> Вы сохранили свою статистику!'),\
+	(125, 'Choose your language', 'Выберите свой язык'),\
+	(126, 'English\nRussian', 'Английский\nРусский'),\
+	(127, '>> Language set!', '>> Язык переключен!'),\
+	(128, '[QUESTION]: %s asked a question:{FFFFFF} %s', '[ВОПРОС]: Игрок %s задал вопрос:{FFFFFF} %s'),\
+	(129, '>> The player has closed private messages!', '>> Игрок закрыл личные сообщения!'),\
+	(130, '>> Setting disabled!', '>> Настройка отключена!'),\
+	(131, '>> Setting enabled!', '>> Настройка включена!'),\
+	(132, 'Settings', 'Настройки'),\
+	(133, 'Setting Name\tState\nBlock PMs\t%s\nDing On Hit\t%s\nBlock Duel Requests\t%s\n\"Ability Is Ready\" notification\t%s\nAuto-Login\t%s', 'Название\tСостояние\nБлокировать ЛС\t%s\nЗвук при попадании\t%s\nБлокировать дуэли\t%s\nУведомление \"Способность Готова\"\t%s\nАвто-Логин\t%s'),\
+	(134, '{009900}[ YES ]', '{009900}[ ДА ]'),\
+	(135, '{ff1a1a}[ NO ]', '{ff1a1a}[ НЕТ ]'),\
+	(136, '~y~ABILITY~w~ IS~g~ READY!', '~y~СПОСОБНОСТЬ~g~ ГОТОВА!'),\
+	(137, '>> Congratulations, {FF0000}you are banned!', '>> Поздравляем, {FF0000}вы заблокированы!'),\
+	(138, 'Rules', 'Правила'),\
+	(139, 'Help', 'Помощь'),\
+	(140, '[REPORT] %s has reported %s(%d):{FFFFFF} %s', '[ЖАЛОБА] Игрок %s отправил жалобу на игрока %s(%d):{FFFFFF} %s'),\
+	(141, 'Report sent!', 'Жалоба отправлена!'),\
+	(142, 'Unknown command. Check /cmds', 'Неизвестная команда. Просмотрите /cmds'),\
+	(143, '>> Voting is already underway!', '>> Голосование уже идёт!'),\
+	(144, '[VOTEKICK] Player %s(%d) will be kicked [Reason: %s]{FFFFFF} (by %s)', '[ГОЛОСОВАНИЕ] Игрок %s(%d) будет кикнут [Причина: %s]{FFFFFF} (инициатор %s)'),\
+	(145, '[VOTEKICK] Use /yes and /no for voting!', '[ГОЛОСОВАНИЕ] Используйте /yes и /no для голосования!'),\
+	(146, '>> %s voted for a kick (%d / %d)', '>> Игрок %s проголосовал за кик (%d / %d)'),\
+	(147, '>> %s did not vote for a kick (%d / %d)', '>> Игрок %s проголосовал против (%d / %d)');\
 "
 
 #define PREDIFINED_LOCALIZATION_7 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(148, '[VOTEKICK] %s has been kicked', '[Р“РћР›РћРЎРћР’РђРќРР•] РРіСЂРѕРє %s Р±С‹Р» РєРёРєРЅСѓС‚'),\
-	(149, '[VOTEKICK] Voting canceled', '[Р“РћР›РћРЎРћР’РђРќРР•] РћС‚РјРµРЅРµРЅРѕ'),\
-	(150, '*** %s has joined the server (ID %d) (Player %d) (IP %s)', '*** РРіСЂРѕРє %s РїРѕРґРєР»СЋС‡РёР»СЃСЏ Рє СЃРµСЂРІРµСЂСѓ (ID %d) (РРіСЂРѕРє %d) (IP %s)'),\
-	(151, '*** %s has left the server (%s) (%s)', '*** РРіСЂРѕРє %s РІС‹С€РµР» СЃ СЃРµСЂРІРµСЂР° (%s) (%s)'),\
-	(152, '[ADMIN MESSAGE] %s send an admin message to %s(%d):{FFFFFF} %s', '[РђР”РњРРќ-РЎРћРћР‘РЁР•РќРР•] РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s РѕС‚РІРµС‚РёР» РёРіСЂРѕРєСѓ %s(%d):{FFFFFF} %s'),\
-	(153, '[ADMIN MESSAGE]:{FFFFFF} %s', '[РђР”РњРРќ-РЎРћРћР‘РЁР•РќРР•]:{FFFFFF} %s'),\
-	(154, '>> %s(%d) has been jailed by %s for 3 minutes [Reason: %s]', '>> РРіСЂРѕРє %s(%d) Р±С‹Р» РїРѕСЃР°Р¶РµРЅ РІ С‚СЋСЂСЊРјСѓ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s РЅР° 3 РјРёРЅСѓС‚С‹ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(155, '>> %s has been jailed for 3 minutes [Reason: %s]', '>> РРіСЂРѕРє %s Р±С‹Р» РїРѕСЃР°Р¶РµРЅ РІ С‚СЋСЂСЊРјСѓ РЅР° 3 РјРёРЅСѓС‚С‹ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(156, '>> %s(%d) has been unjailed by %s', '>> РРіСЂРѕРє %s(%d) Р±С‹Р» РѕСЃРІРѕР±РѕР¶РґС‘РЅ РёР· С‚СЋСЂСЊРјС‹ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(157, '>> %s has been unjailed', '>> РРіСЂРѕРє %s Р±С‹Р» РѕСЃРІРѕР±РѕР¶РґС‘РЅ РёР· С‚СЋСЂСЊРјС‹'),\
-	(158, '{d5d5c3}Weekly Activities', '{d5d5c3}Р•Р¶РµРЅРµРґРµР»СЊРЅС‹Рµ Р·Р°РґР°РЅРёСЏ'),\
-	(159, 'Activities\nRewards', 'Р—Р°РґР°РЅРёСЏ\nРќР°РіСЂР°РґС‹'),\
-	(160, '{d5d5c3}Name\t{d5d5c3}Description\t{d5d5c3}Total Points\n', '{d5d5c3}РќР°Р·РІР°РЅРёРµ\t{d5d5c3}РћРїРёСЃР°РЅРёРµ\t{d5d5c3}РћС‡РєРѕРІ РІ РѕР±С‰РµРј\n'),\
-	(161, '>> Chat cleared by %s', 'Р§Р°С‚ Р±С‹Р» РѕС‡РёС‰РµРЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(162, '>> Chat cleared by an administrator', 'Р§Р°С‚ Р±С‹Р» РѕС‡РёС‰РµРЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј'),\
-	(163, '>> %s(%d) has been kicked by %s [Reason: %s]', '%s(%d) Р±С‹Р» РєРёРєРЅСѓС‚ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s [РџСЂРёС‡РёРЅР°: %s]'),\
-	(164, '>> %s has been kicked [Reason: %s]', '%s Р±С‹Р» РєРёРєРЅСѓС‚ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(165, '>> %s(%d) has been synced by %s', 'РРіСЂРѕРє %s(%d) Р±С‹Р» СЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(166, '>> %s has been synced', 'РРіСЂРѕРє %s Р±С‹Р» СЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅ'),\
-	(167, '>> %s(%d) got a slap from %s [Reason: %s]', 'РРіСЂРѕРє %s(%d) РїРѕР»СѓС‡РёР» РїРѕС‰РµС‡РёРЅСѓ РѕС‚ %s [РџСЂРёС‡РёРЅР°: %s]'),\
-	(168, '>> %s got a slap [Reason: %s]', 'РРіСЂРѕРє %s РїРѕР»СѓС‡РёР» РїРѕС‰РµС‡РёРЅСѓ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(169, '>> %s has changed %s(%d) team to zombie [Reason: %s]', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s СЃРјРµРЅРёР» РєРѕРјР°РЅРґСѓ РёРіСЂРѕРєР° %s(%d) РЅР° Р·РѕРјР±Рё [РџСЂРёС‡РёРЅР°: %s]'),\
-	(170, '>> %s has changed team to zombie [Reason: %s]', 'РРіСЂРѕРє %s СЃРјРµРЅРёР» РєРѕРјР°РЅРґСѓ РЅР° Р·РѕРјР±Рё [РџСЂРёС‡РёРЅР°: %s]'),\
-	(171, '~~~~~~~ MATCHES ~~~~~~~', '~~~~~~~ РЎРћР’РџРђР”Р•РќРРЇ ~~~~~~~'),\
-	(172, '>> Nothing found', '>> РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ'),\
-	(173, '>> %s(%d) has been banned by %s [Reason: %s]', '>> РРіСЂРѕРє %s(%d) Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s [РџСЂРёС‡РёРЅР°: %s]'),\
-	(174, '>> %s has been banned [Reason: %s]', 'РРіСЂРѕРє %s Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(175, '>> You have been in afk too long, your team has been changed to zombies', '>> Р’С‹ РЅР°С…РѕРґРёР»РёСЃСЊ РІ РђР¤Рљ СЃР»РёС€РєРѕРј РґРѕР»РіРѕ, РІР°С€Р° РєРѕРјР°РЅРґР° РёР·РјРµРЅРµРЅР° РЅР° Р·РѕРјР±Рё'),\
-	(176, '>> %s has been kicked [Reason: Exceeding the allowed ping limit]', '>> РРіСЂРѕРє %s Р±С‹Р» РєРёРєРЅСѓС‚ [РџСЂРёС‡РёРЅР°: РџСЂРµРІС‹С€РµРЅРёРµ Р»РёРјРёС‚Р° РґРѕРїСѓСЃС‚РёРјРѕРіРѕ РїРёРЅРіР°]'),\
-	(177, '>> %s has been kicked [Reason: Exceeding the limit of being in AFK]', '>> РРіСЂРѕРє %s Р±С‹Р» РєРёРєРЅСѓС‚ [РџСЂРёС‡РёРЅР°: РџСЂРµРІС‹С€РµРЅРёРµ Р»РёРјРёС‚Р° РЅР°С…РѕР¶РґРµРЅРёСЏ РІ РђР¤Рљ]');\
+	(148, '[VOTEKICK] %s has been kicked', '[ГОЛОСОВАНИЕ] Игрок %s был кикнут'),\
+	(149, '[VOTEKICK] Voting canceled', '[ГОЛОСОВАНИЕ] Отменено'),\
+	(150, '*** %s has joined the server (ID %d) (Player %d) (IP %s)', '*** Игрок %s подключился к серверу (ID %d) (Игрок %d) (IP %s)'),\
+	(151, '*** %s has left the server (%s) (%s)', '*** Игрок %s вышел с сервера (%s) (%s)'),\
+	(152, '[ADMIN MESSAGE] %s send an admin message to %s(%d):{FFFFFF} %s', '[АДМИН-СООБШЕНИЕ] Администратор %s ответил игроку %s(%d):{FFFFFF} %s'),\
+	(153, '[ADMIN MESSAGE]:{FFFFFF} %s', '[АДМИН-СООБШЕНИЕ]:{FFFFFF} %s'),\
+	(154, '>> %s(%d) has been jailed by %s for 3 minutes [Reason: %s]', '>> Игрок %s(%d) был посажен в тюрьму администратором %s на 3 минуты [Причина: %s]'),\
+	(155, '>> %s has been jailed for 3 minutes [Reason: %s]', '>> Игрок %s был посажен в тюрьму на 3 минуты [Причина: %s]'),\
+	(156, '>> %s(%d) has been unjailed by %s', '>> Игрок %s(%d) был освобождён из тюрьмы администратором %s'),\
+	(157, '>> %s has been unjailed', '>> Игрок %s был освобождён из тюрьмы'),\
+	(158, '{d5d5c3}Weekly Activities', '{d5d5c3}Еженедельные задания'),\
+	(159, 'Activities\nRewards', 'Задания\nНаграды'),\
+	(160, '{d5d5c3}Name\t{d5d5c3}Description\t{d5d5c3}Total Points\n', '{d5d5c3}Название\t{d5d5c3}Описание\t{d5d5c3}Очков в общем\n'),\
+	(161, '>> Chat cleared by %s', 'Чат был очищен администратором %s'),\
+	(162, '>> Chat cleared by an administrator', 'Чат был очищен администратором'),\
+	(163, '>> %s(%d) has been kicked by %s [Reason: %s]', '%s(%d) был кикнут администратором %s [Причина: %s]'),\
+	(164, '>> %s has been kicked [Reason: %s]', '%s был кикнут [Причина: %s]'),\
+	(165, '>> %s(%d) has been synced by %s', 'Игрок %s(%d) был синхронизирован администратором %s'),\
+	(166, '>> %s has been synced', 'Игрок %s был синхронизирован'),\
+	(167, '>> %s(%d) got a slap from %s [Reason: %s]', 'Игрок %s(%d) получил пощечину от %s [Причина: %s]'),\
+	(168, '>> %s got a slap [Reason: %s]', 'Игрок %s получил пощечину [Причина: %s]'),\
+	(169, '>> %s has changed %s(%d) team to zombie [Reason: %s]', 'Администратор %s сменил команду игрока %s(%d) на зомби [Причина: %s]'),\
+	(170, '>> %s has changed team to zombie [Reason: %s]', 'Игрок %s сменил команду на зомби [Причина: %s]'),\
+	(171, '~~~~~~~ MATCHES ~~~~~~~', '~~~~~~~ СОВПАДЕНИЯ ~~~~~~~'),\
+	(172, '>> Nothing found', '>> Ничего не найдено'),\
+	(173, '>> %s(%d) has been banned by %s [Reason: %s]', '>> Игрок %s(%d) был заблокирован администратором %s [Причина: %s]'),\
+	(174, '>> %s has been banned [Reason: %s]', 'Игрок %s был заблокирован [Причина: %s]'),\
+	(175, '>> You have been in afk too long, your team has been changed to zombies', '>> Вы находились в АФК слишком долго, ваша команда изменена на зомби'),\
+	(176, '>> %s has been kicked [Reason: Exceeding the allowed ping limit]', '>> Игрок %s был кикнут [Причина: Превышение лимита допустимого пинга]'),\
+	(177, '>> %s has been kicked [Reason: Exceeding the limit of being in AFK]', '>> Игрок %s был кикнут [Причина: Превышение лимита нахождения в АФК]');\
 "
 
 #define PREDIFINED_LOCALIZATION_8 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(178, '>> Thank you for your assistance, you have been given additional points for helping the administration', '>> РЎРїР°СЃРёР±Рѕ Р·Р° РїРѕРјРѕС‰СЊ, РІР°Рј РЅР°С‡РёСЃР»РµРЅС‹ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РѕС‡РєРё'),\
-	(179, '>> Wrong banned? Appeal at %s', '>> РҐРѕС‚РёС‚Рµ РѕСЃРїРѕСЂРёС‚СЊ Р±Р°РЅ? РџРѕРґР°Р№С‚Рµ Р·Р°СЏРІРєСѓ Р·РґРµСЃСЊ: %s'),\
-	(180, '>> Create a screenshot of your ban by pressing F8 | (Documents/GTA San Andreas User Files/SAMP/screens)', '>> РЎРѕР·РґР°Р№С‚Рµ СЃРєСЂРёРЅС€РѕС‚ РЅР°Р¶Р°РІ F8 Рё РїРµСЂРµР№РґРёС‚Рµ РІ Documents/GTA San Andreas User Files/SAMP/screens'),\
-	(181, '>> By %s - {FF0000}Reason: %s', '>> РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ: %s - {FF0000}РџСЂРёС‡РёРЅР°: %s'),\
-	(182, '>> At: %02dD/%02dM/%04dY', '>> Р”Р°С‚Р°: %02dD/%02dM/%04dY'),\
-	(183, '>> %s has attempted to join the server whilst serving a ban', '>> РРіСЂРѕРє %s РїС‹С‚Р°Р»СЃСЏ РїРѕРґРєР»СЋС‡РёС‚СЃСЏ, РЅРѕ Р±С‹Р» РѕР±РЅР°СЂСѓР¶РµРЅ Р·Р°Р±Р°РЅРµРЅС‹Рј'),\
-	(184, '>> %s has attempted to join the server whilst serving a temp ban', 'РРіСЂРѕРє %s РїС‹С‚Р°Р»СЃСЏ РїРѕРґРєР»СЋС‡РёС‚СЃСЏ, РЅРѕ Р±С‹Р» РѕР±РЅР°СЂСѓР¶РµРЅ РІСЂРµРјРµРЅРЅРѕ Р·Р°Р±Р°РЅРµРЅС‹Рј'),\
-	(185, '>> Account not found in ban list', '>> РђРєРєР°СѓРЅС‚ РЅРµ РЅР°Р№РґРµРЅ РІ СЃРїРёСЃРєРµ Р±Р»РѕРєРёСЂРѕРІРѕРє'),\
-	(186, '>> %s has been unbanned by %s', '>> РђРєРєР°СѓРЅС‚ %s Р±С‹Р» СЂР°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(187, '>> %s(%d) has been banned by %s for %d hour(s) [Reason: %s]', '>> РРіСЂРѕРє %s(%d) Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s РЅР° %d С‡Р°СЃ(Р°/РѕРІ) [РџСЂРёС‡РёРЅР°: %s]'),\
-	(188, '>> %s has been banned for %d hour(s) [Reason: %s]', 'РРіСЂРѕРє %s Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ РЅР° %d С‡Р°СЃ(Р°/РѕРІ) [РџСЂРёС‡РёРЅР°: %s]'),\
-	(189, '>> %s has started to spectating for %s(%d)', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s РЅР°С‡Р°Р» СЃР»РµР¶РєСѓ Р·Р° %s(%d)'),\
-	(190, '>> %s has stopped spectating for %s(%d)', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s РїСЂРµРєСЂР°С‚РёР» СЃР»РµР¶РєСѓ Р·Р° %s(%d)'),\
-	(191, '>> %s has changed time to %d', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s РёР·РјРµРЅРёР» РІСЂРµРјСЏ РЅР° %d'),\
-	(192, '>> %s has changed weather to %d', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s РёР·РјРµРЅРёР» РїРѕРіРѕРґСѓ РЅР° %d'),\
-	(193, '>> %s(%d) has been warned by %s (%d / 3) [Reason: %s]', '>> %s(%d) РїРѕР»СѓС‡РёР» РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ РѕС‚ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° %s (%d / 3) [РџСЂРёС‡РёРЅР°: %s]'),\
-	(194, '>> %s has been warned (%d / 3) [Reason: %s]', '>> %s РїРѕР»СѓС‡РёР» РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ (%d / 3) [РџСЂРёС‡РёРЅР°: %s]'),\
-	(195, 'WARNING', 'РџР Р•Р”РЈРџР Р•Р–Р”Р•РќРР•'),\
-	(196, '>> %s has been kicked [Reason: Maximum number of warnings reached]', '>> РРіСЂРѕРє %s Р±С‹Р» РєРёРєРЅСѓС‚ [РџСЂРёС‡РёРЅР°: Р”РѕСЃС‚РёРіРЅСѓС‚Рѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёР№]'),\
-	(197, '>> %s(%d) has been unwarned by %s', '>> РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ СЃ РёРіСЂРѕРєР° %s(%d) Р±С‹Р»Рѕ СЃРЅСЏС‚Рѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(198, '>> The player does not have warns!', '>> РЈ РёРіСЂРѕРєР° РЅРµС‚Сѓ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёР№'),\
-	(199, '>> %s(%d) has been muted for %d minutes by %s [Reason: %s]', '>> %s(%d) РїРѕР»СѓС‡РёР» РјСѓС‚ РЅР° %d РјРёРЅСѓС‚(Р°/С‹) РѕС‚ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° %s [РџСЂРёС‡РёРЅР°: %s]'),\
-	(200, '>> %s has been muted for %d minutes [Reason: %s]', '>> %s РїРѕР»СѓС‡РёР» РјСѓС‚ РЅР° %d РјРёРЅСѓС‚(Р°/С‹) [РџСЂРёС‡РёРЅР°: %s]'),\
-	(201, '>> %s(%d) has been unmuted by %s', '>> РРіСЂРѕРє %s(%d) РїРѕР»СѓС‡РёР» СЂР°Р·РјСѓС‚ РѕС‚ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° %s'),\
-	(202, '>> %s has been unmuted', '>> РРіСЂРѕРє %s РїРѕР»СѓС‡РёР» СЂР°Р·РјСѓС‚'),\
-	(203, '>> You are muted, %d seconds left', '>> РЈ РІР°СЃ РјСѓС‚, РѕСЃС‚Р°Р»РѕСЃСЊ РїРѕРґРѕР¶РґР°С‚СЊ %d СЃРµРєСѓРЅРґ');\
+	(178, '>> Thank you for your assistance, you have been given additional points for helping the administration', '>> Спасибо за помощь, вам начислены дополнительные очки'),\
+	(179, '>> Wrong banned? Appeal at %s', '>> Хотите оспорить бан? Подайте заявку здесь: %s'),\
+	(180, '>> Create a screenshot of your ban by pressing F8 | (Documents/GTA San Andreas User Files/SAMP/screens)', '>> Создайте скриншот нажав F8 и перейдите в Documents/GTA San Andreas User Files/SAMP/screens'),\
+	(181, '>> By %s - {FF0000}Reason: %s', '>> Администратор: %s - {FF0000}Причина: %s'),\
+	(182, '>> At: %02dD/%02dM/%04dY', '>> Дата: %02dD/%02dM/%04dY'),\
+	(183, '>> %s has attempted to join the server whilst serving a ban', '>> Игрок %s пытался подключится, но был обнаружен забаненым'),\
+	(184, '>> %s has attempted to join the server whilst serving a temp ban', 'Игрок %s пытался подключится, но был обнаружен временно забаненым'),\
+	(185, '>> Account not found in ban list', '>> Аккаунт не найден в списке блокировок'),\
+	(186, '>> %s has been unbanned by %s', '>> Аккаунт %s был разблокирован администратором %s'),\
+	(187, '>> %s(%d) has been banned by %s for %d hour(s) [Reason: %s]', '>> Игрок %s(%d) был заблокирован администратором %s на %d час(а/ов) [Причина: %s]'),\
+	(188, '>> %s has been banned for %d hour(s) [Reason: %s]', 'Игрок %s был заблокирован на %d час(а/ов) [Причина: %s]'),\
+	(189, '>> %s has started to spectating for %s(%d)', 'Администратор %s начал слежку за %s(%d)'),\
+	(190, '>> %s has stopped spectating for %s(%d)', 'Администратор %s прекратил слежку за %s(%d)'),\
+	(191, '>> %s has changed time to %d', 'Администратор %s изменил время на %d'),\
+	(192, '>> %s has changed weather to %d', 'Администратор %s изменил погоду на %d'),\
+	(193, '>> %s(%d) has been warned by %s (%d / 3) [Reason: %s]', '>> %s(%d) получил предупреждение от администратора %s (%d / 3) [Причина: %s]'),\
+	(194, '>> %s has been warned (%d / 3) [Reason: %s]', '>> %s получил предупреждение (%d / 3) [Причина: %s]'),\
+	(195, 'WARNING', 'ПРЕДУПРЕЖДЕНИЕ'),\
+	(196, '>> %s has been kicked [Reason: Maximum number of warnings reached]', '>> Игрок %s был кикнут [Причина: Достигнуто максимальное количество предупреждений]'),\
+	(197, '>> %s(%d) has been unwarned by %s', '>> Предупреждение с игрока %s(%d) было снято администратором %s'),\
+	(198, '>> The player does not have warns!', '>> У игрока нету предупреждений'),\
+	(199, '>> %s(%d) has been muted for %d minutes by %s [Reason: %s]', '>> %s(%d) получил мут на %d минут(а/ы) от администратора %s [Причина: %s]'),\
+	(200, '>> %s has been muted for %d minutes [Reason: %s]', '>> %s получил мут на %d минут(а/ы) [Причина: %s]'),\
+	(201, '>> %s(%d) has been unmuted by %s', '>> Игрок %s(%d) получил размут от администратора %s'),\
+	(202, '>> %s has been unmuted', '>> Игрок %s получил размут'),\
+	(203, '>> You are muted, %d seconds left', '>> У вас мут, осталось подождать %d секунд');\
 "
 
 #define PREDIFINED_LOCALIZATION_9 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(204, '>> This CMD has already been used!', '>> Р­С‚Р° РєРѕРјР°РЅРґР° СѓР¶Рµ Р±С‹Р»Р° РёСЃРїРѕР»СЊР·РѕРІР°РЅР°!'),\
-	(205, 'You need to wait', 'РџРѕРґРѕР¶РґРёС‚Рµ'),\
-	(206, '>> %s has been banned by %s [Reason: %s] (OFFLINE)', '>> РђРєРєР°СѓРЅС‚ %s Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s [РџСЂРёС‡РёРЅР°: %s] (РћР¤Р¤Р›РђР™Рќ)'),\
-	(207, '>> Account not found!', '>> РђРєРєР°СѓРЅС‚ РЅРµ РЅР°Р№РґРµРЅ!'),\
-	(208, '>> %s has been banned by %s for %d hour(s) [Reason: %s] (OFFLINE)', '>> РђРєРєР°СѓРЅС‚ %s Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s РЅР° %d С‡Р°СЃ(Р°/РѕРІ) [РџСЂРёС‡РёРЅР°: %s] (РћР¤Р¤Р›РђР™Рќ)'),\
-	(209, '>> Name: %s - IP: %s', '>> РќРёРє: %s - IP: %s'),\
-	(210, '>> Health: %.2f% - Armour: %.2f', '>> Р—РґРѕСЂРѕРІСЊРµ: %.2f - Р‘СЂРѕРЅСЏ: %.2f'),\
-	(211, '>> Points: %d / %d - Money: %d', '>> РћС‡РєРё: %d / %d - Р”РµРЅСЊРіРё: %d'),\
-	(212, '>> Team: Zombie - Class: %s', '>> РљРѕРјР°РЅРґР°: Р—РѕРјР±Рё - РљР»Р°СЃСЃ: %s'),\
-	(213, '>> Team: Human - Class: %s', '>> РљРѕРјР°РЅРґР°: Р›СЋРґРё - РљР»Р°СЃСЃ: %s'),\
-	(214, '>> Weapon: %s - Ammo: %d', '>> РћСЂСѓР¶РёРµ: %s - РџР°С‚СЂРѕРЅС‹: %d'),\
-	(215, '>> Packets lost: %.2f', '>> РџРѕС‚РµСЂСЏРЅРЅРѕ СЃРµС‚РµРІС‹С… РїР°РєРµС‚РѕРІ: %.2f'),\
-	(216, '>> This nickname does not fit, come up with another one', '>> Р­С‚РѕС‚ РЅРёРє РЅРµ РїРѕРґС…РѕРґРёС‚, РїРѕРїСЂРѕР±СѓР№С‚Рµ РґСЂСѓРіРѕР№'),\
-	(217, '>> This nickname is already taken, come up with another one', '>> Р­С‚РѕС‚ РЅРёРє СѓР¶Рµ Р·Р°РЅСЏС‚, РїРѕРїСЂРѕР±СѓР№С‚Рµ РґСЂСѓРіРѕР№'),\
-	(218, '>> Your nickname has successfully changed to %s, the fee for changing is %d', '>> Р’Р°С€ РЅРёРє СѓСЃРїРµС€РЅРѕ РёР·РјРµРЅС‘РЅ РЅР° %s, РїР»Р°С‚Р° Р·Р° СЃРјРµРЅСѓ СЃРѕСЃС‚Р°РІРёР»Р° %d'),\
-	(219, '[ADMIN]: %s is now known as %s!', '[РђР”РњРРќ]: РРіСЂРѕРє %s СЃРјРµРЅРёР» РЅРёРє РЅР° %s!'),\
-	(220, '>> IP %s has been banned by %s [Reason: %s]', '>> IP %s Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s [РџСЂРёС‡РёРЅР°: %s]'),\
-	(221, '>> This IP is already banned', '>> Р­С‚РѕС‚ IP СѓР¶Рµ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ'),\
-	(222, '>> This IP is not banned', '>> Р­С‚РѕС‚ IP РЅРµ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ'),\
-	(223, '>> IP %s has been unbanned by %s', '>> IP %s Р±С‹Р» СЂР°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(224, '>> %s(%d) has been frozen by %s [Reason: %s]', '>> РРіСЂРѕРє %s(%d) Р±С‹Р» Р·Р°РјРѕСЂРѕР¶РµРЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s [РџСЂРёС‡РёРЅР°: %s]'),\
-	(225, '>> %s has been frozen [Reason: %s]', '>> РРіСЂРѕРє %s Р±С‹Р» Р·Р°РјРѕСЂРѕР¶РµРЅ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(226, '>> %s(%d) has been unfrozen by %s', '>> РРіСЂРѕРє %s(%d) Р±С‹Р» СЂР°Р·РјРѕСЂРѕР¶РµРЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј %s'),\
-	(227, '>> %s has been unfrozen', '>> РРіСЂРѕРє %s Р±С‹Р» СЂР°Р·РјРѕСЂРѕР¶РµРЅ'),\
-	(228, 'Information', 'РРЅС„РѕСЂРјР°С†РёСЏ'),\
-	(229, 'Player\tBy\tReason\tDate\n', 'РРіСЂРѕРє\tРљРµРј\tРџСЂРёС‡РёРЅР°\tР”Р°С‚Р°\n'),\
-	(230, 'New\tOld\tIP\tDate\n', 'РќРѕРІС‹Р№\tРЎС‚Р°СЂС‹Р№\tIP\tР”Р°С‚Р°\n'),\
-	(231, 'IP\tBy\tReason\tDate\n', 'IP\tРљРµРј\tРџСЂРёС‡РёРЅР°\tР”Р°С‚Р°\n'),\
-	(232, '[ADMIN]: %s has set admin rank of %s to %d!', '[РђР”РњРРќ]: РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ %s СѓСЃС‚Р°РЅРѕРІРёР» Р°РґРјРёРЅ СЂР°РЅРі РёРіСЂРѕРєР° %s РЅР° %d СѓСЂРѕРІРµРЅСЊ!'),\
-	(233, '~y~REQUEST FOR A DUEL', '~y~Р—РђРџР РћРЎ РќРђ Р”РЈР­Р›Р¬'),\
-	(234, '>> You have accepted the duel!', '>> Р’С‹ РїСЂРёРЅСЏР»Рё РґСѓСЌР»СЊ!'),\
-	(235, '>> The player accepted your request!', '>> РРіСЂРѕРє РїСЂРёРЅСЏР» РІР°С€ Р·Р°РїСЂРѕСЃ РЅР° РґСѓСЌР»СЊ!'),\
-	(236, '>> You have denied the duel!', '>> Р’С‹ РѕС‚РєР»РѕРЅРёР»Рё РґСѓСЌР»СЊ!'),\
-	(237, '>> The player denied your request!', '>> РРіСЂРѕРє РѕС‚РєР»РѕРЅРёР» РІР°С€ Р·Р°РїСЂРѕСЃ РЅР° РґСѓСЌР»СЊ!'),\
-	(238, '>> Not enough points from one of sides', '>> РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РѕС‡РєРѕРІ СЃ РѕРґРЅРѕР№ РёР· СЃС‚РѕСЂРѕРЅ'),\
-	(239, '>> You cannot send a request to this person', '>> Р’С‹ РЅРµ РјРѕР¶РµС‚Рµ Р·Р°РїСЂРѕСЃРёС‚СЊ РґСѓСЌР»СЊ СЃ СЌС‚РёРј С‡РµР»РѕРІРµРєРѕРј');\
+	(204, '>> This CMD has already been used!', '>> Эта команда уже была использована!'),\
+	(205, 'You need to wait', 'Подождите'),\
+	(206, '>> %s has been banned by %s [Reason: %s] (OFFLINE)', '>> Аккаунт %s был заблокирован администратором %s [Причина: %s] (ОФФЛАЙН)'),\
+	(207, '>> Account not found!', '>> Аккаунт не найден!'),\
+	(208, '>> %s has been banned by %s for %d hour(s) [Reason: %s] (OFFLINE)', '>> Аккаунт %s был заблокирован администратором %s на %d час(а/ов) [Причина: %s] (ОФФЛАЙН)'),\
+	(209, '>> Name: %s - IP: %s', '>> Ник: %s - IP: %s'),\
+	(210, '>> Health: %.2f% - Armour: %.2f', '>> Здоровье: %.2f - Броня: %.2f'),\
+	(211, '>> Points: %d / %d - Money: %d', '>> Очки: %d / %d - Деньги: %d'),\
+	(212, '>> Team: Zombie - Class: %s', '>> Команда: Зомби - Класс: %s'),\
+	(213, '>> Team: Human - Class: %s', '>> Команда: Люди - Класс: %s'),\
+	(214, '>> Weapon: %s - Ammo: %d', '>> Оружие: %s - Патроны: %d'),\
+	(215, '>> Packets lost: %.2f', '>> Потерянно сетевых пакетов: %.2f'),\
+	(216, '>> This nickname does not fit, come up with another one', '>> Этот ник не подходит, попробуйте другой'),\
+	(217, '>> This nickname is already taken, come up with another one', '>> Этот ник уже занят, попробуйте другой'),\
+	(218, '>> Your nickname has successfully changed to %s, the fee for changing is %d', '>> Ваш ник успешно изменён на %s, плата за смену составила %d'),\
+	(219, '[ADMIN]: %s is now known as %s!', '[АДМИН]: Игрок %s сменил ник на %s!'),\
+	(220, '>> IP %s has been banned by %s [Reason: %s]', '>> IP %s был заблокирован администратором %s [Причина: %s]'),\
+	(221, '>> This IP is already banned', '>> Этот IP уже заблокирован'),\
+	(222, '>> This IP is not banned', '>> Этот IP не заблокирован'),\
+	(223, '>> IP %s has been unbanned by %s', '>> IP %s был разблокирован администратором %s'),\
+	(224, '>> %s(%d) has been frozen by %s [Reason: %s]', '>> Игрок %s(%d) был заморожен администратором %s [Причина: %s]'),\
+	(225, '>> %s has been frozen [Reason: %s]', '>> Игрок %s был заморожен [Причина: %s]'),\
+	(226, '>> %s(%d) has been unfrozen by %s', '>> Игрок %s(%d) был разморожен администратором %s'),\
+	(227, '>> %s has been unfrozen', '>> Игрок %s был разморожен'),\
+	(228, 'Information', 'Информация'),\
+	(229, 'Player\tBy\tReason\tDate\n', 'Игрок\tКем\tПричина\tДата\n'),\
+	(230, 'New\tOld\tIP\tDate\n', 'Новый\tСтарый\tIP\tДата\n'),\
+	(231, 'IP\tBy\tReason\tDate\n', 'IP\tКем\tПричина\tДата\n'),\
+	(232, '[ADMIN]: %s has set admin rank of %s to %d!', '[АДМИН]: Администратор %s установил админ ранг игрока %s на %d уровень!'),\
+	(233, '~y~REQUEST FOR A DUEL', '~y~ЗАПРОС НА ДУЭЛЬ'),\
+	(234, '>> You have accepted the duel!', '>> Вы приняли дуэль!'),\
+	(235, '>> The player accepted your request!', '>> Игрок принял ваш запрос на дуэль!'),\
+	(236, '>> You have denied the duel!', '>> Вы отклонили дуэль!'),\
+	(237, '>> The player denied your request!', '>> Игрок отклонил ваш запрос на дуэль!'),\
+	(238, '>> Not enough points from one of sides', '>> Недостаточно очков с одной из сторон'),\
+	(239, '>> You cannot send a request to this person', '>> Вы не можете запросить дуэль с этим человеком');\
 "
 
 #define PREDIFINED_LOCALIZATION_10 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(240, ' (Armour: %d)', ' (Р‘СЂРѕРЅСЏ: %d)'),\
-	(241, ' (Points: %d)', ' (РћС‡РєРё: %d)'),\
-	(242, '>> %s is inviting you to duel with weapon: %s (ID %d)%s%s', '>> РРіСЂРѕРє %s РїСЂРёРіР»Р°С€Р°РµС‚ РІР°СЃ РЅР° РґСѓСЌР»СЊ СЃ РѕСЂСѓР¶РёРµРј %s (ID %d)%s%s'),\
-	(243, '>> Type /y to agree and /n to deny', '>> Р’РІРµРґРёС‚Рµ /y РґР»СЏ СЃРѕРіР»Р°СЃРёСЏ Рё /n РґР»СЏ РѕС‚РєР°Р·Р°'),\
-	(244, '>> You sent a duel request to %s!', '>> Р’Р°Рј Р·Р°РїСЂРѕСЃ РЅР° РґСѓСЌР»СЊ РѕС‚РїСЂР°РІР»РµРЅ РёРіСЂРѕРєСѓ %s'),\
-	(245, '>> %s has started a duel with %s (%s) (ID %d)%s%s', '>> РРіСЂРѕРє %s РЅР°С‡Р°Р» РґСѓСЌР»СЊ СЃ РёРіСЂРѕРєРѕРј %s (%s) (ID %d)%s%s'),\
-	(246, '>> You are not in duel!', '>> Р’С‹ РЅРµ РІ РґСѓСЌР»Рµ!'),\
-	(247, '[DUEL]: %s has won the duel against %s!%s', '[Р”РЈР­Р›Р¬]: РРіСЂРѕРє %s РІС‹РіСЂР°Р» РґСѓСЌР»СЊ РїСЂРѕС‚РёРІ РёРіСЂРѕРєР° %s!%s'),\
-	(248, '>> %s paid %d points to %s. With taxes: %d', '>> РРіСЂРѕРє %s РїРµСЂРµРґР°Р» %d РѕС‡РєРѕРІ РёРіСЂРѕРєСѓ %s. РС‚РѕРіРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ СЃ РЅР°Р»РѕРіРѕРј: %d'),\
-	(249, '[%s] %s by {FFFFFF}%s (Members: %d) (Control over: %s)', '[%s] %s {FFFFFF}(Р СѓРєРѕРІРѕРґРёС‚РµР»СЊ %s) (РЈС‡Р°СЃС‚РЅРёРєРё: %d) (РљРѕРЅС‚СЂРѕР»СЊ РЅР°Рґ: %s)'),\
-	(250, '>> You are blacklisted from this gang [Reason: %s]', '>> Р’С‹ РІ С‡С‘СЂРЅРѕРј СЃРїРёСЃРєРµ СЌС‚РѕР№ Р±Р°РЅРґС‹ [РџСЂРёС‡РёРЅР°: %s]'),\
-	(251, '>> You have to leave your gang first! (/gang leave)', '>> Р’С‹ РґРѕР»Р¶РЅС‹ РїРѕРєРёРЅСѓС‚СЊ РІР°С€Сѓ С‚РµРєСѓС‰СѓСЋ Р±Р°РЅРґСѓ! (/gang leave)'),\
-	(252, '>> This gang is not currently accepting requests!', '>> Р­С‚Р° Р±Р°РЅРґР° РїРѕРєР° РЅРµ РїСЂРёРЅРёРјР°РµС‚ Р·Р°СЏРІРєРё!'),\
-	(253, '>> %s sent a request to join your gang!', '>> РРіСЂРѕРє %s РїСЂРёСЃР»Р°Р» Р·Р°СЏРІРєСѓ РЅР° РІСЃС‚СѓРїР»РµРЅРёРµ РІ РІР°С€Сѓ Р±Р°РЅРґСѓ!'),\
-	(254, '>> Use /gang accept %d to accept!', '>> РСЃРїРѕР»СЊР·СѓР№С‚Рµ /gang accept %d РґР»СЏ РѕРґРѕР±СЂРµРЅРёСЏ Р·Р°СЏРІРєРё!'),\
-	(255, '>> You have sent a request to join %s (ID %d)', '>> Р’С‹ РѕС‚РїСЂР°РІРёР»Рё Р·Р°СЏРІРєСѓ РЅР° РІСЃС‚СѓРїР»РµРЅРёРµ РІ %s (ID %d)'),\
-	(256, '>> Insufficient rights to use this command!', '>> РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂР°РІ РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РєРѕРјР°РЅРґС‹!'),\
-	(257, '>> %s has been accepted to your gang by %s!', '>> РРіСЂРѕРє %s Р±С‹Р» РїСЂРёРЅСЏС‚ РІ РІР°С€Сѓ Р±Р°РЅРґСѓ РёРіСЂРѕРєРѕРј %s!'),\
-	(258, '>> Your gang request has been accepted!', '>> Р’Р°С€Р° Р·Р°СЏРІРєР° РІ Р±Р°РЅРґСѓ Р±С‹Р»Р° РѕРґРѕР±СЂРµРЅР°!'),\
-	(259, '>> Put ! at the beginning of the message to send a message to the gang!', 'РџРѕСЃС‚Р°РІС‚СЊРµ ! РІ РЅР°С‡Р°Р»Рµ СЃРѕРѕР±С‰РµРЅРёСЏ С‡С‚РѕР±С‹ РѕС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р±Р°РЅРґСѓ!'),\
-	(260, '[%s] %s by {FFFFFF}%s (Members: %d)', '[%s] %s {FFFFFF}(Р СѓРєРѕРІРѕРґРёС‚РµР»СЊ %s) (РЈС‡Р°СЃС‚РЅРёРєРё: %d)'),\
-	(261, '>> All slots are occupied, it is impossible to create a gang', '>> Р’СЃРµ СЃР»РѕС‚С‹ Р·Р°РЅСЏС‚С‹, СЃРѕР·РґР°С‚СЊ Р±Р°РЅРґСѓ РЅРµРІРѕР·РјРѕР¶РЅРѕ'),\
-	(262, '[ADMIN] %s has created a new gang %s (ID %d)', '[РђР”РњРРќ] РРіСЂРѕРє %s СЃРѕР·РґР°Р» РЅРѕРІСѓСЋ Р±Р°РЅРґСѓ %s (ID %d)'),\
-	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'РќРѕРІРёС‡РµРє,РџРѕР»РёС†РµР№СЃРєРёР№,РЎРєР°СѓС‚,РђРіРµРЅС‚,Р”РёСЂРµРєС‚РѕСЂ,Р‘РѕСЃСЃ'),\
-	(264, '{FFFFFF}Set or Accessory\t{FFFFFF}Spiral knots (%d)\t{FFFFFF}Coins (%d)\n', '{FFFFFF}РќР°Р±РѕСЂ РёР»Рё РђРєСЃРµСЃСЃСѓР°СЂ\t{FFFFFF}РЎРїРёСЂР°Р»СЊРЅС‹Рµ СѓР·Р»С‹ (%d)\t{FFFFFF}РњРѕРЅРµС‚С‹ (%d)\n'),\
-	(265, 'Are you sure want to buy %s for %d Spiral knots and %d Coins?', 'Р’С‹ С‚РѕС‡РЅРѕ С…РѕС‚РёС‚Рµ РєСѓРїРёС‚СЊ %s Р·Р° %d РЎРїРёСЂР°Р»СЊРЅС‹С… СѓР·Р»РѕРІ Рё %d РњРѕРЅРµС‚(Сѓ)'),\
-	(266, 'Completed', 'Р’С‹РїРѕР»РЅРµРЅРѕ'),\
-	(267, 'Yes', 'Р”Р°'),\
-	(268, '{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n', '{FFFFFF}Р¦РµР»СЊ\t{FFFFFF}Р РµРїСѓС‚Р°С†РёСЏ\t{FFFFFF}РџСЂРѕРіСЂРµСЃСЃ\n'),\
-	(269, '{FFFFFF}Not enough currency to purchase', '{FFFFFF}РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РІР°Р»СЋС‚С‹ РґР»СЏ РїРѕРєСѓРїРєРё'),\
-	(270, '>> You bought %s! (/clothes)', '>> Р’С‹ РєСѓРїРёР»Рё %s! (/clothes)');\
+	(240, ' (Armour: %d)', ' (Броня: %d)'),\
+	(241, ' (Points: %d)', ' (Очки: %d)'),\
+	(242, '>> %s is inviting you to duel with weapon: %s (ID %d)%s%s', '>> Игрок %s приглашает вас на дуэль с оружием %s (ID %d)%s%s'),\
+	(243, '>> Type /y to agree and /n to deny', '>> Введите /y для согласия и /n для отказа'),\
+	(244, '>> You sent a duel request to %s!', '>> Вам запрос на дуэль отправлен игроку %s'),\
+	(245, '>> %s has started a duel with %s (%s) (ID %d)%s%s', '>> Игрок %s начал дуэль с игроком %s (%s) (ID %d)%s%s'),\
+	(246, '>> You are not in duel!', '>> Вы не в дуэле!'),\
+	(247, '[DUEL]: %s has won the duel against %s!%s', '[ДУЭЛЬ]: Игрок %s выграл дуэль против игрока %s!%s'),\
+	(248, '>> %s paid %d points to %s. With taxes: %d', '>> Игрок %s передал %d очков игроку %s. Итоговое значение с налогом: %d'),\
+	(249, '[%s] %s by {FFFFFF}%s (Members: %d) (Control over: %s)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d) (Контроль над: %s)'),\
+	(250, '>> You are blacklisted from this gang [Reason: %s]', '>> Вы в чёрном списке этой банды [Причина: %s]'),\
+	(251, '>> You have to leave your gang first! (/gang leave)', '>> Вы должны покинуть вашу текущую банду! (/gang leave)'),\
+	(252, '>> This gang is not currently accepting requests!', '>> Эта банда пока не принимает заявки!'),\
+	(253, '>> %s sent a request to join your gang!', '>> Игрок %s прислал заявку на вступление в вашу банду!'),\
+	(254, '>> Use /gang accept %d to accept!', '>> Используйте /gang accept %d для одобрения заявки!'),\
+	(255, '>> You have sent a request to join %s (ID %d)', '>> Вы отправили заявку на вступление в %s (ID %d)'),\
+	(256, '>> Insufficient rights to use this command!', '>> Недостаточно прав для использования команды!'),\
+	(257, '>> %s has been accepted to your gang by %s!', '>> Игрок %s был принят в вашу банду игроком %s!'),\
+	(258, '>> Your gang request has been accepted!', '>> Ваша заявка в банду была одобрена!'),\
+	(259, '>> Put ! at the beginning of the message to send a message to the gang!', 'Поставтье ! в начале сообщения чтобы отправить сообщение в банду!'),\
+	(260, '[%s] %s by {FFFFFF}%s (Members: %d)', '[%s] %s {FFFFFF}(Руководитель %s) (Участники: %d)'),\
+	(261, '>> All slots are occupied, it is impossible to create a gang', '>> Все слоты заняты, создать банду невозможно'),\
+	(262, '[ADMIN] %s has created a new gang %s (ID %d)', '[АДМИН] Игрок %s создал новую банду %s (ID %d)'),\
+	(263, 'Peon,Policeman,Scout,Agent,Director,Boss', 'Новичек,Полицейский,Скаут,Агент,Директор,Босс'),\
+	(264, '{FFFFFF}Set or Accessory\t{FFFFFF}Spiral knots (%d)\t{FFFFFF}Coins (%d)\n', '{FFFFFF}Набор или Аксессуар\t{FFFFFF}Спиральные узлы (%d)\t{FFFFFF}Монеты (%d)\n'),\
+	(265, 'Are you sure want to buy %s for %d Spiral knots and %d Coins?', 'Вы точно хотите купить %s за %d Спиральных узлов и %d Монет(у)'),\
+	(266, 'Completed', 'Выполнено'),\
+	(267, 'Yes', 'Да'),\
+	(268, '{FFFFFF}Tagret\t{FFFFFF}Reputation\t{FFFFFF}Progress\n', '{FFFFFF}Цель\t{FFFFFF}Репутация\t{FFFFFF}Прогресс\n'),\
+	(269, '{FFFFFF}Not enough currency to purchase', '{FFFFFF}Недостаточно валюты для покупки'),\
+	(270, '>> You bought %s! (/clothes)', '>> Вы купили %s! (/clothes)');\
+"
+
+#define PREDIFINED_LOCALIZATION_11 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
+	(271, '>> %s has captured the map with %d score!', '>> Банда %s захватила карту со значением в %d очков!'),\
+	(272, '>> %s set a new record of %d score!', '>> Банда %s установила новый рекорд в размере %d очков!');\
 "
