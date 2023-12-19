@@ -25,6 +25,7 @@ enum GANG_DATA {
 	gdOwnerId,
 	gdPot,
 	gdMembers,
+	gdCreatedAt,
 	gdCapacity,
 	gdWar[MAX_GANGS],
 	gdAlliance[MAX_GANGS],
@@ -35,19 +36,14 @@ enum GANG_DATA {
 };
 
 enum GANGS_CONFIG_DATA {
-	gdCfgCapacity,
 	gdCfgFlagId,
 	gdCfgRequired,
 	gdCfgDefault,
-	Float:gdCfgMultiply,
-	Float:gdCfgArmourPerLevel,
-	Float:gdCfgCrystalHealth,
+	gdCfgPerCure,
+	gdCfgPerKill,
+	gdCfgPerEvac,
+	gdCfgPerAbility,
 	Float:gdCfgFlagDistance,
-	Float:gdCfgPerCure,
-	Float:gdCfgPerKill,
-	Float:gdCfgPerEvac,
-	Float:gdCfgPerAbility,
-	Float:gdCfgPerAssist,
 };
 
 enum {
@@ -67,7 +63,6 @@ enum {
 	GANG_COMMAND_BAN = 97295,
 	GANG_COMMAND_CREATE = -1352294148,
 	GANG_COMMAND_SETTINGS = 1434631203,
-	GANG_COMMAND_WARN = 3641990,
 	GANG_COMMAND_UNBAN = 111426262,
 	GANG_COMMAND_WAR = 117480,
 }

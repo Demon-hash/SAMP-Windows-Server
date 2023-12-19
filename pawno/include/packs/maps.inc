@@ -35,17 +35,12 @@ enum MAP_DATA {
 	bool:mpFirstBlood,
 	bool:mpKillTheLast,
 	mpWaterAllowed,
-	mpCrystal,
-	Float:mpCrystalHealth,
 	mpFlag,
 	mpFlagDate,
 	bool:mpIsStarted,
 	bool:mpPaused,
 	Float:mpGateSpeed,
 	Float:mpCheckpointSize,
-	mpGangCrystalId,
-	Float:mpGangCrystalSpawn[MAX_MAP_SPAWNPOINT_DATA],
-	Float:mpGangNearCrystalSpawn[MAX_MAP_SPAWNPOINT_DATA],
 	Float:mpFlagCoords[MAX_MAP_GATE_DATA],
 	Float:mpFlagTextCoords[MAX_MAP_SPAWNS],
 	Float:mpCheckpointCoords[MAX_MAP_SPAWNPOINT_DATA - 1],
@@ -61,6 +56,7 @@ enum MAP_DATA {
 	Float:mpCameraLookAt[MAX_MAP_SPAWNPOINT_DATA - 1],
 	Float:mpGatesCoords[MAX_MAP_GATE_DATA * MAX_MAP_GATES],
 	Float:mpGatesMoveCoords[MAX_MAP_GATE_DATA * MAX_MAP_GATES],
+	Text3D:mpFlagText,
 };
 
 enum MAP_CONFIG_DATA {
@@ -70,7 +66,6 @@ enum MAP_CONFIG_DATA {
 	mpCfgEnd,
 	mpCfgRestart,
 	mpCfgGreatTime,
-	mpCfgOOMCheck,
 	mpCfgSpawnProtectionTime,
 	mpCfgKillstreakFactor,
 	mpCfgHumanHeroWeapons[24],

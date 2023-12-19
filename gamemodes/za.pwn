@@ -4,7 +4,7 @@
 static const sqlTemplates[][] = {
     REGISTRATION_TEMPLATE, USERS_TEMPLATE, PRIVILEGES_TEMPLATE,
 	GANGS_TEMPLATE, GANGS_USERS_TEMPLATE,
-	GANGS_WARNS_TEMPLATE, GANGS_BLACKLISTED_TEMPLATE,
+	GANGS_BLACKLISTED_TEMPLATE,
 	GANGS_CONFIG_TEMPLATE, MAPS_TEMPLATE, WEAPONS_CONFIG_TEMPLATE,
 	LANGUAGES_TEMPLATE, CLASSES_TEMPLATE, BANLOG_TEMPLATE,
 	NAMELOG_TEMPLATE, LOGINLOG_TEMPLATE, PAYLOG_TEMPLATE,
@@ -164,6 +164,7 @@ public OnGameModeInit() {
 	Database = mysql_connect(SQL_HOST, SQL_USER, SQL_PASS, SQL_DB);
 	PushDatabaseValues();
 	LoadConfigs();
+	DataRecoveryOnInit();
 	CreateServerObjects();
 	
  	mysql_log(SQL_LOG_LEVEL);
@@ -1134,6 +1135,39 @@ custom Update() {
 	}
 }
 
+/*
+	gdMembers,
+	gdWar[MAX_GANGS],
+	gdAlliance[MAX_GANGS],
+	gdSettings[MAX_GANG_SETTINGS],
+	gdName[MAX_GANG_NAME],
+	gdTag[MAX_GANG_TAG],
+	gdRanks[MAX_GANG_RANK_LEN],
+*/
+
+custom LoadGangs() {
+    if(cache_num_rows()) {
+        new i, id, len = clamp(cache_num_rows(), 0, MAX_GANGS);
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name_int(i, "game_id", id);
+	        cache_get_value_name_int(i, "id", Gangs[id][gdColumnId]);
+		    cache_get_value_name_int(i, "leader_id", Gangs[id][gdOwnerId]);
+		    cache_get_value_name_int(i, "date", Gangs[id][gdCreatedAt]);
+		    cache_get_value_name_int(i, "capacity", Gangs[id][gdCapacity]);
+		    cache_get_value_name_int(i, "points", Gangs[id][gdPot]);
+		    cache_get_value_name(i, "name", Gangs[id][gdName]);
+		    cache_get_value_name(i, "tag", Gangs[id][gdTag]);
+		    
+		    printf("[?] %s (ID %d) has been loaded", Gangs[id][gdName], id);
+        }
+    
+        return 1;
+    }
+    
+    printf("[ ] Loading gangs failed");
+	return 0;
+}
+
 custom LoadMapsCount() {
 	if(cache_num_rows()) {
         cache_get_value_name_int(0, "maps", Map[mpCount]);
@@ -1177,39 +1211,31 @@ custom LoadClasses() {
 custom LoadMap() {
     if(cache_num_rows()) {
         new buff[256];
-        strmid(Map[mpAuthor], "", 0, MAX_PLAYER_NAME);
+        cache_get_value_name(0, "login", Map[mpAuthor]);
+        cache_get_value_name(0, "filename", Map[mpFilename]);
         
 	    cache_get_value_name_int(0, "weather", Map[mpWeather]);
 	    cache_get_value_name_int(0, "interior", Map[mpInterior]);
 	    cache_get_value_name_int(0, "time", Map[mpTime]);
 	    cache_get_value_name_int(0, "gang", Map[mpGang]);
 	    cache_get_value_name_int(0, "water", Map[mpWaterAllowed]);
-	    cache_get_value_name_int(0, "crystal_id", Map[mpGangCrystalId]);
 	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
-    	
-    	cache_get_value_name(0, "login", Map[mpAuthor]);
-        cache_get_value_name(0, "filename", Map[mpFilename]);
+    	cache_get_value_name_float(0, "gates_speed", Map[mpGateSpeed]);
         
-        cache_get_value_name_float(0, "gates_speed", Map[mpGateSpeed]);
-    	cache_get_value_name_float(0, "checkpoint_size", Map[mpCheckpointSize]);
+    	cache_get_value_name(0, "checkpoint", buff);
+    	sscanf(buff, "p<,>fa<f>[3]",Map[mpCheckpointSize], Map[mpCheckpointCoords]);
         
     	cache_get_value_name(0, "gates_ids", buff);
     	sscanf(buff, "p<,>a<i>[2]", Map[mpGates]);
-    	
-    	cache_get_value_name(0, "crystal_coords", buff);
-     	sscanf(buff, "p<,>a<f>[4]", Map[mpGangCrystalSpawn]);
- 		
- 		cache_get_value_name(0, "near_crystal_coords", buff);
-     	sscanf(buff, "p<,>a<f>[4]", Map[mpGangNearCrystalSpawn]);
  		
  		cache_get_value_name(0, "flag_coords", buff);
      	sscanf(buff, "p<,>a<f>[6]", Map[mpFlagCoords]);
  		
- 		cache_get_value_name(0, "flag_coords_text", buff);
+ 		cache_get_value_name(0, "flag_text", buff);
      	sscanf(buff, "p<,>a<f>[3]", Map[mpFlagTextCoords]);
     	
 	    cache_get_value_name(0, "humans_coords", buff);
-     	sscanf(buff, "p<,>ffffffffffff",
+		sscanf(buff, "p<,>ffffffffffff",
 		 	Map[mpHumanSpawnX][0], Map[mpHumanSpawnY][0],
 			Map[mpHumanSpawnZ][0], Map[mpHumanSpawnA][0],
 		 	Map[mpHumanSpawnX][1], Map[mpHumanSpawnY][1],
@@ -1227,20 +1253,14 @@ custom LoadMap() {
 		 	Map[mpZombieSpawnX][2], Map[mpZombieSpawnY][2],
 	 		Map[mpZombieSpawnZ][2], Map[mpZombieSpawnA][2]
 		);
-	 	
-	 	cache_get_value_name(0, "checkpoint_coords", buff);
-	 	sscanf(buff, "p<,>a<f>[3]", Map[mpCheckpointCoords]);
 		 
 	 	cache_get_value_name(0, "camera_coords", buff);
- 		sscanf(buff, "p<,>ffffff",
-		 	Map[mpCameraCoords][0], Map[mpCameraCoords][1], Map[mpCameraCoords][2],
-		 	Map[mpCameraLookAt][0], Map[mpCameraLookAt][1], Map[mpCameraLookAt][2]
-	 	);
+ 		sscanf(buff, "p<,>a<f>[3]a<f>[3]", Map[mpCameraCoords], Map[mpCameraLookAt]);
 
 		cache_get_value_name(0, "gates_coords", buff);
  		sscanf(buff, "p<,>a<f>[12]", Map[mpGatesCoords]);
 	 	
-	 	cache_get_value_name(0, "gates_move_coords", buff);
+	 	cache_get_value_name(0, "gates_move", buff);
  		sscanf(buff, "p<,>a<f>[12]", Map[mpGatesMoveCoords]);
     
     	strmid(Map[mpPrevFilename], Map[mpFilename], 0, MAX_MAP_FILENAME);
@@ -1249,36 +1269,18 @@ custom LoadMap() {
     	StartMap();
     	
     	LoadFilterScript(Map[mpFilename]);
-		
-		DestroyObjectEx(Map[mpCrystal]);
 		DestroyObjectEx(Map[mpFlag]);
-		//Delete3DTextLabelEx(Map[mpFlagText]);
-		
-		/*if(Map[mpGang]) {
-		    new year, mounth, day, hours, minutes, seconds;
-            TimestampToDate(Map[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-			Map[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
+		if(Map[mpGang] > -1) {
+		    Map[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
 			   	Map[mpFlagCoords][0], Map[mpFlagCoords][1],
 	     		Map[mpFlagCoords][2], Map[mpFlagCoords][3],
-	     		Map[mpFlagCoords][4], Map[mpFlagCoords][5], 50.0
+	     		Map[mpFlagCoords][4], Map[mpFlagCoords][5],
+		 		50.0
 			);
-
-			new text[768];
-			format(text, sizeof(text), GANG_CONTROL_TEXT,
-		  		Map[mpName],
-				Gangs[Map[mpGang]][gdName],
-				hours, minutes,
-				day, mounth, year,
-			 	GangsConfig[gdCfgPerEvac],
-				GangsConfig[gdCfgPerCure],
-				GangsConfig[gdCfgPerAbility],
-				GangsConfig[gdCfgPerKill],
-				GangsConfig[gdCfgPerAssist]
-			);
-			
-			Map[mdFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
-		}*/
-	 }
+		}
+	}
+	
+	return 1;
 }
 
 custom StartMap() {
@@ -1339,7 +1341,6 @@ custom StartMap() {
     Map[mpTimeout] = MapConfig[mpCfgTotal];
     Map[mpTimeoutBeforeEnd] = -MapConfig[mpCfgUpdate];
     Map[mpTimeoutBeforeStart] = -MapConfig[mpCfgUpdate];
-    Map[mpCrystalHealth] = GangsConfig[gdCfgCrystalHealth];
 	return 1;
 }
 
@@ -1712,22 +1713,16 @@ custom LoadWeeklyCfg() {
 
 custom LoadGangsCfg() {
     if(cache_num_rows()) {
-        cache_get_value_name_int(0, "capacity", GangsConfig[gdCfgCapacity]);
         cache_get_value_name_int(0, "flag_id", GangsConfig[gdCfgFlagId]);
         cache_get_value_name_int(0, "required", GangsConfig[gdCfgRequired]);
         cache_get_value_name_int(0, "default", GangsConfig[gdCfgDefault]);
 
-        cache_get_value_name_float(0, "multiply", GangsConfig[gdCfgMultiply]);
-        cache_get_value_name_float(0, "armour_per_level", GangsConfig[gdCfgArmourPerLevel]);
-        cache_get_value_name_float(0, "crystal_health", GangsConfig[gdCfgCrystalHealth]);
+        cache_get_value_name_int(0, "cure", GangsConfig[gdCfgPerCure]);
+        cache_get_value_name_int(0, "kill", GangsConfig[gdCfgPerKill]);
+        cache_get_value_name_int(0, "evac", GangsConfig[gdCfgPerEvac]);
+        cache_get_value_name_int(0, "ability", GangsConfig[gdCfgPerAbility]);
         cache_get_value_name_float(0, "flag_distance", GangsConfig[gdCfgFlagDistance]);
-
-        cache_get_value_name_float(0, "per_cure", GangsConfig[gdCfgPerCure]);
-        cache_get_value_name_float(0, "per_kill", GangsConfig[gdCfgPerKill]);
-        cache_get_value_name_float(0, "per_evac", GangsConfig[gdCfgPerEvac]);
-        cache_get_value_name_float(0, "per_ability", GangsConfig[gdCfgPerAbility]);
-        cache_get_value_name_float(0, "per_assist", GangsConfig[gdCfgPerAssist]);
-
+        
         printf("[x] Gangs configuration LOADED");
         return 1;
     }
@@ -1784,7 +1779,6 @@ custom LoadMapCfg() {
         cache_get_value_name_int(0, "restart", MapConfig[mpCfgRestart]);
         cache_get_value_name_int(0, "great_period", MapConfig[mpCfgGreatTime]);
         cache_get_value_name_int(0, "spawn_protection_time", MapConfig[mpCfgSpawnProtectionTime]);
-        cache_get_value_name_int(0, "oom_check", MapConfig[mpCfgOOMCheck]);
         cache_get_value_name_int(0, "killstreak_factor", MapConfig[mpCfgKillstreakFactor]);
 
         cache_get_value_name_float(0, "spawn_text_range", MapConfig[mpCfgSpawnTextRange]);
@@ -1989,7 +1983,6 @@ custom LoginOrRegister(const playerid) {
         cache_get_value_name(0, "password", Misc[playerid][mdPassword]);
         cache_get_value_name_int(0, "gang_id", Misc[playerid][mdGang]);
         cache_get_value_name_int(0, "gang_rank", Misc[playerid][mdGangRank]);
-        cache_get_value_name_int(0, "gang_warns", Misc[playerid][mdGangWarns]);
         
         cache_get_value_name_int(0, "admin", Privileges[playerid][prsAdmin]);
         cache_get_value_name_int(0, "vip", Privileges[playerid][prsVip]);
@@ -2358,7 +2351,6 @@ custom SavePlayerGangData(const playerid) {
 	mysql_format(Database, formatedUpdateUserQuery, sizeof(formatedUpdateUserQuery), updateUserQuery,
         Misc[playerid][mdGang],
         Misc[playerid][mdGangRank],
-        Misc[playerid][mdGangWarns],
         Player[playerid][pAccountId]
 	);
 	mysql_tquery(Database, formatedUpdateUserQuery, "");
@@ -3799,8 +3791,12 @@ stock LoadConfigs() {
 	mysql_tquery(Database, LOAD_CLASSES_CFG_QUERY, "LoadClassesCfg");
 	mysql_tquery(Database, LOAD_ACHS_CFG_QUERY, "LoadAchievementsCfg");
 	mysql_tquery(Database, LOAD_WEEKLY_CFG_QUERY, "LoadWeeklyCfg");
-	mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
+}
+
+stock DataRecoveryOnInit() {
+    mysql_tquery(Database, LOAD_CLASSES_QUERY, "LoadClasses");
 	mysql_tquery(Database, LOAD_MAPS_COUNT_QUERY, "LoadMapsCount");
+	mysql_tquery(Database, LOAD_GANGS_QUERY, "LoadGangs");
 }
 
 stock PushDatabaseValues() {
@@ -4110,7 +4106,6 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdIgnoreAnticheatFor] = 0;
     Misc[playerid][mdGang] = -1;
 	Misc[playerid][mdGangRank] = 0;
-	Misc[playerid][mdGangWarns] = 0;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdLastLogs][0] = -1;
 	Misc[playerid][mdLastLogs][1] = -1;
@@ -4172,19 +4167,14 @@ stock InitializeScreenTextures() {
 }
 
 stock InitializeGangsConfig() {
-	GangsConfig[gdCfgCapacity] = 10;
 	GangsConfig[gdCfgFlagId] = 11245;
     GangsConfig[gdCfgRequired] = 25000;
     GangsConfig[gdCfgDefault] = 5000;
-    GangsConfig[gdCfgMultiply] = 2.0;
-    GangsConfig[gdCfgArmourPerLevel] = 10.0;
-    GangsConfig[gdCfgCrystalHealth] = 50000.0;
     GangsConfig[gdCfgFlagDistance] = 100.0;
-    GangsConfig[gdCfgPerCure] = 0.0;
-    GangsConfig[gdCfgPerKill] = 0.0;
-    GangsConfig[gdCfgPerEvac] = 0.0;
-    GangsConfig[gdCfgPerAbility] = 0.0;
-    GangsConfig[gdCfgPerAssist] = 0.0;
+    GangsConfig[gdCfgPerCure] = 0;
+    GangsConfig[gdCfgPerKill] = 0;
+    GangsConfig[gdCfgPerEvac] = 0;
+    GangsConfig[gdCfgPerAbility] = 0;
 	return 1;
 }
 
@@ -4230,15 +4220,15 @@ stock InitializeDefaultValues() {
 		for( j = 0; j < MAX_MAP_SPAWNS; j++ ) {
 		    Misc[i][mdSpawnPoints][j] = PlayerText3D:-1;
 		}
+		
+		Misc[i][mdFlagText] = PlayerText3D:-1;
     }
     
     for( j = 0; j < MAX_MAP_GATES; j++ ) {
 	    Map[mpGates][j] = INVALID_OBJECT_ID;
 	}
 	
-	Map[mpCrystal] = -1;
 	Map[mpFlag] = -1;
-	//Map[mpFlagText] = Text3D:-1;
 	ServerConfig[svCfgCurrentOnline] = 0;
 	ServerConfig[svCfgLastTipMessage] = 0;
 	
@@ -4403,7 +4393,6 @@ stock InitializeMapConfig() {
     MapConfig[mpCfgRestart] = 10;
     MapConfig[mpCfgGreatTime] = 30;
     MapConfig[mpCfgSpawnProtectionTime] = 15;
-    MapConfig[mpCfgOOMCheck] = 2;
     MapConfig[mpCfgKillstreakFactor] = 5;
     MapConfig[mpCfgSpawnTextRange] = 50.0;
     MapConfig[mpCfgHumanHeroPoints] = 0.0;
@@ -4452,6 +4441,36 @@ stock ClearPlayerRoundData(const playerid) {
 	for( i = 0; i < MAX_MAP_SPAWNS; i++ ) {
 		DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdSpawnPoints][i]);
 		Misc[playerid][mdSpawnPoints][i] = CreatePlayer3DTextLabel(playerid, Localization[playerid][LD_MAP_DONOT_SHOT_HERE], COLOR_ALERT, Map[mpZombieSpawnX][i], Map[mpZombieSpawnY][i], Map[mpZombieSpawnZ][i], MapConfig[mpCfgSpawnTextRange]);
+	}
+	
+	DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdFlagText]);
+	
+	if(Map[mpGang] > -1) {
+	    new year, mounth, day, hours, minutes, seconds;
+     	TimestampToDate(Map[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+     	
+     	new text[768];
+		format(text, sizeof(text), "\
+        	{FFFFFF}%s {FFF000}(by %s)\n\
+		 	{FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n\
+		 	{FFF000}This gang get the most points to capture the map\n\
+		 	{FFF000}The gang members get extra points for the following actions:\n\n\
+		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for evacuating\n\
+		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for curing humans\n\
+		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for active ability using\n\
+		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for killing players\n\
+		",
+	  		Localization[playerid][LD_MAP_NAME],
+			Gangs[Map[mpGang]][gdName],
+			hours, minutes,
+			day, mounth, year,
+		 	GangsConfig[gdCfgPerEvac],
+			GangsConfig[gdCfgPerCure],
+			GangsConfig[gdCfgPerAbility],
+			GangsConfig[gdCfgPerKill]
+		);
+
+        Misc[playerid][mdFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
 	}
 	
 	ClearAbilitiesTimers(playerid);
@@ -6159,38 +6178,6 @@ stock GetWeaponFromConfigById(const weaponid) {
 	return -1;
 }
 
-stock SpawnCrystalOnMapEnd() {
-    if(!Map[mpTimeoutBeforeCrystal] && Map[mpGang] <= 0) {
-	    Map[mpCrystal] = CreateObject(Map[mpGangCrystalId],
-			Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1],
-			Map[mpGangCrystalSpawn][2], 0.0, 0.0, Map[mpGangCrystalSpawn][3]
-		);
-		
-		Map[mpTimeoutBeforeCrystal] = true;
-		Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgBalance];
-
-	//	new text[256];
-	//	format(text, sizeof(text), CRYSTAL_STONE_TEXT, Map[mpCrystalHealth]);
-	//	Map[mpFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpGangCrystalSpawn][0], Map[mpGangCrystalSpawn][1], Map[mpGangCrystalSpawn][2], GangsConfig[gdCfgFlagDistance], 0, 0);
-
-		foreach(Player, i) {
-		    SendClientMessage(i, COLOR_CRYSTAL_INFO, Localization[i][LD_MSG_MAP_CRYSTAL_DAMAGE]);
-		    if(Misc[i][mdGangRank]) {
-                SetPlayerInterior(i, 0);
-				DisablePlayerCheckpoint(i);
-				SetPlayerPosAC(i, Map[mpGangNearCrystalSpawn][0], Map[mpGangNearCrystalSpawn][1], Map[mpGangNearCrystalSpawn][2]);
-				SetPlayerFacingAngle(i, Map[mpGangNearCrystalSpawn][3]);
-				SetUnknown(i);
-				SetPlayerVirtualWorld(i, 2500);
-			}
-		}
-		
-		return 1;
-	}
-	
-	return 0;
-}
-
 stock CreateTextureFromConfig(&Text:texid, const buffer) {
 	texid = TextDrawCreate(
 		ServerTexturesConfig[buffer][svTxCfgTexturePosition][0],
@@ -7029,7 +7016,7 @@ custom CreateGang(const playerid, const gang, const name[]) {
 
 	    Gangs[gang][gdPot] = 0;
 	    Gangs[gang][gdMembers] = 1;
-	    Gangs[gang][gdCapacity] = 5;
+	    Gangs[gang][gdCapacity] = 10;
 
 	    for( new i = 0; i < MAX_GANGS; i++ ) {
 	        Gangs[gang][gdWar][i] = 0;
@@ -7063,13 +7050,14 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    // create, accept, gelp, list, join
+	    // create, accept, help, list, join
 	    
 	    
 	    case GANG_COMMAND_HELP: {
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| delete, alliance, ban");
-			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| demote, info, leave, members, pay");
-			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, settings, unban, war, warn");
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| create, delete, settings, leave");
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, demote, (un)ban");
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| list, info, members");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| pay, alliance, war");
             return 1;
 	    }
 	    
@@ -7078,6 +7066,39 @@ CMD:gang(const playerid, const params[]) {
 			new formated[sizeof(query) + LOCALIZATION_SIZE], index = Player[playerid][pLanguage];
     		mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index]);
 	        mysql_tquery(Database, formated, "ShowGangsList", "i", playerid);
+	        return 1;
+	    }
+	    
+	    case GANG_COMMAND_INFO: {
+    		if(!strlen(action)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
+			    return 1;
+			}
+
+			new gang = strval(action);
+			if(gang < 1 || gang > MAX_GANGS) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
+			    return 1;
+			}
+			
+			if(!Gangs[(gang - 1)][gdColumnId]) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
+			    return 1;
+			}
+	    
+	    	/*SendClientMessageFormat(playerid, -1, "{B2F558}+---------- %s (Pot %d) (Members %d) (Maps %d) ----------+", );
+	    	SendClientMessageFormat(playerid, -1, "{B2F558}+---------- Alliances %d - Wars %d ----------+", );
+	    	
+ 	   		SendClientMessageFormat(playerid, -1, "{cdcdcd}Maps captured: %d - Members: %d / %d", );
+					for( new i = 0; i < sizeof(Clan); i++ ) if(Clan[strval(name)][g_AllianceWith][i] >= 2 && Clan[strval(name)][g_EnemysWith][i] >= 0 && strlen(Clan[i][Full]) >= 1) SendClientMessageFormat(playerid, -1, "{B2F558}>> Alliance with %s", Clan[i][Full]);
+					for( new i = 0; i < sizeof(Clan); i++ ) if(Clan[strval(name)][g_EnemysWith][i] <= -1 && Clan[strval(name)][g_AllianceWith][i] <= 1 && strlen(Clan[i][Full]) >= 1) SendClientMessageFormat(playerid, -1, "{ff4d4d}>> War with %s", Clan[i][Full]);
+			}
+			foreach(Player, i)  {
+ 				if(Player[i][pClan] == strval(name)) {
+	                    SendClientMessageFormat(playerid, -1, "(Rank %d) >> %s (ID %d)", Player[i][pClanRank], Player[i][UserName], i);
+	                }
+	            }
+	        }*/
 	        return 1;
 	    }
 	    
@@ -7092,7 +7113,12 @@ CMD:gang(const playerid, const params[]) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang join (id)");
 			    return 1;
 			}
-	    
+			
+			if(!Gangs[(gang - 1)][gdColumnId]) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang join (id)");
+			    return 1;
+			}
+			
 	        new query[] = GET_BLACKLIST_QUERY, formated[sizeof(query) + (MAX_ID_LENGTH * 2)];
     		mysql_format(Database, formated, sizeof(formated), query, (gang - 1), Player[playerid][pAccountId]);
 	        mysql_tquery(Database, formated, "JoinGang", "ii", playerid, gang - 1);
@@ -7243,11 +7269,6 @@ CMD:gang(const playerid, const params[]) {
             new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
     		mysql_format(Database, formated, sizeof(formated), query, gettime(), Player[playerid][pAccountId], Player[target][pAccountId]);
 	        mysql_tquery(Database, formated);
-	        
-	        new deleteQuery[] = DELETE_GANG_USER_WARNS;
-	        new formatedDelete[sizeof(deleteQuery) + (MAX_ID_LENGTH * 2)];
-	        mysql_format(Database, formatedDelete, sizeof(formatedDelete), deleteQuery, Player[target][pAccountId], gang);
-	        mysql_tquery(Database, formatedDelete);
 	        
 	        ProceedAchievementProgress(target, ACH_TYPE_GANG);
 			return 1;

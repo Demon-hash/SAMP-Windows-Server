@@ -18,7 +18,7 @@
 #define LOAD_WEEKLY_CFG_QUERY "SELECT * FROM weekly_cfg WHERE 1 LIMIT 1;"
 #define LOAD_ROUND_CFG_QUERY "SELECT * FROM round_config WHERE 1 LIMIT 1;"
 #define LOAD_MAPS_COUNT_QUERY "SELECT COUNT( `id` ) AS maps FROM `maps` WHERE `disabled`=0;"
-#define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') as login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
+#define LOAD_MAP_DATA_QUERY "SELECT m.*, COALESCE(u.login, '') AS login FROM `maps` m LEFT JOIN `users` u ON u.id = m.author WHERE m.id = %d;"
 #define LOAD_MAP_NAME_QUERY "SELECT * FROM `maps_localization` WHERE id = %d;"
 #define LOAD_ACHIEVEMENT_NAME_QUERY "SELECT * FROM `achievements_localization` WHERE id = %d;"
 #define REFRESH_PLAYER_WEAPONS_QUERY "DELETE FROM `weapons` WHERE `time` < %d;"
@@ -40,6 +40,7 @@
 #define GET_HELP_QUERY "SELECT %e as text FROM `za_help` WHERE 1;"
 #define PREPARE_WEEKLY_ACTIVITIES_QUERY "SELECT %e as text, activity, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)"
 #define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
+#define LOAD_GANGS_QUERY "SELECT * FROM `gangs` WHERE `disabled` = 0"
 
 #define PREPARE_CLOTH_INFO_QUERY "SELECT `%e` AS `text`, `coins`, `emblems`, `kit` FROM `clothes_locale` WHERE `kit` = '%d'"
 #define PREPARE_WEEKLY_REWARD_QUERY "SELECT `%e` AS `text`, `coins`, `kit`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e)"
@@ -123,25 +124,8 @@
 	progress='%e'\
 "
 
-#define UPDATE_GANG_USER_QUERY "\
-	UPDATE `gangs_users` \n\
-	SET \n\
-		`gang_id`='%d',\
-		`rank`='%d',\
-		`warns`='%d'\n\
-		WHERE `id`='%d'\
-"
-
-#define SET_GANG_USER_QUERY "\
-	UPDATE `gangs_users` \n\
-	SET \n\
-	`warns`='0',\
-	`joined_at`='%d',\
-	`accepted_by`='%d'\n\
-	WHERE `id`='%d'\	
-"
-
-#define DELETE_GANG_USER_WARNS "DELETE FROM `gangs_warns` WHERE `account_id` = '%d' AND `gang_id` = '%d'"
+#define UPDATE_GANG_USER_QUERY "UPDATE `gangs_users` SET `gang_id`='%d', `rank`='%d' WHERE `id`='%d'"
+#define SET_GANG_USER_QUERY "UPDATE `gangs_users` SET `joined_at`='%d', `accepted_by`='%d' WHERE `id`='%d'"
 
 #define UPDATE_PRIVILAGES_QUERY "\
 	UPDATE `privileges` \n\
@@ -264,7 +248,6 @@
 		COALESCE(p.vip_till, 0) as vip_till,\n\
 		COALESCE(g.gang_id, -1) as gang_id,\n\
 		COALESCE(g.rank, 0) as gang_rank,\n\
-		COALESCE(g.warns, 0) as gang_warns,\n\
 		COALESCE(s.pm, 0) as set_pm,\n\
 		COALESCE(s.ding, 0) as set_ding,\n\
 		COALESCE(s.duels, 0) as set_duels,\n\
