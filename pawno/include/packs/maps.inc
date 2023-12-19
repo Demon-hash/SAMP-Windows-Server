@@ -20,6 +20,7 @@ enum MAP_DATA {
 	mpGates[MAX_MAP_GATES],
 	mpTeamCount[2],
 	mpId,
+	mpPoints,
 	mpCount,
 	mpWeather,
 	mpInterior,

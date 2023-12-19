@@ -338,8 +338,8 @@ enum LOCALIZATION_DATA {
 "
 
 #define PREDIFINED_LOCALIZATION_3 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
-	(32, '{FFFFFF}%s\n{FFF000}Controlled by {FFFFFF}%s\n{FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n', '{FFFFFF}%s\n{FFF000}Под контролем у {FFFFFF}%s\n{FFF000}Захвачено в {FFFFFF}%02d:%02d {FFF000}, дата {FFFFFF}%02d/%02d/%d\n'),\ 
-	(33, '{FFF000}This gang dealt the most damage to crystal to capture the map\n', '{FFF000}Эта банда внесла наибольшее количество урона по кристаллу, чтобы захватить карту\n'),\
+	(32, '{FFFFFF}%s {FFF000}(by %s)\n{FFF000}Score: {FFFFFF}%d\n\n{FFF000}+%d / +%d / +%d / +%d\n', '{FFFFFF}%s {FFF000}(под контролем %s)\n{FFF000}Очков: {FFFFFF}%d\n\n{FFF000}+%d / +%d / +%d / +%d\n'),\ 
+	(33, 'Evacuating / Curing / Ability using / Killing players\n(Deagle, M4, Armour)', 'Эвакуация / Лечение / Использование способности / Убийство игроков\n(Deagle, M4, Броня)'),\
 	(34, '{FFF000}The gang members get extra points for the following actions:\n\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for evacuating\n', '{FFF000}Участники банды получают дополнительные очки за следующие действия:\n\n{FFFFFF}+%.0f{FFF000} очков в казну клана за эвакуацию\n'),\ 
 	(35, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for curing humans\n{FFFFFF}+%.0f{FFF000} point(s) in gang pot for active ability using\n', '{FFFFFF}+%.0f{FFF000} очков в казну клана за лечение людей\n{FFFFFF}+%.0f{FFF000} очков в казну клана за использование активных способностей\n'),\
 	(36, '{FFFFFF}+%.0f{FFF000} point(s) in gang pot for killing players\n{FFFFFF}+%.2f{FFF000} point(s) in gang pot for assist', '{FFFFFF}+%.0f{FFF000} очков в казну клана за убийство игроков\n{FFFFFF}+%.2f{FFF000} очков в казну клана за помощь в убийстве зомби'),\

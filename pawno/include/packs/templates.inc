@@ -777,9 +777,9 @@
 	(49, 'Trembling', 'Win lottery %d times', 'Трепет', 'Выграйте %d раз в лотерее'),\
 	(50, 'Within Temptation', 'Win lottery %d times', 'В Предвкушении', 'Выграйте %d раз в лотерее'),\
 	(51, 'Casino', 'Win lottery %d times', 'Казино', 'Выграйте %d раз в лотерее'),\
-	(52, 'This Is My Territory', 'Capture %d maps', 'Это моя Территория', 'Захватите %d карт'),\
-	(53, 'The Smell Of Prey', 'Capture %d maps', 'Запах Добычи', 'Захватите %d карт'),\
-	(54, 'The Beast Inside', 'Capture %d maps', 'Зверь Внутри', 'Захватите %d карт');\
+	(52, 'This Is My Territory', 'Capture %d maps (Must be captured by another gang)', 'Это моя Территория', 'Захватите %d карт (Должна быть захвачена другой бандой)'),\
+	(53, 'The Smell Of Prey', 'Capture %d maps (Must be captured by another gang)', 'Запах Добычи', 'Захватите %d карт (Должна быть захвачена другой бандой)'),\
+	(54, 'The Beast Inside', 'Capture %d maps (Must be captured by another gang)', 'Зверь Внутри', 'Захватите %d карт (Должна быть захвачена другой бандой)');\
 "
 
 #define PREDIFINED_ACHS_LOCALIZATION_4 "INSERT IGNORE INTO `achievements_localization` (id, english, english_desc, russian, russian_desc) VALUES \
@@ -959,7 +959,7 @@
 	(16, '>> You can gain points by winning in /lottery!', '>> Вы можете получить очки, выигрывая в лотерею! (/lottery)'),\
 	(17, '>> You can get attachments by completing weekly activities! (/weekly)', '>> Вы можете получить предметы одежды за выполнение еженедельных заданий! (/weekly)'),\
 	(18, '>> You can improve your weapon skills faster by winning duels for points!', '>> Вы можете улучшать навыки владения оружием быстрее побеждая в дуэлях на очки!'),\
-	(19, '>> The gang that captured the map will always be spawned as a human and also has 50 armor and better weapons!', '>> Банда, захватившая карту будет всегда заспавнена человеком, а также имеет 50 брони и улучшеное оружие!'),\
+	(19, '>> The gang that captured the map has 50 armor and better weapons!', '>> Банда, захватившая карту, имеет 50 брони и улучшеное оружие!'),\
 	(20, '>> Gain and lose ranks by competing in duels!', '>> Получайте и теряйте ранги соревнуясь в дуэлях!');\
 "
 

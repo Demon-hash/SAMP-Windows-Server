@@ -1220,6 +1220,7 @@ custom LoadMap() {
 	    cache_get_value_name_int(0, "gang", Map[mpGang]);
 	    cache_get_value_name_int(0, "water", Map[mpWaterAllowed]);
 	    cache_get_value_name_int(0, "flag_date", Map[mpFlagDate]);
+	    cache_get_value_name_int(0, "points", Map[mpPoints]);
     	cache_get_value_name_float(0, "gates_speed", Map[mpGateSpeed]);
         
     	cache_get_value_name(0, "checkpoint", buff);
@@ -4446,31 +4447,21 @@ stock ClearPlayerRoundData(const playerid) {
 	DeletePlayer3DTextLabelEx(playerid, Misc[playerid][mdFlagText]);
 	
 	if(Map[mpGang] > -1) {
-	    new year, mounth, day, hours, minutes, seconds;
-     	TimestampToDate(Map[mpFlagDate], year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-     	
-     	new text[768];
-		format(text, sizeof(text), "\
-        	{FFFFFF}%s {FFF000}(by %s)\n\
-		 	{FFF000}Captured at {FFFFFF}%02d:%02d {FFF000}on {FFFFFF}%02d/%02d/%d\n\
-		 	{FFF000}This gang get the most points to capture the map\n\
-		 	{FFF000}The gang members get extra points for the following actions:\n\n\
-		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for evacuating\n\
-		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for curing humans\n\
-		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for active ability using\n\
-		 	{FFFFFF}+%d{FFF000} point(s) in gang pot for killing players\n\
-		",
+     	new text[256], localized[256];
+     	strcat(localized, Localization[playerid][LD_MAP_GANG_FLAP_PART_1]);
+		strcat(localized, Localization[playerid][LD_MAP_GANG_FLAP_PART_2]);
+		
+		format(text, sizeof(text), localized,
 	  		Localization[playerid][LD_MAP_NAME],
 			Gangs[Map[mpGang]][gdName],
-			hours, minutes,
-			day, mounth, year,
+			Map[mpPoints],
 		 	GangsConfig[gdCfgPerEvac],
 			GangsConfig[gdCfgPerCure],
 			GangsConfig[gdCfgPerAbility],
 			GangsConfig[gdCfgPerKill]
 		);
 
-        Misc[playerid][mdFlagText] = Create3DTextLabel(text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance], 0, 0);
+        Misc[playerid][mdFlagText] = CreatePlayer3DTextLabel(playerid, text, 0xFFF000FF, Map[mpFlagTextCoords][0], Map[mpFlagTextCoords][1], Map[mpFlagTextCoords][2], GangsConfig[gdCfgFlagDistance]);
 	}
 	
 	ClearAbilitiesTimers(playerid);
