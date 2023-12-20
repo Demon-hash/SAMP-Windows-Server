@@ -41,6 +41,7 @@
 #define PREPARE_WEEKLY_ACTIVITIES_QUERY "SELECT %e as text, activity, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)"
 #define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
 #define LOAD_GANGS_QUERY "SELECT * FROM `gangs` WHERE `disabled` = 0"
+#define SAVE_MAP_DATA_QUERY "UPDATE `maps` SET `gang`='%d', `points`='%d', `flag_date`='%d' WHERE `id`='%d'"
 
 #define PREPARE_CLOTH_INFO_QUERY "SELECT `%e` AS `text`, `coins`, `emblems`, `kit` FROM `clothes_locale` WHERE `kit` = '%d'"
 #define PREPARE_WEEKLY_REWARD_QUERY "SELECT `%e` AS `text`, `coins`, `kit`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e)"
@@ -296,7 +297,7 @@
 #define CREATE_RND_SESSION_QUERY "INSERT INTO `round_session` (account_id, map_id, team, survival, killing, care, mobility, skillfulness, brutality, undead, additional, time) VALUES (%d,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%d)"
 #define DELETE_RND_SESSION_QUERY "DELETE FROM `round_session` WHERE `account_id`='%d'"
 
-#define CREATE_SIGN "INSERT INTO `signs` (name, account_id, ip, sign) VALUES ('%e', %d, '%e', '%e')"
+#define CREATE_SIGN "INSERT INTO `signs` (name, account_id, ip, sign, date) VALUES ('%e', %d, '%e', '%e', %d)"
 #define UPDATE_SIGN "UPDATE `signs` SET `name`='%e',`points`='%d',`total`='%d' WHERE `account_id` = '%d'"
 
 #define CREATE_VOTEKICK_LOG "INSERT INTO `votekick_log` (account_id, target_id, date, reason, ip, target_ip) VALUES (%d, %d, %d, '%e', '%e', '%e')"
@@ -451,3 +452,11 @@
 	GROUP BY u.id\n\
 	LIMIT 15;\
 "
+
+#define CLEAR_SIGNS_QUERY "DELETE FROM `signs` WHERE `date` < %d"
+#define CLEAR_LOGINS_QUERY "DELETE FROM `login_log` WHERE `date` < %d"
+#define CLEAR_JAILS_QUERY "DELETE FROM `jails_log` WHERE `date` < %d"
+#define CLEAR_MUTES_QUERY "DELETE FROM `mutes_log` WHERE `date` < %d"
+#define CLEAR_VOTEKICK_QUERY "DELETE FROM `votekick_log` WHERE `date` < %d"
+#define CLEAR_PAYS_QUERY "DELETE FROM `pay_log` WHERE `date` < %d"
+#define CLEAR_NAMES_QUERY "DELETE FROM `name_log` WHERE `date` < %d"

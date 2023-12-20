@@ -286,6 +286,16 @@ enum LOCALIZATION_DATA {
 	LD_MSG_REWARD_BOUGHT,
 	LD_MSG_GANG_CAPTURED,
 	LD_MSG_GANG_UPDATED_SCORE,
+	LD_MSG_GANG_ERR_CAPACITY,
+	LD_MSG_GANG_ERR_RANK,
+	LD_MSG_HIT_SPAWN_CAMP,
+	LD_MSG_INSUFFICIENT_CALIBER,
+	LD_DG_GANG_SETTINGS_1,
+	LD_DG_GANG_SETTINGS_2,
+	LD_DG_GANG_SETTINGS_3,
+	LD_DG_OPENED,
+	LD_DG_CLOSED,
+	LD_MSG_MAYBE_TP,
 	LD_ENDF,
 };
 
@@ -345,7 +355,7 @@ enum LOCALIZATION_DATA {
 	(35, '>> %s has taken control of the map from %s with %d score!', '>> Банда %s отвоевала карту у банды %s со значением в %d очков!'),\
 	(36, '>> The map can be captured by a gang', '>> Карта может быть захвачена любой бандой'),\
 	(37, '{FFFFFF}Zombie Spawn\ndo{FF0000} not{FFFFFF} shoot zombies here', '{FFFFFF}Точка появления зомби\n{FF0000}не убивайте / стреляйте{FFFFFF} здесь'),\
-	(38, 'UNUSED', 'UNUSED'),\
+	(38, 'Error loading language pack', 'Ошибка загрузки языкового пакета'),\
 	(39, 'Classes', 'Классы'),\
 	(40, 'Human Classes\nZombie Classes', 'Классы Людей\nКлассы Зомби'),\
 	(41, 'Select', 'Выбрать'),\
@@ -603,5 +613,15 @@ enum LOCALIZATION_DATA {
 
 #define PREDIFINED_LOCALIZATION_11 "INSERT IGNORE INTO localization (id, english, russian) VALUES \
 	(271, '>> %s has captured the map with %d score!', '>> Банда %s захватила карту со значением в %d очков!'),\
-	(272, '>> %s set a new record of %d score!', '>> Банда %s установила новый рекорд в размере %d очков!');\
+	(272, '>> %s set a new record of %d score!', '>> Банда %s установила новый рекорд в размере %d очков!'),\
+	(273, '>> There are not enough slots in the gang to apply!', '>> В этой банде недостаточно слотов для подачи заявки!'),\
+	(274, '>> Your rank does not allow you to apply to this gang!', '>> Ваш ранг не позволяет вам подать заявку в эту банду!'),\
+	(275, 'SPAWN PROTECTION', 'ЗАЩИЩЕН АНТИ-СПАВН УБИЙСТВОМ'),\
+	(276, 'INSUFFICIENT CALIBER', 'МАЛЫЙ КАЛИБР'),\
+	(277, 'Option\tState\nState\t%s\nRank is needed to send request\t%d\nRank that can use /gang settings\t%d\n', 'Настройка\tЗначение\nСостояние\t%s\nРанг для подачи заявки\t%d\nРанг для использования /gang settings\t%d\n'),\
+	(278, 'Rank that can use /gang ban\t%d\nRank that can use /gang promote/demote\t%d\n', 'Ранг для использования /gang ban\t%d\nРанг для использования /gang promote/demote\t%d\n'),\
+	(279, 'Rank that can use /gang pay\t%d\nRank that can use /gang accept\t%d\n', 'Ранг для использования /gang pay\t%d\nРанг для использования /gang accept\t%d'),\
+	(280, 'Open', 'Открыто'),\
+	(281, 'Closed', 'Закрыто'),\
+	(282, '>> %s supposedly uses Teleport Hack', '>> Игрок %s возможно Телепортируется');\
 "

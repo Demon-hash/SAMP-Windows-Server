@@ -88,6 +88,14 @@
     #define IsNaN(%0) ((%0) != (%0))
 #endif
 
+#define CLEAR_SIGN_DAYS 14
+#define CLEAR_LOGIN_DAYS 14
+#define CLEAR_JAILS_DAYS 30
+#define CLEAR_MUTES_DAYS 30
+#define CLEAR_VOTEKICK_DAYS 30
+#define CLEAR_PAYS_DAYS 90
+#define CLEAR_NAMES_DAYS 90
+
 enum {
 	DISCONNECT_TIMEOUT,
 	DISCONNECT_QUIT,

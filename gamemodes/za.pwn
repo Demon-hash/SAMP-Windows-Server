@@ -543,7 +543,12 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 				return 0;
 			}
 			
-            if(gettime() < Misc[hitid][mdSpawnProtection] || GetObjectModel(GetPlayerSurfingObjectID(playerid)) == ClassesConfig[clsCfgEngineerBox]) {
+			if(gettime() < Misc[hitid][mdSpawnProtection]) {
+			    SetPlayerChatBubble(hitid, Localization[playerid][LD_MSG_HIT_SPAWN_CAMP], BUBBLE_COLOR, 20.0, 1000);
+			    return 0;
+			}
+			
+   			if(GetObjectModel(GetPlayerSurfingObjectID(playerid)) == ClassesConfig[clsCfgEngineerBox]) {
             	SetPlayerChatBubble(hitid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
 				return 0;
             }
@@ -552,8 +557,8 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 			    switch(weaponid) {
 			        case 24, 33, 34: return 1;
 			    }
-				    
-			    SetPlayerChatBubble(hitid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
+
+			    SetPlayerChatBubble(hitid, Localization[playerid][LD_MSG_INSUFFICIENT_CALIBER], BUBBLE_COLOR, 20.0, 1000);
 			    return 0;
             }
             
@@ -732,6 +737,10 @@ public OnPlayerText(playerid, text[]) {
 		SendClientMessage(playerid, COLOR_INFO, str);
 	    return 0;
 	}
+	
+	if(IsEmptyMessage(text)) {
+	    return 0;
+	}
 
 	new index;
 	while(text[index]) {
@@ -773,11 +782,9 @@ public OnPlayerText(playerid, text[]) {
 	    RandomQuestions[RMB_STARTED] = false;
 	}
 	
-	if(!IsEmptyMessage(text)) {
-	    new message[256];
-	    format(message, sizeof(message), "{%06x}%s{FFFFFF}(%d): %s", GetPlayerColor(playerid) >>> 8, Misc[playerid][mdPlayerName], playerid, text);
-		SendClientMessageToAll(GetPlayerColor(playerid), message);
-	}
+ 	new message[256];
+  	format(message, sizeof(message), "{%06x}%s{FFFFFF}(%d): %s", GetPlayerColor(playerid) >>> 8, Misc[playerid][mdPlayerName], playerid, text);
+	SendClientMessageToAll(GetPlayerColor(playerid), message);
 	
 	return 0;
 }
@@ -1049,6 +1056,25 @@ custom Update() {
 	question = PrepareRandomQuestion();
 	lottery = PrepareLottery();
 	
+	if(currentHour == 0 && currentMinute == 0 && currentSecond == 0) {
+        new i, time[] = {
+			CLEAR_SIGN_DAYS, CLEAR_LOGIN_DAYS, CLEAR_JAILS_DAYS,
+			CLEAR_MUTES_DAYS, CLEAR_VOTEKICK_DAYS, CLEAR_PAYS_DAYS,
+			CLEAR_NAMES_DAYS
+		};
+		
+		new queries[][] = {
+	       	CLEAR_SIGNS_QUERY, CLEAR_LOGINS_QUERY, CLEAR_JAILS_QUERY,
+			CLEAR_MUTES_QUERY, CLEAR_VOTEKICK_QUERY, CLEAR_PAYS_QUERY,
+			CLEAR_NAMES_QUERY
+	    };
+	    
+	    for( i = 0; i < sizeof(queries); i++ ) {
+	        mysql_format(Database, formated, sizeof(formated), queries[i], gettime() - (time[i] * 86400));
+	    	mysql_tquery(Database, formated);
+	    }
+	}
+	
 	if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
 		RevalidateWeekly();
 	}
@@ -1073,7 +1099,7 @@ custom Update() {
 	    } else {
 	        if(!IsFalling(playerid) && floatround(GetPlayerDistanceFromPoint(playerid, Anticheat[playerid][acdPos][0], Anticheat[playerid][acdPos][1], Anticheat[playerid][acdPos][2])) > 14) {
 		        foreach(Admins, i) {
-	             	format(formated, sizeof(formated), ">> %s supposedly uses Teleport Hack", Misc[playerid][mdPlayerName]);
+	             	format(formated, sizeof(formated), Localization[i][LD_MSG_MAYBE_TP], Misc[playerid][mdPlayerName]);
 	             	SendClientMessage(i, COLOR_ADMIN, formated);
 		        }
 	    	}
@@ -1081,7 +1107,7 @@ custom Update() {
 	    
 	    GetPlayerPos(playerid, Anticheat[playerid][acdPos][0], Anticheat[playerid][acdPos][1], Anticheat[playerid][acdPos][2]);
    		if(GetPlayerAnimationIndex(playerid) == -1 && Anticheat[playerid][acdPos][2] > 0.0) {
-            BanByAnticheat(playerid, "Invalid Animation Hack");
+            BanByAnticheat(playerid, "Invalid Animation");
 			continue;
 		}
 	    
@@ -1306,7 +1332,7 @@ custom LoadMap() {
 }
 
 custom StartMap() {
-	new j, bool: resetGangCantrol = (Map[mpFlagDate] < gettime());
+	new j, bool: resetGangCantrol = (gettime() >= Map[mpFlagDate]);
 	new author[64] = "";
 	new controlled[96] = "";
 	new formated[256];
@@ -1503,6 +1529,13 @@ custom EndMap() {
 	Map[mpIsStarted] = false;
 }
 
+stock SaveMapData(const gang, const points, const date, const id) {
+	static const query[] = SAVE_MAP_DATA_QUERY;
+    new formated[sizeof(query) + (MAX_ID_LENGTH * 4)];
+    mysql_format(Database, formated, sizeof(formated), query, gang, points, date, id);
+	mysql_tquery(Database, formated);
+}
+
 stock CaptureMap() {
     new str[96], i, g = INVALID_GANG_ID, p = 0;
 	for( i = 0; i < MAX_GANGS; i++ ) {
@@ -1514,7 +1547,7 @@ stock CaptureMap() {
 	      	}
 
 	      	if(Map[mpGangPoints][i] > Map[mpPoints]) {
-	      	    Map[mpFlagDate] = gettime();
+	      	    Map[mpFlagDate] = gettime() + (MapConfig[mpCfgCapturePeriod] * 86400);
 	      	    p = Map[mpGangPoints][i];
 	      	    g = i;
 	      	}
@@ -1526,6 +1559,8 @@ stock CaptureMap() {
 	if(IsActiveGang(g)) {
 		Map[mpPoints] = p;
         Map[mpGang] = g;
+        
+        SaveMapData(g, p, Map[mpFlagDate], Map[mpId]);
         
 		if(Map[mpGang] == INVALID_GANG_ID) {
 		    foreach(Player, playerid) {
@@ -1863,6 +1898,7 @@ custom LoadMapCfg() {
         cache_get_value_name_int(0, "great_period", MapConfig[mpCfgGreatTime]);
         cache_get_value_name_int(0, "spawn_protection_time", MapConfig[mpCfgSpawnProtectionTime]);
         cache_get_value_name_int(0, "killstreak_factor", MapConfig[mpCfgKillstreakFactor]);
+        cache_get_value_name_int(0, "capture_days", MapConfig[mpCfgCapturePeriod]);
 
         cache_get_value_name_float(0, "spawn_text_range", MapConfig[mpCfgSpawnTextRange]);
         cache_get_value_name_float(0, "human_hero_kill", MapConfig[mpCfgHumanHeroPoints]);
@@ -2227,8 +2263,8 @@ custom CreatePlayerSign(playerid) {
 	SHA256_PassHash(input, "md_06/12/2023_00:14-1790", hash, sizeof(hash));
 	
 	static const createSignQuery[] = CREATE_SIGN;
- 	new formatedQuery[sizeof(createSignQuery) + MAX_PLAYER_NAME + MAX_ID_LENGTH + MAX_PLAYER_IP + 64];
-    mysql_format(Database, formatedQuery, sizeof(formatedQuery), createSignQuery, Misc[playerid][mdPlayerName], Player[playerid][pAccountId], Misc[playerid][mdIp], hash);
+ 	new formatedQuery[sizeof(createSignQuery) + MAX_PLAYER_NAME + (MAX_ID_LENGTH * 2) + MAX_PLAYER_IP + 64];
+    mysql_format(Database, formatedQuery, sizeof(formatedQuery), createSignQuery, Misc[playerid][mdPlayerName], Player[playerid][pAccountId], Misc[playerid][mdIp], hash, gettime());
 	mysql_tquery(Database, formatedQuery, "", "", "");
 	strmid(Misc[playerid][mdSign], hash, 0, 16);
 }
@@ -2579,7 +2615,12 @@ custom JoinGang(const playerid, const gang) {
 	}
 	
 	if(Gangs[gang][gdMembers] + 1 > Gangs[gang][gdCapacity]) {
+	    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_ERR_CAPACITY]);
+	    return 1;
+	}
 	
+	if(Achievements[playerid][achRank] < Gangs[gang][gdSettings][GANG_SETTING_RANK_JOIN]) {
+	    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_ERR_RANK]);
 	    return 1;
 	}
 	
@@ -4500,6 +4541,7 @@ stock InitializeMapConfig() {
     MapConfig[mpCfgEnd] = 60;
     MapConfig[mpCfgRestart] = 10;
     MapConfig[mpCfgGreatTime] = 30;
+    MapConfig[mpCfgCapturePeriod] = 7;
     MapConfig[mpCfgSpawnProtectionTime] = 15;
     MapConfig[mpCfgKillstreakFactor] = 5;
     MapConfig[mpCfgSpawnTextRange] = 50.0;
@@ -7126,7 +7168,6 @@ custom CreateGang(const playerid, const gang, const name[]) {
 	    Gangs[gang][gdOwnerId] = Player[playerid][pAccountId];
 
 	    Gangs[gang][gdSettings][GANG_SETTING_PANEL] = 6;
-	    Gangs[gang][gdSettings][GANG_SETTING_WARN] = 5;
 	    Gangs[gang][gdSettings][GANG_SETTING_PAYDAY] = 5;
 	    Gangs[gang][gdSettings][GANG_SETTING_BAN] = 5;
 	    Gangs[gang][gdSettings][GANG_SETTING_PROMOTE] = 5;
@@ -7170,8 +7211,7 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    // create, accept, help, list, join
-	    
+	    // create, accept, help, list, join, settings
 	    
 	    case GANG_COMMAND_HELP: {
 	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| create, delete, settings, leave");
@@ -7222,64 +7262,7 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    case GANG_COMMAND_CREATE: {
-	        if(IsPlayerInGang(playerid)) {
-	    		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_ALREADY_IN_GANG]);
-	    		return 1;
-			}
-			
-			if(Player[playerid][pPoints] < ServerConfig[svCfgGangCreate]) {
-	    		new str[48];
-	    		format(str, sizeof(str), Localization[playerid][LD_MSG_NOT_ENOUGH_FOR_CLASS], ServerConfig[svCfgGangCreate], Localization[playerid][LD_MSG_POINTS]);
-     			SendClientMessage(playerid, COLOR_INFO, str);
-	    		return 1;
-			}
-
-			if(!strlen(action) || strlen(action) >= MAX_GANG_NAME) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang create (name)");
-			    return 1;
-			}
-			
-			for( new i = 0; i < MAX_GANGS; i++ ) {
-			    if(!Gangs[i][gdOwnerId]) {
-			        new query[] = CREATE_GANG_QUERY, formated[sizeof(query) + MAX_GANG_TAG + MAX_GANG_NAME + (MAX_ID_LENGTH * 3)];
-    				mysql_format(Database, formated, sizeof(formated), query, action, "GANG", i, Player[playerid][pAccountId], gettime());
-	        		mysql_tquery(Database, formated, "CreateGang", "iis", playerid, i, action);
-			        return 1;
-			    }
-			}
-
-			SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_NO_SLOTS]);
-	        return 1;
-	    }
-	    
 	    // Rank required
-	    
-	    /*case GANG_COMMAND_SETTINGS: {
-	        new gang = Misc[playerid][mdGang];
-	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
-	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
-	            return 1;
-	        }
-					    "Gang state: Opened"
-					   "Rank is needed to send request"
-					    "Rank that can accept members",
-					    
-					"Rank that can promote/demote members", "Confirm", "Close");
-					
-					"Rank that can warn members", "Confirm", "Close");
-					"Rank that can use /gang pay", "Confirm", "Close");
-					"Rank that can use /gang ban", "Confirm", "Close");
-					"Rank that can use /gang settings"
-					
-					Gangs[gang][gdSettings][GANG_SETTING_PANEL] = 6;
-	    Gangs[gang][gdSettings][GANG_SETTING_WARN] = 5;
-	    Gangs[gang][gdSettings][GANG_SETTING_PROMOTE] = 5;
-	    Gangs[gang][gdSettings][GANG_SETTING_JOIN] = 3;
-	        
-	        ShowPlayerDialogAC(playerid, DIALOG_GANG_SETTINGS, DIALOG_STYLE_TABLIST_HEADERS, "Settings", info, "Change", "Close");
-	        return 1;
-	    }*/
 	    
 	    /*case GANG_COMMAND_WAR: {
 	        new gang = Misc[playerid][mdGang];
@@ -7329,6 +7312,69 @@ CMD:gang(const playerid, const params[]) {
 	        
 	        return 1;
 	    }*/
+	    
+	    case GANG_COMMAND_CREATE: {
+	        if(IsPlayerInGang(playerid)) {
+	    		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_ALREADY_IN_GANG]);
+	    		return 1;
+			}
+
+			if(Player[playerid][pPoints] < ServerConfig[svCfgGangCreate]) {
+	    		new str[48];
+	    		format(str, sizeof(str), Localization[playerid][LD_MSG_NOT_ENOUGH_FOR_CLASS], ServerConfig[svCfgGangCreate], Localization[playerid][LD_MSG_POINTS]);
+     			SendClientMessage(playerid, COLOR_INFO, str);
+	    		return 1;
+			}
+
+			if(!strlen(action) || strlen(action) >= MAX_GANG_NAME) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang create (name)");
+			    return 1;
+			}
+
+			for( new i = 0; i < MAX_GANGS; i++ ) {
+			    if(!Gangs[i][gdOwnerId]) {
+			        new query[] = CREATE_GANG_QUERY, formated[sizeof(query) + MAX_GANG_TAG + MAX_GANG_NAME + (MAX_ID_LENGTH * 3)];
+    				mysql_format(Database, formated, sizeof(formated), query, action, "GANG", i, Player[playerid][pAccountId], gettime());
+	        		mysql_tquery(Database, formated, "CreateGang", "iis", playerid, i, action);
+			        return 1;
+			    }
+			}
+
+			SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_NO_SLOTS]);
+	        return 1;
+	    }
+	    
+	    case GANG_COMMAND_SETTINGS: {
+	        new gang = Misc[playerid][mdGang];
+	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
+	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
+	            return 1;
+	        }
+	        
+            new str[128], log[300], gangState[16];
+			if(Gangs[gang][gdSettings][GANG_SETTING_CLOSED]) strmid(gangState, Localization[playerid][LD_DG_OPENED], 0, sizeof(gangState));
+            else strmid(gangState, Localization[playerid][LD_DG_CLOSED], 0, sizeof(gangState));
+            
+            format(str, sizeof(str), Localization[playerid][LD_DG_GANG_SETTINGS_1], gangState, Gangs[gang][gdSettings][GANG_SETTING_RANK_JOIN], Gangs[gang][gdSettings][GANG_SETTING_PANEL]);
+            strcat(log, str);
+            
+			format(str, sizeof(str), Localization[playerid][LD_DG_GANG_SETTINGS_2], Gangs[gang][gdSettings][GANG_SETTING_BAN], Gangs[gang][gdSettings][GANG_SETTING_PROMOTE]);
+			strcat(log, str);
+			
+            format(str, sizeof(str), Localization[playerid][LD_DG_GANG_SETTINGS_3], Gangs[gang][gdSettings][GANG_SETTING_PAYDAY], Gangs[gang][gdSettings][GANG_SETTING_JOIN]);
+			strcat(log, str);
+			
+	        ShowPlayerDialogAC(
+				playerid,
+				DIALOG_GANG_SETTINGS,
+				DIALOG_STYLE_TABLIST_HEADERS,
+				Localization[playerid][LD_DG_SETTINGS_TITLE],
+				log,
+				Localization[playerid][LD_BTN_SELECT],
+				Localization[playerid][LD_BTN_CLOSE]
+			);
+	        return 1;
+	    }
 	    
 	    case GANG_COMMAND_JOIN: {
 			if(!strlen(action)) {

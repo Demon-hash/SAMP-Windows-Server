@@ -533,6 +533,7 @@
 	`great_period` int(6) unsigned NOT NULL default '30',\
 	`spawn_protection_time` int(6) unsigned NOT NULL default '15',\
 	`killstreak_factor` int(6) unsigned NOT NULL default '5',\
+	`capture_days` int(3) unsigned NOT NULL default '7',\
 	`zombie_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
 	`hero_armour` DECIMAL(9,2) unsigned NOT NULL default '75.0',\
 	`hero_weapons` varchar(24) NOT NULL default '31, 24',\
@@ -621,6 +622,7 @@
 	`ip` varchar(16) NOT NULL,\
 	`points` int(11) unsigned NOT NULL default '0',\
 	`total` int(11) unsigned NOT NULL default '0',\
+	`date` int(11) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"
 

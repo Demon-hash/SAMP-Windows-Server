@@ -7,33 +7,33 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[14:37:27] 
-[14:37:27] Server Plugins
-[14:37:27] --------------
-[14:37:27]  Loading plugin: mysql
-[14:37:27]  >> plugin.mysql: R41-4 successfully loaded.
-[14:37:27]   Loaded.
-[14:37:27]  Loading plugin: dc_cmd
-[14:37:27]   Daniel's CMD plugin v2.8
-[14:37:27]     (c) 2014 Daniel_Cortez
-[14:37:27] 	www.pro-pawn.ru
-[14:37:27]   Loaded.
-[14:37:27]  Loading plugin: sscanf
-[14:37:27] 
-[14:37:27]  ===============================
-[14:37:27] 
-[14:37:27]       sscanf plugin loaded.     
-[14:37:27] 
-[14:37:27]          Version: 2.13.8
-[14:37:27] 
-[14:37:27]    (c) 2022 Alex "Y_Less" Cole  
-[14:37:27] 
-[14:37:27]  ===============================
-[14:37:27] 
-[14:37:27]   Loaded.
-[14:37:27]  Loading plugin: pawnraknet
-[14:37:27] [Pawn.RakNet] plugin v1.6.0 loading...
-[14:37:27] [Pawn.RakNet] 
+[14:45:49] 
+[14:45:49] Server Plugins
+[14:45:49] --------------
+[14:45:49]  Loading plugin: mysql
+[14:45:49]  >> plugin.mysql: R41-4 successfully loaded.
+[14:45:49]   Loaded.
+[14:45:49]  Loading plugin: dc_cmd
+[14:45:49]   Daniel's CMD plugin v2.8
+[14:45:49]     (c) 2014 Daniel_Cortez
+[14:45:49] 	www.pro-pawn.ru
+[14:45:49]   Loaded.
+[14:45:49]  Loading plugin: sscanf
+[14:45:49] 
+[14:45:49]  ===============================
+[14:45:49] 
+[14:45:49]       sscanf plugin loaded.     
+[14:45:49] 
+[14:45:49]          Version: 2.13.8
+[14:45:49] 
+[14:45:49]    (c) 2022 Alex "Y_Less" Cole  
+[14:45:49] 
+[14:45:49]  ===============================
+[14:45:49] 
+[14:45:49]   Loaded.
+[14:45:49]  Loading plugin: pawnraknet
+[14:45:50] [Pawn.RakNet] plugin v1.6.0 loading...
+[14:45:50] [Pawn.RakNet] 
 
     | Pawn.RakNet 1.6.0 | 2016 - 2023
     |--------------------------------
@@ -46,65 +46,65 @@ v0.3.7-R2, (C)2005-2015 SA-MP Team
     |--------------------------------------------------------------
     | Wiki: https://github.com/katursis/Pawn.RakNet/wiki
 
-[14:37:27]   Loaded.
-[14:37:27]  Loading plugin: crashdetect
-[14:37:27]   CrashDetect plugin 4.19.4
-[14:37:27]   Loaded.
-[14:37:27]  Loaded 5 plugins.
+[14:45:50]   Loaded.
+[14:45:50]  Loading plugin: crashdetect
+[14:45:50]   CrashDetect plugin 4.19.4
+[14:45:50]   Loaded.
+[14:45:50]  Loaded 5 plugins.
 
-[14:37:27] 
-[14:37:27] Ban list
-[14:37:27] --------
-[14:37:27]  Loaded: samp.ban
-[14:37:27] 
-[14:37:27] 
-[14:37:27] Filterscripts
-[14:37:27] ---------------
-[14:37:27]   Loading filterscript 'aview.amx'...
-[14:37:27] 
+[14:45:50] 
+[14:45:50] Ban list
+[14:45:50] --------
+[14:45:50]  Loaded: samp.ban
+[14:45:50] 
+[14:45:50] 
+[14:45:50] Filterscripts
+[14:45:50] ---------------
+[14:45:50]   Loading filterscript 'aview.amx'...
+[14:45:50] 
          Animation Browser
-[14:37:27]               v1.0
-[14:37:27]              SoNik))
+[14:45:50]               v1.0
+[14:45:50]              SoNik))
 
-[14:37:27]   Loaded 1 filterscripts.
+[14:45:50]   Loaded 1 filterscripts.
 
-[14:37:27] |: JIT is not present
-[14:37:27] |: Started at 15:37:27 on 19/12/2023...
-[14:37:27] [x] Clear Server config on load
-[14:37:27] [x] Clear Round config on load
-[14:37:27] [x] Clear Map config on load
-[14:37:27] [x] Clear Balance config on load
-[14:37:27] [x] Clear Achievements data on load
-[14:37:27] [x] Clear Classes Config data on load
-[14:37:27] [x] Clear Evacuation config on load
-[14:37:27] [x] Clear Textures data on load
-[14:37:27] [x] Clear Classes data on load
-[14:37:27] [x] Clear Weapons data on load
-[14:37:27] [x] Clear Default values on load
-[14:37:35] |: MySQL status: 0
-[14:37:35] Number of vehicle models: 0
-[14:37:35] weburl = "site"  (string)
-[14:37:35] language = "English / Russian"  (string)
-[14:37:35] [x] Server configuration LOADED
-[14:37:35] [x] Gangs configuration LOADED
-[14:37:35] [x] Round configuration LOADED
-[14:37:35] [x] Evacuation configuration LOADED
-[14:37:35] [x] Map configuration LOADED
-[14:37:35] [x] Weapons configuration LOADED (17 / 17)
-[14:37:35] [x] Balance configuration LOADED
-[14:37:35] [x] Duel configuration LOADED
-[14:37:35] [x] Textures configuration LOADED (8 / 8)
-[14:37:35] [x] Classes configuration LOADED
-[14:37:35] [x] Achievements configuration LOADED (90 / 90)
-[14:37:35] [x] Created Weekly Activities 8 / 8
-[14:37:35] [x] Weekly configuration LOADED
-[14:37:35] [x] Classes loaded (55 / 55)
-[14:37:35] [x] Loaded 1 maps in total
-[14:37:35] [?] Desert Force (ID 0) has been loaded
-[14:37:38] [connection] 127.0.0.1:65232 requests connection cookie.
-[14:37:39] [connection] incoming connection: 127.0.0.1:65232 id: 0
-[14:37:39] [join] Taxa has joined the server (0:127.0.0.1)
-[14:37:41]   Filterscript 'village.amx' unload failed.
-[14:37:41]   Filterscript 'village.amx' loaded.
-[14:43:30]   Filterscript 'village.amx' unloaded.
-[14:43:30]   Filterscript 'village.amx' loaded.
+[14:45:50] |: JIT is not present
+[14:45:50] |: Started at 15:45:50 on 20/12/2023...
+[14:45:50] [x] Clear Server config on load
+[14:45:50] [x] Clear Round config on load
+[14:45:50] [x] Clear Map config on load
+[14:45:50] [x] Clear Balance config on load
+[14:45:50] [x] Clear Achievements data on load
+[14:45:50] [x] Clear Classes Config data on load
+[14:45:50] [x] Clear Evacuation config on load
+[14:45:50] [x] Clear Textures data on load
+[14:45:50] [x] Clear Classes data on load
+[14:45:50] [x] Clear Weapons data on load
+[14:45:50] [x] Clear Default values on load
+[14:45:58] [connection] 127.0.0.1:63514 requests connection cookie.
+[14:45:58] |: MySQL status: 0
+[14:45:58] Number of vehicle models: 0
+[14:45:58] weburl = "site"  (string)
+[14:45:58] language = "English / Russian"  (string)
+[14:45:58] [x] Server configuration LOADED
+[14:45:58] [x] Gangs configuration LOADED
+[14:45:58] [x] Round configuration LOADED
+[14:45:58] [x] Evacuation configuration LOADED
+[14:45:58] [x] Map configuration LOADED
+[14:45:58] [x] Weapons configuration LOADED (17 / 17)
+[14:45:58] [x] Balance configuration LOADED
+[14:45:58] [x] Duel configuration LOADED
+[14:45:58] [x] Textures configuration LOADED (8 / 8)
+[14:45:58] [x] Classes configuration LOADED
+[14:45:58] [x] Achievements configuration LOADED (90 / 90)
+[14:45:58] [x] Created Weekly Activities 8 / 8
+[14:45:58] [x] Weekly configuration LOADED
+[14:45:58] [x] Classes loaded (55 / 55)
+[14:45:58] [x] Loaded 1 maps in total
+[14:45:58] [?] Desert Force (ID 0) has been loaded
+[14:45:59] [connection] incoming connection: 127.0.0.1:63514 id: 0
+[14:45:59] [join] Taxa has joined the server (0:127.0.0.1)
+[14:46:01]   Filterscript 'village.amx' unload failed.
+[14:46:01]   Filterscript 'village.amx' loaded.
+[14:51:55]   Filterscript 'village.amx' unloaded.
+[14:51:55]   Filterscript 'village.amx' loaded.
