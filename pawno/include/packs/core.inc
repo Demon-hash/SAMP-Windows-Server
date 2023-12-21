@@ -112,6 +112,7 @@ enum {
 	PAY_LOGS,
 	NAME_LOGS,
 	BAN_LOGS,
+	MEMBERS_LOG,
 }
 
 enum {

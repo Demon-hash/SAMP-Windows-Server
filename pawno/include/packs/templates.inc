@@ -247,6 +247,9 @@
 	`tag` varchar(6) NOT NULL default '',\
 	`capacity` int(6) unsigned NOT NULL default '5',\
 	`points` int(6) unsigned NOT NULL default '0',\
+	`war` varchar(32) NOT NULL default '',\
+	`alliance` varchar(32) NOT NULL default '',\
+	`settings` varchar(32) NOT NULL default '',\
 	`disabled` int(1) unsigned NOT NULL default '0',\
 	PRIMARY KEY (`id`)\
 );"

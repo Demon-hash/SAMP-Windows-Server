@@ -40,8 +40,20 @@
 #define GET_HELP_QUERY "SELECT %e as text FROM `za_help` WHERE 1;"
 #define PREPARE_WEEKLY_ACTIVITIES_QUERY "SELECT %e as text, activity, count, type FROM weekly_activities_cfg WHERE `activity` IN (%e)"
 #define GET_ID_MATCHES_QUERY "SELECT `id`, `login` FROM `users` WHERE `login` LIKE '%%%e%%' LIMIT 10"
-#define LOAD_GANGS_QUERY "SELECT * FROM `gangs` WHERE `disabled` = 0"
+#define LOAD_GANGS_QUERY "SELECT g . *, COUNT(gu.id) AS members FROM `gangs` g LEFT JOIN `gangs_users` gu ON gu.gang_id = g.game_id WHERE g.`disabled` = 0"
 #define SAVE_MAP_DATA_QUERY "UPDATE `maps` SET `gang`='%d', `points`='%d', `flag_date`='%d' WHERE `id`='%d'"
+#define SAVE_GANGS_DATA "UPDATE `gangs` SET name='%e', tag='%e', capacity='%d', points='%d', war='%e', alliance='%e', settings='%e' WHERE `game_id` = '%d'"
+
+#define GET_GANG_MEMBERS_QUERY "\
+	SELECT gu.*, u.login,\n\
+	COALESCE((SELECT `date` FROM login_log WHERE account_id = gu.id ORDER BY `date` DESC LIMIT 1),' ') AS last_login,\n\
+	COALESCE((SELECT `login` FROM users WHERE id = gu.accepted_by LIMIT 1),' ') AS inviter\n\
+	FROM gangs_users gu\n\
+	LEFT JOIN users u\n\
+	ON gu.id = u.id\n\
+	WHERE gu.gang_id = '%d' AND gu.id > '%d'\n\
+	LIMIT %d\
+"
 
 #define PREPARE_CLOTH_INFO_QUERY "SELECT `%e` AS `text`, `coins`, `emblems`, `kit` FROM `clothes_locale` WHERE `kit` = '%d'"
 #define PREPARE_WEEKLY_REWARD_QUERY "SELECT `%e` AS `text`, `coins`, `kit`, `emblems` FROM `clothes_locale` WHERE `kit` IN (%e)"

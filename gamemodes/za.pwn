@@ -1139,10 +1139,11 @@ custom Update() {
 	        mysql_format(Database, formated, sizeof(formated), queries[i], gettime() - (time[i] * 86400));
 	    	mysql_tquery(Database, formated);
 	    }
-	}
-	
-	if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
-		RevalidateWeekly();
+	    
+	    SaveGangsData();
+	    if(gettime() >= WeeklyConfig[wqdNextUpdate]) {
+			RevalidateWeekly();
+		}
 	}
 
 	foreach(Player, playerid) {
@@ -1248,19 +1249,11 @@ custom Update() {
 	}
 }
 
-/*
-	gdMembers,
-	gdWar[MAX_GANGS],
-	gdAlliance[MAX_GANGS],
-	gdSettings[MAX_GANG_SETTINGS],
-	gdName[MAX_GANG_NAME],
-	gdTag[MAX_GANG_TAG],
-	gdRanks[MAX_GANG_RANK_LEN],
-*/
-
 custom LoadGangs() {
     if(cache_num_rows()) {
-        new i, id, len = clamp(cache_num_rows(), 0, MAX_GANGS);
+        new i, id, len = clamp(cache_num_rows(), 0, MAX_GANGS), buff[32], frmt[16];
+        format(frmt, sizeof(frmt), "p<,>a<i>[%d]", MAX_GANGS);
+        
         for( i = 0; i < len; i++ ) {
             cache_get_value_name_int(i, "game_id", id);
 	        cache_get_value_name_int(i, "id", Gangs[id][gdColumnId]);
@@ -1268,10 +1261,22 @@ custom LoadGangs() {
 		    cache_get_value_name_int(i, "date", Gangs[id][gdCreatedAt]);
 		    cache_get_value_name_int(i, "capacity", Gangs[id][gdCapacity]);
 		    cache_get_value_name_int(i, "points", Gangs[id][gdPot]);
+		    cache_get_value_name_int(i, "members", Gangs[id][gdMembers]);
+		    
 		    cache_get_value_name(i, "name", Gangs[id][gdName]);
 		    cache_get_value_name(i, "tag", Gangs[id][gdTag]);
 		    
-		    printf("[?] %s (ID %d) has been loaded", Gangs[id][gdName], id);
+		    cache_get_value_name(i, "war", buff);
+		    sscanf(buff, frmt, Gangs[id][gdWar]);
+		    
+		    cache_get_value_name(i, "alliance", buff);
+		    sscanf(buff, frmt, Gangs[id][gdAlliance]);
+		    
+		    format(frmt, sizeof(frmt), "p<,>a<i>[%d]", MAX_GANG_SETTINGS);
+		    cache_get_value_name(i, "settings", buff);
+		    sscanf(buff, frmt, Gangs[id][gdSettings]);
+		    
+		    printf("[?] %s (ID %d) has been loaded (%d)", Gangs[id][gdName], id, Gangs[id][gdMembers]);
         }
     
         return 1;
@@ -1279,6 +1284,48 @@ custom LoadGangs() {
     
     printf("[ ] Loading gangs failed");
 	return 0;
+}
+
+stock SaveGangsData() {
+    static const query[] = SAVE_GANGS_DATA;
+    new i, j, formated[sizeof(query) + MAX_GANG_NAME + MAX_GANG_TAG + (MAX_ID_LENGTH * 3) + 96];
+	new war[32], alliance[32], settings[32], prev, a[4], w[4], s[4];
+
+	for( i = 0; i < MAX_GANGS; i++ ) {
+	    if(!IsActiveGang(i)) continue;
+	    
+	    for( j = 0, prev = MAX_GANGS - 1; j < MAX_GANGS; j++ ) {
+		    if(j < prev) {
+				format(w, sizeof(w), "%d,", Gangs[i][gdWar][j]);
+				format(a, sizeof(a), "%d,", Gangs[i][gdAlliance][j]);
+			}
+		    else {
+				format(w, sizeof(w), "%d", Gangs[i][gdWar][j]);
+				format(a, sizeof(a), "%d", Gangs[i][gdAlliance][j]);
+			}
+		    
+		    strcat(war, w);
+		    strcat(alliance, a);
+		}
+		
+		for( j = 0, prev = MAX_GANG_SETTINGS - 1; j < MAX_GANG_SETTINGS; j++ ) {
+		    if(j < prev) format(s, sizeof(s), "%d,", Gangs[i][gdSettings][j]);
+		    else format(s, sizeof(s), "%d", Gangs[i][gdSettings][j]);
+		    strcat(settings, s);
+		}
+	    
+	    mysql_format(Database, formated, sizeof(formated), query,
+			Gangs[i][gdName],
+			Gangs[i][gdTag],
+			Gangs[i][gdCapacity],
+			Gangs[i][gdPot],
+			war,
+			alliance,
+			settings,
+			i
+		);
+     	mysql_tquery(Database, formated);
+	}
 }
 
 custom LoadMapsCount() {
@@ -2961,11 +3008,56 @@ custom ShowAdminsActivity(const playerid) {
     return 1;
 }
 
+custom ShowGangMembers(const playerid, const gang, const type) {
+    if(cache_num_rows()) {
+   		new i, len = cache_num_rows(), last, date, rank;
+   		new login[MAX_PLAYER_NAME], inviter[MAX_PLAYER_NAME];
+	   	new log[1024], str[128], year, mounth, day, hours, minutes, seconds;
+
+        strcat(log, "Player\tRank\tAccepted by\tLast Login\n");
+        for( i = 0; i < len; i++ ) {
+            cache_get_value_name(i, "login", login);
+            cache_get_value_name(i, "inviter", inviter);
+            cache_get_value_name_int(i, "rank", rank);
+            cache_get_value_name_int(i, "last_login", last);
+            
+            TimestampToDate(last, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
+            format(str, sizeof(str), "%s\t%d\t%s\t%02d/%02d/%04d\n", login, rank, inviter, day, mounth, year);
+            strcat(log, str);
+        }
+        
+    	cache_get_value_name_int(len - 1, "id", Misc[playerid][mdLastRowId]);
+        Misc[playerid][mdLastLogs][0] = type;
+        Misc[playerid][mdLastLogs][1] = gang;
+        
+        ShowPlayerDialogAC(
+			playerid,
+			DIALOG_LOGS,
+			DIALOG_STYLE_TABLIST_HEADERS,
+			Localization[playerid][LD_DG_INFO_TITLE],
+			log,
+			Localization[playerid][LD_BTN_NEXT],
+			Localization[playerid][LD_BTN_CLOSE]
+		);
+        return 1;
+    }
+    
+    ShowPlayerDialogAC(playerid,
+		DIALOG_INFO,
+		DIALOG_STYLE_MSGBOX,
+		Localization[playerid][LD_DG_INFO_TITLE],
+		Localization[playerid][LD_DG_EMPTY],
+		Localization[playerid][LD_BTN_CLOSE],
+		""
+	);
+    return 1;
+}
+
 custom ShowPayLog(const playerid, const target, const logType) {
     if(cache_num_rows()) {
         new to[MAX_PLAYER_NAME], from[MAX_PLAYER_NAME];
         new to_ip[MAX_PLAYER_IP], from_ip[MAX_PLAYER_IP];
-		new log[2048], str[128], withType[16];
+		new log[1024], str[128], withType[16];
 		new i, len = cache_num_rows(), amount, type, date;
 		new year, mounth, day, hours, minutes, seconds;
 
@@ -3434,7 +3526,15 @@ stock ShowNextLogsPage(const playerid) {
 	    case PAY_LOGS: PreparePaylog(targetid, playerid);
 	    case NAME_LOGS: PrepareNamelog(targetid, playerid);
 	    case BAN_LOGS: PrepareBanlog(targetid, playerid);
+	    case MEMBERS_LOG: PrepareGangMembersLog(targetid, playerid);
 	}
+}
+
+stock PrepareGangMembersLog(const gang, const playerid) {
+    new query[] = GET_GANG_MEMBERS_QUERY;
+	new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
+	mysql_format(Database, formated, sizeof(formated), query, gang, Misc[playerid][mdLastRowId], MAX_LOGS_LENGTH);
+    mysql_tquery(Database, formated, "ShowGangMembers", "iii", playerid, gang, MEMBERS_LOG);
 }
 
 stock PreparePaylog(const targetid, const playerid) {
@@ -7300,8 +7400,6 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    // create, accept, help, list, join, settings, info
-	    
 	    /*case GANG_COMMAND_WAR: {
 	        new gang = Misc[playerid][mdGang];
 	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
@@ -7351,56 +7449,7 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }*/
 	    
-	    case GANG_COMMAND_HELP: {
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| create, delete, settings, leave");
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, demote, (un)ban");
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| list, info, members");
-			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| pay, alliance, war");
-            return 1;
-	    }
-	    
-	    case GANG_COMMAND_LIST: {
-            new query[] = GET_GANGS_LIST_QUERY;
-			new formated[sizeof(query) + LOCALIZATION_SIZE], index = Player[playerid][pLanguage];
-    		mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index]);
-	        mysql_tquery(Database, formated, "ShowGangsList", "i", playerid);
-	        return 1;
-	    }
-	    
-	    case GANG_COMMAND_INFO: {
-    		if(!strlen(action)) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
-			    return 1;
-			}
-
-			new gang = strval(action);
-			if(gang < 1 || gang > MAX_GANGS) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
-			    return 1;
-			}
-			
-			if(!IsActiveGang(gang - 1)) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
-			    return 1;
-			}
-	    
-	    	/*SendClientMessageFormat(playerid, -1, "{B2F558}+---------- %s (Pot %d) (Members %d) (Maps %d) ----------+", );
-	    	SendClientMessageFormat(playerid, -1, "{B2F558}+---------- Alliances %d - Wars %d ----------+", );
-	    	
- 	   		SendClientMessageFormat(playerid, -1, "{cdcdcd}Maps captured: %d - Members: %d / %d", );
-					for( new i = 0; i < sizeof(Clan); i++ ) if(Clan[strval(name)][g_AllianceWith][i] >= 2 && Clan[strval(name)][g_EnemysWith][i] >= 0 && strlen(Clan[i][Full]) >= 1) SendClientMessageFormat(playerid, -1, "{B2F558}>> Alliance with %s", Clan[i][Full]);
-					for( new i = 0; i < sizeof(Clan); i++ ) if(Clan[strval(name)][g_EnemysWith][i] <= -1 && Clan[strval(name)][g_AllianceWith][i] <= 1 && strlen(Clan[i][Full]) >= 1) SendClientMessageFormat(playerid, -1, "{ff4d4d}>> War with %s", Clan[i][Full]);
-			}
-			foreach(Player, i)  {
- 				if(Player[i][pClan] == strval(name)) {
-	                    SendClientMessageFormat(playerid, -1, "(Rank %d) >> %s (ID %d)", Player[i][pClanRank], Player[i][UserName], i);
-	                }
-	            }
-	        }*/
-	        return 1;
-	    }
-	    
-	    case GANG_COMMAND_CREATE: {
+	     case GANG_COMMAND_CREATE: {
 	        if(IsPlayerInGang(playerid)) {
 	    		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_ALREADY_IN_GANG]);
 	    		return 1;
@@ -7428,6 +7477,75 @@ CMD:gang(const playerid, const params[]) {
 			}
 
 			SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_NO_SLOTS]);
+	        return 1;
+	    }
+	    
+	    case GANG_COMMAND_HELP: {
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| delete, leave");
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, demote, (un)ban");
+	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| members");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| pay, alliance, war");
+            return 1;
+	    }
+	    
+	    case GANG_COMMAND_LIST: {
+            new query[] = GET_GANGS_LIST_QUERY;
+			new formated[sizeof(query) + LOCALIZATION_SIZE], index = Player[playerid][pLanguage];
+    		mysql_format(Database, formated, sizeof(formated), query, LOCALIZATION_TABLES[index]);
+	        mysql_tquery(Database, formated, "ShowGangsList", "i", playerid);
+	        return 1;
+	    }
+	    
+	    // create, accept, help, list, join, settings, info, members
+	    
+		case GANG_COMMAND_MEMBERS: {
+		    if(!strlen(action)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang members (id)");
+			    return 1;
+			}
+
+			new gang = strval(action);
+			if(gang < 1 || gang > MAX_GANGS) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang members (id)");
+			    return 1;
+			}
+
+			if(!IsActiveGang(gang - 1)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang members (id)");
+			    return 1;
+			}
+			
+		    Misc[playerid][mdLastRowId] = 0;
+		    PrepareGangMembersLog(gang - 1, playerid);
+		    return 1;
+		}
+	    
+	    case GANG_COMMAND_INFO: {
+    		if(!strlen(action)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
+			    return 1;
+			}
+
+			new gang = strval(action);
+			if(gang < 1 || gang > MAX_GANGS) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
+			    return 1;
+			}
+			
+			if(!IsActiveGang(gang - 1)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
+			    return 1;
+			}
+			
+			new str[128], gid = gang - 1;
+			format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_INFO_TITLE], Gangs[gid][gdName], Gangs[gid][gdPot], Gangs[gid][gdMembers], Gangs[gid][gdCapacity]);
+			SendClientMessage(playerid, COLOR_MEDIC, str);
+			foreach(Player, i)  {
+ 				if(IsGangsInAlliance(gid, Misc[i][mdGang]) || Misc[i][mdGang] == gid) {
+ 				    format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_INFO_PLAYERS], Misc[i][mdGangRank], Misc[i][mdPlayerName], i);
+         			SendClientMessage(playerid, COLOR_WHITE, str);
+	            }
+	        }
 	        return 1;
 	    }
 	    
