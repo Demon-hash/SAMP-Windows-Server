@@ -9,10 +9,10 @@
 #include <packs/privileges>
 #include <packs/achievements>
 #include <packs/classes>
-#include <packs/misc>
 #include <packs/round>
 #include <packs/teams>
 #include <packs/gangs>
+#include <packs/misc>
 #include <packs/pickups>
 #include <packs/weapons>
 #include <packs/templates>

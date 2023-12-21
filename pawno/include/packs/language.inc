@@ -296,6 +296,10 @@ enum LOCALIZATION_DATA {
 	LD_DG_OPENED,
 	LD_DG_CLOSED,
 	LD_MSG_MAYBE_TP,
+	LD_DG_GANG_SETTINGS_INPUT,
+	LD_DG_GANG_SETTINGS_NAME,
+    	LD_DG_GANG_SETTINGS_TAG,
+        LD_DG_GANG_SETTINGS_RANK,
 	LD_ENDF,
 };
 
@@ -618,10 +622,14 @@ enum LOCALIZATION_DATA {
 	(274, '>> Your rank does not allow you to apply to this gang!', '>> Ваш ранг не позволяет вам подать заявку в эту банду!'),\
 	(275, 'SPAWN PROTECTION', 'ЗАЩИЩЕН АНТИ-СПАВН УБИЙСТВОМ'),\
 	(276, 'INSUFFICIENT CALIBER', 'МАЛЫЙ КАЛИБР'),\
-	(277, 'Option\tState\nState\t%s\nRank is needed to send request\t%d\nRank that can use /gang settings\t%d\n', 'Настройка\tЗначение\nСостояние\t%s\nРанг для подачи заявки\t%d\nРанг для использования /gang settings\t%d\n'),\
+	(277, 'Option\tState\nState\t%s\nName\t%s\nTag\t%s\nRank is needed to send request\t%d\nRank that can use /gang settings\t%d\n', 'Настройка\tЗначение\nСостояние\t%s\nНазвание\t%s\nТэг\t%s\n\nРанг для подачи заявки\t%d\nРанг для использования /gang settings\t%d\n'),\
 	(278, 'Rank that can use /gang ban\t%d\nRank that can use /gang promote/demote\t%d\n', 'Ранг для использования /gang ban\t%d\nРанг для использования /gang promote/demote\t%d\n'),\
 	(279, 'Rank that can use /gang pay\t%d\nRank that can use /gang accept\t%d\n', 'Ранг для использования /gang pay\t%d\nРанг для использования /gang accept\t%d'),\
 	(280, 'Open', 'Открыто'),\
 	(281, 'Closed', 'Закрыто'),\
-	(282, '>> %s supposedly uses Teleport Hack', '>> Игрок %s возможно Телепортируется');\
+	(282, '>> %s supposedly uses Teleport Hack', '>> Игрок %s возможно Телепортируется'),\
+	(283, 'Type the rank you think is appropriate for this setting\nValid rank values from 1 to 6', 'Введите ранг, который считаете нужным для этой настройки\nДопустимые значения с 1 до 6'),\
+	(284, 'Type a new name for the gang', 'Введите новое имя банды'),\
+	(285, 'Type a new gang tag', 'Введите новый тэг банды'),\
+	(286, 'Type new rank for gang applications, min. 0 and max. 100', 'Введите новый ранг для подачи заявок, мин. 0 и макс. 100');\
 "

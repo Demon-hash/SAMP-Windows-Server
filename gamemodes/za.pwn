@@ -191,14 +191,6 @@ public OnPlayerConnect(playerid) {
         Kick(playerid);
         return 1;
     }
-    
-    /*
-
-	if(AnticheatConfig[RESTRICT_RAPID_FIRE]) {
-
-	}
-	
-	*/
 
     CheckForAccount(playerid);
     ++joinedPlayers;
@@ -524,6 +516,14 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 		return 0;
 	}
 	
+	  /*
+
+	if(AnticheatConfig[RESTRICT_RAPID_FIRE]) {
+
+	}
+
+	*/
+	
 	switch(hittype) {
 	    case BULLET_HIT_TYPE_VEHICLE: {
             if(hitid <= -1 || !IsValidVehicle(hitid)) {
@@ -783,7 +783,7 @@ public OnPlayerText(playerid, text[]) {
 	}
 	
  	new message[256];
-  	format(message, sizeof(message), "{%06x}%s{FFFFFF}(%d): %s", GetPlayerColor(playerid) >>> 8, Misc[playerid][mdPlayerName], playerid, text);
+  	format(message, sizeof(message), "{FFFFFF}[%s]{%06x}%s{FFFFFF}(%d): %s", Misc[playerid][mdGangTag], GetPlayerColor(playerid) >>> 8, Misc[playerid][mdPlayerName], playerid, text);
 	SendClientMessageToAll(GetPlayerColor(playerid), message);
 	
 	return 0;
@@ -849,7 +849,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
     new index;
 	while(inputtext[index]) {
 	    switch(inputtext[index]) {
-	    	case '%', '~': inputtext[index] = '#';
+	    	case '%', '~', '"', '\'': inputtext[index] = '#';
 	    }
 		++index;
 	}
@@ -1024,6 +1024,72 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		    
 		    return 1;
 		}
+		case DIALOG_GANG_SETTINGS: {
+		    if(response) {
+				if(listitem == 0) {
+				    new gang = Misc[playerid][mdGang];
+		            Gangs[gang][gdSettings][GANG_SETTING_CLOSED] =! Gangs[gang][gdSettings][GANG_SETTING_CLOSED];
+		            return 1;
+		        }
+		        
+                ShowPlayerSettingsDialog(playerid, listitem);
+				return 1;
+		    }
+
+		    return 1;
+		}
+		case GIALOG_GANG_INPUT: {
+            if(response) {
+                new gang = Misc[playerid][mdGang], setting = Misc[playerid][mdGangSettingId];
+                
+			    switch(Misc[playerid][mdGangSettingId]) {
+		            case GANG_SETTING_NAME: {
+		                if(strlen(inputtext) < 1 || strlen(inputtext) > MAX_GANG_NAME) {
+		                    ShowPlayerSettingsDialog(playerid, Misc[playerid][mdGangSettingId]);
+		                    return 1;
+		                }
+		                
+		                strmid(Gangs[gang][gdName], inputtext, 0, MAX_GANG_NAME);
+		            }
+		            case GANG_SETTING_TAG: {
+		                if(strlen(inputtext) < 2 || strlen(inputtext) > MAX_GANG_TAG) {
+		                    ShowPlayerSettingsDialog(playerid, Misc[playerid][mdGangSettingId]);
+		                    return 1;
+		                }
+		                
+		                foreach(Player, i) {
+		                    if(Misc[i][mdGang] == gang) {
+                                strmid(Misc[i][mdGangTag], inputtext, 0, MAX_GANG_TAG);
+		                    }
+		                }
+		                
+		                strmid(Gangs[gang][gdTag], inputtext, 0, MAX_GANG_TAG);
+		            }
+		            case GANG_SETTING_RANK_JOIN: {
+		                if(!strlen(inputtext) || strval(inputtext) < 0 || strval(inputtext) > 100) {
+		                    ShowPlayerSettingsDialog(playerid, Misc[playerid][mdGangSettingId]);
+		                    return 1;
+		                }
+
+	      				Gangs[gang][gdSettings][setting] = strval(inputtext);
+		            }
+		            default: {
+		                if(!strlen(inputtext) || strlen(inputtext) > 1 || strval(inputtext) < 1 || strval(inputtext) > 6) {
+		                    ShowPlayerSettingsDialog(playerid, Misc[playerid][mdGangSettingId]);
+		                    return 1;
+		                }
+		                
+	      				Gangs[gang][gdSettings][setting] = strval(inputtext);
+					}
+				}
+				
+				cmd::gang(playerid, "settings");
+		        return 1;
+			}
+			
+			cmd::gang(playerid, "settings");
+		    return 1;
+		}
 	}
 	
 	return 1;
@@ -1086,7 +1152,7 @@ custom Update() {
 	        BanByAnticheat(playerid, "Money Hack");
 	        continue;
 	    }
-	    
+
         if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_USEJETPACK && !HasAdminPermission(playerid)) {
  			BanByAnticheat(playerid, "Jetpack hack");
 			continue;
@@ -2201,6 +2267,9 @@ custom LoginOrRegister(const playerid) {
 				SetPVarInt(playerid, "auto-log", 1);
 			}
 		}
+		
+		if(IsPlayerInGang(playerid)) strmid(Misc[playerid][mdGangTag], Gangs[Misc[playerid][mdGang]][gdTag], 0, MAX_GANG_TAG);
+ 		else strmid(Misc[playerid][mdGangTag], "", 0, MAX_GANG_TAG);
 
         PreloadDefaultLocalizedTitles(playerid);
         LoadLocalization(playerid, AUTH_LOGIN_TYPE);
@@ -2601,11 +2670,6 @@ custom JoinGang(const playerid, const gang) {
 
 	    format(str, sizeof(str), Localization[playerid][LD_MSG_PLAYER_BLACKLISTED], reason);
 	    SendClientMessage(playerid, COLOR_ALERT, str);
-	    return 1;
-	}
-
-	if(IsPlayerInGang(playerid)) {
-	    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_ALREADY_IN_GANG]);
 	    return 1;
 	}
 
@@ -3976,6 +4040,30 @@ stock CreateServerObjects() {
 	CreateObject(19362, 1417.13965, 7.58651, 1008.78302,   0.00000, 0.00000, 90.00000); 		// Duel wall
 }
 
+stock ShowPlayerSettingsDialog(const playerid, const setting) {
+    Misc[playerid][mdGangSettingId] = setting;
+
+	new LOCALIZATION_DATA:id;
+    switch(Misc[playerid][mdGangSettingId]) {
+        case GANG_SETTING_NAME: id = LD_DG_GANG_SETTINGS_NAME;
+    	case GANG_SETTING_TAG: id = LD_DG_GANG_SETTINGS_TAG;
+        case GANG_SETTING_RANK_JOIN: id = LD_DG_GANG_SETTINGS_RANK;
+        default: id = LD_DG_GANG_SETTINGS_INPUT;
+    }
+    
+	ShowPlayerDialogAC(
+		playerid,
+		GIALOG_GANG_INPUT,
+		DIALOG_STYLE_INPUT,
+		Localization[playerid][LD_DG_SETTINGS_TITLE],
+		Localization[playerid][id],
+		Localization[playerid][LD_BTN_NEXT],
+		Localization[playerid][LD_BTN_CLOSE]
+	);
+    
+    return 1;
+}
+
 stock ShowLoginDialog(const playerid, const type = DIALOG_NOERROR) {
 	new formated[256];
 	format(formated, sizeof(formated),
@@ -4255,6 +4343,7 @@ stock ClearPlayerMiscData(const playerid) {
     Misc[playerid][mdIgnoreAnticheatFor] = 0;
     Misc[playerid][mdGang] = -1;
 	Misc[playerid][mdGangRank] = 0;
+	Misc[playerid][mdGangSettingId] = 0;
 	Misc[playerid][mdDialogId] = -1;
 	Misc[playerid][mdLastLogs][0] = -1;
 	Misc[playerid][mdLastLogs][1] = -1;
@@ -7211,7 +7300,56 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    // create, accept, help, list, join, settings
+	    // create, accept, help, list, join, settings, info
+	    
+	    /*case GANG_COMMAND_WAR: {
+	        new gang = Misc[playerid][mdGang];
+	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
+	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
+	            return 1;
+	        }
+
+	        if(!strlen(action)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang war (id)");
+			    return 1;
+			}
+
+			new target = strval(action);
+			if(target < 1 || target > MAX_GANGS) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang war (id)");
+			    return 1;
+			}
+
+			if(Gangs[gang][gdAlliance][target] == 1 && Gangs[target][gdAlliance][gang] == 1) {
+			    SendClientMessage(playerid, COLOR_INFO, ">> You cannot send a request for war to an alliance");
+			    return 1;
+			}
+
+			if(Gangs[gang][gdWar][target] >= 1) {
+			    SendClientMessage(playerid, COLOR_INFO, ">> Request or War is in the process");
+			    return 1;
+			}
+
+			if(++Gangs[target][gdWar][gang] == 1 && Gangs[gang][gdWar][target] == 1) {
+				foreach(Player, i) {
+	   				format(str, sizeof(str), "[GANG WARS] %s went to war against %s", Gang[gang][gdName], Gang[target][gdName]);
+	       			SendClientMessage(i, COLOR_ALERT, str);
+	   			}
+	   			return 1;
+			}
+
+			foreach(Player, i) {
+		        if(Misc[i][mdGang] != target) continue;
+		        format(str, sizeof(str), ">> %s proposed war to your gang", Gang[gang][gdName]);
+		        SendClientMessage(i, COLOR_ALERT, str);
+		        SendClientMessage(i, COLOR_WHITE, ">> Participating in map captures will allow you to receive bonuses on them!");
+		        SendClientMessage(i, COLOR_WHITE, ">> But you will have PVP mode enabled on a permanent basis while the war is going on!");
+		        format(str, sizeof(str), ">> Use /gang war %d to accept the war", gang);
+		        SendClientMessage(i, COLOR_ALERT, str);
+		    }
+
+	        return 1;
+	    }*/
 	    
 	    case GANG_COMMAND_HELP: {
 	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| create, delete, settings, leave");
@@ -7241,7 +7379,7 @@ CMD:gang(const playerid, const params[]) {
 			    return 1;
 			}
 			
-			if(!Gangs[(gang - 1)][gdColumnId]) {
+			if(!IsActiveGang(gang - 1)) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
 			    return 1;
 			}
@@ -7261,57 +7399,6 @@ CMD:gang(const playerid, const params[]) {
 	        }*/
 	        return 1;
 	    }
-	    
-	    // Rank required
-	    
-	    /*case GANG_COMMAND_WAR: {
-	        new gang = Misc[playerid][mdGang];
-	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
-	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
-	            return 1;
-	        }
-	        
-	        if(!strlen(action)) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang war (id)");
-			    return 1;
-			}
-
-			new target = strval(action);
-			if(target < 1 || target > MAX_GANGS) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang war (id)");
-			    return 1;
-			}
-			
-			if(Gangs[gang][gdAlliance][target] == 1 && Gangs[target][gdAlliance][gang] == 1) {
-			    SendClientMessage(playerid, COLOR_INFO, ">> You cannot send a request for war to an alliance");
-			    return 1;
-			}
-			
-			if(Gangs[gang][gdWar][target] >= 1) {
-			    SendClientMessage(playerid, COLOR_INFO, ">> Request or War is in the process");
-			    return 1;
-			}
-			
-			if(++Gangs[target][gdWar][gang] == 1 && Gangs[gang][gdWar][target] == 1) {
-				foreach(Player, i) {
-	   				format(str, sizeof(str), "[GANG WARS] %s went to war against %s", Gang[gang][gdName], Gang[target][gdName]);
-	       			SendClientMessage(i, COLOR_ALERT, str);
-	   			}
-	   			return 1;
-			}
-			
-			foreach(Player, i) {
-		        if(Misc[i][mdGang] != target) continue;
-		        format(str, sizeof(str), ">> %s proposed war to your gang", Gang[gang][gdName]);
-		        SendClientMessage(i, COLOR_ALERT, str);
-		        SendClientMessage(i, COLOR_WHITE, ">> Participating in map captures will allow you to receive bonuses on them!");
-		        SendClientMessage(i, COLOR_WHITE, ">> But you will have PVP mode enabled on a permanent basis while the war is going on!");
-		        format(str, sizeof(str), ">> Use /gang war %d to accept the war", gang);
-		        SendClientMessage(i, COLOR_ALERT, str);
-		    }
-	        
-	        return 1;
-	    }*/
 	    
 	    case GANG_COMMAND_CREATE: {
 	        if(IsPlayerInGang(playerid)) {
@@ -7351,11 +7438,11 @@ CMD:gang(const playerid, const params[]) {
 	            return 1;
 	        }
 	        
-            new str[128], log[300], gangState[16];
-			if(Gangs[gang][gdSettings][GANG_SETTING_CLOSED]) strmid(gangState, Localization[playerid][LD_DG_OPENED], 0, sizeof(gangState));
-            else strmid(gangState, Localization[playerid][LD_DG_CLOSED], 0, sizeof(gangState));
+            new str[256], log[400], gangState[16];
+			if(Gangs[gang][gdSettings][GANG_SETTING_CLOSED]) strmid(gangState, Localization[playerid][LD_DG_CLOSED], 0, sizeof(gangState));
+            else strmid(gangState, Localization[playerid][LD_DG_OPENED], 0, sizeof(gangState));
             
-            format(str, sizeof(str), Localization[playerid][LD_DG_GANG_SETTINGS_1], gangState, Gangs[gang][gdSettings][GANG_SETTING_RANK_JOIN], Gangs[gang][gdSettings][GANG_SETTING_PANEL]);
+            format(str, sizeof(str), Localization[playerid][LD_DG_GANG_SETTINGS_1], gangState, Gangs[gang][gdName], Gangs[gang][gdTag], Gangs[gang][gdSettings][GANG_SETTING_RANK_JOIN], Gangs[gang][gdSettings][GANG_SETTING_PANEL]);
             strcat(log, str);
             
 			format(str, sizeof(str), Localization[playerid][LD_DG_GANG_SETTINGS_2], Gangs[gang][gdSettings][GANG_SETTING_BAN], Gangs[gang][gdSettings][GANG_SETTING_PROMOTE]);
@@ -7377,6 +7464,11 @@ CMD:gang(const playerid, const params[]) {
 	    }
 	    
 	    case GANG_COMMAND_JOIN: {
+	        if(IsPlayerInGang(playerid)) {
+	    		SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_ALREADY_IN_GANG]);
+	    		return 1;
+			}
+			
 			if(!strlen(action)) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang join (id)");
 			    return 1;
@@ -7388,7 +7480,7 @@ CMD:gang(const playerid, const params[]) {
 			    return 1;
 			}
 
-			if(!Gangs[(gang - 1)][gdColumnId]) {
+			if(!IsActiveGang(gang - 1)) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang join (id)");
 			    return 1;
 			}

@@ -45,6 +45,8 @@ enum MISC_DATA {
 	mdGangRequest,
 	mdBlindTimeout,
 	mdNextPage,
+	mdGangSettingId,
+	mdGangTag[MAX_GANG_TAG],
 	mdHumanSelectionName[MAX_CLASS_NAME],
 	mdZombieSelectionName[MAX_CLASS_NAME],
 	mdHumanNextSelectionName[MAX_CLASS_NAME],
