@@ -49,7 +49,10 @@
 #define SERVER_TIMESTAMP 3
 
 #undef MAX_PLAYERS
-#define MAX_PLAYERS 50
+#define MAX_PLAYERS 30
+
+#undef MAX_PICKUPS
+#define MAX_PICKUPS MAX_PLAYERS
 
 #undef MAX_VEHICLES
 #define MAX_VEHICLES MAX_PLAYERS
@@ -64,6 +67,8 @@
 #define SQL_PASS "d@u87Ud!KA87Rj"
 #define SQL_DB "u9764_taxa"
 #define SQL_LOG_LEVEL NONE
+
+#define MAX_CHAT_LENGTH 144
 
 #if !defined IsValidVehicle
 	native IsValidVehicle(vehicleid);

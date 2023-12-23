@@ -304,6 +304,8 @@ enum LOCALIZATION_DATA {
 	LD_MSG_GANG_INFO_PLAYERS,
 	LD_DG_GANG_ACTIVITY_TITLE,
 	LD_DG_ADMIN_ACTIVITY_TITLE,
+	LD_MSG_AUTH_TIMEOUT_KICK,
+	LD_MSG_AUTH_WRONG_TRIES,
 	LD_ENDF,
 };
 
@@ -639,5 +641,7 @@ enum LOCALIZATION_DATA {
 	(287, '---------- %s (Pot %d) (Members %d / %d) ----------', '---------- %s (Казна %d) (Участники %d / %d) ----------'),\
 	(288, '(Rank %d) >> %s (ID %d)', '(Ранг %d) >> %s (ИД %d)'),\
 	(289, 'Member\tRank\tLast Online\n', 'Участник\tРанг\tПоследний раз в сети\n'),\
-	(290, 'Admin\tLevel\tLast Online\n', 'Администратор\tУровень\tПоследний раз в сети\n');\
+	(290, 'Admin\tLevel\tLast Online\n', 'Администратор\tУровень\tПоследний раз в сети\n'),\
+	(291, '>> %s has been kicked [Reason: Auth time exceeded]', '>> Игрок %s был кикнут [Причина: Превышение времени авторизации]'),\
+	(292, '>> %s has been kicked for 3 incorrect authorization attempts', '>> Игрок %s был кикнут за 3 неверные попытки авторизации');\
 "
