@@ -47,7 +47,8 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_WEEKLY_ACTIVITIES,
 	PREDIFINED_DUELS_CONFIG,
 	PREDIFINED_CLOTHES,
-	PREDIFINED_MAPS
+	PREDIFINED_MAPS,
+	PREDIFINED_MAPS_2
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -1450,7 +1451,10 @@ custom LoadMap() {
     	SetMapId();
     	StartMap();
     	
-    	LoadFilterScript(Map[mpFilename]);
+    	if(strlen(Map[mpFilename])) {
+    		LoadFilterScript(Map[mpFilename]);
+    	}
+    	
 		DestroyObjectEx(Map[mpFlag]);
 		if(Map[mpGang] > -1) {
 		    Map[mpFlag] = CreateObject(GangsConfig[gdCfgFlagId],
@@ -1471,7 +1475,9 @@ custom StartMap() {
 	new controlled[96] = "";
 	new formated[256];
 
-	UnloadFilterScript(Map[mpPrevFilename]);
+	if(strlen(Map[mpPrevFilename])) {
+		UnloadFilterScript(Map[mpPrevFilename]);
+	}
 	
 	for( j = 0; j < MAX_MAP_GATES; j++ ) {
 	    DestroyObjectEx(Map[mpGatesObject][j]);
