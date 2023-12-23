@@ -1514,7 +1514,7 @@ custom StartMap() {
  	    	format(controlled, sizeof(controlled), Localization[i][LD_MSG_MAP_GANG], Gangs[Map[mpGang]][gdName]);
  		}
     	
-    	format(formated, sizeof(formated), Localization[i][LD_MSG_MAP_ENTERING], Map[mpId], Localization[i][LD_MAP_NAME], author, controlled);
+    	format(formated, sizeof(formated), Localization[i][LD_MSG_MAP_ENTERING], clamp(Map[mpId] - 1, 1, 999), Localization[i][LD_MAP_NAME], author, controlled);
 	    SendClientMessage(i, COLOR_WARNING, formated);
     	
     	if(Map[mpInterior] <= 0) {
@@ -1705,16 +1705,16 @@ stock CaptureMap() {
 	}
 	
 	if(IsActiveGang(g)) {
-		Map[mpPoints] = p;
-        Map[mpGang] = g;
-        
-        SaveMapData(g, p, Map[mpFlagDate], Map[mpId]);
+        SaveMapData(g, p, Map[mpFlagDate], clamp(Map[mpId] - 1, 1, 999));
         
 		if(Map[mpGang] == INVALID_GANG_ID) {
 		    foreach(Player, playerid) {
 				format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_CAPTURED], Gangs[g][gdName], p);
 				SendClientMessage(playerid, COLOR_INFO, str);
 			}
+			
+			Map[mpPoints] = p;
+        	Map[mpGang] = g;
 			return 1;
 		}
 		
@@ -1723,6 +1723,9 @@ stock CaptureMap() {
 				format(str, sizeof(str), Localization[playerid][LD_MSG_GANG_UPDATED_SCORE], Gangs[g][gdName], p);
 				SendClientMessage(playerid, COLOR_INFO, str);
 			}
+			
+			Map[mpPoints] = p;
+        	Map[mpGang] = g;
 			return 1;
 		}
 		
@@ -1731,6 +1734,9 @@ stock CaptureMap() {
 			SendClientMessage(playerid, COLOR_INFO, str);
 			ProceedAchievementProgress(playerid, ACH_TYPE_CAPTURE);
 		}
+		
+		Map[mpPoints] = p;
+		Map[mpGang] = g;
 		return 1;
 	}
 	
