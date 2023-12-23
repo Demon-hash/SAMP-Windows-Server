@@ -45,9 +45,8 @@
 #define SAVE_GANGS_DATA "UPDATE `gangs` SET name='%e', tag='%e', capacity='%d', points='%d', war='%e', alliance='%e', settings='%e' WHERE `game_id` = '%d'"
 
 #define GET_GANG_MEMBERS_QUERY "\
-	SELECT gu.*, u.login,\n\
-	COALESCE((SELECT `date` FROM login_log WHERE account_id = gu.id ORDER BY `date` DESC LIMIT 1),' ') AS last_login,\n\
-	COALESCE((SELECT `login` FROM users WHERE id = gu.accepted_by LIMIT 1),' ') AS inviter\n\
+	SELECT gu.rank, gu.id, u.login,\n\
+	COALESCE((SELECT `date` FROM login_log WHERE account_id = gu.id ORDER BY `date` DESC LIMIT 1),' ') AS last_login\n\
 	FROM gangs_users gu\n\
 	LEFT JOIN users u\n\
 	ON gu.id = u.id\n\

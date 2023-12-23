@@ -32,7 +32,6 @@ enum CONFIG_DATA {
 	svCfgAuthTries,
 	svCfgMinZombiesToWin,
 	svCfgAuthTimeout,
-	svCfgCurrentOnline,
 	svCfgLastTipMessage,
 	svCfgTipMessageCooldown,
 	svCfgLastQuiz,

@@ -18,7 +18,7 @@ enum MAP_DATA {
 	mpPrevFilename[MAX_MAP_FILENAME],
 	mpAuthor[MAX_PLAYER_NAME],
 	mpGates[MAX_MAP_GATES],
-	mpTeamCount[2],
+	mpGatesObject[MAX_MAP_GATES],
 	mpId,
 	mpPoints,
 	mpCount,

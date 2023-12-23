@@ -302,6 +302,8 @@ enum LOCALIZATION_DATA {
         LD_DG_GANG_SETTINGS_RANK,
 	LD_MSG_GANG_INFO_TITLE,
 	LD_MSG_GANG_INFO_PLAYERS,
+	LD_DG_GANG_ACTIVITY_TITLE,
+	LD_DG_ADMIN_ACTIVITY_TITLE,
 	LD_ENDF,
 };
 
@@ -635,5 +637,7 @@ enum LOCALIZATION_DATA {
 	(285, 'Type a new gang tag', 'Введите новый тэг банды'),\
 	(286, 'Type new rank for gang applications, min. 0 and max. 100', 'Введите новый ранг для подачи заявок, мин. 0 и макс. 100'),\
 	(287, '---------- %s (Pot %d) (Members %d / %d) ----------', '---------- %s (Казна %d) (Участники %d / %d) ----------'),\
-	(288, '(Rank %d) >> %s (ID %d)', '(Ранг %d) >> %s (ИД %d)');\
+	(288, '(Rank %d) >> %s (ID %d)', '(Ранг %d) >> %s (ИД %d)'),\
+	(289, 'Member\tRank\tLast Online\n', 'Участник\tРанг\tПоследний раз в сети\n'),\
+	(290, 'Admin\tLevel\tLast Online\n', 'Администратор\tУровень\tПоследний раз в сети\n');\
 "

@@ -31,7 +31,7 @@ static const sqlPredifinedValues[][] = {
     PREDIFINED_CONFIG, PREDIFINED_GANGS_CONFIG, PREDIFINED_ANTICHEAT,
     PREDIFINED_ROUND_CONFIG, PREDIFINED_EVAC_CONFIG, PREDIFINED_MAP_CONFIG,
    	PREDIFINED_BALANCE_CONFIG, PREDIFINED_CLASSES_CONFIG,
-	PREDIFINED_MAPS, PREDIFINED_TEXTURES, PREDIFINED_HUMANS,
+	PREDIFINED_TEXTURES, PREDIFINED_HUMANS,
 	PREDIFINED_ZOMBIES, PREDIFINED_WEAPONS, PREDIFINED_LOCAL_MAPS,
 	PREDIFINED_LOCALE_CLASSES_10, PREDIFINED_LOCALE_CLASSES_20,
 	PREDIFINED_LOCALE_CLASSES_30, PREDIFINED_LOCALE_CLASSES_40,
@@ -46,7 +46,8 @@ static const sqlPredifinedValues[][] = {
 	PREDIFINED_WEEKLY,
 	PREDIFINED_WEEKLY_ACTIVITIES,
 	PREDIFINED_DUELS_CONFIG,
-	PREDIFINED_CLOTHES
+	PREDIFINED_CLOTHES,
+	PREDIFINED_MAPS
 };
 
 static const LOCALIZATION_TABLES[][] = {
@@ -117,7 +118,26 @@ static
 		Iterator:MutatedPlayers<MAX_PLAYERS>, 	Iterator:RadioactivePlayers<MAX_PLAYERS>,
 		Iterator:NursePlayers<MAX_PLAYERS>,		Iterator:PriestPlayers<MAX_PLAYERS>,
 		Iterator:SupportPlayers<MAX_PLAYERS>,	Iterator:RemoveWeaponsPlayers<MAX_PLAYERS>,
-		Iterator:Admins<MAX_PLAYERS>;
+		Iterator:Admins<MAX_PLAYERS>,           Iterator:PlayersOnline<MAX_PLAYERS>;
+		
+static const gunName[][] = {
+	"Fist", 				"Brass Knuckles", 		"Golf Club",
+	"Nightstick",			"Knife",				"Basebal Bat",
+	"Shovel", 				"Pool Cue",				"Katana",
+	"Chainsaw",				"Double-ended Dildo",	"Dildo",
+	"Vibrator",				"Silver Vibrator",		"Flowers",
+	"Cane",					"Grenade",				"Tear Gas",
+	"Molotv Cocktail",		"?",					"?",
+	"?",					"Colt45",				"Silenced Pistol",
+	"Desert Eagle",			"Shotgun",				"Sawnoff-Shotgun",
+  	"Combat Shotgun",		"Micro-SMG",			"MP5",
+ 	"Ak47",					"M4",					"Tec9",
+ 	"Country Rifle",		"Sniper Rifle",			"RPG",
+ 	"HS-RPG",				"Flame-Thrower",		"Minigun",
+ 	"Satchel Charge",		"Detonator",			"Spray Can",
+ 	"Fire Extinguisher",	"Camera",				"Night Goggles",
+ 	"Thermal Goggles",		"Parachute"
+};
 
 main() {}
 public OnGameModeInit() {
@@ -146,6 +166,7 @@ public OnGameModeInit() {
 	Iter_Clear(RadioactivePlayers);
 	Iter_Clear(NursePlayers);
 	Iter_Clear(PriestPlayers);
+	Iter_Clear(PlayersOnline);
 	Iter_Clear(SupportPlayers);
 	Iter_Clear(RemoveWeaponsPlayers);
 	Iter_Clear(Humans);
@@ -544,12 +565,12 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 			}
 			
 			if(gettime() < Misc[hitid][mdSpawnProtection]) {
-			    SetPlayerChatBubble(hitid, Localization[playerid][LD_MSG_HIT_SPAWN_CAMP], BUBBLE_COLOR, 20.0, 1000);
+			    SetPlayerChatBubbleForPlayer(hitid, playerid, Localization[playerid][LD_MSG_HIT_SPAWN_CAMP], BUBBLE_COLOR, 20.0, 1000);
 			    return 0;
 			}
 			
    			if(GetObjectModel(GetPlayerSurfingObjectID(playerid)) == ClassesConfig[clsCfgEngineerBox]) {
-            	SetPlayerChatBubble(hitid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
+            	SetPlayerChatBubbleForPlayer(hitid, playerid, Localization[playerid][LD_ANY_MISS], BUBBLE_COLOR, 20.0, 1000);
 				return 0;
             }
             
@@ -558,7 +579,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float: fX, Float: 
 			        case 24, 33, 34: return 1;
 			    }
 
-			    SetPlayerChatBubble(hitid, Localization[playerid][LD_MSG_INSUFFICIENT_CALIBER], BUBBLE_COLOR, 20.0, 1000);
+                SetPlayerChatBubbleForPlayer(hitid, playerid, Localization[playerid][LD_MSG_INSUFFICIENT_CALIBER], BUBBLE_COLOR, 20.0, 1000);
 			    return 0;
             }
             
@@ -674,7 +695,7 @@ public OnPlayerEnterCheckpoint(playerid) {
 	
 	++Map[mpEvacuatedHumans];
 	
-	if(Iter_Count(Player) >= 10) {
+	if(Iter_Count(PlayersOnline) >= 10) {
 		++Misc[playerid][mdEvacuations];
 		ProceedAchievementProgress(playerid, ACH_TYPE_EVACUATION_ROW, Misc[playerid][mdEvacuations]);
 	}
@@ -692,7 +713,7 @@ public OnPlayerEnterCheckpoint(playerid) {
  		format(formated, sizeof(formated), Localization[i][LD_MSG_EVACUATED], Misc[playerid][mdPlayerName]);
  		SendClientMessage(i, COLOR_INFO, formated);
 
-		if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1]) {
+		if(Map[mpEvacuatedHumans] == Iter_Count(Humans)) {
             SendClientMessage(i, COLOR_INFO, Localization[i][LD_MSG_ALL_EVACUATED]);
  		}
  	}
@@ -719,7 +740,7 @@ public OnPlayerEnterCheckpoint(playerid) {
  	    }
  	}
 	
-	if(Map[mpEvacuatedHumans] == Map[mpTeamCount][1] && Map[mpIsStarted]) {
+	if(Map[mpEvacuatedHumans] == Iter_Count(Humans) && Map[mpIsStarted]) {
 	   Map[mpTimeoutBeforeEnd] = MapConfig[mpCfgUpdate];
 	}
 	
@@ -1213,7 +1234,7 @@ custom Update() {
     		format(formated, sizeof(formated),"%d", Player[playerid][pPoints]);
     		TextDrawSetString(ServerTextures[pointsTexture][playerid], formated);
     		
-    		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Map[mpTeamCount][1], Map[mpTeamCount][0]);
+    		format(formated, sizeof(formated), RusToGame(Localization[playerid][LD_DISPLAY_ALIVE_INFO]), Iter_Count(Humans), Iter_Count(Zombies));
             TextDrawSetString(ServerTextures[aliveInfoTexture][playerid], formated);
             
             ProceedRandomTip(playerid, tip, formated);
@@ -1386,7 +1407,7 @@ custom LoadMap() {
     	cache_get_value_name(0, "checkpoint", buff);
     	sscanf(buff, "p<,>fa<f>[3]",Map[mpCheckpointSize], Map[mpCheckpointCoords]);
         
-    	cache_get_value_name(0, "gates_ids", buff);
+    	cache_get_value_name(0, "gates_id", buff);
     	sscanf(buff, "p<,>a<i>[2]", Map[mpGates]);
  		
  		cache_get_value_name(0, "flag_coords", buff);
@@ -1445,7 +1466,7 @@ custom LoadMap() {
 }
 
 custom StartMap() {
-	new j, bool: resetGangCantrol = (gettime() >= Map[mpFlagDate]);
+	new j, id, bool: resetGangCantrol = (gettime() >= Map[mpFlagDate]);
 	new author[64] = "";
 	new controlled[96] = "";
 	new formated[256];
@@ -1453,7 +1474,15 @@ custom StartMap() {
 	UnloadFilterScript(Map[mpPrevFilename]);
 	
 	for( j = 0; j < MAX_MAP_GATES; j++ ) {
-	    DestroyObjectEx(Map[mpGates][j]);
+	    DestroyObjectEx(Map[mpGatesObject][j]);
+	    
+	    id = (j * 6);
+	    if(Map[mpGates][j]) {
+	    	Map[mpGatesObject][j] = CreateObject(Map[mpGates][j],
+				Map[mpGatesCoords][id], Map[mpGatesCoords][id + 1], Map[mpGatesCoords][id + 2],
+				Map[mpGatesCoords][id + 3], Map[mpGatesCoords][id + 4], Map[mpGatesCoords][id + 5]
+			);
+	    }
 	}
 	
 	foreach(Player, i) {
@@ -1531,7 +1560,7 @@ custom OnMapUpdate() {
 	    }
 	}
 	
-	if(ServerConfig[svCfgCurrentOnline] >= ServerConfig[svCfgMinZombiesToWin] && Map[mpTeamCount][1] <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
+	if(Iter_Count(PlayersOnline) >= ServerConfig[svCfgMinZombiesToWin] && Iter_Count(Humans) <= 0 && Map[mpIsStarted] && !Map[mpTimeoutBeforeCrystal]) {
 	    foreach(Player, i) {
 			SendClientMessage(i, COLOR_ALERT, Localization[i][LD_MSG_MAP_ZOMBIES_WIN]);
  		}
@@ -1557,18 +1586,18 @@ custom OnMapUpdate() {
         if(Map[mpTimeout] == 0) {
 			TextDrawSetString(ServerTextures[timeLeftTexture], "...");
 
-			if(Map[mpGates][0]) {
+			if(Map[mpGatesObject][0]) {
 				MoveObject(
-					Map[mpGates][0],
+					Map[mpGatesObject][0],
 					Map[mpGatesMoveCoords][0], Map[mpGatesMoveCoords][1], Map[mpGatesMoveCoords][2],
 					Map[mpGateSpeed],
 					Map[mpGatesMoveCoords][3], Map[mpGatesMoveCoords][4], Map[mpGatesMoveCoords][5]
 				);
 			}
 			
-			if(Map[mpGates][1]) {
+			if(Map[mpGatesObject][1]) {
 				MoveObject(
-					Map[mpGates][1],
+					Map[mpGatesObject][1],
 					Map[mpGatesMoveCoords][6], Map[mpGatesMoveCoords][7], Map[mpGatesMoveCoords][8],
 					Map[mpGateSpeed],
 					Map[mpGatesMoveCoords][9], Map[mpGatesMoveCoords][10], Map[mpGatesMoveCoords][11]
@@ -2973,7 +3002,7 @@ custom ShowAdminsActivity(const playerid) {
         new i, login[MAX_PLAYER_NAME], log[1024], str[128];
 		new date, admin, year, mounth, day, hours, minutes, seconds;
 
-        strcat(log, "Admin\tLevel\tLast Online\n");
+        strcat(log, Localization[playerid][LD_DG_ADMIN_ACTIVITY_TITLE]);
         for( i = 0; i < cache_num_rows(); i++ ) {
             cache_get_value_name(i, "login", login);
             cache_get_value_name_int(i, "admin", admin);
@@ -3010,19 +3039,18 @@ custom ShowAdminsActivity(const playerid) {
 
 custom ShowGangMembers(const playerid, const gang, const type) {
     if(cache_num_rows()) {
-   		new i, len = cache_num_rows(), last, date, rank;
-   		new login[MAX_PLAYER_NAME], inviter[MAX_PLAYER_NAME];
-	   	new log[1024], str[128], year, mounth, day, hours, minutes, seconds;
+   		new i, len = cache_num_rows(), last, rank;
+   		new login[MAX_PLAYER_NAME];
+	   	new log[900], str[64], year, mounth, day, hours, minutes, seconds;
 
-        strcat(log, "Player\tRank\tAccepted by\tLast Login\n");
+        strcat(log, Localization[playerid][LD_DG_GANG_ACTIVITY_TITLE]);
         for( i = 0; i < len; i++ ) {
             cache_get_value_name(i, "login", login);
-            cache_get_value_name(i, "inviter", inviter);
             cache_get_value_name_int(i, "rank", rank);
             cache_get_value_name_int(i, "last_login", last);
             
             TimestampToDate(last, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
-            format(str, sizeof(str), "%s\t%d\t%s\t%02d/%02d/%04d\n", login, rank, inviter, day, mounth, year);
+            format(str, sizeof(str), "%s\t%d\t%02d/%02d/%04d\n", login, rank, day, mounth, year);
             strcat(log, str);
         }
         
@@ -4204,9 +4232,8 @@ stock ShowPlayerDialogAC(playerid, dialogid, style, caption[], info[], button1[]
 
 stock AfterAuthorization(const playerid) {
 	Misc[playerid][mdKickForAuthTimeout] = -1;
-	ServerConfig[svCfgCurrentOnline]++;
-	
 	Misc[playerid][mdIsLogged] = true;
+	Iter_Add(PlayersOnline, playerid);
 	
 	CreatePlayerSession(playerid);
 	CreatePlayerSign(playerid);
@@ -4334,6 +4361,16 @@ stock ClearAllPlayerData(const playerid) {
 	foreach(Player, i) {
 		playerDamagedTarget[i][playerid] = false;
 	}
+	
+	// Aircraft Carrier Rockets
+	RemoveBuildingForPlayer(playerid, 3794, -1404.8281, 499.8828, 10.7188, 0.25);
+	RemoveBuildingForPlayer(playerid, 3793, -1403.8984, 500.0859, 10.8203, 0.25);
+	RemoveBuildingForPlayer(playerid, 3795, -1401.8359, 494.9063, 10.5469, 0.25);
+	RemoveBuildingForPlayer(playerid, 3792, -1401.0078, 494.6875, 10.7500, 0.25);
+	RemoveBuildingForPlayer(playerid, 3793, -1398.1797, 494.7734, 10.8203, 0.25);
+	RemoveBuildingForPlayer(playerid, 3788, -1399.0625, 494.4453, 10.7188, 0.25);
+	RemoveBuildingForPlayer(playerid, 3792, -1401.2031, 502.2188, 11.6953, 0.25);
+	RemoveBuildingForPlayer(playerid, 3789, -1403.6172, 504.0938, 10.5469, 0.25);
 }
 
 stock ClearAbilitiesTimers(const playerid) {
@@ -4563,11 +4600,11 @@ stock InitializeDefaultValues() {
     }
     
     for( j = 0; j < MAX_MAP_GATES; j++ ) {
-	    Map[mpGates][j] = INVALID_OBJECT_ID;
+	    Map[mpGates][j] = 0;
+	    Map[mpGatesObject][j] = INVALID_OBJECT_ID;
 	}
 	
 	Map[mpFlag] = -1;
-	ServerConfig[svCfgCurrentOnline] = 0;
 	ServerConfig[svCfgLastTipMessage] = 0;
 	
 	LotteryConfig[LCD_STARTED] = false;
@@ -5017,13 +5054,11 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	        case TEAM_UNKNOWN, NO_TEAM: {
 	            switch(old) {
 	                case TEAM_ZOMBIE: {
-                        Map[mpTeamCount][0]--;
                         if(Iter_Contains(Zombies, playerid)) {
 							Iter_Remove(Zombies, playerid);
 						}
 	                }
 	                case TEAM_HUMAN: {
-                        Map[mpTeamCount][1]--;
                         if(Iter_Contains(Humans, playerid)) {
                         	Iter_Remove(Humans, playerid);
                         }
@@ -5033,18 +5068,15 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	    	case TEAM_ZOMBIE: {
 	    	    if(!Iter_Contains(Zombies, playerid)) {
 	    	    	Iter_Add(Zombies, playerid);
-	    	    	Map[mpTeamCount][0]++;
 				}
 
 				if(old == TEAM_HUMAN) {
 				    if(Iter_Contains(Humans, playerid)) {
 						Iter_Remove(Humans, playerid);
 					}
-					
-				    Map[mpTeamCount][1]--;
 				}
 				
-				if(Map[mpTeamCount][1] == 1 && !Map[mpKillTheLast]) {
+				if(Iter_Count(Humans) == 1 && !Map[mpKillTheLast]) {
 				    Map[mpKillTheLast] = true;
 				    
 				    new formated[90];
@@ -5058,15 +5090,12 @@ stock SetPlayerTeamAC(const playerid, const teamid) {
 	    	case TEAM_HUMAN: {
 	    	    if(!Iter_Contains(Humans, playerid)) {
 	    	    	Iter_Add(Humans, playerid);
-					Map[mpTeamCount][1]++;
 				}
 				
 				if(old == TEAM_ZOMBIE) {
 					if(Iter_Contains(Zombies, playerid)) {
 				    	Iter_Remove(Zombies, playerid);
 				    }
-				    
-				    Map[mpTeamCount][0]--;
 				}
         	}
 		}
@@ -6462,24 +6491,12 @@ stock ResetMapValuesOnDeath(const playerid) {
 }
 
 stock ResetValuesOnDisconnect(const playerid) {
-	if(IsLogged(playerid)) {
-    	ServerConfig[svCfgCurrentOnline]--;
-    }
-    
    	switch(GetPlayerTeamEx(playerid)) {
     	case TEAM_ZOMBIE: {
-     		if(Map[mpTeamCount][0] >= 1) {
-        		Map[mpTeamCount][0]--;
-    		}
-    		
 			Iter_Remove(Zombies, playerid);
         }
         
         case TEAM_HUMAN: {
-            if(Map[mpTeamCount][1] >= 1) {
-        		Map[mpTeamCount][1]--;
-    		}
-    		
             Iter_Remove(Humans, playerid);
         }
     }
@@ -6516,6 +6533,10 @@ stock ClearFromIterators(const playerid) {
 	
 	if(Iter_Contains(Admins, playerid)) {
 		Iter_Remove(Admins, playerid);
+	}
+	
+	if(Iter_Contains(PlayersOnline, playerid)) {
+	    Iter_Remove(PlayersOnline, playerid);
 	}
 }
 
@@ -6667,16 +6688,17 @@ stock PreloadDefaultLocalizedTitles(const playerid) {
 }
 
 stock GetRequiredZombiesCount() {
-    switch(ServerConfig[svCfgCurrentOnline]) {
+	new count = Iter_Count(PlayersOnline);
+    switch(count) {
         case 0..3:
-            return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbMinZombies], floatround_tozero);
+            return floatround(count / ServerBalance[svbMinZombies], floatround_tozero);
 		case 4..7:
-			return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbMediumZombies], floatround_tozero);
+			return floatround(count / ServerBalance[svbMediumZombies], floatround_tozero);
 		default:
-		    return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbMaxZombies], floatround_tozero);
+		    return floatround(count / ServerBalance[svbMaxZombies], floatround_tozero);
     }
 
-    return floatround(ServerConfig[svCfgCurrentOnline] / ServerBalance[svbDefaultZombies], floatround_tozero);
+    return floatround(count / ServerBalance[svbDefaultZombies], floatround_tozero);
 }
 
 stock SetTeams() {
@@ -7266,7 +7288,7 @@ CMD:votekick(const playerid, const params[]) {
 	    return 1;
 	}
 	
-	new str[128], players = Iter_Count(Player);
+	new str[128], players = Iter_Count(PlayersOnline);
 	
 	Votekick[vkIsStarted] = true;
     Votekick[vkTimeout] = 180;
@@ -7655,6 +7677,14 @@ CMD:gang(const playerid, const params[]) {
 	return 1;
 }
 
+CMD:t(const playerid) {
+	if(Player[playerid][pAccountId] == 1) {
+	    Map[mpTimeout] = 5;
+	    return 1;
+	}
+	return 0;
+}
+
 CMD:cmds(const playerid) {
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/lottery /class /achievements /stats /ss /radio /clothes");
     SendClientMessage(playerid, COLOR_CONNECTIONS, "/language /changename /ask /pm /settings /help /rules");
@@ -7721,9 +7751,7 @@ CMD:duel(const playerid, const params[]) {
     SetPlayerDuelInfo(playerid, targetid, weaponid, armour, points);
     SetPlayerDuelInfo(targetid, playerid, weaponid, armour, points);
 
-	new gunname[32], str[128], withArmour[24] = "", withPoints[24] = "";
-	GetWeaponName(weaponid, gunname, sizeof(gunname));
-	
+	new str[128], withArmour[24] = "", withPoints[24] = "";
 	if(armour) {
 	    format(str, sizeof(str), Localization[targetid][LD_MSG_DUEL_ARMOUR], armour);
 		strmid(withArmour, str, 0, 24);
@@ -7734,7 +7762,7 @@ CMD:duel(const playerid, const params[]) {
 		strmid(withPoints, str, 0, 24);
 	}
 	
-	format(str, sizeof(str), Localization[targetid][LD_MSG_DUEL_REQUEST], Misc[playerid][mdPlayerName], gunname, weaponid, withArmour, withPoints);
+	format(str, sizeof(str), Localization[targetid][LD_MSG_DUEL_REQUEST], Misc[playerid][mdPlayerName], gunName[weaponid], weaponid, withArmour, withPoints);
 	SendClientMessage(targetid, COLOR_GOLD, str);
 	SendClientMessage(targetid, COLOR_GOLD, Localization[targetid][LD_MSG_DUEL_REQ_OPTS]);
 	
@@ -7753,9 +7781,7 @@ CMD:y(const playerid) {
     PrepareForDuel(playerid, playerid + 10, Duels[playerid][ddArmour], Duels[playerid][ddWeapon], DuelConfig[dcSkin][0], 0);
     PrepareForDuel(targetid, playerid + 10, Duels[playerid][ddArmour], Duels[playerid][ddWeapon], DuelConfig[dcSkin][1], 1);
 
-    new gunname[32], str[128], withArmour[24] = "", withPoints[24] = "";
-	GetWeaponName(Duels[playerid][ddWeapon], gunname, sizeof(gunname));
-
+    new str[128], withArmour[24] = "", withPoints[24] = "";
     foreach(Player, i) {
         if(Duels[playerid][ddArmour]) {
 		    format(str, sizeof(str), Localization[i][LD_MSG_DUEL_ARMOUR], Duels[playerid][ddArmour]);
@@ -7767,7 +7793,7 @@ CMD:y(const playerid) {
 			strmid(withPoints, str, 0, 24);
 		}
 
-    	format(str, sizeof(str), Localization[i][LD_MSG_DUEL_STARTED], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName], gunname, Duels[playerid][ddWeapon], withArmour, withPoints);
+    	format(str, sizeof(str), Localization[i][LD_MSG_DUEL_STARTED], Misc[playerid][mdPlayerName], Misc[targetid][mdPlayerName], gunName[Duels[playerid][ddWeapon]], Duels[playerid][ddWeapon], withArmour, withPoints);
 		SendClientMessage(i, COLOR_GOLD, str);
 	}
 	return 1;
@@ -8579,12 +8605,7 @@ CMD:getinfo(const playerid, const params[]) {
 		return 1;
 	}
 	
-	new str[96], GunName[47][20] = {
-	    "Fist","Brass Knuckles","Golf Club","Nightstick","Knife","Basebal Bat","Shovel","Pool Cue","Katana","Chainsaw","Double-ended Dildo","Dildo","Vibrator",
-	    "Silver Vibrator","Flowers","Cane","Grenade","Tear Gas","Molotv Cocktail","?","?","?","9mm","Silenced 9mm","Desert Eagle","Shotgun","Sawnoff-Shotgun",
-	    "Combat Shotgun","Micro-SMG","MP5","Ak-47","M4","Tec9","Country Rifle","Sniper Rifle","RPG","HS-RPG","Flame-Thrower","Minigun","Satchel Charge","Detonator",
-	    "Spray Can","Fire Extinguisher","Camera","Night Goggles","Thermal Goggles","Parachute"
-	};
+	new str[96];
 	
 	format(str, sizeof(str), Localization[playerid][LD_MSG_GI_NIP], Misc[params[0]][mdPlayerName], Misc[params[0]][mdIp]);
 	SendClientMessage(playerid, COLOR_ADMIN, str);
@@ -8602,7 +8623,7 @@ CMD:getinfo(const playerid, const params[]) {
     for ( new weap[14], ammo[14], slot = 0; slot < sizeof(weap); slot++ ) {
         GetPlayerWeaponData(params[0], slot, weap[slot], ammo[slot]);
         if(ammo[slot]) {
-            format(str, sizeof(str), Localization[playerid][LD_MSG_GI_WA], GunName[weap[slot]], ammo[slot]);
+            format(str, sizeof(str), Localization[playerid][LD_MSG_GI_WA], gunName[weap[slot]], ammo[slot]);
 			SendClientMessage(playerid, COLOR_CONNECTIONS, str);
 		}
 	}
@@ -8867,3 +8888,42 @@ public OnIncomingPacket(playerid, packetid, BitStream:bs) {
 	
 	return 1;
 }
+
+stock SetPlayerGravity(const playerid, const Float:gravity) {
+    if(!IsPlayerConnected(playerid) || !(-50.0 <= gravity <= 50.0)) return 0;
+    new BitStream:bs = BS_New();
+    BS_WriteFloat(bs, gravity);
+    PR_SendRPC(bs, playerid, 146);
+    BS_Delete(bs);
+    return 1;
+}
+
+stock SetPlayerTeamForPlayer(const playerid, const forplayerid, const teamid) {
+    if(!IsPlayerConnected(playerid) || !IsPlayerConnected(forplayerid)) return 0;
+    new BitStream:bs = BS_New();
+    BS_WriteValue(bs, PR_UINT16, playerid, PR_UINT8, teamid);
+    PR_SendRPC(bs, forplayerid, 69);
+    BS_Delete(bs);
+    return 1;
+}
+
+stock SetPlayerChatBubbleForPlayer(const playerid, const forplayerid, const text[], const color, const Float:drawdistance, const expiretime) {
+    if(!IsPlayerConnected(playerid) || !IsPlayerConnected(forplayerid)) return 0;
+    new BitStream:bs = BS_New(), textlen = strlen(text);
+    BS_WriteValue(bs, PR_UINT16, playerid, PR_UINT32, color, PR_FLOAT, drawdistance, PR_UINT32, expiretime, PR_UINT8, textlen, PR_STRING, text);
+    PR_SendRPC(bs, forplayerid, 59);
+    BS_Delete(bs);
+    return 1;
+}
+
+/*stock SetPlayerVirtualWorldForPlayer(const playerid, const forplayerid, const world) {
+    if(!IsPlayerConnected(playerid) || !IsPlayerConnected(forplayerid)) return 0;
+    new BitStream:bs = BS_New();
+    
+    BS_WriteValue(bs, PR_UINT16, playerid, PR_UINT8, world);
+    PR_SendRPC(bs, forplayerid, 69);
+    BS_Delete(bs);
+    return 1;
+}*/
+
+
