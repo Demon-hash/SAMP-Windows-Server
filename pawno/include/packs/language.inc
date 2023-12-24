@@ -308,6 +308,17 @@ enum LOCALIZATION_DATA {
 	LD_MSG_AUTH_WRONG_TRIES,
 	LD_MSG_GANG_CANT_LEAVE,
 	LD_MSG_GANG_LEAVE,
+	LD_MSG_GANGWAR_REQUEST,
+    	LD_MSG_GANGWAR_1,
+    	LD_MSG_GANGWAR_2,
+    	LD_MSG_GANGWAR_ACCEPT_REQ,
+	LD_MSG_GANGWAR_STARTED,
+	LD_MSG_GANGWAR_END,
+	LD_MSG_ALLIANCE_START,
+	LD_MSG_ALLIANCE_END,
+	LD_MSG_ALLIANCE_REQUEST,
+	LD_MSG_ALLIANCE_1,
+	LD_MSG_ALLIANCE_ACCEPT_REQ,
 	LD_ENDF,
 };
 
@@ -647,5 +658,16 @@ enum LOCALIZATION_DATA {
 	(291, '>> %s has been kicked [Reason: Auth time exceeded]', '>> Игрок %s был кикнут [Причина: Превышение времени авторизации]'),\
 	(292, '>> %s has been kicked for 3 failed login attempts!', '>> Игрок %s был кикнут за 3 неверные попытки авторизации!'),\
 	(293, '>> It is impossible to leave the gang due to the number of members, or you are the founder!', '>> Невозможно покинуть банду из за малого кол-ва участников, либо вы основатель банды!'),\
-	(294, '>> You left the gang', '>> Вы покинули банду');\
+	(294, '>> You left the gang', '>> Вы покинули банду'),\
+	(295, '>> %s proposed war to your gang', '>> Банда %s предложила войну вашей банде'),\
+	(296, '>> Compete with another gang to collect score per round, the one with the most wins!', '>> Соревнуйтесь с другой бандой в наборе очков за раунд, выграет та, у которой будет больше!'),\
+	(297, '>> On the captured map you will receive M4, Deagle, Armor and the opportunity to replenish the gang pot for actions!', '>> На захваченой карте вы получите M4, Дигл, Броню и возможность пополнять казну клана за действия!'),\
+	(298, '>> Use /gang war %d to accept the war', '>> Используйте /gang war %d чтобы принять запрос на войну'),\
+	(299, '>> %s started a war against %s!', '>> Банда %s начала войну против банды %s!'),\
+	(300, '>> %s ended a war against %s', '>> Банда %s отступилась от войны с бандой %s!'),\
+	(301, '>> %s created an alliance with %s!', '>> Банда %s создала альянс с бандой %s!'),\
+	(302, '>> %s broke off alliance with %s!', '>> Банда %s разорвала альянс с бандой %s!'),\
+	(303, '>> %s proposed alliance to your gang', '>> Банда %s предложила альянс вашей банде'),\
+	(304, '>> Allied gangs have a unified chat', '>> У союзных банд общий чат'),\
+	(305, '>> Use /gang alliance %d to accept the alliance', '>> Используйте /gang alliance %d чтобы принять альянс');\
 "

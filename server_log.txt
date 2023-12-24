@@ -7,33 +7,33 @@ SA-MP Dedicated Server
 ----------------------
 v0.3.7-R2, (C)2005-2015 SA-MP Team
 
-[01:16:33] 
-[01:16:33] Server Plugins
-[01:16:33] --------------
-[01:16:33]  Loading plugin: mysql
-[01:16:33]  >> plugin.mysql: R41-4 successfully loaded.
-[01:16:33]   Loaded.
-[01:16:33]  Loading plugin: dc_cmd
-[01:16:33]   Daniel's CMD plugin v2.8
-[01:16:33]     (c) 2014 Daniel_Cortez
-[01:16:33] 	www.pro-pawn.ru
-[01:16:33]   Loaded.
-[01:16:33]  Loading plugin: sscanf
-[01:16:33] 
-[01:16:33]  ===============================
-[01:16:33] 
-[01:16:33]       sscanf plugin loaded.     
-[01:16:33] 
-[01:16:33]          Version: 2.13.8
-[01:16:33] 
-[01:16:33]    (c) 2022 Alex "Y_Less" Cole  
-[01:16:33] 
-[01:16:33]  ===============================
-[01:16:33] 
-[01:16:33]   Loaded.
-[01:16:33]  Loading plugin: pawnraknet
-[01:16:33] [Pawn.RakNet] plugin v1.6.0 loading...
-[01:16:33] [Pawn.RakNet] 
+[18:35:19] 
+[18:35:19] Server Plugins
+[18:35:19] --------------
+[18:35:19]  Loading plugin: mysql
+[18:35:19]  >> plugin.mysql: R41-4 successfully loaded.
+[18:35:19]   Loaded.
+[18:35:19]  Loading plugin: dc_cmd
+[18:35:19]   Daniel's CMD plugin v2.8
+[18:35:19]     (c) 2014 Daniel_Cortez
+[18:35:19] 	www.pro-pawn.ru
+[18:35:19]   Loaded.
+[18:35:19]  Loading plugin: sscanf
+[18:35:19] 
+[18:35:19]  ===============================
+[18:35:19] 
+[18:35:19]       sscanf plugin loaded.     
+[18:35:19] 
+[18:35:19]          Version: 2.13.8
+[18:35:19] 
+[18:35:19]    (c) 2022 Alex "Y_Less" Cole  
+[18:35:19] 
+[18:35:19]  ===============================
+[18:35:19] 
+[18:35:19]   Loaded.
+[18:35:19]  Loading plugin: pawnraknet
+[18:35:19] [Pawn.RakNet] plugin v1.6.0 loading...
+[18:35:19] [Pawn.RakNet] 
 
     | Pawn.RakNet 1.6.0 | 2016 - 2023
     |--------------------------------
@@ -46,58 +46,63 @@ v0.3.7-R2, (C)2005-2015 SA-MP Team
     |--------------------------------------------------------------
     | Wiki: https://github.com/katursis/Pawn.RakNet/wiki
 
-[01:16:33]   Loaded.
-[01:16:33]  Loading plugin: jit
-[01:16:33]   JIT plugin 2.4.1
-[01:16:33]   Loaded.
-[01:16:33]  Loaded 5 plugins.
+[18:35:19]   Loaded.
+[18:35:19]  Loading plugin: jit
+[18:35:19]   JIT plugin 2.4.1
+[18:35:19]   Loaded.
+[18:35:19]  Loaded 5 plugins.
 
-[01:16:33] 
-[01:16:33] Ban list
-[01:16:33] --------
-[01:16:33]  Loaded: samp.ban
-[01:16:33] 
-[01:16:33] 
-[01:16:33] Filterscripts
-[01:16:33] ---------------
-[01:16:33]   Loading filterscript 'aview.amx'...
-[01:16:33] 
+[18:35:19] 
+[18:35:19] Ban list
+[18:35:19] --------
+[18:35:19]  Loaded: samp.ban
+[18:35:19] 
+[18:35:19] 
+[18:35:19] Filterscripts
+[18:35:19] ---------------
+[18:35:19]   Loading filterscript 'aview.amx'...
+[18:35:19] 
          Animation Browser
-[01:16:33]               v1.0
-[01:16:33]              SoNik))
+[18:35:19]               v1.0
+[18:35:19]              SoNik))
 
-[01:16:33]   Loaded 1 filterscripts.
+[18:35:19]   Loaded 1 filterscripts.
 
-[01:16:33] |: JIT is present
-[01:16:33] |: Started at 02:16:33 on 24/12/2023...
-[01:16:33] [x] Clear Server config on load
-[01:16:33] [x] Clear Round config on load
-[01:16:33] [x] Clear Map config on load
-[01:16:33] [x] Clear Balance config on load
-[01:16:33] [x] Clear Achievements data on load
-[01:16:33] [x] Clear Classes Config data on load
-[01:16:33] [x] Clear Evacuation config on load
-[01:16:33] [x] Clear Textures data on load
-[01:16:33] [x] Clear Classes data on load
-[01:16:33] [x] Clear Weapons data on load
-[01:16:33] [x] Clear Default values on load
-[01:16:41] |: MySQL status: 0
-[01:16:41] Number of vehicle models: 0
-[01:16:41] weburl = "site"  (string)
-[01:16:41] language = "English / Russian"  (string)
-[01:16:41] [x] Server configuration LOADED
-[01:16:41] [x] Gangs configuration LOADED
-[01:16:41] [x] Round configuration LOADED
-[01:16:41] [x] Evacuation configuration LOADED
-[01:16:41] [x] Map configuration LOADED
-[01:16:41] [x] Weapons configuration LOADED (17 / 17)
-[01:16:41] [x] Balance configuration LOADED
-[01:16:41] [x] Duel configuration LOADED
-[01:16:41] [x] Textures configuration LOADED (8 / 8)
-[01:16:41] [x] Classes configuration LOADED
-[01:16:41] [x] Achievements configuration LOADED (90 / 90)
-[01:16:41] [x] Created Weekly Activities 8 / 8
-[01:16:41] [x] Weekly configuration LOADED
-[01:16:41] [x] Classes loaded (55 / 55)
-[01:16:41] [x] Loaded 12 maps in total
-[01:16:41] [?] Desert Force (ID 0) has been loaded (1)
+[18:35:19] |: JIT is present
+[18:35:19] |: Started at 19:35:19 on 24/12/2023...
+[18:35:19] [x] Clear Server config on load
+[18:35:19] [x] Clear Round config on load
+[18:35:19] [x] Clear Map config on load
+[18:35:19] [x] Clear Balance config on load
+[18:35:19] [x] Clear Achievements data on load
+[18:35:19] [x] Clear Classes Config data on load
+[18:35:19] [x] Clear Evacuation config on load
+[18:35:19] [x] Clear Textures data on load
+[18:35:19] [x] Clear Classes data on load
+[18:35:19] [x] Clear Weapons data on load
+[18:35:19] [x] Clear Default values on load
+[18:35:27] |: MySQL status: 0
+[18:35:27] Number of vehicle models: 0
+[18:35:27] weburl = "site"  (string)
+[18:35:27] language = "English / Russian"  (string)
+[18:35:27] [x] Server configuration LOADED
+[18:35:27] [x] Gangs configuration LOADED
+[18:35:27] [x] Round configuration LOADED
+[18:35:27] [x] Evacuation configuration LOADED
+[18:35:27] [x] Map configuration LOADED
+[18:35:27] [x] Weapons configuration LOADED (17 / 17)
+[18:35:27] [x] Balance configuration LOADED
+[18:35:27] [x] Duel configuration LOADED
+[18:35:27] [x] Textures configuration LOADED (8 / 8)
+[18:35:27] [x] Classes configuration LOADED
+[18:35:27] [x] Achievements configuration LOADED (90 / 90)
+[18:35:27] [x] Created Weekly Activities 8 / 8
+[18:35:27] [x] Weekly configuration LOADED
+[18:35:27] [x] Classes loaded (55 / 55)
+[18:35:27] [x] Loaded 12 maps in total
+[18:35:27] [?] Desert Force (ID 0) has been loaded (1)
+[18:35:47] [connection] 127.0.0.1:64336 requests connection cookie.
+[18:35:48] [connection] incoming connection: 127.0.0.1:64336 id: 0
+[18:35:48] [join] Taxa has joined the server (0:127.0.0.1)
+[18:35:53]   Filterscript 'village.amx' unload failed.
+[18:35:53]   Filterscript 'village.amx' loaded.
