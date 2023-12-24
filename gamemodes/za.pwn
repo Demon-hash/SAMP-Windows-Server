@@ -790,7 +790,7 @@ public OnPlayerText(playerid, text[]) {
 	    return 0;
 	}
 	
-	if(RandomQuestions[RMB_STARTED] && !strcmp(text, LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], false)) {
+	if(RandomQuestions[RMB_STARTED] && !strcmp(text, LocalizedRandomAnswers[playerid][RANDOM_MESSAGES_DATA:RandomQuestions[RMB_TYPE]], true)) {
 	    RoundSession[playerid][rdAdditionalPoints] += float(RandomQuestions[RMB_POINTS]);
 	    ServerConfig[svCfgQuizReset] = 0;
 	    ProceedAchievementProgress(playerid, ACH_TYPE_ANSWER);
@@ -3120,6 +3120,7 @@ custom ShowPayLog(const playerid, const target, const logType) {
                 case PAY_TYPE_DUEL: strmid(withType, "Duel", 0, 16);
                 case PAY_TYPE_NAME: strmid(withType, "Name Change", 0, 16);
                 case PAY_TYPE_GANG_CREATE: strmid(withType, "Create Gang", 0, 16);
+                case PAY_TYPE_GANG_PAY: strmid(withType, "Gang Pay", 0, 16);
             }
 
     		TimestampToDate(date, year, mounth, day, hours, minutes, seconds, SERVER_TIMESTAMP);
@@ -6476,7 +6477,7 @@ stock SetHuman(const playerid, const classid) {
     SetPlayerColor(playerid, COLOR_HUMAN);
     ClassSetup(playerid, classid);
     
-    if(Round[playerid][rdIsHumanHero] || (IsPlayerInGang(playerid) && Map[mpGang] == Misc[playerid][mdGang])) {
+    if(Round[playerid][rdIsHumanHero] || (IsPlayerInGang(playerid) && Map[mpGang] == Misc[playerid][mdGang] && Map[mpPoints])) {
         new weapons[2];
         sscanf(MapConfig[mpCfgHumanHeroWeapons], "p<,>ii", weapons[0], weapons[1]);
         GivePlayerWeaponAC(playerid, weapons[0], floatround(ServerConfig[svCfgMaxWeaponAmmo] / 2, floatround_tozero));
@@ -6500,53 +6501,22 @@ stock ResetMapValuesOnDeath(const playerid) {
 }
 
 stock ResetValuesOnDisconnect(const playerid) {
-   	switch(GetPlayerTeamEx(playerid)) {
-    	case TEAM_ZOMBIE: {
-			Iter_Remove(Zombies, playerid);
-        }
-        
-        case TEAM_HUMAN: {
-            Iter_Remove(Humans, playerid);
-        }
-    }
-    
     ClearFromIterators(playerid);
     Round[playerid][rdIsHumanHero] = false;
 	Round[playerid][rdIsZombieBoss] = false;
 }
 
 stock ClearFromIterators(const playerid) {
-    if(Iter_Contains(MutatedPlayers, playerid)) {
-        Iter_Remove(MutatedPlayers, playerid);
-    }
-
-    if(Iter_Contains(RadioactivePlayers, playerid)) {
-		Iter_Remove(RadioactivePlayers, playerid);
-	}
-
-	if(Iter_Contains(NursePlayers, playerid)) {
-	    Iter_Remove(NursePlayers, playerid);
-	}
-
-	if(Iter_Contains(PriestPlayers, playerid)) {
-	    Iter_Remove(PriestPlayers, playerid);
-	}
-
-	if(Iter_Contains(SupportPlayers, playerid)) {
-		Iter_Remove(SupportPlayers, playerid);
-	}
-	
-	if(Iter_Contains(RemoveWeaponsPlayers, playerid)) {
-		Iter_Remove(RemoveWeaponsPlayers, playerid);
-	}
-	
-	if(Iter_Contains(Admins, playerid)) {
-		Iter_Remove(Admins, playerid);
-	}
-	
-	if(Iter_Contains(PlayersOnline, playerid)) {
-	    Iter_Remove(PlayersOnline, playerid);
-	}
+    Iter_Remove(PlayersOnline, playerid);
+    Iter_Remove(Admins, playerid);
+    Iter_Remove(Zombies, playerid);
+    Iter_Remove(Humans, playerid);
+    Iter_Remove(MutatedPlayers, playerid);
+    Iter_Remove(RadioactivePlayers, playerid);
+	Iter_Remove(NursePlayers, playerid);
+	Iter_Remove(PriestPlayers, playerid);
+	Iter_Remove(SupportPlayers, playerid);
+	Iter_Remove(RemoveWeaponsPlayers, playerid);
 }
 
 stock GetWeaponFromConfigById(const weaponid) {
@@ -6722,6 +6692,7 @@ stock SetTeams() {
 
     for ( i = 0; i < MAX_PLAYERS; i++ ) {
 	    playerid = players[i] - 1;
+	    
 	    if(!IsPlayerConnected(playerid) || IsBusyWithThings(playerid)) {
 	    	continue;
 		}
@@ -7422,8 +7393,8 @@ custom CreateGang(const playerid, const gang, const name[]) {
 }
 
 CMD:gang(const playerid, const params[]) {
-	new command[16], action[32];
-	sscanf(params, "s[16]S()[32]", command, action);
+	new command[16], action[32], extra[11];
+	sscanf(params, "s[16]S()[32]S()[11]", command, action, extra);
 	
 	switch(HASH(command)) {
 	    case GANG_COMMAND_NONE: {
@@ -7431,7 +7402,7 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    /*case GANG_COMMAND_WAR: {
+	    case GANG_COMMAND_WAR: {
 	        new gang = Misc[playerid][mdGang];
 	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PANEL]) {
 	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
@@ -7444,20 +7415,13 @@ CMD:gang(const playerid, const params[]) {
 			}
 
 			new target = strval(action);
-			if(target < 1 || target > MAX_GANGS) {
+			if(target < 1 || target > MAX_GANGS || !IsActiveGang(target - 1) || gang == target) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang war (id)");
 			    return 1;
 			}
 
-			if(Gangs[gang][gdAlliance][target] == 1 && Gangs[target][gdAlliance][gang] == 1) {
-			    SendClientMessage(playerid, COLOR_INFO, ">> You cannot send a request for war to an alliance");
-			    return 1;
-			}
-
-			if(Gangs[gang][gdWar][target] >= 1) {
-			    SendClientMessage(playerid, COLOR_INFO, ">> Request or War is in the process");
-			    return 1;
-			}
+			Gangs[gang][gdAlliance][target] = 0;
+			Gangs[gang][gdWar][target] = 1;
 
 			if(++Gangs[target][gdWar][gang] == 1 && Gangs[gang][gdWar][target] == 1) {
 				foreach(Player, i) {
@@ -7478,7 +7442,7 @@ CMD:gang(const playerid, const params[]) {
 		    }
 
 	        return 1;
-	    }*/
+	    }
 	    
 	     case GANG_COMMAND_CREATE: {
 	        if(IsPlayerInGang(playerid)) {
@@ -7512,10 +7476,8 @@ CMD:gang(const playerid, const params[]) {
 	    }
 	    
 	    case GANG_COMMAND_HELP: {
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| delete, leave");
 	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| promote, demote, (un)ban");
-	        SendClientMessage(playerid, COLOR_CONNECTIONS, ":| members");
-			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| pay, alliance, war");
+			SendClientMessage(playerid, COLOR_CONNECTIONS, ":| alliance");
             return 1;
 	    }
 	    
@@ -7527,7 +7489,7 @@ CMD:gang(const playerid, const params[]) {
 	        return 1;
 	    }
 	    
-	    // create, accept, help, list, join, settings, info, members
+	    // create, accept, help, list, join, settings, info, members, leave, pay
 	    
 		case GANG_COMMAND_MEMBERS: {
 		    if(!strlen(action)) {
@@ -7536,12 +7498,7 @@ CMD:gang(const playerid, const params[]) {
 			}
 
 			new gang = strval(action);
-			if(gang < 1 || gang > MAX_GANGS) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang members (id)");
-			    return 1;
-			}
-
-			if(!IsActiveGang(gang - 1)) {
+			if(gang < 1 || gang > MAX_GANGS || !IsActiveGang(gang - 1)) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang members (id)");
 			    return 1;
 			}
@@ -7558,12 +7515,7 @@ CMD:gang(const playerid, const params[]) {
 			}
 
 			new gang = strval(action);
-			if(gang < 1 || gang > MAX_GANGS) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
-			    return 1;
-			}
-			
-			if(!IsActiveGang(gang - 1)) {
+			if(gang < 1 || gang > MAX_GANGS || !IsActiveGang(gang - 1)) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang info (id)");
 			    return 1;
 			}
@@ -7579,6 +7531,39 @@ CMD:gang(const playerid, const params[]) {
 	        }
 	        return 1;
 	    }
+	    
+	     case GANG_COMMAND_PAY: {
+	        new gang = Misc[playerid][mdGang];
+	        if(!IsPlayerInGang(playerid) || Misc[playerid][mdGangRank] < Gangs[gang][gdSettings][GANG_SETTING_PAYDAY]) {
+	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
+	            return 1;
+	        }
+
+            if(!strlen(action) || !strlen(extra)) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang pay (id) (amount)");
+			    return 1;
+			}
+
+			new target = strval(action), amount = strlen(extra);
+			if(!IsPlayerConnected(target) || !IsPlayerInGang(target) || Misc[target][mdGang] != gang || amount < 1 || amount > Gangs[gang][gdPot]) {
+			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang pay (id) (amount)");
+			    return 1;
+			}
+
+			new final = CalculateWithTaxes(amount), str[96];
+			Gangs[gang][gdPot] -= amount;
+			Player[target][pPoints] += final;
+			Achievements[target][achTotalPoints] += final;
+
+			foreach(PlayersOnline, i) {
+   				if(!IsPlayerCanRecieveGangMessage(playerid, i)) continue;
+    			format(str, sizeof(str), Localization[i][LD_MSG_PAY_TO], Misc[playerid][mdPlayerName], amount, Misc[target][mdPlayerName], final);
+				SendClientMessage(i, COLOR_GANG, str);
+			}
+
+    		SaveToPayLog(target, playerid, amount, PAY_TYPE_GANG_PAY);
+	        return 1;
+		}
 	    
 	    case GANG_COMMAND_SETTINGS: {
 	        new gang = Misc[playerid][mdGang];
@@ -7624,12 +7609,7 @@ CMD:gang(const playerid, const params[]) {
 			}
 
 			new gang = strval(action);
-			if(gang < 1 || gang > MAX_GANGS) {
-			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang join (id)");
-			    return 1;
-			}
-
-			if(!IsActiveGang(gang - 1)) {
+			if(gang < 1 || gang > MAX_GANGS || !IsActiveGang(gang - 1)) {
 			    SendClientMessage(playerid, COLOR_CONNECTIONS, ">> /gang join (id)");
 			    return 1;
 			}
@@ -7658,7 +7638,7 @@ CMD:gang(const playerid, const params[]) {
 			    return 1;
 			}
 			
-			new str[128];
+			new str[96];
 			foreach(PlayersOnline, i) {
 			    if(!IsPlayerCanRecieveGangMessage(playerid, i)) continue;
 			    format(str, sizeof(str), Localization[i][LD_MSG_GANG_REQ_ACPT_BY], Misc[target][mdPlayerName], Misc[playerid][mdPlayerName]);
@@ -7671,7 +7651,7 @@ CMD:gang(const playerid, const params[]) {
 			Gangs[gang][gdMembers]++;
 			Misc[target][mdGang] = gang;
 			Misc[target][mdGangRank] = 1;
-			Misc[target][mdGangRequest] = -1;
+			Misc[target][mdGangRequest] = INVALID_GANG_ID;
 			
 			new query[] = SET_GANG_USER_QUERY;
             new formated[sizeof(query) + (MAX_ID_LENGTH * 3)];
@@ -7681,6 +7661,28 @@ CMD:gang(const playerid, const params[]) {
 	        ProceedAchievementProgress(target, ACH_TYPE_GANG);
 			return 1;
 	    }
+	    
+		case GANG_COMMAND_LEAVE: {
+  			if(!IsPlayerInGang(playerid)) {
+  			    SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_LOW_GANG_RIGHTS]);
+				return 1;
+	        }
+	        
+	        new gang = Misc[playerid][mdGang];
+	        if(Gangs[gang][gdMembers] == 1 || Gangs[gang][gdOwnerId] == Player[playerid][pAccountId]) {
+	            SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_CANT_LEAVE]);
+	            return 1;
+	        }
+	        
+	        Gangs[gang][gdMembers]--;
+			Misc[playerid][mdGang] = INVALID_GANG_ID;
+			Misc[playerid][mdGangRank] = 0;
+			Misc[playerid][mdGangRequest] = INVALID_GANG_ID;
+			SavePlayerGangData(playerid);
+			
+			SendClientMessage(playerid, COLOR_INFO, Localization[playerid][LD_MSG_GANG_LEAVE]);
+		    return 1;
+		}
 	}
 	
 	return 1;

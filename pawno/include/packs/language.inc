@@ -306,6 +306,8 @@ enum LOCALIZATION_DATA {
 	LD_DG_ADMIN_ACTIVITY_TITLE,
 	LD_MSG_AUTH_TIMEOUT_KICK,
 	LD_MSG_AUTH_WRONG_TRIES,
+	LD_MSG_GANG_CANT_LEAVE,
+	LD_MSG_GANG_LEAVE,
 	LD_ENDF,
 };
 
@@ -643,5 +645,7 @@ enum LOCALIZATION_DATA {
 	(289, 'Member\tRank\tLast Online\n', 'Участник\tРанг\tПоследний раз в сети\n'),\
 	(290, 'Admin\tLevel\tLast Online\n', 'Администратор\tУровень\tПоследний раз в сети\n'),\
 	(291, '>> %s has been kicked [Reason: Auth time exceeded]', '>> Игрок %s был кикнут [Причина: Превышение времени авторизации]'),\
-	(292, '>> %s has been kicked for 3 incorrect authorization attempts', '>> Игрок %s был кикнут за 3 неверные попытки авторизации');\
+	(292, '>> %s has been kicked for 3 failed login attempts!', '>> Игрок %s был кикнут за 3 неверные попытки авторизации!'),\
+	(293, '>> It is impossible to leave the gang due to the number of members, or you are the founder!', '>> Невозможно покинуть банду из за малого кол-ва участников, либо вы основатель банды!'),\
+	(294, '>> You left the gang', '>> Вы покинули банду');\
 "
